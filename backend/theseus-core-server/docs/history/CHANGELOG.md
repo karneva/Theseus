@@ -4,6 +4,55 @@
 
 ## [Unreleased]
 
+### 🐛 Session 141 — ToolResult dict/list output 문자열 정규화 (2026-05-15)
+
+#### `theseus_engine`
+- `ToolResult.output`에 dict/list 같은 JSON-serializable 값이 들어와도 `ToolResultBlock.content` 생성 단계에서 Pydantic validation error가 나지 않도록 문자열 정규화 helper를 추가
+- `ToolResult.__post_init__()`에서 output을 provider-safe string으로 1차 정규화하고, `ToolResultBlock.content` validator와 QueryEngine/PLAN agent loop 경계에서 2차 정규화하도록 방어
+- 실행된 tool이 구조화 JSON payload를 반환하는 경우에도 LLM history에는 `json.dumps(..., ensure_ascii=False, default=str)` 결과가 들어가게 함
+
+#### 검증
+- `python -m py_compile theseus_engine\tools\core\base_tools.py theseus_engine\models\messages.py theseus_engine\engine\query_engine.py src\tool_plan\agent_loop.py` 성공
+- inline smoke로 dict output을 반환하는 tool 실행이 `ToolResultBlock.content` string으로 변환되는 것 확인
+
+---
+
+### 🛠️ Session 140 — 서버 tool_search 프로젝트 custom tool 탐색 보강 (2026-05-15)
+
+#### `src`
+- 서버 `/stream` engine metadata에 `active_registry`를 명시해 `tool_search`가 검색 결과를 현재 세션 registry에 주입할 수 있도록 보강
+- 프로젝트 custom tool loader가 `projectId`를 안전하게 문자열 slug로 변환하고, 프로젝트별 tool directory 누락/비활성 metadata/누락 module/invalid module을 로그로 남기도록 관측성 개선
+
+#### `theseus_engine`
+- `QueryEngine`의 `ToolExecutionContext.metadata`에 현재 active registry를 항상 넣어 server/local 경로 모두에서 meta-tool이 실제 실행 registry를 볼 수 있게 함
+- `tool_search`가 embedding retriever/HF cache/권한 문제로 실패할 때 즉시 error로 끝내지 않고 tool name, description, `example_queries` 기반 lexical fallback 검색을 수행하도록 보강
+- `tool_search` 결과에 검색 방식과 project scope를 표시해 서버 모드에서 어느 프로젝트 컨텍스트를 보고 있는지 확인할 수 있게 함
+
+#### 검증
+- `python -m py_compile theseus_engine\engine\query_engine.py src\builder\engine.py theseus_engine\tools\core\tool_search_tool.py src\tooling\service.py` 성공
+- inline smoke로 lexical fallback이 `시스템 상태를 조회하는 커스텀 툴` 질의에서 `system_monitor_tool`을 찾는 것 확인
+
+---
+
+### 🛠️ Session 139 — Agent 작업 실패 설명 피드백 보강 (2026-05-15)
+
+#### `src`
+- Tool build worker가 `TOOL_BUILD_FAILED`를 publish하기 전에 raw error를 LLM 피드백 프롬프트로 정리해 원인, 실패 단계, 안전한 다음 선택지, Plan B를 `message`에 포함하도록 보강
+- Tool 파일명/moduleName 중복처럼 생성 artifact 충돌이 발생하면 기존 Tool 재사용, 확장, 승인 기반 대체, 새 이름 재생성 중 하나를 선택하도록 deterministic fallback 메시지를 추가
+- PLAN worker의 예외 종료도 raw exception만 반환하지 않고 한국어 설명/재시도 방향으로 변환해 `TOOL_PLAN_FAILED`/`TOOL_PLAN_GENERATION_FAILED.message`에 담도록 처리
+- 실패 설명 생성 LLM 호출 자체가 실패해도 기존 code/message 계약을 유지하며 fallback 설명을 반환하도록 방어
+
+#### `theseus-api-server`
+- API Server가 build completed artifact를 저장할 때 기존 Tool 파일명과 충돌하는 경우에도 단순 `이미 존재하는 Tool 파일명입니다.`에서 끝내지 않고, 기존 Tool 재사용/개선/새 이름 생성 선택지를 포함한 System Notice를 저장하도록 보강
+- Kafka/DTO schema는 바꾸지 않고 기존 `Tool build에 실패했습니다. code=..., message=...` 메시지 형식 안에서 설명만 확장
+
+#### 검증
+- `python -m py_compile src\tool_build\builder.py src\tool_build\processor.py src\tool_plan\planner.py src\tool_plan\processor.py` 성공
+- `python -m compileall -q src\tool_build src\tool_plan` 성공
+- API Server `ToolBuildEventServiceTest` 단위 테스트는 실행 시 현재 로컬 JVM이 Java 8이라 Spring Boot Gradle plugin의 Java 17 요구 조건에서 중단됨
+
+---
+
 ### 🛠️ Session 138 — Local extension source package 자동 압축 (2026-05-15)
 
 #### 설치/패키징
