@@ -18,5 +18,5 @@ public class CommunityCommentResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     @JsonProperty("isShareholder")
-    private boolean isShareholder;
+    private Boolean isShareholder;
 }

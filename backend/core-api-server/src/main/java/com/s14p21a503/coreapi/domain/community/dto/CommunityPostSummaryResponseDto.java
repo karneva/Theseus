@@ -21,5 +21,5 @@ public class CommunityPostSummaryResponseDto {
     private long viewCount;
     private long commentCount;
     @JsonProperty("isShareholder")
-    private boolean isShareholder;
+    private Boolean isShareholder;
 }
