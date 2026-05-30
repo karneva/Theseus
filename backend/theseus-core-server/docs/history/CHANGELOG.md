@@ -4,6 +4,15 @@
 
 ## [Unreleased]
 
+### 🛠️ Session 194 — 발표 시나리오 기준 채팅 replay 정렬 (2026-05-30)
+
+#### Demo Replay
+- 최종 발표 스크립트의 핵심 시연 흐름에 맞춰 PLAN/AGENT 채팅 입력 매칭 문구와 고정 응답 내용을 정리
+- 김대리 휴가 전 ToolPlan, 신입사원 모니터링 Tool 성공, 신입사원 프론트 변경 권한 실패, 관리자 프론트 변경 성공 시나리오를 싸피증권 랜딩 페이지 맥락으로 통일
+- 관리자 페이지, 도구 목록, 멤버 관리 화면은 다른 시연 작업 범위로 두고 `demo_replays/replays.yaml`의 채팅 응답과 Tool 카드 출력만 수정
+
+---
+
 ### 🛠️ Session 193 — Demo replay Tool stack 지연 시간 분배 (2026-05-30)
 
 #### Core
