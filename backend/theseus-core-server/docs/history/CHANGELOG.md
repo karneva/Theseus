@@ -9,6 +9,7 @@
 #### Demo Replay
 - 최종 발표 스크립트의 핵심 시연 흐름에 맞춰 PLAN/AGENT 채팅 입력 매칭 문구와 고정 응답 내용을 정리
 - 김대리 휴가 전 ToolPlan, 신입사원 모니터링 Tool 성공, 신입사원 프론트 변경 권한 실패, 관리자 프론트 변경 성공 시나리오를 싸피증권 랜딩 페이지 맥락으로 통일
+- 인수인계 업무 1의 Tool 이름과 PLAN/실행 응답을 `server_health_monitor`로 통일하고 API health, 주식 시세 요약, 주문 처리 health, CPU/메모리/부하/네트워크 리포트가 함께 보이도록 보강
 - 관리자 페이지, 도구 목록, 멤버 관리 화면은 다른 시연 작업 범위로 두고 `demo_replays/replays.yaml`의 채팅 응답과 Tool 카드 출력만 수정
 
 ---

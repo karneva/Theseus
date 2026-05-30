@@ -16,6 +16,9 @@ plan_replays:
       contains_any:
         - "휴가 전 플랜 생성"
         - "인수인계 모니터링 툴 계획"
+        - "김대리 휴가 전 서버 모니터링 툴 생성"
+        - "싸피증권 서버 모니터링 툴 계획"
+        - "server_health_monitor 인수인계"
     progress:
       - message: REQUEST_RECEIVED
         progressRate: 5
@@ -30,18 +33,19 @@ plan_replays:
       rawMarkdown: |
         ## 김대리 휴가 전 인수인계 모니터링 Tool 생성 PLAN
 
-        김대리 휴가 기간 동안 신입사원이 싸피증권 운영 상태를 같은 기준으로 점검할 수 있도록
-        `ssafy_securities_ops_monitor` Tool을 생성합니다.
+        김대리 휴가 기간 동안 신입사원이 싸피증권 서버 운영 상태를 같은 기준으로 점검할 수 있도록
+        `server_health_monitor` Tool을 생성합니다.
 
-        이 Tool은 원격 운영 환경의 API health, CPU, 메모리, 네트워크 연결 상태를 읽기 전용으로 수집하고
-        이상 징후를 `PASS`, `WARNING`, `FAIL` 상태로 요약합니다. 운영 환경을 변경하지 않는 조회 전용 Tool이므로
-        신입사원에게도 안전하게 위임할 수 있습니다.
+        이 Tool은 원격 운영 환경의 API health, 주식 시세 요약 API, 주문 처리 health,
+        CPU, 메모리, 부하 평균, 네트워크 연결 상태를 읽기 전용으로 수집하고
+        이상 징후를 `PASS`, `WARNING`, `FAIL`, `SKIPPED` 상태로 요약합니다.
+        운영 환경을 변경하지 않는 조회 전용 Tool이므로 신입사원에게도 안전하게 위임할 수 있습니다.
 
         ### 주요 작업
         1. **운영 상태 수집 기준 정의**
            - `/health`, `/api/v1/stocks/summary`, `/api/v1/orders/health` 응답을 확인합니다.
-           - CPU, 메모리, 네트워크 연결 수를 수집합니다.
-           - 각 항목을 `PASS`, `WARNING`, `FAIL`로 판정합니다.
+           - CPU, 메모리, 부하 평균, ESTABLISHED 네트워크 연결 수를 수집합니다.
+           - 각 항목을 `PASS`, `WARNING`, `FAIL`, `SKIPPED`로 판정합니다.
 
         2. **인수인계용 리포트 생성**
            - 신입사원이 바로 읽을 수 있도록 JSON 원본과 Markdown 요약을 함께 제공합니다.
@@ -53,13 +57,17 @@ plan_replays:
            - 관리자 승인 후 프로젝트 공용 Tool로 등록합니다.
       structuredPlanJson:
         version: 1
-        goal: "김대리 휴가 전 싸피증권 운영 모니터링 Tool 생성"
+        goal: "김대리 휴가 전 싸피증권 서버 상태 모니터링 Tool 생성"
         summary:
           requestedBy: "김대리"
           handoverTarget: "신입사원"
-          toolName: "ssafy_securities_ops_monitor"
+          toolName: "server_health_monitor"
           permissionLevel: 1
-          scope: "싸피증권 운영 환경의 API, CPU, 메모리, 네트워크 상태를 읽기 전용으로 점검"
+          scope: "싸피증권 운영 환경의 API health, 주식 시세 요약, 주문 처리 health, CPU, 메모리, 부하, 네트워크 상태를 읽기 전용으로 점검"
+          inputPromptExamples:
+            - "김대리 인수인계 업무 1 - 김대리가 만든 서버 모니터링 툴 사용"
+            - "server_health_monitor로 싸피증권 서버 상태 점검해줘"
+            - "싸피증권 API와 서버 리소스 상태를 모니터링하고 리포트해줘"
           excluded:
             - "파일 수정"
             - "배포"
@@ -69,12 +77,12 @@ plan_replays:
           - id: task-1
             title: "운영 상태 수집 기준 정의"
             problem: "김대리의 점검 기준이 개인 노하우로 남아 있어 신입사원이 같은 수준의 운영 판단을 하기 어렵습니다."
-            solution: "API health, CPU, 메모리, 네트워크 연결 수를 읽기 전용으로 수집하고 상태값을 표준화합니다."
+            solution: "API health, 주식 시세 요약, 주문 처리 health, CPU, 메모리, 부하 평균, 네트워크 연결 수를 읽기 전용으로 수집하고 상태값을 표준화합니다."
             expected_effect: "담당자가 부재해도 동일한 기준으로 싸피증권 운영 상태를 점검할 수 있습니다."
           - id: task-2
             title: "인수인계용 리포트 생성"
             problem: "단순 수치만 제공하면 신입사원이 조치 필요 여부를 판단하기 어렵습니다."
-            solution: "PASS/WARNING/FAIL 판정, 근거 수치, 권장 조치를 Markdown 요약과 JSON 원본으로 제공합니다."
+            solution: "PASS/WARNING/FAIL/SKIPPED 판정, 근거 수치, 권장 조치를 Markdown 요약과 JSON 원본으로 제공합니다."
             expected_effect: "운영 점검 결과를 빠르게 이해하고 필요한 경우 관리자에게 보고할 수 있습니다."
           - id: task-3
             title: "권한 및 승인 기준 정리"
@@ -92,11 +100,11 @@ plan_replays:
         blocks:
           - blockId: overview
             title: "개요"
-            content: "김대리 휴가 중 신입사원이 싸피증권 운영 상태를 같은 기준으로 점검할 수 있도록 ssafy_securities_ops_monitor Tool을 생성합니다."
+            content: "김대리 휴가 중 신입사원이 싸피증권 서버 운영 상태를 같은 기준으로 점검할 수 있도록 server_health_monitor Tool을 생성합니다."
             order: 1
           - blockId: task-1
             title: "운영 상태 수집 기준 정의"
-            content: "API health, CPU, 메모리, 네트워크 연결 수를 읽기 전용으로 수집하고 PASS/WARNING/FAIL 상태로 표준화합니다."
+            content: "API health, 주식 시세 요약, 주문 처리 health, CPU, 메모리, 부하 평균, 네트워크 연결 수를 읽기 전용으로 수집하고 PASS/WARNING/FAIL/SKIPPED 상태로 표준화합니다."
             order: 2
           - blockId: task-2
             title: "인수인계용 리포트 생성"
@@ -374,7 +382,11 @@ chat_replays:
         - "인수인계 업무 1"
         - "모니터링 툴 사용"
         - "김대리가 만든 모니터링 툴 사용"
-        - "ssafy_securities_ops_monitor"
+        - "서버 상태 모니터링 툴 사용"
+        - "김대리가 만든 서버 모니터링 툴 사용"
+        - "싸피증권 서버 상태 점검"
+        - "주식 시세 요약 주문 처리 서버 모니터링"
+        - "server_health_monitor"
     timing:
       textChunkChars: 8
       textChunkDelayMs: 45
@@ -385,105 +397,130 @@ chat_replays:
       afterToolsDelayMs: 550
     answer:
       beforeTools: |
-        김대리가 인수인계한 `ssafy_securities_ops_monitor` Tool을 실행하겠습니다.
-        싸피증권 API 상태, 시스템 리소스, 네트워크 연결 수를 읽기 전용으로 점검합니다.
+        김대리가 인수인계한 `server_health_monitor` Tool을 실행하겠습니다.
+        싸피증권 API health, 주식 시세 요약 API, 주문 처리 health와
+        현재 서버의 CPU, 메모리, 부하, 네트워크 연결 상태를 읽기 전용으로 점검합니다.
 
       afterTools: |
-        모니터링 결과 싸피증권 운영 환경은 현재 정상 범위입니다.
+        `server_health_monitor` 실행 결과, 싸피증권 서버 상태는 전반적으로 정상 범위입니다.
 
-        점검 요약
-        - API health: `PASS`
-        - 주식 시세 요약 API: `PASS`
-        - 주문 처리 health: `PASS`
-        - CPU 사용률: 37.5%
-        - 메모리 사용률: 42.1%
-        - ESTABLISHED 네트워크 연결: 18개
+        진단 요약
+        - 전체 상태: `PASS`
+        - API health: `PASS` (HTTP 200, 42ms)
+        - 주식 시세 요약 API: `PASS` (HTTP 200, 88ms)
+        - 주문 처리 health: `PASS` (HTTP 200, 63ms)
+        - CPU 사용률: 37.5% (`PASS`)
+        - 메모리 사용률: 42.1% (`PASS`)
+        - 1분 평균 부하: 0.48 (`PASS`)
+        - ESTABLISHED 네트워크 연결: 18개 (`PASS`)
+        - 외부 ping/traceroute: 보안 정책상 `SKIPPED`
 
         권장 조치
         - 즉시 조치가 필요한 이상 징후는 없습니다.
-        - 장 마감 전 동일 Tool로 한 번 더 점검하면 됩니다.
+        - 네트워크 연결 수가 120개 이상으로 증가하거나 메모리 사용률이 85%를 넘으면 관리자에게 보고하면 됩니다.
+        - 장 시작 전과 장 마감 전에 동일 Tool로 한 번씩 재점검하면 됩니다.
 
         인수인계 업무 1을 완료했습니다.
     toolStack:
-      - toolName: ssafy_securities_ops_monitor
-        toolUseId: demo-monitoring-collect-001
+      - toolName: server_health_monitor
+        toolUseId: demo-server-health-monitor-001
         toolInput:
-          mode: "handover_check"
-          services:
-            - "http://localhost:8080/health"
-            - "http://localhost:8080/api/v1/stocks/summary"
-            - "http://localhost:8080/api/v1/orders/health"
-          thresholds:
-            cpu_warning: 80
-            memory_warning: 85
-            established_connections_warning: 120
+          threshold_cpu: 80
+          threshold_mem: 85
+          check_level: "handover"
+          api_targets:
+            - name: "API health"
+              url: "http://localhost:8080/health"
+            - name: "주식 시세 요약 API"
+              url: "http://localhost:8080/api/v1/stocks/summary"
+            - name: "주문 처리 health"
+              url: "http://localhost:8080/api/v1/orders/health"
+          include_network_connections: true
+          include_load_average: true
+          report_format: "json_markdown"
         started:
-          message: "김대리가 만든 운영 모니터링 Tool로 싸피증권 API와 시스템 리소스를 조회합니다."
+          message: "server_health_monitor로 싸피증권 API와 서버 리소스 상태를 수집합니다."
         completed:
           output: |
             {
               "overall_status": "PASS",
+              "summary": "API health, 주식 시세 요약, 주문 처리 health, CPU, 메모리, 부하, 네트워크 연결 상태가 모두 임계치 이내입니다.",
               "checks": [
                 {
                   "check_id": "api-health",
                   "category": "API",
                   "target": "/health",
                   "status": "PASS",
-                  "evidence": "HTTP 200, latency 42ms"
+                  "evidence": "HTTP 200, latency 42ms",
+                  "sanitized_output": "status=UP, service=ssafy-securities-api",
+                  "recommendation": "정상 응답입니다."
                 },
                 {
                   "check_id": "stock-summary",
                   "category": "API",
                   "target": "/api/v1/stocks/summary",
                   "status": "PASS",
-                  "evidence": "HTTP 200, latency 88ms"
+                  "evidence": "HTTP 200, latency 88ms, summaryCount=24",
+                  "sanitized_output": "market=MOCK, topMovers=masked",
+                  "recommendation": "시세 요약 API가 정상 응답 중입니다."
                 },
                 {
                   "check_id": "order-health",
                   "category": "API",
                   "target": "/api/v1/orders/health",
                   "status": "PASS",
-                  "evidence": "HTTP 200, latency 63ms"
+                  "evidence": "HTTP 200, latency 63ms, queueDepth=3",
+                  "sanitized_output": "orderQueue=3, worker=active",
+                  "recommendation": "주문 처리 큐가 안정 범위입니다."
                 },
                 {
-                  "check_id": "cpu",
-                  "category": "SYSTEM",
-                  "target": "CPU",
+                  "check_id": "cpu-overall",
+                  "category": "CPU",
+                  "target": "overall",
                   "status": "PASS",
-                  "evidence": "37.5%"
+                  "evidence": "37.5% < threshold_cpu 80%",
+                  "sanitized_output": "cpu_percent=37.5, per_core=[31.2, 44.8, 36.1, 38.0]",
+                  "recommendation": "정상 범위입니다. 추가 조치가 필요하지 않습니다."
                 },
                 {
-                  "check_id": "memory",
-                  "category": "SYSTEM",
-                  "target": "Memory",
+                  "check_id": "memory-usage",
+                  "category": "MEMORY",
+                  "target": "virtual_memory",
                   "status": "PASS",
-                  "evidence": "42.1%"
+                  "evidence": "42.1% < threshold_mem 85%",
+                  "sanitized_output": "used=6.7GB, available=9.2GB, total=16.0GB",
+                  "recommendation": "가용 메모리가 충분합니다."
                 },
                 {
-                  "check_id": "network",
+                  "check_id": "load-average",
+                  "category": "LOAD",
+                  "target": "1m/5m/15m",
+                  "status": "PASS",
+                  "evidence": "1m load average 0.48",
+                  "sanitized_output": "load_avg=[0.48, 0.52, 0.49]",
+                  "recommendation": "부하가 낮은 상태입니다."
+                },
+                {
+                  "check_id": "network-established",
                   "category": "NETWORK",
                   "target": "ESTABLISHED connections",
                   "status": "PASS",
-                  "evidence": "18 active connections"
+                  "evidence": "18 active connections < warning threshold 120",
+                  "sanitized_output": "established=18, listen=6, time_wait=11",
+                  "recommendation": "연결 수가 정상 범위입니다."
+                },
+                {
+                  "check_id": "external-connectivity",
+                  "category": "NETWORK",
+                  "target": "ICMP ping / traceroute",
+                  "status": "SKIPPED",
+                  "evidence": "socket/subprocess 사용 제한으로 외부 연결성 검사는 수행하지 않음",
+                  "sanitized_output": "not executed by security policy",
+                  "recommendation": "외부 연결성 검사가 필요하면 관리자 승인 후 remote_check_* Tool을 사용합니다."
                 }
               ],
-              "recommendation": "정상 범위입니다. 장 마감 전 재점검만 권장합니다."
+              "markdown_report": "## 싸피증권 서버 상태 진단 리포트\n- 전체 상태: PASS\n- API health: 정상\n- 주식 시세 요약 API: 정상\n- 주문 처리 health: 정상\n- CPU: 37.5%, 정상\n- 메모리: 42.1%, 정상\n- 부하 평균: 0.48, 정상\n- ESTABLISHED 연결: 18개, 정상\n- 외부 ping/traceroute: 보안 정책상 생략\n\n권장 조치: 즉시 조치 필요 없음. 장 시작 전/마감 전 재점검 권장."
             }
-
-      - toolName: handover_report_formatter
-        toolUseId: demo-monitoring-report-001
-        toolInput:
-          sourceToolUseId: demo-monitoring-collect-001
-          audience: "new_hire"
-        started:
-          message: "신입사원이 바로 보고할 수 있도록 점검 결과를 인수인계 리포트 형식으로 정리합니다."
-        completed:
-          output: |
-            ## 싸피증권 운영 점검 리포트
-            - 전체 상태: PASS
-            - API 3개 항목 정상 응답
-            - CPU/메모리/네트워크 연결 수 정상 범위
-            - 조치 필요 사항 없음
 
   - id: "5-new-hire-frontend-change-failed"
     modes: [AGENT]
