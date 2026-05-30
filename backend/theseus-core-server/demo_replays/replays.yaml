@@ -333,6 +333,7 @@ chat_replays:
       textChunkChars: 8
       textChunkDelayMs: 45
       beforeToolsDelayMs: 450
+      toolStackTotalDelayMs: 4800
       toolStartDelayMs: 800
       toolCompletedDelayMs: 1300
       afterToolsDelayMs: 550
@@ -372,6 +373,7 @@ chat_replays:
       textChunkChars: 8
       textChunkDelayMs: 45
       beforeToolsDelayMs: 450
+      toolStackTotalDelayMs: 6500
       toolStartDelayMs: 800
       toolFailedDelayMs: 1200
       afterToolsDelayMs: 550
@@ -405,6 +407,7 @@ chat_replays:
       textChunkChars: 10
       textChunkDelayMs: 35
       beforeToolsDelayMs: 420
+      toolStackTotalDelayMs: 12000
       toolStartDelayMs: 520
       toolCompletedDelayMs: 760
       afterToolsDelayMs: 480
