@@ -11,6 +11,12 @@ from src.tool_plan.schemas import ToolPlanRequestEvent, ToolPlanRegenerationRequ
 
 
 class PlanSnapshotBuilder:
+    """구조화된 PLAN을 저장과 화면 표시에서 공통으로 사용할 스냅샷으로 변환합니다.
+
+    재생성 시 기존 작업의 blockId를 최대한 유지해 사용자가 남긴 블록별 피드백이 같은
+    작업을 계속 가리키도록 합니다.
+    """
+
     def build(
         self,
         plan_json: dict[str, Any],

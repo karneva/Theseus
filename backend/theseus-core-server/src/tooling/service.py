@@ -1108,6 +1108,8 @@ def persist_draft_tool(
     *,
     storage_root: Path = PROJECT_TOOLS_DIR,
 ) -> tuple[ServerToolArtifactPaths, dict[str, Any]]:
+    """AI가 생성한 코드를 정규화해 프로젝트별 임시 Tool 산출물로 저장합니다."""
+
     request.permission_level = _coerce_permission_level(request.permission_level)
     normalized_name = normalize_tool_name(request.tool_name)
     code = inject_permission_level(request.python_code, request.permission_level)
@@ -1122,6 +1124,8 @@ def persist_draft_tool(
 
 
 def validate_draft_tool(paths: ServerToolArtifactPaths) -> type[Any]:
+    """저장된 후보가 Python 문법과 Theseus Tool 인터페이스를 지키는지 확인합니다."""
+
     code = paths.module_path.read_text(encoding="utf-8")
     checked_at = _now_iso()
     trace_id = _new_trace_id()
@@ -1173,6 +1177,8 @@ async def run_tool_sandbox_gate_for_artifact(
     request: ServerToolCreationRequest,
     paths: ServerToolArtifactPaths,
 ) -> dict[str, Any]:
+    """정적 검증을 통과한 후보를 격리 환경에서 import·구조 검증합니다."""
+
     trace_id = _new_trace_id()
     result = await _run_tool_sandbox_gate(
         project_id=request.project_id,
@@ -1206,6 +1212,8 @@ def activate_tool_artifact(
     tool_permissions: dict[str, int] | None,
     activation_source: str = "create_tool_server",
 ) -> bool:
+    """모든 검증 기록이 성공인 산출물만 활성 Tool로 등록합니다."""
+
     metadata = read_tool_metadata(paths)
     if not (
         metadata.get("status") == STATUS_SANDBOX_PASSED
@@ -1268,9 +1276,12 @@ async def create_tool_for_server(
     tool_permissions: dict[str, int] | None = None,
     storage_root: Path = PROJECT_TOOLS_DIR,
 ) -> ServerToolCreationResult:
+    """승인 계획 확인부터 저장, 검증, 활성화까지의 서버 Tool 생성 절차를 조율합니다."""
+
     paths: ServerToolArtifactPaths | None = None
     tool_class: type[Any] | None = None
     try:
+        # PLAN 승인 정보와 현재 프로젝트·사용자·세션이 일치해야 생성 절차를 시작합니다.
         _assert_plan_guard(request)
         paths, metadata = persist_draft_tool(request, storage_root=storage_root)
         draft_trace_id = _new_trace_id()

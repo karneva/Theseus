@@ -1,9 +1,9 @@
-"""Theseus Meta-Tooling: Custom tool creation, validation, and dynamic loading module.
+"""자연어 기반 Custom Tool의 생성, 검증, 동적 로딩을 담당합니다.
 
-This module provides three core capabilities:
-1. ToolValidator: Syntax and Theseus tool specification compliance validation
-2. load_custom_tools: Auto-scan and register tools from the custom_tools/ directory
-3. ToolCreatorTool: LLM-callable meta-tool to create new tools and inject them into the registry
+주요 기능:
+1. ToolValidator를 통한 Python 문법과 Theseus Tool 규격 검증
+2. custom_tools 디렉터리의 Tool 탐색과 레지스트리 등록
+3. LLM이 호출할 수 있는 ToolCreatorTool을 통한 Tool 생성과 즉시 등록
 """
 
 import os

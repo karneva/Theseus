@@ -14,7 +14,7 @@ from theseus_engine.tools.core.tool_creation import (
 
 
 class ToolValidator:
-    """새로 생성된 툴 코드가 Theseus 툴 규격에 맞는지 검증하는 유틸리티.
+    """자연어 요청으로 생성된 Tool 코드가 Theseus 규격에 맞는지 검증합니다.
 
     검증 항목:
     - 파이썬 문법(Syntax) 검사

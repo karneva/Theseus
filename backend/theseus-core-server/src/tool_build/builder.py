@@ -139,6 +139,12 @@ class ToolBuildError(RuntimeError):
 
 
 class ToolBuilder:
+    """승인된 자연어 PLAN을 실제 Theseus Tool 코드와 메타데이터로 변환합니다.
+
+    LLM 출력은 곧바로 활성화하지 않습니다. 정적 검증과 격리 환경 검증을 모두 통과한
+    산출물만 프로젝트 Tool로 활성화하며, 실패한 후보는 원인을 반영해 제한적으로 재생성합니다.
+    """
+
     def __init__(
         self,
         *,
@@ -160,6 +166,7 @@ class ToolBuilder:
         progress_callback: ProgressCallback | None = None,
         chunk_callback: ChunkCallback | None = None,
     ) -> ToolArtifactPayload:
+        # 사용자가 승인한 PLAN만 코드 생성 프롬프트의 기준으로 사용합니다.
         approved_plan = event.approved_plan.model_dump(mode="json", by_alias=True)
         system_prompt = build_theseus_system_prompt(
             mode=AgentMode.PLAN,
@@ -175,6 +182,7 @@ class ToolBuilder:
             tool_plan_id=event.tool_plan_id,
         )
 
+        # 모델 출력이 규격이나 안전 검증에 실패하면 검증 결과를 다음 생성 시도에 반영합니다.
         repair_loop: ToolRepairLoop[GeneratedToolSpec, ToolArtifactPayload] = ToolRepairLoop(
             llm_client=self.llm_client,
             model_name=self.model_name,
@@ -231,10 +239,10 @@ class ToolBuilder:
         message: str,
         stage: str | None = None,
     ) -> str:
-        """Turn a raw Tool build failure into user-actionable feedback.
+        """빌드 오류를 사용자가 이해하고 수정 요청을 할 수 있는 설명으로 변환합니다.
 
-        The Kafka/API contract remains `code/message`; this method only enriches
-        the message so the UI and later agent turns receive useful context.
+        Kafka와 API의 code/message 계약은 유지하면서, UI와 다음 대화에서 활용할 수 있도록
+        실패 단계와 해결 방향이 담긴 메시지를 LLM으로 보완합니다.
         """
 
         prompt = self._build_failure_feedback_prompt(
@@ -285,6 +293,8 @@ class ToolBuilder:
         *,
         progress_callback: ProgressCallback | None = None,
     ) -> ToolArtifactPayload:
+        """생성 후보를 임시 저장한 뒤 정적 검증, 샌드박스 검증, 활성화를 순서대로 수행합니다."""
+
         await self._emit_progress(progress_callback, "TOOL_BUILD_VALIDATING", 55)
         _validate_declared_sandbox_dependencies(spec)
         creation_request = ServerToolCreationRequest(
@@ -365,6 +375,8 @@ class ToolBuilder:
         debug_context: dict[str, object] | None = None,
         chunk_callback: ChunkCallback | None = None,
     ) -> GeneratedToolSpec:
+        """승인된 PLAN을 LLM이 생성한 코드와 메타데이터 규격으로 변환합니다."""
+
         request = ApiMessageRequest(
             model=self.model_name,
             messages=[ConversationMessage.from_user_text(prompt)],
@@ -385,6 +397,7 @@ class ToolBuilder:
             elif isinstance(llm_event, ApiMessageCompleteEvent):
                 final_text = llm_event.message.text or final_text
 
+        # 설명문이 섞인 응답은 허용하지 않고 약속된 JSON 계약만 생성 후보로 채택합니다.
         try:
             payload = json.loads(self._extract_json_object(final_text))
             return GeneratedToolSpec.model_validate(payload)

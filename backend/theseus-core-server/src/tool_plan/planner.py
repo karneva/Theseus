@@ -67,6 +67,13 @@ logger = logging.getLogger(__name__)
 
 
 class ToolPlanPlanner:
+    """사용자의 자연어 요청을 검토 가능한 Tool 생성 계획으로 변환합니다.
+
+    이 단계에서는 Python 코드를 직접 만들지 않습니다. 대화 이력과 프로젝트의 기존
+    Tool 정보를 LLM에 전달하고, 그 결과를 실행 명세와 화면 표시용 스냅샷으로 정규화해
+    사용자가 실제 생성 전에 범위와 권한을 확인할 수 있게 합니다.
+    """
+
     def __init__(
         self,
         *,
@@ -89,6 +96,7 @@ class ToolPlanPlanner:
         checkpoint: dict | None = None,
         checkpoint_callback: CheckpointCallback | None = None,
     ) -> ToolPlanResult | ToolPlanSkippedResult:
+        # 자연어와 대화 맥락을 바탕으로 먼저 구조화 가능한 PLAN 초안을 생성합니다.
         await self._emit_progress(progress_callback, "PLAN_DRAFTING", 10)
         await self._emit_status_chunk(status_chunk_callback, "PLAN_DRAFTING")
         remote_workspace = await resolve_remote_workspace_config(
@@ -107,6 +115,7 @@ class ToolPlanPlanner:
             return generated
         _raw_markdown, structured_plan = generated
 
+        # 생성 요청에는 권한, 입력·출력, 검증 방법이 포함되어야 이후 빌드가 안전하게 진행됩니다.
         await self._emit_progress(progress_callback, "PLAN_STRUCTURING", 75)
         await self._emit_status_chunk(status_chunk_callback, "PLAN_STRUCTURING")
         try:
@@ -122,6 +131,7 @@ class ToolPlanPlanner:
             )
             return ToolPlanSkippedResult(message=feedback)
         version = self._resolve_plan_version(event)
+        # 같은 계획을 API 저장용 JSON과 사용자 검토용 Markdown으로 각각 표현합니다.
         display_plan = self._normalize_project_artifacts_for_display(structured_plan, event)
         snapshot = self.snapshot_builder.build(
             display_plan,
@@ -156,6 +166,8 @@ class ToolPlanPlanner:
         checkpoint: dict | None = None,
         checkpoint_callback: CheckpointCallback | None = None,
     ) -> tuple[str, dict[str, Any]] | ToolPlanSkippedResult:
+        """자연어 요청을 LLM에 전달하고 PLAN JSON으로 해석할 수 있는 결과를 반환합니다."""
+
         prompt = self._build_prompt(event)
         history_messages = self._history_messages(event)
         tool_registry = self._build_tool_registry(event, remote_workspace=remote_workspace)
@@ -195,6 +207,7 @@ class ToolPlanPlanner:
             chunk_callback=chunk_callback,
         )
 
+        # 모델별 구조화 출력 기능을 우선 사용하고, 지원하지 않으면 본문 속 JSON을 해석합니다.
         payload = await self._structured_plan_payload(
             event,
             candidate_text=loop_result.final_text,

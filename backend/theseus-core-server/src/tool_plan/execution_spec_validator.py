@@ -105,11 +105,10 @@ def validate_execution_spec_if_required(
     *,
     validation_mode: str,
 ) -> ExecutionSpecValidationResult:
-    """Validate PLAN draft execution_spec without deciding persistence policy.
+    """자연어에서 만들어진 실행 명세의 구조와 안전 정책을 검증합니다.
 
-    The caller decides whether returned errors are hard failures or warnings.
-    This keeps server contract handling in planner.py while this module owns
-    structural/safety/quality classification.
+    이 함수는 저장 여부를 결정하지 않고 오류와 경고만 분류합니다. 오류를 빌드 차단으로
+    처리할지는 호출자가 결정하므로, 검증 정책과 PLAN 처리 흐름이 분리됩니다.
     """
 
     if validation_mode == "off":
@@ -124,6 +123,7 @@ def validate_execution_spec_if_required(
     warnings: list[str] = []
     if not isinstance(execution_spec, dict) or not execution_spec:
         if generated_tool_request:
+            # 생성 의도는 분명하지만 명세가 빠졌다면 최소 권한의 안전한 기본값을 보완합니다.
             execution_spec = default_generated_tool_execution_spec(plan_json)
             plan_json["execution_spec"] = execution_spec
             warnings.append(
@@ -185,6 +185,8 @@ def requires_execution_spec(plan_json: dict[str, Any], event: ToolPlanRequestEve
 
 
 def is_generated_tool_request(plan_json: dict[str, Any], event: ToolPlanRequestEvent) -> bool:
+    """원문과 구조화된 PLAN을 함께 살펴 실제 Tool 생성 요청인지 판별합니다."""
+
     searchable = [
         getattr(event, "prompt", ""),
         plan_json.get("goal"),
@@ -216,6 +218,8 @@ def is_generated_tool_request(plan_json: dict[str, Any], event: ToolPlanRequestE
 
 
 def default_generated_tool_execution_spec(plan_json: dict[str, Any]) -> dict[str, Any]:
+    """Tool 생성 요청에 사용할 최소 권한 중심의 기본 실행 명세를 만듭니다."""
+
     tool_name = ""
     for key in ("tool_name", "toolName", "name"):
         value = plan_json.get(key)

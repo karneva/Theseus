@@ -31,6 +31,12 @@ class ToolBuildPublishError(RuntimeError):
 
 
 class ToolBuildProcessor:
+    """승인된 Tool 생성 이벤트를 받아 빌드 상태와 결과를 순서대로 발행합니다.
+
+    같은 실행 요청의 중복 처리를 막고, 자연어 PLAN에서 코드가 만들어지는 동안의 진행률과
+    생성 결과를 API 서버가 사용자 화면에 전달할 수 있는 이벤트로 변환합니다.
+    """
+
     def __init__(
         self,
         *,

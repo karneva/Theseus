@@ -32,11 +32,10 @@ logger = logging.getLogger(__name__)
 
 
 class ToolGenerationProcessor:
-    """Compatibility adapter for the legacy ToolGeneration Kafka contract.
+    """기존 ToolGeneration 이벤트를 현재 PLAN 생성 흐름에 연결하는 호환 어댑터입니다.
 
-    Legacy API Server flows still publish TOOL_GENERATION_* messages keyed by
-    toolId. Internally, Core routes those requests through the API-compatible
-    PLAN draft planner so the active system prompt comes from theseus_engine.models.state.
+    기존 API 서버가 발행하는 TOOL_GENERATION 이벤트를 ToolPlanPlanner 입력으로 변환하고,
+    생성된 PLAN을 기존 UI가 이해하는 이벤트 형식으로 다시 발행합니다.
     """
 
     def __init__(
@@ -68,9 +67,7 @@ class ToolGenerationProcessor:
             result = await self.planner.plan(
                 self._to_tool_plan_requested_event(event),
                 progress_callback=lambda message, rate: self.publish_progress(event, message, rate),
-                # The planner streams JSON contract deltas. Legacy UI expects
-                # markdown-like chunks, so keep live chunks off this temporary
-                # path and publish the rendered markdown once it is available.
+                # 기존 UI에는 JSON 조각 대신 완성된 Markdown PLAN을 전달합니다.
                 chunk_callback=None,
                 status_chunk_callback=lambda content: self.publish_chunk(event, content),
             )

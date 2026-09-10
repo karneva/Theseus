@@ -6,7 +6,7 @@ from typing import Any
 
 
 class ToolCreationError(RuntimeError):
-    """Raised when the server-side create_tool pipeline cannot proceed."""
+    """서버의 Tool 생성 파이프라인이 다음 단계로 진행할 수 없을 때 발생합니다."""
 
     def __init__(
         self,
