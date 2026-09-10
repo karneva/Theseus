@@ -142,6 +142,7 @@ public class ToolPlanGenerationService {
 		);
 		toolPlanRun.attachUserMessageId(userMessage.getId());
 
+		// 실제 Kafka 발행은 현재 트랜잭션이 커밋된 뒤 ToolPlanKafkaPublishListener가 수행합니다.
 		eventPublisher.publishEvent(new ToolPlanKafkaPublishEvent(runId, requestEvent));
 		return ToolPlanGenerationRunResponse.createFrom(toolPlanRun);
 	}
@@ -217,6 +218,7 @@ public class ToolPlanGenerationService {
 		);
 		toolPlanRun.attachRequestPayload(writeAsJson(requestEvent), writeAsJson(history));
 
+		// 재생성 요청도 DB 상태가 확정된 뒤 같은 runId를 key로 Kafka에 전달됩니다.
 		eventPublisher.publishEvent(new ToolPlanKafkaPublishEvent(runId, requestEvent));
 		return ToolPlanGenerationRunResponse.createFrom(toolPlanRun);
 	}

@@ -13,6 +13,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class ToolBuildEventConsumer {
 
+	/**
+	 * Core 서버의 Tool 빌드 상태 이벤트를 소비해 실행 기록과 사용자 화면 상태를 갱신합니다.
+	 */
+
 	private final ToolBuildEventService toolBuildEventService;
 
 	@KafkaListener(
@@ -25,6 +29,7 @@ public class ToolBuildEventConsumer {
 			return;
 		}
 
+		// 진행률과 코드 조각은 계속 전달하고, 완료·실패 이벤트는 실행을 최종 상태로 전환합니다.
 		ToolBuildEventType eventType = event.getEventTypeValue();
 		try {
 			if (ToolBuildEventType.TOOL_BUILD_COMPLETED.equals(eventType)) {

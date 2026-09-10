@@ -36,6 +36,12 @@ class ToolPlanPublishError(RuntimeError):
 
 
 class ToolPlanProcessor:
+    """Kafka 요청을 PLAN 생성 작업으로 실행하고 상태 이벤트로 변환합니다.
+
+    runId별 lease와 완료 기록으로 중복 실행을 막고, 처리 중 발생하는 진행·내용·종료 상태를
+    순번이 있는 Kafka 이벤트로 발행합니다.
+    """
+
     def __init__(
         self,
         *,
@@ -83,7 +89,7 @@ class ToolPlanProcessor:
             result = await self.planner.plan(
                 event,
                 progress_callback=lambda message, rate: self.publish_progress(event, message, rate),
-                # Stream only the normalized Markdown plan, not raw PLAN draft deltas.
+                # API 서버에는 모델의 원본 조각 대신 정규화가 끝난 Markdown PLAN만 전달합니다.
                 chunk_callback=None,
                 status_chunk_callback=lambda content: self.publish_chunk(event, content),
                 checkpoint=self.load_agent_checkpoint(event.run_id),
@@ -287,6 +293,8 @@ class ToolPlanProcessor:
         self._finished_runs.add(event.run_id)
 
     async def publish_event(self, key: str, event) -> None:
+        """결과 이벤트를 DB에 먼저 기록한 후 Kafka로 발행합니다."""
+
         with self._checkpoint_repo() as repo:
             record_id = None
             if repo is not None:
@@ -303,6 +311,8 @@ class ToolPlanProcessor:
                 repo.mark_event_sent(record_id)
 
     async def republish_pending_events(self, limit: int = 50) -> int:
+        """Kafka 발행 전후에 장애가 난 이벤트를 DB 기록을 기준으로 다시 발행합니다."""
+
         sent = 0
         with self._checkpoint_repo() as repo:
             if repo is None:

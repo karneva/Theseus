@@ -17,6 +17,8 @@ class ToolPlanEventPublisher:
 
 
 class KafkaToolPlanEventPublisher(ToolPlanEventPublisher):
+    """PLAN의 진행률, 생성 내용, 완료·실패 결과를 API 서버로 발행합니다."""
+
     def __init__(self) -> None:
         self.bootstrap_servers = settings.CORE_KAFKA_BOOTSTRAP_SERVERS
         self.topic = settings.KAFKA_TOPIC_TOOL_PLAN_EVENT
@@ -48,4 +50,5 @@ class KafkaToolPlanEventPublisher(ToolPlanEventPublisher):
         payload = (
             event.model_dump(mode="json", by_alias=True) if isinstance(event, BaseModel) else event
         )
+        # 같은 runId를 key로 사용해 하나의 작업에서 발생한 이벤트 순서를 유지합니다.
         await self._producer.send_and_wait(self.topic, key=key, value=payload)

@@ -13,6 +13,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class ToolPlanEventConsumer {
 
+	/**
+	 * Core 서버에서 돌아온 PLAN 진행·완료·실패 이벤트를 종류별 저장 로직으로 전달합니다.
+	 * 저장된 상태는 Redis와 SSE를 거쳐 해당 runId를 구독 중인 화면에 전달됩니다.
+	 */
+
 	private final ToolPlanEventService toolPlanEventService;
 
 	@KafkaListener(
@@ -25,6 +30,7 @@ public class ToolPlanEventConsumer {
 			return;
 		}
 
+		// 하나의 결과 토픽을 사용하므로 eventType으로 실제 처리 경로를 분기합니다.
 		ToolPlanEventType eventType = event.getEventTypeValue();
 		try {
 			if (ToolPlanEventType.TOOL_PLAN_COMPLETED.equals(eventType)) {

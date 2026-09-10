@@ -16,6 +16,7 @@ public class ToolBuildKafkaPublishListener {
 
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void publish(ToolBuildKafkaPublishEvent event) {
+		// 승인 결과와 빌드 실행 기록이 커밋된 후에만 Core 서버에 작업을 전달합니다.
 		try {
 			toolGenerationKafkaProducer
 				.sendToolBuildRequest(event.key(), event.payload())

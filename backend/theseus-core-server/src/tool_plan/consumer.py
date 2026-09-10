@@ -14,6 +14,12 @@ logger = logging.getLogger(__name__)
 
 
 class ToolPlanKafkaConsumer:
+    """API 서버가 발행한 PLAN 생성 요청을 비동기로 소비합니다.
+
+    메시지 처리가 끝난 뒤에만 offset을 커밋하므로, 처리 도중 장애가 발생한 요청은
+    Kafka에서 다시 전달받을 수 있습니다.
+    """
+
     def __init__(self) -> None:
         self.bootstrap_servers = settings.CORE_KAFKA_BOOTSTRAP_SERVERS
         self.group_id = settings.CORE_KAFKA_TOOL_PLAN_CONSUMER_GROUP_ID
@@ -45,6 +51,7 @@ class ToolPlanKafkaConsumer:
         )
         await self._consumer.start()
         await self.publisher.start()
+        # 이전 실행에서 DB에는 기록됐지만 Kafka 발행에 실패한 결과 이벤트를 먼저 복구합니다.
         await self.processor.republish_pending_events(
             limit=settings.CORE_RUN_EVENT_REPUBLISH_BATCH_SIZE
         )
@@ -75,6 +82,7 @@ class ToolPlanKafkaConsumer:
         async for message in self._consumer:
             try:
                 await self.processor.process_message(message.value)
+                # PLAN 처리와 결과 발행이 끝난 메시지만 소비 완료로 확정합니다.
                 await self._consumer.commit()
             except Exception as exc:
                 logger.error("ToolPlan Kafka message handling failed: %s", exc, exc_info=True)

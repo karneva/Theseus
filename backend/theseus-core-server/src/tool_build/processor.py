@@ -220,6 +220,8 @@ class ToolBuildProcessor:
         self._finished_runs.add(event.run_id)
 
     async def publish_event(self, key: str, event) -> None:
+        """빌드 결과 이벤트를 DB에 기록하고 Kafka 발행 성공 여부를 갱신합니다."""
+
         with self._checkpoint_repo() as repo:
             record_id = None
             if repo is not None:
@@ -236,6 +238,8 @@ class ToolBuildProcessor:
                 repo.mark_event_sent(record_id)
 
     async def republish_pending_events(self, limit: int = 50) -> int:
+        """미발행 또는 발행 실패 상태로 남은 빌드 이벤트를 재전송합니다."""
+
         sent = 0
         with self._checkpoint_repo() as repo:
             if repo is None:

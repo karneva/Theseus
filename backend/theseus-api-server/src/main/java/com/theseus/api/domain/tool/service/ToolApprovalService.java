@@ -270,6 +270,7 @@ public class ToolApprovalService {
 		ToolPlanRun buildRun = createBuildToolPlanRun(toolPlan, reviewer);
 		ToolBuildRequestEvent requestEvent = createBuildRequestEvent(buildRun, toolPlan, reviewer);
 		buildRun.attachRequestPayload(writeAsJson(requestEvent), null);
+		// 승인 트랜잭션이 커밋되면 listener가 Tool 빌드 요청을 Kafka에 비동기로 발행합니다.
 		eventPublisher.publishEvent(new ToolBuildKafkaPublishEvent(buildRun.getRunId(), requestEvent));
 	}
 

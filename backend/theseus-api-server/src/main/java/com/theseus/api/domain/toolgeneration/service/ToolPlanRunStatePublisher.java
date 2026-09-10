@@ -15,6 +15,11 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 @Component
 public class ToolPlanRunStatePublisher {
 
+	/**
+	 * Kafka로 받은 최신 실행 상태를 Redis에 보관하고 SSE 구독자에게 실시간 전달합니다.
+	 * 최종 상태는 DB 커밋 이후에만 노출해 화면과 영속 데이터가 서로 다른 상태가 되지 않게 합니다.
+	 */
+
 	private final ToolPlanRunStateStore toolPlanRunStateStore;
 	private final ToolPlanRunSseEmitterRegistry toolPlanRunSseEmitterRegistry;
 

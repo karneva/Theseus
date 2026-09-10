@@ -17,6 +17,8 @@ class ToolBuildEventPublisher:
 
 
 class KafkaToolBuildEventPublisher(ToolBuildEventPublisher):
+    """Tool 빌드의 진행률, 생성 내용, 완료·실패 결과를 API 서버로 발행합니다."""
+
     def __init__(self) -> None:
         self.bootstrap_servers = settings.CORE_KAFKA_BOOTSTRAP_SERVERS
         self.topic = settings.KAFKA_TOPIC_TOOL_BUILD_EVENT
@@ -48,4 +50,5 @@ class KafkaToolBuildEventPublisher(ToolBuildEventPublisher):
         payload = (
             event.model_dump(mode="json", by_alias=True) if isinstance(event, BaseModel) else event
         )
+        # runId를 Kafka key로 사용해 동일한 빌드의 이벤트가 같은 파티션에서 순서대로 전달됩니다.
         await self._producer.send_and_wait(self.topic, key=key, value=payload)
