@@ -20,10 +20,10 @@ docker compose --env-file .env -f docker-compose.prod.yml up -d --build theseus-
 Check the frontend and ACME webroot:
 
 ```bash
-curl -I http://k14a308.p.ssafy.io
+curl -I http://theseus.example.com
 docker compose --env-file .env -f docker-compose.prod.yml run --rm --entrypoint sh certbot \
   -c 'mkdir -p /var/www/certbot/.well-known/acme-challenge && echo ok > /var/www/certbot/.well-known/acme-challenge/test'
-curl -i http://k14a308.p.ssafy.io/.well-known/acme-challenge/test
+curl -i http://theseus.example.com/.well-known/acme-challenge/test
 ```
 
 ## Issue Certificate
@@ -34,7 +34,7 @@ Run certbot from `infra/docker/prod`:
 docker compose --env-file .env -f docker-compose.prod.yml run --rm certbot certonly \
   --webroot \
   --webroot-path /var/www/certbot \
-  -d k14a308.p.ssafy.io \
+  -d theseus.example.com \
   --email <admin-email> \
   --agree-tos \
   --no-eff-email
@@ -53,9 +53,9 @@ docker compose --env-file .env -f docker-compose.prod.yml up -d --build theseus-
 Verify:
 
 ```bash
-curl -I https://k14a308.p.ssafy.io
-curl -i https://k14a308.p.ssafy.io/api/v1/auth/login
-curl -i -X POST https://k14a308.p.ssafy.io/api/v1/auth/login \
+curl -I https://theseus.example.com
+curl -i https://theseus.example.com/api/v1/auth/login
+curl -i -X POST https://theseus.example.com/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"loginId":"admin001","password":"1234"}'
 ```

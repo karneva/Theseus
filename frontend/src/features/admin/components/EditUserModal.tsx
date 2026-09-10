@@ -71,7 +71,7 @@ export function EditUserModal({ isOpen, onClose, onSuccess, userId, initialName,
               value={editUserForm.email}
               onChange={(e) => setEditUserForm({ ...editUserForm, email: e.target.value })}
               className="col-span-3 bg-[#010f1f] border-[rgba(65,71,81,0.3)] focus-visible:ring-1 focus-visible:ring-white/20 text-[#d4e4fa]"
-              placeholder="ex) hong@ssafy.com"
+              placeholder="ex) user@example.com"
             />
           </div>
         </div>

@@ -39,7 +39,7 @@ class PostgresConfig:
         "POSTGRES_USER", "root",
     ))
     password: str = field(default_factory=lambda: os.getenv(
-        "POSTGRES_PASSWORD", "root",
+        "POSTGRES_PASSWORD", "",
     ))
     schema: str = field(default_factory=lambda: os.getenv(
         "POSTGRES_SCHEMA", "public",

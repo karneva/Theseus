@@ -40,7 +40,7 @@ async def test_remote_workspace_connection(
 ) -> RemoteWorkspaceConnectionTestResponse:
     """Verify that Core can reach the Remote Workspace basePath through SSH."""
 
-    if internal_api_key != settings.SPRING_BOOT_INTERNAL_API_KEY:
+    if not settings.SPRING_BOOT_INTERNAL_API_KEY.strip() or internal_api_key != settings.SPRING_BOOT_INTERNAL_API_KEY:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid internal API key.",

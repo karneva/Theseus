@@ -57,7 +57,7 @@ POSTGRES_HOST=localhost
 POSTGRES_PORT=15432
 POSTGRES_DB=theseus_core
 POSTGRES_USER=root
-POSTGRES_PASSWORD=root
+POSTGRES_PASSWORD=<set-your-database-password>
 POSTGRES_SCHEMA=public
 
 # RAG & Embeddings Settings

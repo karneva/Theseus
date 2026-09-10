@@ -117,7 +117,7 @@ services:
       SERVER_PORT: 8080
       SPRING_KAFKA_BOOTSTRAP_SERVERS: theseus-prod-kafka:29092
       SPRING_KAFKA_CONSUMER_GROUP_ID: ${SPRING_KAFKA_CONSUMER_GROUP_ID:-theseus-api-server-prod}
-      SPRING_DATA_REDIS_HOST: ${SPRING_DATA_REDIS_HOST:-redis-stg.ssafyapp.com}
+      SPRING_DATA_REDIS_HOST: ${SPRING_DATA_REDIS_HOST:?Set SPRING_DATA_REDIS_HOST}
       SPRING_DATA_REDIS_PORT: ${SPRING_DATA_REDIS_PORT:-6379}
       THESEUS_CORE_BASE_URL: ${THESEUS_CORE_BASE_URL:-http://theseus-core-server:8086}
     ports:
@@ -168,8 +168,7 @@ services:
       - ${SANDBOX_HOST_TEMP_ROOT:-/tmp/theseus-sandbox-shared}:${SANDBOX_CONTAINER_TEMP_ROOT:-/tmp/theseus-sandbox-shared}
       - ${THESEUS_CUSTOM_TOOLS_HOST_DIR:-/opt/theseus/custom_tools}:/custom-tools
       - ${THESEUS_DEBUG_DUMP_HOST_DIR:-/opt/theseus/debug/dumps}:/var/log/theseus/debug/dumps
-      - ${REMOTE_WORKSPACE_KEY_HOST_PATH:-/secure/theseus/keys/ssafy-ec2-key.pem}:/home/appuser/.ssh/ssafy-ec2-key.pem:ro
-      - ${THESEUS_DEMO_REPLAYS_HOST_DIR:-../../../backend/theseus-core-server/demo_replays}:/app/demo_replays:ro
+      - ${REMOTE_WORKSPACE_KEY_HOST_PATH:?Set REMOTE_WORKSPACE_KEY_HOST_PATH}:/home/appuser/.ssh/remote-workspace-key.pem:ro
     ports:
       - "8086:8086"
     depends_on:

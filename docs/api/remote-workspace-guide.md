@@ -29,10 +29,10 @@ FE에서 입력하는 Remote URL은 “어느 외부 서버에 SSH로 붙을 것
 
 ```text
 name = 싸피증권 운영서버
-host = ssafy-stock.kr 또는 54.180.80.22
+host = workspace.example.com 또는 192.0.2.10
 port = 22
 username = ubuntu
-privateKeyPath = /home/appuser/.ssh/ssafy-ec2-key.pem
+privateKeyPath = /home/appuser/.ssh/remote-workspace-key.pem
 basePath = /home/ubuntu
 ```
 
@@ -40,7 +40,7 @@ Core 환경변수의 resolver URL은 “Core가 API Server에게 remoteWorkspace
 
 ```env
 SPRING_BOOT_REMOTE_WORKSPACE_CONFIG_URL=http://theseus-api-server:8080/api/internal/remote-workspaces/connection-config
-SPRING_BOOT_INTERNAL_API_KEY=theseus-local-internal-api-key
+SPRING_BOOT_INTERNAL_API_KEY=<set-the-same-key-as-INTERNAL_API_KEY>
 ```
 
 작업 대상 서버 URL과 resolver URL은 서로 다른 개념이다.
@@ -101,11 +101,11 @@ Response result:
   "remoteWorkspaceId": 1,
   "projectId": 1,
   "name": "싸피증권 운영서버",
-  "host": "ssafy-stock.kr",
+  "host": "workspace.example.com",
   "port": 22,
   "username": "ubuntu",
   "password": null,
-  "privateKeyPath": "/home/appuser/.ssh/ssafy-ec2-key.pem",
+  "privateKeyPath": "/home/appuser/.ssh/remote-workspace-key.pem",
   "basePath": "/home/ubuntu",
   "allowWriteExecution": false,
   "status": "ACTIVE"
@@ -186,11 +186,11 @@ Request:
 ```json
 {
   "name": "싸피증권 운영서버",
-  "host": "ssafy-stock.kr",
+  "host": "workspace.example.com",
   "port": 22,
   "username": "ubuntu",
   "password": null,
-  "privateKeyPath": "/home/appuser/.ssh/ssafy-ec2-key.pem",
+  "privateKeyPath": "/home/appuser/.ssh/remote-workspace-key.pem",
   "basePath": "/home/ubuntu",
   "allowWriteExecution": false
 }
@@ -210,7 +210,7 @@ Response result item:
   "projectId": 1,
   "createdByProjectMemberId": 3,
   "name": "싸피증권 운영서버",
-  "host": "ssafy-stock.kr",
+  "host": "workspace.example.com",
   "port": 22,
   "username": "ubuntu",
   "basePath": "/home/ubuntu",
@@ -239,11 +239,11 @@ Request:
 ```json
 {
   "name": "싸피증권 운영서버",
-  "host": "54.180.80.22",
+  "host": "192.0.2.10",
   "port": 22,
   "username": "ubuntu",
   "password": null,
-  "privateKeyPath": "/home/appuser/.ssh/ssafy-ec2-key.pem",
+  "privateKeyPath": "/home/appuser/.ssh/remote-workspace-key.pem",
   "basePath": "/home/ubuntu/app",
   "allowWriteExecution": true
 }
@@ -310,13 +310,13 @@ FE에 입력하는 `privateKeyPath`는 사용자 PC 경로가 아니라 Core Ser
 Windows PC key 예시:
 
 ```text
-C:\Users\SSAFY\.ssh\ssafy-ec2-key.pem
+C:\Users\developer\.ssh\remote-workspace-key.pem
 ```
 
 Core 컨테이너 내부 경로 예시:
 
 ```text
-/home/appuser/.ssh/ssafy-ec2-key.pem
+/home/appuser/.ssh/remote-workspace-key.pem
 ```
 
 로컬 Docker에서 key를 사용할 경우 read-only volume으로 mount한다.
@@ -325,18 +325,18 @@ Core 컨테이너 내부 경로 예시:
 services:
   theseus-core-server:
     volumes:
-      - C:/Users/SSAFY/.ssh/ssafy-ec2-key.pem:/home/appuser/.ssh/ssafy-ec2-key.pem:ro
+      - C:/Users/developer/.ssh/remote-workspace-key.pem:/home/appuser/.ssh/remote-workspace-key.pem:ro
 ```
 
 ## 싸피증권 운영서버 등록 예시
 
 ```text
 이름: 싸피증권 운영서버
-Host: ssafy-stock.kr 또는 54.180.80.22
+Host: workspace.example.com 또는 192.0.2.10
 Port: 22
 Username: ubuntu
 Password:
-Private Key Path: /home/appuser/.ssh/ssafy-ec2-key.pem
+Private Key Path: /home/appuser/.ssh/remote-workspace-key.pem
 Base Path: /home/ubuntu
 allowWriteExecution: false
 ```

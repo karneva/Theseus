@@ -10,33 +10,6 @@ interface ToolUsageHistoryTabProps {
   projectId: string;
 }
 
-const USE_MOCK_TOOL_USAGE_DATA = false;
-
-const mockToolUsageRows: ToolUsageRow[] = [
-  {
-    id: 1,
-    toolId: 10,
-    toolName: '서버 상태 점검 Tool',
-    usedByName: '손석우',
-    usedByEmployeeNo: '1449524',
-    successCount: 8,
-    failedCount: 1,
-    status: 'SUCCESS',
-    usedAt: '2026-05-29',
-  },
-  {
-    id: 2,
-    toolId: 11,
-    toolName: '장애 로그 분석 Tool',
-    usedByName: '일반인',
-    usedByEmployeeNo: '1440001',
-    successCount: 2,
-    failedCount: 3,
-    status: 'FAILED',
-    usedAt: '2026-05-29',
-  },
-];
-
 const formatDateTime = (value?: string | null) => {
   if (!value) {
     return '-';
@@ -77,11 +50,6 @@ export function ToolUsageHistoryTab({ projectId }: ToolUsageHistoryTabProps) {
       setErrorMessage(null);
 
       try {
-        if (USE_MOCK_TOOL_USAGE_DATA) {
-          setRows(mockToolUsageRows);
-          return;
-        }
-
         const response = await toolUsageApi.getToolUsages(projectId);
         if (!cancelled) {
           setRows(response.items || []);
@@ -89,8 +57,8 @@ export function ToolUsageHistoryTab({ projectId }: ToolUsageHistoryTabProps) {
       } catch (error) {
         console.error('Failed to fetch tool usage history:', error);
         if (!cancelled) {
-          setErrorMessage(null);
-          setRows(mockToolUsageRows);
+          setErrorMessage('도구 사용 이력을 불러오지 못했습니다.');
+          setRows([]);
         }
       } finally {
         if (!cancelled) {

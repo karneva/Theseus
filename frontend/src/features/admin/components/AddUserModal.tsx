@@ -86,7 +86,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
               value={newUserForm.email}
               onChange={(e) => setNewUserForm({ ...newUserForm, email: e.target.value })}
               className="col-span-3 bg-[#010f1f] border-[rgba(65,71,81,0.3)] focus-visible:ring-1 focus-visible:ring-white/20 text-[#d4e4fa]"
-              placeholder="ex) hong@ssafy.com"
+              placeholder="ex) user@example.com"
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">

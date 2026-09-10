@@ -11,7 +11,7 @@ spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:13306/theseus}
     username: ${SPRING_DATASOURCE_USERNAME:root}
-    password: ${SPRING_DATASOURCE_PASSWORD:root}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   data:
     redis:
       host: ${SPRING_DATA_REDIS_HOST:localhost}
@@ -65,7 +65,7 @@ springdoc:
     path: /swagger-ui.html
 
 jwt:
-  secret: ${JWT_SECRET:theseus-local-development-jwt-secret-key-must-be-changed}
+  secret: ${JWT_SECRET}
   access-token-expiration-millis: ${JWT_ACCESS_TOKEN_EXPIRATION_MILLIS:3600000}
   refresh-token-expiration-millis: ${JWT_REFRESH_TOKEN_EXPIRATION_MILLIS:1209600000}
   refresh-token-cookie-name: ${JWT_REFRESH_TOKEN_COOKIE_NAME:refresh_token}
@@ -74,4 +74,4 @@ jwt:
   refresh-token-cookie-same-site: ${JWT_REFRESH_TOKEN_COOKIE_SAME_SITE:Lax}
 
 internal:
-  api-key: ${INTERNAL_API_KEY:theseus-local-internal-api-key}
+  api-key: ${INTERNAL_API_KEY}

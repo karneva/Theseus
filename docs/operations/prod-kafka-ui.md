@@ -13,7 +13,7 @@ KAFKA_UI_HOST_PORT=8091
 Use an SSH tunnel from your workstation:
 
 ```sh
-ssh -L 8091:127.0.0.1:8091 ubuntu@k14a308.p.ssafy.io
+ssh -L 8091:127.0.0.1:8091 ubuntu@theseus.example.com
 ```
 
 Then open:

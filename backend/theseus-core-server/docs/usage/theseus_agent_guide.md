@@ -118,9 +118,9 @@ Theseus 에이전트가 코드를 생성하고 실행하는 전 과정에는 4�
 
 | 파일 | 역할 |
 |:--|:--|
-| [state.py](file:///c:/Users/SSAFY/pjt/pjt3/S14P31A308/backend/theseus-core-server/theseus_engine/state.py) | 상태별 시스템 프롬프트 (Base + Environment + Agent Persona) |
-| [tool_factory.py](file:///c:/Users/SSAFY/pjt/pjt3/S14P31A308/backend/theseus-core-server/theseus_engine/tool_factory.py) | `create_tool` 메타 툴의 description |
-| [tools.py](file:///c:/Users/SSAFY/pjt/pjt3/S14P31A308/backend/theseus-core-server/theseus_engine/tools.py) | `dummy_echo`, `system_reboot` 도구의 description |
+| [state.py](file:///c:/Users/developer/pjt/pjt3/S14P31A308/backend/theseus-core-server/theseus_engine/state.py) | 상태별 시스템 프롬프트 (Base + Environment + Agent Persona) |
+| [tool_factory.py](file:///c:/Users/developer/pjt/pjt3/S14P31A308/backend/theseus-core-server/theseus_engine/tool_factory.py) | `create_tool` 메타 툴의 description |
+| [tools.py](file:///c:/Users/developer/pjt/pjt3/S14P31A308/backend/theseus-core-server/theseus_engine/tools.py) | `dummy_echo`, `system_reboot` 도구의 description |
 
 ---
 

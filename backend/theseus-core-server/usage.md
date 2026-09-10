@@ -255,8 +255,8 @@ bash scripts/install-vscode-extension.sh --workspace-path /path/to/your/project
 Windows Git Bash에서는 두 경로 형식을 모두 사용할 수 있습니다.
 
 ```bash
-bash scripts/install-vscode-extension.sh --workspace-path /c/Users/SSAFY/project
-bash scripts/install-vscode-extension.sh --workspace-path 'C:\Users\SSAFY\project'
+bash scripts/install-vscode-extension.sh --workspace-path /c/Users/developer/project
+bash scripts/install-vscode-extension.sh --workspace-path 'C:\Users\developer\project'
 ```
 
 스크립트는 IDE 설정에 기록할 경로를 Windows IDE가 읽을 수 있는 형태로

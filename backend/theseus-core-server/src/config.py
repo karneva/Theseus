@@ -8,7 +8,6 @@ from pydantic import AliasChoices, Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
-DEFAULT_INTERNAL_API_KEY = "theseus-local-internal-api-key"
 LOCAL_HOSTS = {"localhost", "127.0.0.1", "0.0.0.0"}
 
 
@@ -29,7 +28,7 @@ class Settings(BaseSettings):
     SPRING_BOOT_REMOTE_WORKSPACE_CONFIG_URL: str = (
         "http://localhost:8080/api/internal/remote-workspaces/connection-config"
     )
-    SPRING_BOOT_INTERNAL_API_KEY: str = "theseus-local-internal-api-key"
+    SPRING_BOOT_INTERNAL_API_KEY: str = ""
     AUTH_TIMEOUT_SECONDS: int = 5
     INTERNAL_API_TIMEOUT_SECONDS: int = 10
     BILLING_OUTBOX_SCHEDULER_ENABLED: bool = False
@@ -93,7 +92,7 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("CORE_POSTGRES_USER", "POSTGRES_USER"),
     )
     CORE_POSTGRES_PASSWORD: str = Field(
-        "root",
+        "",
         validation_alias=AliasChoices("CORE_POSTGRES_PASSWORD", "POSTGRES_PASSWORD"),
     )
     CORE_POSTGRES_SCHEMA: str = Field(
@@ -125,8 +124,6 @@ class Settings(BaseSettings):
     THESEUS_CUSTOM_TOOLS_DIR: Optional[str] = None
     THESEUS_PROJECT_CUSTOM_TOOLS_DIR: Optional[str] = None
     THESEUS_CUSTOM_TOOLS_HOST_DIR: Optional[str] = None
-    THESEUS_DEMO_REPLAY_ENABLED: bool = False
-    THESEUS_DEMO_REPLAY_PATH: str = "demo_replays/replays.yaml"
 
     # Sandbox shared workdir settings.
     # When Core runs inside a Docker container and controls the host Docker daemon,
@@ -200,8 +197,6 @@ class Settings(BaseSettings):
 
         if not self.SPRING_BOOT_INTERNAL_API_KEY.strip():
             raise ValueError("SPRING_BOOT_INTERNAL_API_KEY must be set in production")
-        if self.SPRING_BOOT_INTERNAL_API_KEY == DEFAULT_INTERNAL_API_KEY:
-            raise ValueError("SPRING_BOOT_INTERNAL_API_KEY must not use the development default in production")
 
         if not self.ALLOWED_ORIGINS:
             raise ValueError("ALLOWED_ORIGINS must be set in production")

@@ -1,6 +1,6 @@
 server {
     listen 80;
-    server_name k14a308.p.ssafy.io;
+    server_name theseus.example.com;
 
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;

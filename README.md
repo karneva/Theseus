@@ -236,15 +236,15 @@ S14P31A308/
 
 ---
 
-## 팀원 소개
+## 팀 역할
 
-| 이름 | 역할 | 주요 담당 업무 |
-| --- | --- | --- |
-| 손석우 | Team Leader / Infra / BE | 시스템 아키텍처 및 인프라 구성, Docker Compose 배포 환경, Jenkins/GitLab CI/CD, Nginx Reverse Proxy, Kafka/Redis/RDS/Remote Workspace 연동 |
-| 조원혁 | Full Stack | 프로젝트 및 채팅 화면, ToolPlan 생성/승인 UI, Remote Workspace 관리 화면, 랜딩 페이지, 프론트엔드 API 연동 |
-| 김대연 | Full Stack | API Server 기능 구현, 프로젝트 및 Tool API, 관리자 설정 및 Tool 관리, 프론트엔드/백엔드 연동, 발표 자료 및 시연 영상 |
-| 권대일 | AI | Core Server 주요 기능, LLM 기반 ToolPlan 생성, Tool 실행 오케스트레이션, PostgreSQL/pgvector 기반 AI 데이터 처리, Docker Sandbox 실행 구조 |
-| 김선교 | AI | AI Core Server 기능 보완, ToolPlan 생성 흐름 검증, Tool 실행 결과 처리, 시연 시나리오 구성, 서비스 흐름 검증 |
+| 역할 | 주요 담당 업무 |
+| --- | --- |
+| Team Leader / Infra / BE | 시스템 아키텍처 및 인프라 구성, Docker Compose 배포 환경, Jenkins/GitLab CI/CD, Nginx Reverse Proxy, Kafka/Redis/RDS/Remote Workspace 연동 |
+| Full Stack | 프로젝트 및 채팅 화면, ToolPlan 생성/승인 UI, Remote Workspace 관리 화면, 랜딩 페이지, 프론트엔드 API 연동 |
+| Full Stack | API Server 기능 구현, 프로젝트 및 Tool API, 관리자 설정 및 Tool 관리, 프론트엔드/백엔드 연동, 발표 자료 및 시연 영상 |
+| AI | Core Server 주요 기능, LLM 기반 ToolPlan 생성, Tool 실행 오케스트레이션, PostgreSQL/pgvector 기반 AI 데이터 처리, Docker Sandbox 실행 구조 |
+| AI | AI Core Server 기능 보완, ToolPlan 생성 흐름 검증, Tool 실행 결과 처리, 시연 시나리오 구성, 서비스 흐름 검증 |
 
 ---
 

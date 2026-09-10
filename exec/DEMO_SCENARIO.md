@@ -62,7 +62,7 @@ Remote Workspace는 Core Server가 SSH로 접속한다.
 host=<SSAFY-STOCK 서버 Host>
 port=22
 username=<입력 필요>
-privateKeyPath=/home/appuser/.ssh/ssafy-ec2-key.pem
+privateKeyPath=/home/appuser/.ssh/remote-workspace-key.pem
 basePath=<분석 대상 프로젝트 경로>
 allowWriteExecution=<true 또는 false>
 ```
@@ -70,7 +70,7 @@ allowWriteExecution=<true 또는 false>
 운영 compose의 key mount:
 
 ```text
-${REMOTE_WORKSPACE_KEY_HOST_PATH}:/home/appuser/.ssh/ssafy-ec2-key.pem:ro
+${REMOTE_WORKSPACE_KEY_HOST_PATH}:/home/appuser/.ssh/remote-workspace-key.pem:ro
 ```
 
 대상 서버 security group 또는 firewall에서 Core 서버의 SSH 접근을 허용해야 한다.
@@ -120,7 +120,7 @@ ${REMOTE_WORKSPACE_KEY_HOST_PATH}:/home/appuser/.ssh/ssafy-ec2-key.pem:ro
    host=<입력 필요>
    port=22
    username=<입력 필요>
-   privateKeyPath=/home/appuser/.ssh/ssafy-ec2-key.pem
+   privateKeyPath=/home/appuser/.ssh/remote-workspace-key.pem
    basePath=<입력 필요>
    allowWriteExecution=false 또는 true
    ```
