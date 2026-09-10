@@ -28,17 +28,12 @@ class TaskListTool(BaseTool):
     input_model = TaskListInput
     permission_level = 1
 
-    async def execute(
-        self, arguments: TaskListInput, context: ToolExecutionContext
-    ) -> ToolResult:
+    async def execute(self, arguments: TaskListInput, context: ToolExecutionContext) -> ToolResult:
         tasks = get_task_manager().list_tasks(
             status=arguments.status,
             cwd=context.cwd,
         )
         if not tasks:
             return ToolResult(output="(No running tasks)")
-        lines = [
-            f"{t.id}  [{t.status:>9}]  {t.type}  {t.description}"
-            for t in tasks
-        ]
+        lines = [f"{t.id}  [{t.status:>9}]  {t.type}  {t.description}" for t in tasks]
         return ToolResult(output="\n".join(lines))

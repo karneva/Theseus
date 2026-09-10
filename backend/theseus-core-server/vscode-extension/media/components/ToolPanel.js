@@ -20,7 +20,7 @@ export function createToolPanelController({
 
   function enforceHistoryLimit() {
     let older = containerEl.querySelector('.older-tools');
-    const directTools = Array.from(containerEl.children).filter(el => el.matches('details.tool'));
+    const directTools = Array.from(containerEl.children).filter((el) => el.matches('details.tool'));
     if (directTools.length <= visibleLimit) return;
     if (!older) {
       older = document.createElement('details');
@@ -33,7 +33,7 @@ export function createToolPanelController({
       containerEl.appendChild(older);
     }
     const list = older.querySelector('.older-tools-list');
-    directTools.slice(visibleLimit).forEach(el => list.appendChild(el));
+    directTools.slice(visibleLimit).forEach((el) => list.appendChild(el));
     const count = list.querySelectorAll('details.tool').length;
     older.querySelector('summary').textContent = `Older tool runs (${count})`;
   }
@@ -85,7 +85,13 @@ export function createToolPanelController({
     enforceHistoryLimit();
 
     if (save) {
-      onPersistTool({ type: 'tool', tool_name: toolName, tool_input: toolInput, output, is_error: isError });
+      onPersistTool({
+        type: 'tool',
+        tool_name: toolName,
+        tool_input: toolInput,
+        output,
+        is_error: isError,
+      });
     }
     return item;
   }
@@ -127,8 +133,7 @@ export function createToolPanelController({
       existing.open = true;
       existing.querySelector('summary').textContent =
         `${event.tool_name} ${event.is_error ? '✗ failed' : '✓ done'}`;
-      existing.querySelector('pre').textContent =
-        JSON.stringify(event.output || '', null, 2);
+      existing.querySelector('pre').textContent = JSON.stringify(event.output || '', null, 2);
       appendDiffAction(existing, event);
       existing.removeAttribute('data-tool');
       existing.removeAttribute('data-tool-id');

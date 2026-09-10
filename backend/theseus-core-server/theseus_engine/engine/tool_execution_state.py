@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 REMOTE_WORKSPACE_TOOL_NAMES = frozenset(
     {
         "remote_read_file",

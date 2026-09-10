@@ -34,10 +34,13 @@ import lombok.NoArgsConstructor;
 @Table(
 	name = "tool_plan_runs",
 	uniqueConstraints = {
-		@UniqueConstraint(name = "uk_tool_plan_runs_run_id", columnNames = "run_id")
+		@UniqueConstraint(name = "uk_tool_plan_runs_run_id", columnNames = "run_id"),
 	},
 	indexes = {
-		@Index(name = "idx_tool_plan_runs_project_session_status", columnList = "project_id, chat_session_id, status")
+		@Index(
+			name = "idx_tool_plan_runs_project_session_status",
+			columnList = "project_id, chat_session_id, status"
+		),
 	}
 )
 @Entity
@@ -51,7 +54,11 @@ public class ToolPlanRun {
 	private String runId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name = "fk_tool_plan_runs_project"))
+	@JoinColumn(
+		name = "project_id",
+		nullable = false,
+		foreignKey = @ForeignKey(name = "fk_tool_plan_runs_project")
+	)
 	private Project project;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -234,15 +241,15 @@ public class ToolPlanRun {
 	}
 
 	public boolean hasProcessedEventSequence(Long eventSequence) {
-		return eventSequence != null
-			&& lastEventSequence != null
-			&& eventSequence <= lastEventSequence;
+		return eventSequence != null && lastEventSequence != null && eventSequence <= lastEventSequence;
 	}
 
 	public boolean isFinished() {
-		return ToolPlanRunStatus.COMPLETED.equals(status)
-			|| ToolPlanRunStatus.FAILED.equals(status)
-			|| ToolPlanRunStatus.SKIPPED.equals(status);
+		return (
+			ToolPlanRunStatus.COMPLETED.equals(status) ||
+			ToolPlanRunStatus.FAILED.equals(status) ||
+			ToolPlanRunStatus.SKIPPED.equals(status)
+		);
 	}
 
 	@PrePersist

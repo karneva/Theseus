@@ -16,14 +16,34 @@ const SLASH_COMMANDS = [
   { value: '/validate', description: 'Validate custom tools in runner', scope: 'runner required' },
   { value: '/plan approve', description: 'Approve a pending plan', scope: 'plan review only' },
   { value: '/plan reject', description: 'Reject a pending plan', scope: 'plan review only' },
-  { value: '/plan cancel', description: 'Cancel the current session plan', scope: 'runner required' },
-  { value: '/plan clear', description: 'Cancel the current session plan', scope: 'runner required' },
-  { value: '/plan delete', description: 'Delete the current session plan', scope: 'runner required' },
-  { value: '/plan remove', description: 'Delete the current session plan', scope: 'runner required' },
+  {
+    value: '/plan cancel',
+    description: 'Cancel the current session plan',
+    scope: 'runner required',
+  },
+  {
+    value: '/plan clear',
+    description: 'Cancel the current session plan',
+    scope: 'runner required',
+  },
+  {
+    value: '/plan delete',
+    description: 'Delete the current session plan',
+    scope: 'runner required',
+  },
+  {
+    value: '/plan remove',
+    description: 'Delete the current session plan',
+    scope: 'runner required',
+  },
   { value: '/agent', description: 'Use the mode selector to switch modes', scope: 'mode selector' },
   { value: '/ask', description: 'Use the mode selector to switch modes', scope: 'mode selector' },
   { value: '/plan', description: 'Use the mode selector to switch modes', scope: 'mode selector' },
-  { value: '/coordinator', description: 'Use the mode selector to switch modes', scope: 'mode selector' },
+  {
+    value: '/coordinator',
+    description: 'Use the mode selector to switch modes',
+    scope: 'mode selector',
+  },
 ];
 
 export function getWordBefore(text, pos) {
@@ -58,7 +78,7 @@ export function createAutocompleteController({
     items = nextItems;
     index = -1;
     listEl.innerHTML = '';
-    nextItems.forEach(item => {
+    nextItems.forEach((item) => {
       const li = document.createElement('li');
       if (typeof item === 'string') {
         li.textContent = item;
@@ -120,7 +140,11 @@ export function createAutocompleteController({
     if (word.startsWith('/') && word.length >= 1) {
       mode = 'slash';
       const q = word.slice(1).toLowerCase();
-      show(SLASH_COMMANDS.filter(c => c.value.slice(1).includes(q) || c.description.toLowerCase().includes(q)));
+      show(
+        SLASH_COMMANDS.filter(
+          (c) => c.value.slice(1).includes(q) || c.description.toLowerCase().includes(q),
+        ),
+      );
       return;
     }
     if (word.startsWith('@') && word.length >= 1) {
@@ -166,7 +190,11 @@ export function createAutocompleteController({
     handleInput,
     handleKeydown,
     mentionValue,
-    get mode() { return mode; },
-    get items() { return [...items]; },
+    get mode() {
+      return mode;
+    },
+    get items() {
+      return [...items];
+    },
   };
 }

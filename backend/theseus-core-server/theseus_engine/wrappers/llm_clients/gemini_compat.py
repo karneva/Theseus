@@ -108,9 +108,7 @@ def patch_assistant_tool_calls(
         original_messages: The original ``ConversationMessage`` list
             from the request (used to look up ``_raw_tool_calls``).
     """
-    original_assistant_msgs = [
-        m for m in original_messages if m.role == "assistant"
-    ]
+    original_assistant_msgs = [m for m in original_messages if m.role == "assistant"]
     assistant_idx = 0
     import sys
 
@@ -137,6 +135,9 @@ def patch_assistant_tool_calls(
                         # _raw_tool_calls 자체가 없는 경우 (세션 재로드 등)
                         if "extra_content" not in tc:
                             tc["extra_content"] = _FALLBACK_EXTRA_CONTENT
-                            print(f"[DEBUG] Patched fallback thought_signature for tool {tc.get('id')} at pos {j}", file=sys.stderr)
+                            print(
+                                f"[DEBUG] Patched fallback thought_signature for tool {tc.get('id')} at pos {j}",
+                                file=sys.stderr,
+                            )
 
         assistant_idx += 1

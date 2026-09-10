@@ -9,8 +9,10 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ToolPlanGroupRepository extends JpaRepository<ToolPlanGroup, Long> {
-
-	List<ToolPlanGroup> findByProjectAndChatSessionOrderByUpdatedAtDesc(Project project, ChatSession chatSession);
+	List<ToolPlanGroup> findByProjectAndChatSessionOrderByUpdatedAtDesc(
+		Project project,
+		ChatSession chatSession
+	);
 
 	List<ToolPlanGroup> findByProjectAndChatSessionAndStatusOrderByUpdatedAtDesc(
 		Project project,
@@ -24,5 +26,9 @@ public interface ToolPlanGroupRepository extends JpaRepository<ToolPlanGroup, Lo
 		ToolPlanGroupStatus status
 	);
 
-	Optional<ToolPlanGroup> findByIdAndProjectAndChatSession(Long id, Project project, ChatSession chatSession);
+	Optional<ToolPlanGroup> findByIdAndProjectAndChatSession(
+		Long id,
+		Project project,
+		ChatSession chatSession
+	);
 }

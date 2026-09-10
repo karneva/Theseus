@@ -13,16 +13,24 @@ from theseus_engine.tools.core.edit_safety import (
     render_success_message,
     validate_text_update,
 )
-from theseus_engine.tools.core.file_utils import _resolve_path, _check_path_security, _strip_markdown_links
+from theseus_engine.tools.core.file_utils import (
+    _resolve_path,
+    _check_path_security,
+    _strip_markdown_links,
+)
 
 log = logging.getLogger(__name__)
 
+
 class EditFileInput(BaseModel):
     """Input for editing a file."""
+
     path: str = Field(description="Path of the file to edit")
     old_str: str = Field(description="Exact string to find and replace")
     new_str: str = Field(description="New string to replace it with")
-    replace_all: bool = Field(default=False, description="Replace all occurrences instead of just the first one")
+    replace_all: bool = Field(
+        default=False, description="Replace all occurrences instead of just the first one"
+    )
     expected_change: Literal["modify", "add_only", "delete", "repair"] = Field(
         default="modify",
         description=(
@@ -35,8 +43,10 @@ class EditFileInput(BaseModel):
         description="Strings that must remain present after the edit, such as values the user said not to change.",
     )
 
+
 class EditFileTool(BaseTool):
     """Edits a file by replacing a specific string."""
+
     name = "edit_file"
     description = "Edit an existing file by replacing a specific text block with new content. Use unique 'old_str' for precision."
     is_destructive = True  # 파일 내용 변경
@@ -44,11 +54,12 @@ class EditFileTool(BaseTool):
 
     def is_read_only(self, arguments) -> bool:
         return False
+
     permission_level = 2
 
     async def execute(self, arguments: EditFileInput, context: ToolExecutionContext) -> ToolResult:
         path = _resolve_path(context.cwd, arguments.path)
-        
+
         security_err = _check_path_security(path, context.cwd)
         if security_err:
             return ToolResult(output=security_err, is_error=True)
@@ -66,7 +77,10 @@ class EditFileTool(BaseTool):
                 old_str = _strip_markdown_links(old_str)
                 new_str = _strip_markdown_links(new_str)
             if old_str not in content:
-                return ToolResult(output=f"Error: The provided 'old_str' was not found in {arguments.path}. Ensure exact match including whitespace.", is_error=True)
+                return ToolResult(
+                    output=f"Error: The provided 'old_str' was not found in {arguments.path}. Ensure exact match including whitespace.",
+                    is_error=True,
+                )
             occurrences = content.count(old_str)
             if occurrences != 1 and not arguments.replace_all:
                 return ToolResult(
@@ -98,7 +112,7 @@ class EditFileTool(BaseTool):
                     is_error=True,
                     metadata={"safetyReport": report.to_metadata()},
                 )
-            
+
             path.write_text(updated, encoding="utf-8")
             try:
                 written = path.read_text(encoding="utf-8")

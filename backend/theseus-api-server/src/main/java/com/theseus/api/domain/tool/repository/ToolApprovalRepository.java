@@ -16,7 +16,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ToolApprovalRepository extends JpaRepository<ToolApproval, Long> {
-
 	List<ToolApproval> findByToolOrderByRequestNumberDesc(Tool tool);
 
 	List<ToolApproval> findByToolPlanOrderByRequestNumberDesc(ToolPlan toolPlan);
@@ -59,10 +58,7 @@ public interface ToolApprovalRepository extends JpaRepository<ToolApproval, Long
 				or toolPlan.project = :project
 		"""
 	)
-	Page<ToolApproval> findByProject(
-		@Param("project") Project project,
-		Pageable pageable
-	);
+	Page<ToolApproval> findByProject(@Param("project") Project project, Pageable pageable);
 
 	@Query(
 		value = """
@@ -97,58 +93,68 @@ public interface ToolApprovalRepository extends JpaRepository<ToolApproval, Long
 		Pageable pageable
 	);
 
-	@Query("""
-		select toolApproval
-		from ToolApproval toolApproval
-		left join fetch toolApproval.tool tool
-		left join fetch tool.project toolProject
-		left join fetch toolApproval.toolPlan toolPlan
-		left join fetch toolPlan.project planProject
-		join fetch toolApproval.requestedByProjectMember requestedByProjectMember
-		join fetch requestedByProjectMember.user requestedByUser
-		left join fetch toolApproval.reviewedByProjectMember reviewedByProjectMember
-		left join fetch reviewedByProjectMember.user reviewedByUser
-		where toolApproval.id = :id
-			and (toolProject = :project
-				or planProject = :project)
-	""")
+	@Query(
+		"""
+			select toolApproval
+			from ToolApproval toolApproval
+			left join fetch toolApproval.tool tool
+			left join fetch tool.project toolProject
+			left join fetch toolApproval.toolPlan toolPlan
+			left join fetch toolPlan.project planProject
+			join fetch toolApproval.requestedByProjectMember requestedByProjectMember
+			join fetch requestedByProjectMember.user requestedByUser
+			left join fetch toolApproval.reviewedByProjectMember reviewedByProjectMember
+			left join fetch reviewedByProjectMember.user reviewedByUser
+			where toolApproval.id = :id
+				and (toolProject = :project
+					or planProject = :project)
+		"""
+	)
 	Optional<ToolApproval> findByIdAndToolProject(
 		@Param("id") Long id,
 		@Param("project") Project project
 	);
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	@Query("""
-		select toolApproval
-		from ToolApproval toolApproval
-		left join fetch toolApproval.tool tool
-		left join fetch toolApproval.toolPlan toolPlan
-		where toolApproval.id = :id
-			and (tool.project = :project
-				or toolPlan.project = :project)
-	""")
+	@Query(
+		"""
+			select toolApproval
+			from ToolApproval toolApproval
+			left join fetch toolApproval.tool tool
+			left join fetch toolApproval.toolPlan toolPlan
+			where toolApproval.id = :id
+				and (tool.project = :project
+					or toolPlan.project = :project)
+		"""
+	)
 	Optional<ToolApproval> findByIdAndToolProjectForUpdate(
 		@Param("id") Long id,
 		@Param("project") Project project
 	);
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	@Query("""
-		select toolApproval
-		from ToolApproval toolApproval
-		where toolApproval.tool = :tool
-		order by toolApproval.requestNumber desc
-	""")
+	@Query(
+		"""
+			select toolApproval
+			from ToolApproval toolApproval
+			where toolApproval.tool = :tool
+			order by toolApproval.requestNumber desc
+		"""
+	)
 	List<ToolApproval> findByToolOrderByRequestNumberDescForUpdate(@Param("tool") Tool tool);
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	@Query("""
-		select toolApproval
-		from ToolApproval toolApproval
-		where toolApproval.toolPlan = :toolPlan
-		order by toolApproval.requestNumber desc
-	""")
-	List<ToolApproval> findByToolPlanOrderByRequestNumberDescForUpdate(@Param("toolPlan") ToolPlan toolPlan);
+	@Query(
+		"""
+			select toolApproval
+			from ToolApproval toolApproval
+			where toolApproval.toolPlan = :toolPlan
+			order by toolApproval.requestNumber desc
+		"""
+	)
+	List<ToolApproval> findByToolPlanOrderByRequestNumberDescForUpdate(
+		@Param("toolPlan") ToolPlan toolPlan
+	);
 
 	boolean existsByToolAndApprovalStatus(Tool tool, ToolApprovalStatus approvalStatus);
 

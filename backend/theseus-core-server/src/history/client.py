@@ -23,8 +23,7 @@ class HistoryClient:
 
     def _message_list_url(self, project_id: str, chat_session_id: int) -> str:
         return (
-            f"{self.base_url}/api/v1/projects/{project_id}/sessions/"
-            f"{chat_session_id}/messages"
+            f"{self.base_url}/api/v1/projects/{project_id}/sessions/" f"{chat_session_id}/messages"
         )
 
     async def fetch_messages(
@@ -43,9 +42,7 @@ class HistoryClient:
                 raise HistoryClientError("Failed to fetch history messages") from exc
 
         if response.status_code != 200:
-            raise HistoryClientError(
-                f"History fetch failed with status {response.status_code}"
-            )
+            raise HistoryClientError(f"History fetch failed with status {response.status_code}")
 
         try:
             payload = response.json()

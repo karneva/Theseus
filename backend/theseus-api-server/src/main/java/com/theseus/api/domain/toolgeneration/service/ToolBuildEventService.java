@@ -60,10 +60,13 @@ public class ToolBuildEventService {
 	 */
 	@Transactional
 	public void handleCompleted(ToolBuildEvent event) {
-		toolPlanRunRepository.findByRunIdForUpdate(event.getRunId()).ifPresentOrElse(
-			toolPlanRun -> handleCompletedEvent(event, toolPlanRun),
-			() -> log.warn(">>>> ToolBuild completed event skipped. runId={} not found.", event.getRunId())
-		);
+		toolPlanRunRepository
+			.findByRunIdForUpdate(event.getRunId())
+			.ifPresentOrElse(
+				toolPlanRun -> handleCompletedEvent(event, toolPlanRun),
+				() ->
+					log.warn(">>>> ToolBuild completed event skipped. runId={} not found.", event.getRunId())
+			);
 	}
 
 	/**
@@ -71,10 +74,12 @@ public class ToolBuildEventService {
 	 */
 	@Transactional
 	public void handleFailed(ToolBuildEvent event) {
-		toolPlanRunRepository.findByRunIdForUpdate(event.getRunId()).ifPresentOrElse(
-			toolPlanRun -> handleFailedEvent(event, toolPlanRun),
-			() -> log.warn(">>>> ToolBuild failed event skipped. runId={} not found.", event.getRunId())
-		);
+		toolPlanRunRepository
+			.findByRunIdForUpdate(event.getRunId())
+			.ifPresentOrElse(
+				toolPlanRun -> handleFailedEvent(event, toolPlanRun),
+				() -> log.warn(">>>> ToolBuild failed event skipped. runId={} not found.", event.getRunId())
+			);
 	}
 
 	/**
@@ -139,7 +144,9 @@ public class ToolBuildEventService {
 		Tool existingTool = toolRepository.findBySourceToolPlan(toolPlan).orElse(null);
 		if (existingTool != null) {
 			completeBuildWithTool(toolPlanRun, event, toolPlan, existingTool, parseCompletedAt(event));
-			toolPlanRunStatePublisher.publishCompletedAfterCommit(createBuildCompletedState(event, toolPlanRun, toolPlan));
+			toolPlanRunStatePublisher.publishCompletedAfterCommit(
+				createBuildCompletedState(event, toolPlanRun, toolPlan)
+			);
 			log.info(
 				">>>> ToolBuild completed event skipped by existing Tool. runId={}, toolId={}",
 				event.getRunId(),
@@ -149,18 +156,13 @@ public class ToolBuildEventService {
 		}
 
 		String fileName = requireText(artifact.getFileName());
-		toolRepository.findByProjectAndFileNameAndStatus(toolPlan.getProject(), fileName, ToolStatus.DELETED)
+		toolRepository
+			.findByProjectAndFileNameAndStatus(toolPlan.getProject(), fileName, ToolStatus.DELETED)
 			.forEach(Tool::releaseFileNameForReuse);
 		if (toolRepository.existsActiveByProjectAndFileName(toolPlan.getProject(), fileName)) {
 			String code = ErrorCode.DUPLICATE_TOOL_FILE_NAME.getCode();
 			String message = createDuplicateFileNameFailureMessage(fileName);
-			failBuildRun(
-				toolPlanRun,
-				event,
-				code,
-				message,
-				parseCompletedAt(event)
-			);
+			failBuildRun(toolPlanRun, event, code, message, parseCompletedAt(event));
 			toolPlanRunStatePublisher.publishFailedAfterCommit(
 				createBuildFailedState(event, toolPlanRun, toolPlan, code, message)
 			);
@@ -168,24 +170,30 @@ public class ToolBuildEventService {
 		}
 
 		int toolAccessLevel = resolveToolAccessLevel(artifact);
-		Tool createdTool = toolRepository.save(Tool.builder()
-			.project(toolPlan.getProject())
-			.chatSession(toolPlan.getChatSession())
-			.createdByProjectMember(toolPlan.getCreatedByProjectMember())
-			.sourceToolPlan(toolPlan)
-			.fileName(fileName)
-			.displayName(resolveDisplayName(artifact, fileName))
-			.displayDescription(artifact.getDisplayDescription())
-			.status(ToolStatus.APPROVED)
-			.toolGrade(toolAccessLevel)
-			.moduleName(artifact.getModuleName())
-			.artifactPath(artifact.getArtifactPath())
-			.codeSnapshot(artifact.getCodeSnapshot())
-			.metadataJson(writeMetadataJsonWithPermissionLevel(artifact.getMetadataJson(), toolAccessLevel))
-			.build());
+		Tool createdTool = toolRepository.save(
+			Tool.builder()
+				.project(toolPlan.getProject())
+				.chatSession(toolPlan.getChatSession())
+				.createdByProjectMember(toolPlan.getCreatedByProjectMember())
+				.sourceToolPlan(toolPlan)
+				.fileName(fileName)
+				.displayName(resolveDisplayName(artifact, fileName))
+				.displayDescription(artifact.getDisplayDescription())
+				.status(ToolStatus.APPROVED)
+				.toolGrade(toolAccessLevel)
+				.moduleName(artifact.getModuleName())
+				.artifactPath(artifact.getArtifactPath())
+				.codeSnapshot(artifact.getCodeSnapshot())
+				.metadataJson(
+					writeMetadataJsonWithPermissionLevel(artifact.getMetadataJson(), toolAccessLevel)
+				)
+				.build()
+		);
 
 		completeBuildWithTool(toolPlanRun, event, toolPlan, createdTool, parseCompletedAt(event));
-		toolPlanRunStatePublisher.publishCompletedAfterCommit(createBuildCompletedState(event, toolPlanRun, toolPlan));
+		toolPlanRunStatePublisher.publishCompletedAfterCommit(
+			createBuildCompletedState(event, toolPlanRun, toolPlan)
+		);
 		log.info(
 			">>>> ToolBuild completed event handled. runId={}, toolPlanId={}, toolId={}",
 			event.getRunId(),
@@ -202,26 +210,20 @@ public class ToolBuildEventService {
 		ToolPlan toolPlan = requireBuildToolPlan(toolPlanRun, event);
 		String code = resolveCode(event.getCode());
 		String message = resolveFailedMessage(event.getMessage());
-		failBuildRun(
-			toolPlanRun,
-			event,
-			code,
-			message,
-			parseFailedAt(event)
-		);
+		failBuildRun(toolPlanRun, event, code, message, parseFailedAt(event));
 		toolPlanRunStatePublisher.publishFailedAfterCommit(
 			createBuildFailedState(event, toolPlanRun, toolPlan, code, message)
 		);
-		log.warn(
-			">>>> ToolBuild failed event handled. runId={}, code={}",
-			event.getRunId(),
-			code
-		);
+		log.warn(">>>> ToolBuild failed event handled. runId={}, code={}", event.getRunId(), code);
 	}
 
 	private boolean shouldSkipEvent(ToolBuildEvent event, ToolPlanRun toolPlanRun, String eventName) {
 		if (!ToolPlanRunRequestType.BUILD_TOOL.equals(toolPlanRun.getRequestType())) {
-			log.warn(">>>> ToolBuild {} event target run type mismatch. runId={}", eventName, event.getRunId());
+			log.warn(
+				">>>> ToolBuild {} event target run type mismatch. runId={}",
+				eventName,
+				event.getRunId()
+			);
 			return true;
 		}
 		if (!hasSameProjectAndSession(event, toolPlanRun)) {
@@ -229,7 +231,11 @@ public class ToolBuildEventService {
 			return true;
 		}
 		if (toolPlanRun.isFinished()) {
-			log.info(">>>> ToolBuild {} event skipped by terminal run. runId={}", eventName, event.getRunId());
+			log.info(
+				">>>> ToolBuild {} event skipped by terminal run. runId={}",
+				eventName,
+				event.getRunId()
+			);
 			return true;
 		}
 		if (shouldSkipProcessedEventSequence(event, toolPlanRun, eventName)) {
@@ -238,7 +244,11 @@ public class ToolBuildEventService {
 		return false;
 	}
 
-	private boolean shouldSkipProcessedEventSequence(ToolBuildEvent event, ToolPlanRun toolPlanRun, String eventName) {
+	private boolean shouldSkipProcessedEventSequence(
+		ToolBuildEvent event,
+		ToolPlanRun toolPlanRun,
+		String eventName
+	) {
 		if (!toolPlanRun.hasProcessedEventSequence(event.getEventSequence())) {
 			return false;
 		}
@@ -304,7 +314,10 @@ public class ToolBuildEventService {
 			.build();
 	}
 
-	private ToolPlanRunState.ToolPlanRunStateBuilder createBaseState(ToolBuildEvent event, ToolPlanRun toolPlanRun) {
+	private ToolPlanRunState.ToolPlanRunStateBuilder createBaseState(
+		ToolBuildEvent event,
+		ToolPlanRun toolPlanRun
+	) {
 		ToolPlan baseToolPlan = toolPlanRun.getBaseToolPlan();
 		ToolPlanGroup planGroup = toolPlanRun.getPlanGroup();
 		if (planGroup == null && baseToolPlan != null) {
@@ -366,9 +379,11 @@ public class ToolBuildEventService {
 			planGroup.completeBuild(tool);
 			return;
 		}
-		if (ToolPlanGroupStatus.BUILT.equals(planGroup.getStatus())
-			&& planGroup.getCreatedTool() != null
-			&& Objects.equals(planGroup.getCreatedTool().getId(), tool.getId())) {
+		if (
+			ToolPlanGroupStatus.BUILT.equals(planGroup.getStatus()) &&
+			planGroup.getCreatedTool() != null &&
+			Objects.equals(planGroup.getCreatedTool().getId(), tool.getId())
+		) {
 			return;
 		}
 
@@ -402,13 +417,10 @@ public class ToolBuildEventService {
 
 	private String createCompletedNoticeContent(ToolBuildEvent event, Tool tool) {
 		return """
-			{"runId":"%s","toolPlanId":%d,"toolId":%d,"status":"BUILT","fileName":"%s"}
-			""".formatted(
-			event.getRunId(),
-			event.getToolPlanId(),
-			tool.getId(),
-			tool.getFileName()
-		).trim();
+		{"runId":"%s","toolPlanId":%d,"toolId":%d,"status":"BUILT","fileName":"%s"}
+		"""
+			.formatted(event.getRunId(), event.getToolPlanId(), tool.getId(), tool.getFileName())
+			.trim();
 	}
 
 	private String createFailedNoticeMessage(String code, String message) {
@@ -416,13 +428,18 @@ public class ToolBuildEventService {
 	}
 
 	private String createDuplicateFileNameFailureMessage(String fileName) {
-		return ErrorCode.DUPLICATE_TOOL_FILE_NAME.getMessage() + "\n\n"
-			+ "원인: 같은 프로젝트에 `" + fileName + "` 파일명을 사용하는 Tool이 이미 있습니다.\n"
-			+ "의미: 기존 Tool artifact를 실수로 덮어쓰지 않도록 API Server가 저장을 차단했습니다.\n"
-			+ "다음 선택지: 기존 Tool을 재사용하거나, 기존 Tool을 개선하는 승인 흐름으로 전환하거나, "
-			+ "새 toolName/moduleName/fileName으로 다시 생성해야 합니다.\n"
-			+ "재요청 예시: `기존 Tool과 충돌하지 않도록 새 이름으로 생성해줘. "
-			+ "기존 Tool이 있으면 재사용/확장 여부도 같이 제안해줘.`";
+		return (
+			ErrorCode.DUPLICATE_TOOL_FILE_NAME.getMessage() +
+			"\n\n" +
+			"원인: 같은 프로젝트에 `" +
+			fileName +
+			"` 파일명을 사용하는 Tool이 이미 있습니다.\n" +
+			"의미: 기존 Tool artifact를 실수로 덮어쓰지 않도록 API Server가 저장을 차단했습니다.\n" +
+			"다음 선택지: 기존 Tool을 재사용하거나, 기존 Tool을 개선하는 승인 흐름으로 전환하거나, " +
+			"새 toolName/moduleName/fileName으로 다시 생성해야 합니다.\n" +
+			"재요청 예시: `기존 Tool과 충돌하지 않도록 새 이름으로 생성해줘. " +
+			"기존 Tool이 있으면 재사용/확장 여부도 같이 제안해줘.`"
+		);
 	}
 
 	private String resolveDisplayName(ToolBuildArtifactPayload artifact, String fileName) {
@@ -471,8 +488,10 @@ public class ToolBuildEventService {
 	}
 
 	private boolean hasSameProjectAndSession(ToolBuildEvent event, ToolPlanRun toolPlanRun) {
-		return Objects.equals(event.getProjectId(), toolPlanRun.getProject().getId())
-			&& Objects.equals(event.getChatSessionId(), toolPlanRun.getChatSession().getId());
+		return (
+			Objects.equals(event.getProjectId(), toolPlanRun.getProject().getId()) &&
+			Objects.equals(event.getChatSessionId(), toolPlanRun.getChatSession().getId())
+		);
 	}
 
 	private LocalDateTime parseCompletedAt(ToolBuildEvent event) {

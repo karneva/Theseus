@@ -8,8 +8,6 @@ import com.theseus.api.domain.auth.token.AuthenticatedUser;
 import com.theseus.api.domain.chat.config.CoreStreamProperties;
 import com.theseus.api.domain.project.entity.Project;
 import com.theseus.api.domain.project.entity.ProjectMember;
-import com.theseus.api.domain.project.entity.ProjectMemberStatus;
-import com.theseus.api.domain.project.entity.ProjectRole;
 import com.theseus.api.domain.project.repository.ProjectMemberRepository;
 import com.theseus.api.domain.project.repository.ProjectRepository;
 import com.theseus.api.domain.remoteworkspace.dto.request.RemoteWorkspaceConnectionConfigRequest;
@@ -48,7 +46,8 @@ public class RemoteWorkspaceService {
 
 	private static final Duration CORE_CONNECTION_TEST_TIMEOUT = Duration.ofSeconds(20);
 	private static final String INTERNAL_API_KEY_HEADER = "X-Internal-Api-Key";
-	private static final String CONNECTION_TEST_FAILED_MESSAGE = "Remote Workspace connection test failed.";
+	private static final String CONNECTION_TEST_FAILED_MESSAGE =
+		"Remote Workspace connection test failed.";
 
 	private final RemoteWorkspaceRepository remoteWorkspaceRepository;
 	private final ProjectRepository projectRepository;
@@ -78,7 +77,9 @@ public class RemoteWorkspaceService {
 		ProjectMember projectMember = getActiveProjectMember(project, user);
 		validateProjectAdmin(projectMember);
 
-		RemoteWorkspace remoteWorkspace = remoteWorkspaceRepository.save(request.toEntity(project, projectMember));
+		RemoteWorkspace remoteWorkspace = remoteWorkspaceRepository.save(
+			request.toEntity(project, projectMember)
+		);
 
 		return RemoteWorkspaceResponse.createFrom(remoteWorkspace);
 	}
@@ -86,7 +87,10 @@ public class RemoteWorkspaceService {
 	/**
 	 * 프로젝트 멤버가 접근 가능한 RemoteWorkspace 목록을 조회합니다.
 	 */
-	public List<RemoteWorkspaceResponse> getRemoteWorkspaces(AuthenticatedUser currentUser, Long projectId) {
+	public List<RemoteWorkspaceResponse> getRemoteWorkspaces(
+		AuthenticatedUser currentUser,
+		Long projectId
+	) {
 		User user = getCurrentUserEntity(currentUser);
 		Project project = getProjectEntity(projectId);
 		getActiveProjectMember(project, user);
@@ -185,13 +189,20 @@ public class RemoteWorkspaceService {
 	/**
 	 * Core Server가 Remote Workspace SSH 연결 직전에 사용할 내부 접속 설정을 조회합니다.
 	 */
-	public RemoteWorkspaceConnectionConfigResponse getConnectionConfig(RemoteWorkspaceConnectionConfigRequest request) {
-		if (request == null || request.getProjectId() == null || request.getRemoteWorkspaceId() == null) {
+	public RemoteWorkspaceConnectionConfigResponse getConnectionConfig(
+		RemoteWorkspaceConnectionConfigRequest request
+	) {
+		if (
+			request == null || request.getProjectId() == null || request.getRemoteWorkspaceId() == null
+		) {
 			throw BusinessException.of(ErrorCode.REMOTE_WORKSPACE_PAYLOAD_INVALID);
 		}
 
 		Project project = getProjectEntity(request.getProjectId());
-		RemoteWorkspace remoteWorkspace = getRemoteWorkspaceEntity(project, request.getRemoteWorkspaceId());
+		RemoteWorkspace remoteWorkspace = getRemoteWorkspaceEntity(
+			project,
+			request.getRemoteWorkspaceId()
+		);
 		return RemoteWorkspaceConnectionConfigResponse.createFrom(remoteWorkspace);
 	}
 
@@ -200,20 +211,23 @@ public class RemoteWorkspaceService {
 			throw BusinessException.of(ErrorCode.UNAUTHORIZED);
 		}
 
-		return userRepository.findById(currentUser.userId())
+		return userRepository
+			.findById(currentUser.userId())
 			.orElseThrow(() -> BusinessException.of(ErrorCode.USER_NOT_FOUND));
 	}
 
 	private Project getProjectEntity(Long projectId) {
-		return projectRepository.findById(projectId)
+		return projectRepository
+			.findById(projectId)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_NOT_FOUND));
 	}
 
 	private ProjectMember getActiveProjectMember(Project project, User user) {
-		ProjectMember projectMember = projectMemberRepository.findByProjectAndUser(project, user)
+		ProjectMember projectMember = projectMemberRepository
+			.findByProjectAndUser(project, user)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_MEMBER_PERMISSION_REQUIRED));
 
-		if (!ProjectMemberStatus.IN_PROGRESS.equals(projectMember.getStatus())) {
+		if (!projectMember.isActive()) {
 			throw BusinessException.of(ErrorCode.ACTIVE_PROJECT_MEMBER_REQUIRED);
 		}
 
@@ -227,30 +241,34 @@ public class RemoteWorkspaceService {
 	}
 
 	private void validateProjectAdmin(ProjectMember projectMember) {
-		if (!ProjectRole.ADMIN.equals(projectMember.getProjectRole())) {
+		if (!projectMember.isAdmin()) {
 			throw BusinessException.of(ErrorCode.REMOTE_WORKSPACE_ADMIN_PERMISSION_REQUIRED);
 		}
 	}
 
 	private void validateCreateRequest(RemoteWorkspaceCreateRequest request) {
-		if (request == null
-			|| isBlank(request.getName())
-			|| isBlank(request.getHost())
-			|| request.getPort() == null
-			|| request.getPort() < 1
-			|| request.getPort() > 65535
-			|| isBlank(request.getUsername())
-			|| isBlank(request.getBasePath())) {
+		if (
+			request == null ||
+			isBlank(request.getName()) ||
+			isBlank(request.getHost()) ||
+			request.getPort() == null ||
+			request.getPort() < 1 ||
+			request.getPort() > 65535 ||
+			isBlank(request.getUsername()) ||
+			isBlank(request.getBasePath())
+		) {
 			throw BusinessException.of(ErrorCode.REMOTE_WORKSPACE_PAYLOAD_INVALID);
 		}
 	}
 
 	private void validateUpdateRequest(RemoteWorkspaceUpdateRequest request) {
-		if (request == null
-			|| isBlankIfPresent(request.getName())
-			|| isBlankIfPresent(request.getHost())
-			|| isBlankIfPresent(request.getUsername())
-			|| isBlankIfPresent(request.getBasePath())) {
+		if (
+			request == null ||
+			isBlankIfPresent(request.getName()) ||
+			isBlankIfPresent(request.getHost()) ||
+			isBlankIfPresent(request.getUsername()) ||
+			isBlankIfPresent(request.getBasePath())
+		) {
 			throw BusinessException.of(ErrorCode.REMOTE_WORKSPACE_PAYLOAD_INVALID);
 		}
 	}
@@ -268,11 +286,12 @@ public class RemoteWorkspaceService {
 		RemoteWorkspace remoteWorkspace
 	) {
 		try {
-			String requestBody = objectMapper.writeValueAsString(Map.of(
-				"projectId", project.getId(),
-				"remoteWorkspaceId", remoteWorkspace.getId()
-			));
-			HttpRequest coreRequest = HttpRequest.newBuilder(coreStreamProperties.remoteWorkspaceConnectionTestUri())
+			String requestBody = objectMapper.writeValueAsString(
+				Map.of("projectId", project.getId(), "remoteWorkspaceId", remoteWorkspace.getId())
+			);
+			HttpRequest coreRequest = HttpRequest.newBuilder(
+				coreStreamProperties.remoteWorkspaceConnectionTestUri()
+			)
 				.timeout(CORE_CONNECTION_TEST_TIMEOUT)
 				.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
 				.header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
@@ -280,9 +299,15 @@ public class RemoteWorkspaceService {
 				.POST(BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8))
 				.build();
 
-			HttpResponse<String> response = httpClient.send(coreRequest, HttpResponse.BodyHandlers.ofString());
+			HttpResponse<String> response = httpClient.send(
+				coreRequest,
+				HttpResponse.BodyHandlers.ofString()
+			);
 			if (response.statusCode() < 200 || response.statusCode() >= 300) {
-				log.warn(">>>> Core Remote Workspace connection test failed. status={}", response.statusCode());
+				log.warn(
+					">>>> Core Remote Workspace connection test failed. status={}",
+					response.statusCode()
+				);
 				return RemoteWorkspaceConnectionTestResponse.createFrom(
 					remoteWorkspace,
 					false,

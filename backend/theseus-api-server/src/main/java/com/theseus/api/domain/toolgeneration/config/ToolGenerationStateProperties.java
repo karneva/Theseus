@@ -13,8 +13,7 @@ public class ToolGenerationStateProperties {
 	private boolean runTimeoutSchedulerEnabled = false;
 	private int runTimeoutBatchSize = 20;
 
-	public ToolGenerationStateProperties() {
-	}
+	public ToolGenerationStateProperties() {}
 
 	public ToolGenerationStateProperties(long stateTtlMinutes, long sseTimeoutMillis) {
 		this.stateTtlMinutes = stateTtlMinutes;

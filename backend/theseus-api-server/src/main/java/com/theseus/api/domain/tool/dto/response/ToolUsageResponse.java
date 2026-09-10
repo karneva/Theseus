@@ -23,7 +23,10 @@ public class ToolUsageResponse {
 	private String status;
 	private LocalDateTime usedAt;
 
-	public static ToolUsageResponse createFrom(ProjectMember projectMember, List<ToolUsageLog> usageLogs) {
+	public static ToolUsageResponse createFrom(
+		ProjectMember projectMember,
+		List<ToolUsageLog> usageLogs
+	) {
 		ToolUsageLog latestUsageLog = usageLogs.isEmpty() ? null : usageLogs.get(0);
 
 		return ToolUsageResponse.builder()
@@ -42,11 +45,14 @@ public class ToolUsageResponse {
 
 	private static String resolveToolName(ToolUsageLog usageLog) {
 		String displayName = usageLog.getTool().getDisplayName();
-		return displayName == null || displayName.isBlank() ? usageLog.getTool().getFileName() : displayName;
+		return displayName == null || displayName.isBlank()
+			? usageLog.getTool().getFileName()
+			: displayName;
 	}
 
 	private static long countStatus(List<ToolUsageLog> usageLogs, ToolUsageStatus status) {
-		return usageLogs.stream()
+		return usageLogs
+			.stream()
 			.filter(usageLog -> status.equals(usageLog.getStatus()))
 			.count();
 	}

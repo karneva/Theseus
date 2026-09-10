@@ -36,13 +36,24 @@ public class AuthController {
 		summary = "로그인",
 		description = "사번 또는 이메일과 비밀번호를 검증하고, JWT access token과 HttpOnly refresh token cookie를 발급합니다."
 	)
-	public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
+	public ResponseEntity<ApiResponse<LoginResponse>> login(
+		@Valid @RequestBody LoginRequest request
+	) {
 		LoginResult result = authService.login(request);
-		ResponseCookie refreshTokenCookie = refreshTokenCookieProvider.createCookie(result.refreshToken());
+		ResponseCookie refreshTokenCookie = refreshTokenCookieProvider.createCookie(
+			result.refreshToken()
+		);
 
 		return ResponseEntity.ok()
 			.header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
-			.body(new ApiResponse<>(true, SuccessCode.OK.getCode(), SuccessCode.OK.getMessage(), result.response()));
+			.body(
+				new ApiResponse<>(
+					true,
+					SuccessCode.OK.getCode(),
+					SuccessCode.OK.getMessage(),
+					result.response()
+				)
+			);
 	}
 
 	@PostMapping("/refresh")
@@ -50,14 +61,25 @@ public class AuthController {
 		summary = "Access Token 재발급",
 		description = "HttpOnly refresh token cookie를 검증하고 새 access token을 발급합니다."
 	)
-	public ResponseEntity<ApiResponse<TokenReissueResponse>> reissueAccessToken(HttpServletRequest request) {
+	public ResponseEntity<ApiResponse<TokenReissueResponse>> reissueAccessToken(
+		HttpServletRequest request
+	) {
 		String refreshToken = refreshTokenCookieProvider.resolveRefreshToken(request);
 		TokenReissueResult result = authService.reissueAccessToken(refreshToken);
-		ResponseCookie refreshTokenCookie = refreshTokenCookieProvider.createCookie(result.refreshToken());
+		ResponseCookie refreshTokenCookie = refreshTokenCookieProvider.createCookie(
+			result.refreshToken()
+		);
 
 		return ResponseEntity.ok()
 			.header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
-			.body(new ApiResponse<>(true, SuccessCode.OK.getCode(), SuccessCode.OK.getMessage(), result.response()));
+			.body(
+				new ApiResponse<>(
+					true,
+					SuccessCode.OK.getCode(),
+					SuccessCode.OK.getMessage(),
+					result.response()
+				)
+			);
 	}
 
 	@PostMapping("/logout")
@@ -76,4 +98,3 @@ public class AuthController {
 			.body(new ApiResponse<>(true, SuccessCode.OK.getCode(), SuccessCode.OK.getMessage(), null));
 	}
 }
-

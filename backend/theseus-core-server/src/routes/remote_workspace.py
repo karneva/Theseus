@@ -6,7 +6,10 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from src.config import settings
 from src.remote_workspace.exceptions import RemoteWorkspaceError
-from src.remote_workspace.resolver import RemoteWorkspaceResolveError, resolve_remote_workspace_config
+from src.remote_workspace.resolver import (
+    RemoteWorkspaceResolveError,
+    resolve_remote_workspace_config,
+)
 from src.remote_workspace.ssh_connector import SshRemoteWorkspaceConnector
 
 logger = logging.getLogger(__name__)
@@ -40,7 +43,10 @@ async def test_remote_workspace_connection(
 ) -> RemoteWorkspaceConnectionTestResponse:
     """Verify that Core can reach the Remote Workspace basePath through SSH."""
 
-    if not settings.SPRING_BOOT_INTERNAL_API_KEY.strip() or internal_api_key != settings.SPRING_BOOT_INTERNAL_API_KEY:
+    if (
+        not settings.SPRING_BOOT_INTERNAL_API_KEY.strip()
+        or internal_api_key != settings.SPRING_BOOT_INTERNAL_API_KEY
+    ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid internal API key.",

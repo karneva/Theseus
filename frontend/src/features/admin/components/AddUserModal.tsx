@@ -17,11 +17,21 @@ interface AddUserModalProps {
 }
 
 export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) {
-  const [newUserForm, setNewUserForm] = useState({ employeeNumber: '', name: '', email: '', password: '' });
+  const [newUserForm, setNewUserForm] = useState({
+    employeeNumber: '',
+    name: '',
+    email: '',
+    password: '',
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
-    if (!newUserForm.employeeNumber || !newUserForm.name || !newUserForm.email || !newUserForm.password) {
+    if (
+      !newUserForm.employeeNumber ||
+      !newUserForm.name ||
+      !newUserForm.email ||
+      !newUserForm.password
+    ) {
       alert('모든 필드를 입력해주세요.');
       return;
     }

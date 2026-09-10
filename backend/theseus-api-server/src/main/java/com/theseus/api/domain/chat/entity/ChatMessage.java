@@ -29,14 +29,17 @@ import lombok.NoArgsConstructor;
 @Table(
 	name = "chat_messages",
 	uniqueConstraints = {
-		@UniqueConstraint(name = "uk_chat_messages_session_order", columnNames = {"chat_session_id", "message_order"}),
-		@UniqueConstraint(name = "uk_chat_messages_idempotency_key", columnNames = "idempotency_key")
+		@UniqueConstraint(
+			name = "uk_chat_messages_session_order",
+			columnNames = { "chat_session_id", "message_order" }
+		),
+		@UniqueConstraint(name = "uk_chat_messages_idempotency_key", columnNames = "idempotency_key"),
 	},
 	indexes = {
 		@Index(name = "idx_chat_messages_session_order", columnList = "chat_session_id, message_order"),
 		@Index(name = "idx_chat_messages_tool_order", columnList = "tool_id, message_order"),
 		@Index(name = "idx_chat_messages_tool_plan_order", columnList = "tool_plan_id, message_order"),
-		@Index(name = "idx_chat_messages_tool_plan_run", columnList = "tool_plan_run_id")
+		@Index(name = "idx_chat_messages_tool_plan_run", columnList = "tool_plan_run_id"),
 	}
 )
 @Entity
@@ -63,7 +66,10 @@ public class ChatMessage {
 	private ToolPlan toolPlan;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "tool_plan_run_id", foreignKey = @ForeignKey(name = "fk_chat_messages_tool_plan_run"))
+	@JoinColumn(
+		name = "tool_plan_run_id",
+		foreignKey = @ForeignKey(name = "fk_chat_messages_tool_plan_run")
+	)
 	private ToolPlanRun toolPlanRun;
 
 	@Column(name = "message_order", nullable = false)
@@ -74,11 +80,21 @@ public class ChatMessage {
 	private ChatMessageSenderType senderType;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "message_type", nullable = false, length = 50, columnDefinition = "VARCHAR(50) DEFAULT 'CHAT'")
+	@Column(
+		name = "message_type",
+		nullable = false,
+		length = 50,
+		columnDefinition = "VARCHAR(50) DEFAULT 'CHAT'"
+	)
 	private ChatMessageType messageType;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "content_type", nullable = false, length = 30, columnDefinition = "VARCHAR(30) DEFAULT 'TEXT'")
+	@Column(
+		name = "content_type",
+		nullable = false,
+		length = 30,
+		columnDefinition = "VARCHAR(30) DEFAULT 'TEXT'"
+	)
 	private ChatMessageContentType contentType;
 
 	@Column(nullable = false, columnDefinition = "MEDIUMTEXT")

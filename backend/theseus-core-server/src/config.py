@@ -7,7 +7,6 @@ from urllib.parse import urlparse
 from pydantic import AliasChoices, Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
-
 LOCAL_HOSTS = {"localhost", "127.0.0.1", "0.0.0.0"}
 
 
@@ -21,10 +20,14 @@ class Settings(BaseSettings):
     AUTH_MODE: Literal["mock", "spring"] = "spring"
     SPRING_BOOT_INTERNAL_URL: str = "http://localhost:8080"
     SPRING_BOOT_AUTH_VERIFY_URL: str = "http://localhost:8080/api/internal/auth/verify"
-    SPRING_BOOT_PROJECT_PERMISSIONS_URL: str = "http://localhost:8080/api/internal/project/permissions"
+    SPRING_BOOT_PROJECT_PERMISSIONS_URL: str = (
+        "http://localhost:8080/api/internal/project/permissions"
+    )
     SPRING_BOOT_BILLING_USAGE_URL: str = "http://localhost:8080/api/internal/billing/usage"
     SPRING_BOOT_TOOL_PLAN_URL: str = "http://localhost:8080/api/internal/tool-plan/save"
-    SPRING_BOOT_INTERNAL_HISTORY_MESSAGES_URL: str = "http://localhost:8080/api/internal/history/messages"
+    SPRING_BOOT_INTERNAL_HISTORY_MESSAGES_URL: str = (
+        "http://localhost:8080/api/internal/history/messages"
+    )
     SPRING_BOOT_REMOTE_WORKSPACE_CONFIG_URL: str = (
         "http://localhost:8080/api/internal/remote-workspaces/connection-config"
     )
@@ -73,7 +76,7 @@ class Settings(BaseSettings):
     CORE_TOOL_BUILD_RUN_TIMEOUT_SECONDS: int = 180
     CORE_RUN_LEASE_TTL_SECONDS: int = 60
     CORE_RUN_EVENT_REPUBLISH_BATCH_SIZE: int = 50
-    
+
     # Database Settings (PostgreSQL + pgvector)
     CORE_POSTGRES_HOST: str = Field(
         "localhost",
@@ -103,14 +106,14 @@ class Settings(BaseSettings):
     @property
     def database_url(self) -> str:
         return f"postgresql+psycopg://{self.CORE_POSTGRES_USER}:{self.CORE_POSTGRES_PASSWORD}@{self.CORE_POSTGRES_HOST}:{self.CORE_POSTGRES_PORT}/{self.CORE_POSTGRES_DB}"
-    
+
     # RAG Settings
-    EMBEDDING_PROVIDER: str = "local" # local | remote
+    EMBEDDING_PROVIDER: str = "local"  # local | remote
     EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
     VECTOR_DIMENSION: int = 384
     RAG_TOP_K: int = 5
     RAG_MIN_SCORE: float = 0.3
-    
+
     # AI / Tools Settings (Optional for now)
     THESEUS_MODEL: Optional[str] = None
     OPENAI_API_KEY: Optional[str] = None
@@ -210,9 +213,11 @@ def _is_local_url(value: str) -> bool:
     hostname = urlparse(value).hostname
     return hostname in LOCAL_HOSTS
 
+
 @lru_cache()
 def get_settings() -> Settings:
     return Settings()
+
 
 settings = get_settings()
 

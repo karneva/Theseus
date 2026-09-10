@@ -4,7 +4,11 @@ import * as vscode from 'vscode';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 
-import { getExplicitPythonPath, getCustomToolSearchRoots, getPythonPath } from '../workspace/WorkspaceContext';
+import {
+  getExplicitPythonPath,
+  getCustomToolSearchRoots,
+  getPythonPath,
+} from '../workspace/WorkspaceContext';
 
 const execFileAsync = promisify(execFile);
 const PYTHON_PROBE_MAX_BUFFER = 1024 * 1024 * 4;
@@ -48,7 +52,7 @@ function readJsonObject(filePath: string): Record<string, unknown> | undefined {
   try {
     const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-      ? parsed as Record<string, unknown>
+      ? (parsed as Record<string, unknown>)
       : undefined;
   } catch {
     return undefined;
@@ -81,7 +85,9 @@ function customToolDirsFromRoots(roots: string[]): string[] {
     candidates.push(path.join(root, 'custom_tools'));
     candidates.push(path.join(root, 'theseus_engine', 'custom_tools'));
   }
-  return uniqueStrings(candidates.map(candidate => fs.existsSync(candidate) ? candidate : undefined));
+  return uniqueStrings(
+    candidates.map((candidate) => (fs.existsSync(candidate) ? candidate : undefined)),
+  );
 }
 
 function listRuntimeMetadataFiles(roots: string[]): string[] {
@@ -114,8 +120,8 @@ function safePackageNames(values: unknown): string[] {
   if (!Array.isArray(values)) return [];
   return uniqueStrings(
     values
-      .map(value => String(value || '').trim())
-      .filter(value => SAFE_PACKAGE_NAME.test(value) && !PACKAGE_DENYLIST.has(value)),
+      .map((value) => String(value || '').trim())
+      .filter((value) => SAFE_PACKAGE_NAME.test(value) && !PACKAGE_DENYLIST.has(value)),
   );
 }
 
@@ -135,13 +141,13 @@ async function runPythonInventoryProbe(roots: string[]): Promise<PythonInventory
     ...process.env,
     PYTHONPATH: uniqueStrings([coreRoot, process.env.PYTHONPATH]).join(path.delimiter),
   };
-  const { stdout } = await execFileAsync(
-    pythonExec,
-    ['-c', script, JSON.stringify(extraDirs)],
-    { cwd: coreRoot, env, maxBuffer: PYTHON_PROBE_MAX_BUFFER },
-  );
+  const { stdout } = await execFileAsync(pythonExec, ['-c', script, JSON.stringify(extraDirs)], {
+    cwd: coreRoot,
+    env,
+    maxBuffer: PYTHON_PROBE_MAX_BUFFER,
+  });
   const parsed = JSON.parse(stdout || '[]');
-  return Array.isArray(parsed) ? parsed as PythonInventoryItem[] : [];
+  return Array.isArray(parsed) ? (parsed as PythonInventoryItem[]) : [];
 }
 
 function mergeProbeSummary(
@@ -153,7 +159,8 @@ function mergeProbeSummary(
     const validation = validateCustomToolPair(base.metadataPath);
     return {
       ...base,
-      loadState: base.isActive === false ? 'inactive' : validation.success ? 'available' : 'unavailable',
+      loadState:
+        base.isActive === false ? 'inactive' : validation.success ? 'available' : 'unavailable',
       validationResult: base.validationResult || validation,
       importError: validation.success ? '' : validation.message,
       missingModules: [],
@@ -163,7 +170,9 @@ function mergeProbeSummary(
       canRegister: validation.success && base.isActive !== false,
     };
   }
-  const loadState = String(probe.loadState || (probe.isActive === false ? 'inactive' : 'available'));
+  const loadState = String(
+    probe.loadState || (probe.isActive === false ? 'inactive' : 'available'),
+  );
   const importError = typeof probe.importError === 'string' ? probe.importError : '';
   const installCandidates = safePackageNames(probe.installCandidates);
   const canInstall = hasInstallPython && Boolean(probe.canInstall) && installCandidates.length > 0;
@@ -176,15 +185,17 @@ function mergeProbeSummary(
     installCandidates,
     dependencies: safePackageNames(probe.dependencies),
     canInstall,
-    installDisabledReason: !canInstall && installCandidates.length > 0 && !hasInstallPython
-      ? 'Set theseus.pythonPath to install dependencies.'
-      : '',
+    installDisabledReason:
+      !canInstall && installCandidates.length > 0 && !hasInstallPython
+        ? 'Set theseus.pythonPath to install dependencies.'
+        : '',
     canRegister: Boolean(probe.canRegister) && loadState === 'available',
     validationResult: {
       success: loadState === 'available',
-      message: loadState === 'available'
-        ? 'Tool imports successfully.'
-        : importError || String(probe.status || 'Tool is not available.'),
+      message:
+        loadState === 'available'
+          ? 'Tool imports successfully.'
+          : importError || String(probe.status || 'Tool is not available.'),
     },
   };
 }
@@ -192,26 +203,34 @@ function mergeProbeSummary(
 export function validateCustomToolPair(metadataPath: string): ToolValidationResult {
   const meta = readJsonObject(metadataPath);
   if (!meta) return { success: false, message: 'Invalid meta.json' };
-  const configuredModulePath = typeof meta.modulePath === 'string'
-    ? meta.modulePath
-    : typeof meta.module_path === 'string'
-      ? meta.module_path
-      : '';
-  const modulePathLooksLikeFile = /[\\/]/.test(configuredModulePath) || configuredModulePath.endsWith('.py');
-  const fileName = typeof meta.fileName === 'string'
-    ? meta.fileName
-    : modulePathLooksLikeFile
-      ? path.basename(configuredModulePath)
-    : `${path.basename(metadataPath).replace(/\.meta\.json$/i, '')}.py`;
-  const modulePath = modulePathLooksLikeFile && path.isAbsolute(configuredModulePath)
-    ? configuredModulePath
-    : path.join(path.dirname(metadataPath), modulePathLooksLikeFile ? configuredModulePath : fileName);
+  const configuredModulePath =
+    typeof meta.modulePath === 'string'
+      ? meta.modulePath
+      : typeof meta.module_path === 'string'
+        ? meta.module_path
+        : '';
+  const modulePathLooksLikeFile =
+    /[\\/]/.test(configuredModulePath) || configuredModulePath.endsWith('.py');
+  const fileName =
+    typeof meta.fileName === 'string'
+      ? meta.fileName
+      : modulePathLooksLikeFile
+        ? path.basename(configuredModulePath)
+        : `${path.basename(metadataPath).replace(/\.meta\.json$/i, '')}.py`;
+  const modulePath =
+    modulePathLooksLikeFile && path.isAbsolute(configuredModulePath)
+      ? configuredModulePath
+      : path.join(
+          path.dirname(metadataPath),
+          modulePathLooksLikeFile ? configuredModulePath : fileName,
+        );
   if (!fs.existsSync(modulePath)) {
     return { success: false, message: `Missing module file: ${fileName}` };
   }
   try {
     const code = fs.readFileSync(modulePath, 'utf8');
-    const hasBaseTool = /\bBaseTool\b/.test(code) || /\bclass\s+\w+\s*\([^)]*Tool[^)]*\)/.test(code);
+    const hasBaseTool =
+      /\bBaseTool\b/.test(code) || /\bclass\s+\w+\s*\([^)]*Tool[^)]*\)/.test(code);
     const hasExecute = /\b(?:async\s+def|def)\s+execute\s*\(/.test(code);
     if (!hasBaseTool || !hasExecute) {
       return { success: false, message: `${fileName} does not look like a BaseTool module` };
@@ -247,12 +266,17 @@ export async function disableCustomTool(metadataPath: string): Promise<ToolValid
   return { success: true, message: 'Custom tool disabled.' };
 }
 
-function findToolByPath(tools: CustomToolSummary[], metadataPath?: string, modulePath?: string): CustomToolSummary | undefined {
+function findToolByPath(
+  tools: CustomToolSummary[],
+  metadataPath?: string,
+  modulePath?: string,
+): CustomToolSummary | undefined {
   const metadataKey = pathKey(metadataPath);
   const moduleKey = pathKey(modulePath);
-  return tools.find(tool =>
-    (metadataKey && pathKey(tool.metadataPath) === metadataKey)
-    || (moduleKey && pathKey(tool.modulePath) === moduleKey)
+  return tools.find(
+    (tool) =>
+      (metadataKey && pathKey(tool.metadataPath) === metadataKey) ||
+      (moduleKey && pathKey(tool.modulePath) === moduleKey),
   );
 }
 
@@ -283,14 +307,17 @@ export async function installCustomToolDependencies(
   const roots = getCustomToolSearchRoots();
   const coreRoot = resolveCoreRoot(roots);
   const env = coreRoot
-    ? { ...process.env, PYTHONPATH: uniqueStrings([coreRoot, process.env.PYTHONPATH]).join(path.delimiter) }
+    ? {
+        ...process.env,
+        PYTHONPATH: uniqueStrings([coreRoot, process.env.PYTHONPATH]).join(path.delimiter),
+      }
     : process.env;
   try {
-    await execFileAsync(
-      configuredPythonExec,
-      ['-m', 'pip', 'install', ...packages],
-      { cwd: coreRoot || undefined, env, maxBuffer: PYTHON_PROBE_MAX_BUFFER },
-    );
+    await execFileAsync(configuredPythonExec, ['-m', 'pip', 'install', ...packages], {
+      cwd: coreRoot || undefined,
+      env,
+      maxBuffer: PYTHON_PROBE_MAX_BUFFER,
+    });
     return {
       success: true,
       message: `Installed dependencies: ${packages.join(', ')}`,
@@ -319,8 +346,8 @@ export async function loadCustomToolSummaries(): Promise<CustomToolSummary[]> {
   const metadataFiles = listRuntimeMetadataFiles(roots);
 
   const probeItems = await runPythonInventoryProbe(roots).catch(() => []);
-  const probeByMetadata = new Map(probeItems.map(item => [pathKey(item.metadataPath), item]));
-  const probeByModule = new Map(probeItems.map(item => [pathKey(item.modulePath), item]));
+  const probeByMetadata = new Map(probeItems.map((item) => [pathKey(item.metadataPath), item]));
+  const probeByModule = new Map(probeItems.map((item) => [pathKey(item.modulePath), item]));
   const tools: CustomToolSummary[] = [];
   for (const metadataPath of metadataFiles) {
     if (seen.has(metadataPath)) continue;
@@ -329,16 +356,15 @@ export async function loadCustomToolSummaries(): Promise<CustomToolSummary[]> {
     const meta = readJsonObject(metadataPath);
     if (!meta) continue;
     const fallbackName = path.basename(metadataPath).replace(/\.meta\.json$/i, '');
-    const fileName = typeof meta.fileName === 'string'
-      ? meta.fileName
-      : `${fallbackName}.py`;
+    const fileName = typeof meta.fileName === 'string' ? meta.fileName : `${fallbackName}.py`;
     const modulePath = path.join(path.dirname(metadataPath), fileName);
     const summary = {
       toolName: String(meta.toolName || fallbackName),
       fileName,
-      permissionLevel: typeof meta.permissionLevel === 'number' || typeof meta.permissionLevel === 'string'
-        ? meta.permissionLevel
-        : '',
+      permissionLevel:
+        typeof meta.permissionLevel === 'number' || typeof meta.permissionLevel === 'string'
+          ? meta.permissionLevel
+          : '',
       status: String(meta.status || 'unknown'),
       isActive: meta.isActive !== false,
       validationResult: meta.validationResult,
@@ -346,31 +372,41 @@ export async function loadCustomToolSummaries(): Promise<CustomToolSummary[]> {
       modulePath,
       metadataPath,
     };
-    tools.push(mergeProbeSummary(
-      summary,
-      probeByMetadata.get(pathKey(metadataPath)) || probeByModule.get(pathKey(modulePath)),
-    ));
+    tools.push(
+      mergeProbeSummary(
+        summary,
+        probeByMetadata.get(pathKey(metadataPath)) || probeByModule.get(pathKey(modulePath)),
+      ),
+    );
   }
 
   const known = new Set([
-    ...tools.map(tool => pathKey(tool.metadataPath)).filter(Boolean),
-    ...tools.map(tool => pathKey(tool.modulePath)).filter(Boolean),
+    ...tools.map((tool) => pathKey(tool.metadataPath)).filter(Boolean),
+    ...tools.map((tool) => pathKey(tool.modulePath)).filter(Boolean),
   ]);
   for (const item of probeItems) {
     const metadataKey = pathKey(item.metadataPath);
     const moduleKey = pathKey(item.modulePath);
     if ((metadataKey && known.has(metadataKey)) || (moduleKey && known.has(moduleKey))) continue;
-    tools.push(mergeProbeSummary({
-      toolName: String(item.toolName || item.fileName || 'unknown'),
-      fileName: String(item.fileName || path.basename(String(item.modulePath || '')) || 'unknown.py'),
-      permissionLevel: typeof item.permissionLevel === 'number' || typeof item.permissionLevel === 'string'
-        ? item.permissionLevel
-        : '',
-      status: String(item.status || 'unknown'),
-      isActive: item.isActive !== false,
-      modulePath: typeof item.modulePath === 'string' ? item.modulePath : undefined,
-      metadataPath: typeof item.metadataPath === 'string' ? item.metadataPath : '',
-    }, item));
+    tools.push(
+      mergeProbeSummary(
+        {
+          toolName: String(item.toolName || item.fileName || 'unknown'),
+          fileName: String(
+            item.fileName || path.basename(String(item.modulePath || '')) || 'unknown.py',
+          ),
+          permissionLevel:
+            typeof item.permissionLevel === 'number' || typeof item.permissionLevel === 'string'
+              ? item.permissionLevel
+              : '',
+          status: String(item.status || 'unknown'),
+          isActive: item.isActive !== false,
+          modulePath: typeof item.modulePath === 'string' ? item.modulePath : undefined,
+          metadataPath: typeof item.metadataPath === 'string' ? item.metadataPath : '',
+        },
+        item,
+      ),
+    );
   }
 
   return tools.sort((a, b) => a.toolName.localeCompare(b.toolName));
@@ -380,7 +416,9 @@ export function createCustomToolWatchers(
   onChange: (change: CustomToolChange) => void,
 ): vscode.FileSystemWatcher[] {
   const toolCodeWatcher = vscode.workspace.createFileSystemWatcher('**/custom_tools/**/*.py');
-  const toolMetaWatcher = vscode.workspace.createFileSystemWatcher('**/custom_tools/**/*.meta.json');
+  const toolMetaWatcher = vscode.workspace.createFileSystemWatcher(
+    '**/custom_tools/**/*.meta.json',
+  );
   const emitToolChange = (action: string) => (uri: vscode.Uri) => {
     const file = vscode.workspace.asRelativePath(uri);
     const metadataPath = uri.fsPath.endsWith('.meta.json')

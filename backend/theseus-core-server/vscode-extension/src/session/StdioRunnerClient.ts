@@ -20,46 +20,39 @@ export class StdioRunnerClient implements RunnerClient {
   startProcess(config: RunnerStartConfig): RunnerProcess {
     const initialSession = config.initialSession || 'default';
     if (config.runnerPath) {
-      return cp.spawn(
-        config.runnerPath,
-        ['stdio'],
-        {
-          cwd: config.workspaceCwd,
-          env: {
-            ...process.env,
-            THESEUS_SERVER_URL: config.serverUrl,
-            THESEUS_CORE_ROOT: config.coreRoot,
-            THESEUS_RUNNER_PATH: config.runnerPath,
-            THESEUS_INITIAL_SESSION: initialSession,
-            PYTHONIOENCODING: 'utf-8',
-            PYTHONUTF8: '1',
-          },
-          signal: config.signal,
-        },
-      );
-    }
-
-    const extraPython = config.coreRoot !== config.workspaceCwd
-      ? config.coreRoot + path.delimiter + (process.env.PYTHONPATH || '')
-      : (process.env.PYTHONPATH || '');
-
-    return cp.spawn(
-      config.pythonExec,
-      ['-m', 'theseus_engine.cli_runner', '--json-mode'],
-      {
+      return cp.spawn(config.runnerPath, ['stdio'], {
         cwd: config.workspaceCwd,
         env: {
           ...process.env,
-          PYTHONPATH: extraPython,
           THESEUS_SERVER_URL: config.serverUrl,
           THESEUS_CORE_ROOT: config.coreRoot,
+          THESEUS_RUNNER_PATH: config.runnerPath,
           THESEUS_INITIAL_SESSION: initialSession,
           PYTHONIOENCODING: 'utf-8',
           PYTHONUTF8: '1',
         },
         signal: config.signal,
+      });
+    }
+
+    const extraPython =
+      config.coreRoot !== config.workspaceCwd
+        ? config.coreRoot + path.delimiter + (process.env.PYTHONPATH || '')
+        : process.env.PYTHONPATH || '';
+
+    return cp.spawn(config.pythonExec, ['-m', 'theseus_engine.cli_runner', '--json-mode'], {
+      cwd: config.workspaceCwd,
+      env: {
+        ...process.env,
+        PYTHONPATH: extraPython,
+        THESEUS_SERVER_URL: config.serverUrl,
+        THESEUS_CORE_ROOT: config.coreRoot,
+        THESEUS_INITIAL_SESSION: initialSession,
+        PYTHONIOENCODING: 'utf-8',
+        PYTHONUTF8: '1',
       },
-    );
+      signal: config.signal,
+    });
   }
 
   attach(process: RunnerProcess, handlers: StdioRunnerHandlers): void {
@@ -73,7 +66,11 @@ export class StdioRunnerClient implements RunnerClient {
     process.on('error', handlers.onError);
   }
 
-  writeLine(process: RunnerProcess | undefined, line: string, onError: (err: unknown) => void): void {
+  writeLine(
+    process: RunnerProcess | undefined,
+    line: string,
+    onError: (err: unknown) => void,
+  ): void {
     try {
       process?.stdin.write(line + '\n');
     } catch (err) {

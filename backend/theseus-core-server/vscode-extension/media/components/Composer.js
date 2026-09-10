@@ -18,7 +18,7 @@ export function insertMentionPath(promptEl, path, resizeTextarea) {
 export function bindImageAttachments({ promptEl, resizeTextarea, onSaveImage, onInsertMention }) {
   promptEl.addEventListener('paste', (event) => {
     const items = Array.from(event.clipboardData?.items || []);
-    const image = items.find(item => item.type.startsWith('image/'));
+    const image = items.find((item) => item.type.startsWith('image/'));
     if (!image) return;
     event.preventDefault();
     const file = image.getAsFile();
@@ -32,7 +32,7 @@ export function bindImageAttachments({ promptEl, resizeTextarea, onSaveImage, on
   promptEl.addEventListener('drop', (event) => {
     event.preventDefault();
     const files = Array.from(event.dataTransfer?.files || []);
-    files.forEach(file => {
+    files.forEach((file) => {
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = () => onSaveImage(file.name || 'dropped-image.png', reader.result);

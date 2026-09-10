@@ -15,38 +15,58 @@ export function InspectorPanel() {
   const { projectId, sessionId } = useParams<{ projectId: string; sessionId: string }>();
 
   const {
-    currentPlan, toolResult, activeTab, isBuilding,
-    draftPhase, commentMode, draftComments, currentToolPlanId, planVersion,
-    isGenerating, isClosed, createdTool, selectedRemoteWorkspaceId,
-  } = useChatSessionStore(useShallow(state => ({
-    currentPlan: state.currentPlan,
-    toolResult: state.toolResult,
-    activeTab: state.activeTab,
-    isBuilding: state.isBuilding,
-    draftPhase: state.draftPhase,
-    commentMode: state.commentMode,
-    draftComments: state.draftComments,
-    currentToolPlanId: state.currentToolPlanId,
-    planVersion: state.planVersion,
-    isGenerating: state.isGenerating,
-    isClosed: state.isClosed,
-    createdTool: state.createdTool,
-    selectedRemoteWorkspaceId: state.selectedRemoteWorkspaceId,
-  })));
+    currentPlan,
+    toolResult,
+    activeTab,
+    isBuilding,
+    draftPhase,
+    commentMode,
+    draftComments,
+    currentToolPlanId,
+    planVersion,
+    isGenerating,
+    isClosed,
+    createdTool,
+    selectedRemoteWorkspaceId,
+  } = useChatSessionStore(
+    useShallow((state) => ({
+      currentPlan: state.currentPlan,
+      toolResult: state.toolResult,
+      activeTab: state.activeTab,
+      isBuilding: state.isBuilding,
+      draftPhase: state.draftPhase,
+      commentMode: state.commentMode,
+      draftComments: state.draftComments,
+      currentToolPlanId: state.currentToolPlanId,
+      planVersion: state.planVersion,
+      isGenerating: state.isGenerating,
+      isClosed: state.isClosed,
+      createdTool: state.createdTool,
+      selectedRemoteWorkspaceId: state.selectedRemoteWorkspaceId,
+    })),
+  );
 
   const {
-    setActiveTab, setCommentMode, setDraftComment,
-    clearDraftComments, setIsGenerating, setDraftPhase, setPlanStatus, addMessage,
-  } = useChatSessionStore(useShallow(state => ({
-    setActiveTab: state.setActiveTab,
-    setCommentMode: state.setCommentMode,
-    setDraftComment: state.setDraftComment,
-    clearDraftComments: state.clearDraftComments,
-    setIsGenerating: state.setIsGenerating,
-    setDraftPhase: state.setDraftPhase,
-    setPlanStatus: state.setPlanStatus,
-    addMessage: state.addMessage,
-  })));
+    setActiveTab,
+    setCommentMode,
+    setDraftComment,
+    clearDraftComments,
+    setIsGenerating,
+    setDraftPhase,
+    setPlanStatus,
+    addMessage,
+  } = useChatSessionStore(
+    useShallow((state) => ({
+      setActiveTab: state.setActiveTab,
+      setCommentMode: state.setCommentMode,
+      setDraftComment: state.setDraftComment,
+      clearDraftComments: state.clearDraftComments,
+      setIsGenerating: state.setIsGenerating,
+      setDraftPhase: state.setDraftPhase,
+      setPlanStatus: state.setPlanStatus,
+      addMessage: state.addMessage,
+    })),
+  );
 
   const { connectSSE } = useToolGenerationSSE();
   const [isApproving, setIsApproving] = useState(false);
@@ -76,7 +96,10 @@ export function InspectorPanel() {
     );
   };
 
-  const renderFeedbackInput = (target: string, placeholder = '이 항목에 대한 수정 요청을 입력하세요.') => {
+  const renderFeedbackInput = (
+    target: string,
+    placeholder = '이 항목에 대한 수정 요청을 입력하세요.',
+  ) => {
     if (!commentMode) return null;
     if (activeFeedbackTarget !== target && draftComments[target] === undefined) return null;
 
@@ -114,8 +137,8 @@ export function InspectorPanel() {
       senderType: 'USER',
       messageType: 'TOOL_FEEDBACK',
       contentType: 'TEXT',
-      content: `PLAN 수정 요청:\n${feedbackItems.map(item => `- ${item.blockId}: ${item.comment}`).join('\n')}`,
-      createdAt: new Date().toISOString()
+      content: `PLAN 수정 요청:\n${feedbackItems.map((item) => `- ${item.blockId}: ${item.comment}`).join('\n')}`,
+      createdAt: new Date().toISOString(),
     });
 
     addMessage({
@@ -124,24 +147,19 @@ export function InspectorPanel() {
       messageType: 'TOOL_PLAN_RESPONSE',
       contentType: 'MARKDOWN',
       content: '',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     });
 
     setIsGenerating(true);
     setCommentMode(false);
 
     try {
-      const result = await chatApi.regenerateToolPlan(
-        projectId,
-        sessionId,
-        currentToolPlanId,
-        {
-          basePlanVersion: planVersion,
-          feedbackItems,
-          mode: ToolPlanMode.PLAN,
-          remoteWorkspaceId: selectedRemoteWorkspaceId ?? undefined
-        }
-      );
+      const result = await chatApi.regenerateToolPlan(projectId, sessionId, currentToolPlanId, {
+        basePlanVersion: planVersion,
+        feedbackItems,
+        mode: ToolPlanMode.PLAN,
+        remoteWorkspaceId: selectedRemoteWorkspaceId ?? undefined,
+      });
 
       connectSSE(result.sseUrl, 'PLAN', result.runId);
       clearDraftComments();
@@ -165,7 +183,7 @@ export function InspectorPanel() {
         messageType: 'TOOL_APPROVAL_REQUEST',
         contentType: 'TEXT',
         content: 'ToolPlan 생성 승인 요청을 보냈습니다.',
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       });
       setDraftPhase('PENDING');
       setPlanStatus('PENDING');
@@ -180,7 +198,11 @@ export function InspectorPanel() {
 
   return (
     <div className="flex flex-col h-full w-full p-6">
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'plan' | 'result')} className="w-full h-full flex flex-col">
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as 'plan' | 'result')}
+        className="w-full h-full flex flex-col"
+      >
         <div className="flex items-center justify-between mb-6 shrink-0">
           <TabsList className="bg-transparent border-b border-slate-700/50 p-0 rounded-none w-full justify-start gap-6">
             <TabsTrigger
@@ -202,7 +224,10 @@ export function InspectorPanel() {
         </div>
 
         <div className="flex-1 overflow-hidden min-h-0 relative">
-          <TabsContent value="plan" className="h-full m-0 overflow-y-auto pr-2 space-y-4 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+          <TabsContent
+            value="plan"
+            className="h-full m-0 overflow-y-auto pr-2 space-y-4 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent"
+          >
             {currentPlan ? (
               <>
                 {currentPlan.sections && currentPlan.sections.length > 0 && (
@@ -212,9 +237,11 @@ export function InspectorPanel() {
                         key={section.sectionId}
                         className={`${index > 0 ? 'mt-3 border-t border-slate-800/80 pt-3' : ''}`}
                       >
-                        <div className={`mb-1 text-xs font-semibold leading-5 ${
-                          section.tone === 'warning' ? 'text-amber-200' : 'text-blue-100'
-                        }`}>
+                        <div
+                          className={`mb-1 text-xs font-semibold leading-5 ${
+                            section.tone === 'warning' ? 'text-amber-200' : 'text-blue-100'
+                          }`}
+                        >
                           {section.title}
                         </div>
                         <div className="whitespace-pre-wrap text-[12px] leading-5 text-slate-400 [overflow-wrap:anywhere]">
@@ -225,7 +252,7 @@ export function InspectorPanel() {
                   </div>
                 )}
 
-                {currentPlan.blocks.map(block => (
+                {currentPlan.blocks.map((block) => (
                   <div
                     key={block.blockId}
                     className={`group rounded-md border border-slate-700/60 bg-[#0a1624]/70 p-4 text-sm text-slate-300 shadow-sm transition-colors hover:border-slate-600/80 ${
@@ -252,7 +279,10 @@ export function InspectorPanel() {
                       {renderFeedbackButton(block.blockId, 'Task feedback')}
                     </div>
 
-                    {renderFeedbackInput(block.blockId, '이 task 전체에 대한 수정 요청을 입력하세요.')}
+                    {renderFeedbackInput(
+                      block.blockId,
+                      '이 task 전체에 대한 수정 요청을 입력하세요.',
+                    )}
 
                     {block.fields && block.fields.length > 0 ? (
                       <div className="border-t border-slate-700/50">
@@ -270,9 +300,15 @@ export function InspectorPanel() {
                                   {field.value}
                                 </div>
                               </div>
-                              {renderFeedbackButton(field.feedbackTarget, `${field.label} feedback`)}
+                              {renderFeedbackButton(
+                                field.feedbackTarget,
+                                `${field.label} feedback`,
+                              )}
                             </div>
-                            {renderFeedbackInput(field.feedbackTarget, `${field.label} 항목에 대한 수정 요청을 입력하세요.`)}
+                            {renderFeedbackInput(
+                              field.feedbackTarget,
+                              `${field.label} 항목에 대한 수정 요청을 입력하세요.`,
+                            )}
                           </section>
                         ))}
                       </div>
@@ -296,7 +332,9 @@ export function InspectorPanel() {
             {createdTool || toolResult ? (
               <div className="h-full flex flex-col bg-[#051424] border border-slate-700/50 rounded overflow-hidden">
                 <div className="bg-slate-800/50 px-4 py-2 border-b border-slate-700/50 flex justify-between items-center shrink-0">
-                  <div className="text-[10px] text-slate-500 font-mono tracking-wider">CREATED TOOL</div>
+                  <div className="text-[10px] text-slate-500 font-mono tracking-wider">
+                    CREATED TOOL
+                  </div>
                   <div className="text-[10px] text-green-400 flex items-center gap-1 font-medium">
                     <CheckCircle className="w-3 h-3" />
                     READY
@@ -306,7 +344,12 @@ export function InspectorPanel() {
                   <SyntaxHighlighter
                     language="json"
                     style={vscDarkPlus}
-                    customStyle={{ margin: 0, padding: '1rem', background: 'transparent', height: '100%' }}
+                    customStyle={{
+                      margin: 0,
+                      padding: '1rem',
+                      background: 'transparent',
+                      height: '100%',
+                    }}
                   >
                     {JSON.stringify(createdTool || toolResult, null, 2)}
                   </SyntaxHighlighter>

@@ -61,23 +61,23 @@ class ToolExecutionCompleted:
 
 # 에러 타입 분류 — src에서 재시도 전략을 문자열 파싱 없이 판단할 수 있도록 제공
 ErrorType = Literal[
-    "llm_api_error",        # LLM API 호출 실패 (rate limit, timeout 등) → 재시도 가능
-    "tool_execution_error", # Tool 실행 실패 (파일 없음, 권한 오류 등) → 케이스별 판단
-    "security_blocked",     # HookExecutor / Validator 차단 → 재시도 불가
-    "context_overflow",     # Context window 초과 → 압축 후 재시도
-    "max_turns_exceeded",   # 최대 턴 수 초과 → 재시도 불가
-    "unknown",              # 분류 불가
+    "llm_api_error",  # LLM API 호출 실패 (rate limit, timeout 등) → 재시도 가능
+    "tool_execution_error",  # Tool 실행 실패 (파일 없음, 권한 오류 등) → 케이스별 판단
+    "security_blocked",  # HookExecutor / Validator 차단 → 재시도 불가
+    "context_overflow",  # Context window 초과 → 압축 후 재시도
+    "max_turns_exceeded",  # 최대 턴 수 초과 → 재시도 불가
+    "unknown",  # 분류 불가
 ]
 
 
 # 에러 타입 분류 — src에서 재시도 전략을 문자열 파싱 없이 판단할 수 있도록 제공
 ErrorType = Literal[
-    "llm_api_error",        # LLM API 호출 실패 (rate limit, timeout 등) → 재시도 가능
-    "tool_execution_error", # Tool 실행 실패 (파일 없음, 권한 오류 등) → 케이스별 판단
-    "security_blocked",     # HookExecutor / Validator 차단 → 재시도 불가
-    "context_overflow",     # Context window 초과 → 압축 후 재시도
-    "max_turns_exceeded",   # 최대 턴 수 초과 → 재시도 불가
-    "unknown",              # 분류 불가
+    "llm_api_error",  # LLM API 호출 실패 (rate limit, timeout 등) → 재시도 가능
+    "tool_execution_error",  # Tool 실행 실패 (파일 없음, 권한 오류 등) → 케이스별 판단
+    "security_blocked",  # HookExecutor / Validator 차단 → 재시도 불가
+    "context_overflow",  # Context window 초과 → 압축 후 재시도
+    "max_turns_exceeded",  # 최대 턴 수 초과 → 재시도 불가
+    "unknown",  # 분류 불가
 ]
 
 
@@ -142,6 +142,7 @@ class PlanDraftedEvent:
     - standalone(TUI): TheseusStateMachine을 WAIT_FOR_REVIEW로 전이
     - server(src): DB에 structuredPlanJson 저장 + SSE 전송
     """
+
     raw_markdown: str
     """LLM의 전체 응답 텍스트 (JSON 블록 포함)."""
     structured_plan: dict

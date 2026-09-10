@@ -4,9 +4,8 @@ from __future__ import annotations
 
 import sys
 
-
 _TIER_LABELS = {"T1": "Quick Win", "T2": "Strategic", "T3": "Architecture"}
-_TIER_ICONS  = {"T1": "[T1]", "T2": "[T2]", "T3": "[T3]"}
+_TIER_ICONS = {"T1": "[T1]", "T2": "[T2]", "T3": "[T3]"}
 
 
 def safe_hr(width: int) -> str:
@@ -22,9 +21,9 @@ def status_mark(status: str) -> str:
 
 
 _MODE_LABELS = {
-    "AGENT":       "🤖 AGENT       (자율 실행)",
-    "ASK":         "💬 ASK         (질의응답 전용)",
-    "PLAN":        "📋 PLAN        (계획 → 리뷰 → 실행)",
+    "AGENT": "🤖 AGENT       (자율 실행)",
+    "ASK": "💬 ASK         (질의응답 전용)",
+    "PLAN": "📋 PLAN        (계획 → 리뷰 → 실행)",
     "COORDINATOR": "🔀 COORDINATOR (서브 에이전트 오케스트레이션)",
 }
 
@@ -37,7 +36,7 @@ def print_status(
 ) -> None:
     """현재 모드와 권한 레벨, 역할을 헤더로 출력합니다."""
     mode_label = _MODE_LABELS.get(mode, f"❓ {mode}")
-    phase_str  = f"  /  Phase: {plan_phase}" if plan_phase and mode == "PLAN" else ""
+    phase_str = f"  /  Phase: {plan_phase}" if plan_phase and mode == "PLAN" else ""
     print(f"\n  현재 모드  : {mode_label}{phase_str}")
     print(f"  역할       : {actor_role}")
     print(f"  권한 레벨  : Lv.{user_level}  (1=최소 / 5=최대)")
@@ -100,8 +99,10 @@ def display_plan(plan_data: dict) -> None:
             print(f"  [Context]  {ctx['current_state']}")
         affected = ctx.get("affected_files", [])
         if affected:
-            print(f"  [Scope]    {', '.join(affected[:5])}"
-                  + (f" (+{len(affected)-5} more)" if len(affected) > 5 else ""))
+            print(
+                f"  [Scope]    {', '.join(affected[:5])}"
+                + (f" (+{len(affected)-5} more)" if len(affected) > 5 else "")
+            )
         if ctx.get("risks"):
             print(f"  [Risks]    {ctx['risks']}")
     elif isinstance(ctx, str) and ctx:

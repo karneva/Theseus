@@ -45,5 +45,7 @@ class KafkaToolBuildEventPublisher(ToolBuildEventPublisher):
     async def publish(self, key: str, event: BaseModel | dict[str, Any]) -> None:
         if self._producer is None:
             await self.start()
-        payload = event.model_dump(mode="json", by_alias=True) if isinstance(event, BaseModel) else event
+        payload = (
+            event.model_dump(mode="json", by_alias=True) if isinstance(event, BaseModel) else event
+        )
         await self._producer.send_and_wait(self.topic, key=key, value=payload)

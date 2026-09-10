@@ -43,7 +43,6 @@ from theseus_engine.core.tool_visibility import (
 )
 from theseus_engine.core.mode_context import build_mode_runtime_reminders
 
-
 DEFAULT_TOOL_PERMISSIONS = {
     "bash": 3,
     "read_file": 1,
@@ -193,12 +192,14 @@ class LocalSessionProvider:
         for name in names:
             metadata = self._load_session_metadata(name)
             title = str(metadata.get("title") or "").strip()
-            summaries.append({
-                "name": name,
-                "title": title,
-                "current": name == self.current_name,
-                "source": self.source,
-            })
+            summaries.append(
+                {
+                    "name": name,
+                    "title": title,
+                    "current": name == self.current_name,
+                    "source": self.source,
+                }
+            )
         return summaries
 
     def load(self, name: str):
@@ -352,15 +353,17 @@ def history_for_ui(messages: list[Any]) -> list[dict[str, Any]]:
                 tool_use_id = str(_block_value(block, "tool_use_id", "") or "")
                 tool = pending_tools.pop(tool_use_id, None) if tool_use_id else None
                 is_error = bool(_block_value(block, "is_error", False))
-                history.append({
-                    "type": "tool",
-                    "tool_use_id": tool_use_id,
-                    "tool_name": (tool or {}).get("tool_name") or "tool_result",
-                    "tool_input": (tool or {}).get("tool_input") or {},
-                    "output": _block_value(block, "content", ""),
-                    "is_error": is_error,
-                    "status": "failed" if is_error else "done",
-                })
+                history.append(
+                    {
+                        "type": "tool",
+                        "tool_use_id": tool_use_id,
+                        "tool_name": (tool or {}).get("tool_name") or "tool_result",
+                        "tool_input": (tool or {}).get("tool_input") or {},
+                        "output": _block_value(block, "content", ""),
+                        "is_error": is_error,
+                        "status": "failed" if is_error else "done",
+                    }
+                )
         visible_text = "\n".join(c for c in chunks if c)
         if visible_text:
             history.append({"type": "message", "role": role, "text": visible_text})
@@ -457,11 +460,7 @@ class EditorRuntime:
             for item in report
             if item.get("loadState") == "available" and item.get("toolName")
         ]
-        unavailable = [
-            item
-            for item in report
-            if item.get("loadState") == "unavailable"
-        ]
+        unavailable = [item for item in report if item.get("loadState") == "unavailable"]
         return [
             {
                 "type": "customToolInventoryUpdated",
@@ -746,12 +745,14 @@ class EditorRuntime:
         if not title:
             return []
         self.sessions.set_title(self.sessions.current_name, title)
-        return [{
-            "type": "SessionListEvent",
-            "source": self.sessions.source,
-            "current": self.sessions.current_name,
-            "sessions": self.sessions.list(),
-        }]
+        return [
+            {
+                "type": "SessionListEvent",
+                "source": self.sessions.source,
+                "current": self.sessions.current_name,
+                "sessions": self.sessions.list(),
+            }
+        ]
 
     def _restore_plan_state(self, plan_state: dict[str, Any] | None) -> None:
         if not plan_state or not plan_state.get("plan_json"):
@@ -798,7 +799,12 @@ class EditorRuntime:
         c = raw.lower()
         events: list[dict[str, Any]] = []
         if c in {"/agent", "/ask", "/plan", "/coordinator"}:
-            return [{"type": "StatusEvent", "message": "모드 전환은 입력창 아래 모드 선택을 사용하세요."}]
+            return [
+                {
+                    "type": "StatusEvent",
+                    "message": "모드 전환은 입력창 아래 모드 선택을 사용하세요.",
+                }
+            ]
         if c == "/clear":
             return [{"type": "ClearChat"}]
         if c in ("/tools", "/tools custom"):
@@ -807,9 +813,15 @@ class EditorRuntime:
                 return [{"type": "StatusEvent", "message": "⚠️ 등록된 도구가 없습니다."}]
             if c == "/tools custom":
                 custom = [t for t in tool_names if t not in DEFAULT_TOOL_PERMISSIONS]
-                msg = "🔧 커스텀 도구 목록:\n" + "\n".join(f"  • {t}" for t in custom) if custom else "커스텀 도구가 없습니다. custom_tools/ 폴더에 .py 파일을 추가하세요."
+                msg = (
+                    "🔧 커스텀 도구 목록:\n" + "\n".join(f"  • {t}" for t in custom)
+                    if custom
+                    else "커스텀 도구가 없습니다. custom_tools/ 폴더에 .py 파일을 추가하세요."
+                )
             else:
-                msg = f"🛠 사용 가능한 도구 ({len(tool_names)}개):\n" + "\n".join(f"  • {t}" for t in tool_names)
+                msg = f"🛠 사용 가능한 도구 ({len(tool_names)}개):\n" + "\n".join(
+                    f"  • {t}" for t in tool_names
+                )
             return [{"type": "StatusEvent", "message": msg}]
         if c in ("/stats", "/cost"):
             try:
@@ -861,23 +873,25 @@ class EditorRuntime:
                 msg = f"검사 오류: {e}"
             return [{"type": "StatusEvent", "message": msg}]
         if c in ("/help", "/?"):
-            return [{
-                "type": "StatusEvent",
-                "message": (
-                    "📖 사용 가능한 명령어:\n"
-                    "  /tools         — 전체 도구 목록\n"
-                    "  /tools custom  — 커스텀 도구 목록\n"
-                    "  /stats         — 토큰/비용 통계\n"
-                    "  /validate      — 커스텀 도구 유효성 검사\n"
-                    "  /session list  — 세션 목록\n"
-                    "  /session new   — 새 세션 시작\n"
-                    "  /session delete <name> — 세션 삭제\n"
-                    "  /plan cancel   — 진행 중인 PLAN 취소\n"
-                    "  /plan delete   — 현재 세션 PLAN 삭제\n"
-                    "  /clear         — 채팅 히스토리 초기화\n"
-                    "  /quit, /exit   — 에이전트 종료"
-                ),
-            }]
+            return [
+                {
+                    "type": "StatusEvent",
+                    "message": (
+                        "📖 사용 가능한 명령어:\n"
+                        "  /tools         — 전체 도구 목록\n"
+                        "  /tools custom  — 커스텀 도구 목록\n"
+                        "  /stats         — 토큰/비용 통계\n"
+                        "  /validate      — 커스텀 도구 유효성 검사\n"
+                        "  /session list  — 세션 목록\n"
+                        "  /session new   — 새 세션 시작\n"
+                        "  /session delete <name> — 세션 삭제\n"
+                        "  /plan cancel   — 진행 중인 PLAN 취소\n"
+                        "  /plan delete   — 현재 세션 PLAN 삭제\n"
+                        "  /clear         — 채팅 히스토리 초기화\n"
+                        "  /quit, /exit   — 에이전트 종료"
+                    ),
+                }
+            ]
         return None
 
     def _apply_plan_review(self, action: str) -> list[dict[str, Any]]:
@@ -894,10 +908,18 @@ class EditorRuntime:
                     "phase": getattr(getattr(self.sm, "plan_phase", None), "value", ""),
                     **counts,
                 },
-                {"type": "StatusEvent", "message": "PLAN이 삭제되었습니다." if action == "delete" else "PLAN이 취소되었습니다."},
+                {
+                    "type": "StatusEvent",
+                    "message": (
+                        "PLAN이 삭제되었습니다." if action == "delete" else "PLAN이 취소되었습니다."
+                    ),
+                },
             ]
 
-        if self.sm.mode != self.AgentMode.PLAN or self.sm.plan_phase != self.PlanPhase.WAIT_FOR_REVIEW:
+        if (
+            self.sm.mode != self.AgentMode.PLAN
+            or self.sm.plan_phase != self.PlanPhase.WAIT_FOR_REVIEW
+        ):
             return [
                 {
                     "type": "PlanReviewEvent",
@@ -940,7 +962,10 @@ class EditorRuntime:
                 "phase": self.sm.plan_phase.value,
                 **counts,
             },
-            {"type": "StatusEvent", "message": "PLAN 거부됨. 피드백을 입력하면 다시 초안을 작성합니다."},
+            {
+                "type": "StatusEvent",
+                "message": "PLAN 거부됨. 피드백을 입력하면 다시 초안을 작성합니다.",
+            },
         ]
 
     def _handle_session_command(self, raw: str) -> list[dict[str, Any]]:
@@ -952,7 +977,14 @@ class EditorRuntime:
         events: list[dict[str, Any]] = []
         try:
             if action == "list":
-                events.append({"type": "SessionListEvent", "source": self.sessions.source, "current": self.sessions.current_name, "sessions": self.sessions.list()})
+                events.append(
+                    {
+                        "type": "SessionListEvent",
+                        "source": self.sessions.source,
+                        "current": self.sessions.current_name,
+                        "sessions": self.sessions.list(),
+                    }
+                )
                 names = ", ".join(s["name"] for s in self.sessions.list())
                 events.append({"type": "StatusEvent", "message": f"세션 목록: {names}"})
             elif action == "new" and len(parts) >= 3:
@@ -984,28 +1016,53 @@ class EditorRuntime:
                     self._restore_plan_state(self.sessions.load_plan(next_name))
                     events.extend(self._session_changed_events(next_name, history_for_ui(messages)))
                 else:
-                    events.append({"type": "SessionListEvent", "source": self.sessions.source, "current": self.sessions.current_name, "sessions": self.sessions.list()})
+                    events.append(
+                        {
+                            "type": "SessionListEvent",
+                            "source": self.sessions.source,
+                            "current": self.sessions.current_name,
+                            "sessions": self.sessions.list(),
+                        }
+                    )
                 events.append({"type": "StatusEvent", "message": f"세션 삭제: {target_name}"})
             elif action == "rename" and len(parts) >= 4:
                 old_name, new_name = parts[2], parts[3]
                 if old_name == self.sessions.current_name:
                     self._save_current_session()
                 self.sessions.rename(old_name, new_name)
-                events.extend(self._session_changed_events(self.sessions.current_name, history_for_ui(self.engine.messages)))
-                events.append({"type": "StatusEvent", "message": f"세션 이름 변경: {old_name} → {new_name}"})
+                events.extend(
+                    self._session_changed_events(
+                        self.sessions.current_name, history_for_ui(self.engine.messages)
+                    )
+                )
+                events.append(
+                    {"type": "StatusEvent", "message": f"세션 이름 변경: {old_name} → {new_name}"}
+                )
             elif action == "export" and len(parts) >= 4:
                 if parts[2] == self.sessions.current_name:
                     self._save_current_session()
                 exported = self.sessions.export(parts[2], parts[3])
                 events.append({"type": "SessionExportedEvent", **exported})
-                events.append({"type": "StatusEvent", "message": f"세션 내보내기 완료: {parts[2]} ({exported['format']})"})
+                events.append(
+                    {
+                        "type": "StatusEvent",
+                        "message": f"세션 내보내기 완료: {parts[2]} ({exported['format']})",
+                    }
+                )
             else:
-                events.append({"type": "StatusEvent", "message": "사용법: /session list | /session new <name> | /session switch <name> | /session delete <name> | /session rename <old> <new> | /session export <name> markdown|json"})
+                events.append(
+                    {
+                        "type": "StatusEvent",
+                        "message": "사용법: /session list | /session new <name> | /session switch <name> | /session delete <name> | /session rename <old> <new> | /session export <name> markdown|json",
+                    }
+                )
         except Exception as exc:
             events.append({"type": "StatusEvent", "message": f"세션 명령 실패: {exc}"})
         return events
 
-    def _session_changed_events(self, current: str, history: list[dict[str, str]]) -> list[dict[str, Any]]:
+    def _session_changed_events(
+        self, current: str, history: list[dict[str, str]]
+    ) -> list[dict[str, Any]]:
         return [
             {
                 "type": "SessionChangedEvent",
@@ -1014,7 +1071,12 @@ class EditorRuntime:
                 "history": history,
                 "planState": self._current_plan_state_for_ui(),
             },
-            {"type": "SessionListEvent", "source": self.sessions.source, "current": self.sessions.current_name, "sessions": self.sessions.list()},
+            {
+                "type": "SessionListEvent",
+                "source": self.sessions.source,
+                "current": self.sessions.current_name,
+                "sessions": self.sessions.list(),
+            },
         ]
 
     async def submit(self, prompt: str):
@@ -1053,7 +1115,10 @@ class EditorRuntime:
                 for event in handled:
                     yield event
                 return
-            yield {"type": "StatusEvent", "message": f"알 수 없는 명령어: {prompt}\n'/help'로 명령어 목록을 확인하세요."}
+            yield {
+                "type": "StatusEvent",
+                "message": f"알 수 없는 명령어: {prompt}\n'/help'로 명령어 목록을 확인하세요.",
+            }
             return
 
         review_action = classify_plan_review_response(prompt)
@@ -1090,9 +1155,7 @@ class EditorRuntime:
                 transitioned_to_verifying = False
                 verification_complete = False
 
-                self.engine.set_plan_drafting(
-                    getattr(self.sm, "is_plan_drafting", False)
-                )
+                self.engine.set_plan_drafting(getattr(self.sm, "is_plan_drafting", False))
                 self._refresh_active_tool_registry()
                 self._set_engine_system_prompt(
                     runtime_reminders=runtime_reminders,
@@ -1203,4 +1266,6 @@ class EditorRuntime:
                 break
             self._save_current_session()
         except Exception as exc:
-            yield event_to_json(ErrorEvent(message=str(exc), recoverable=True, error_type="unknown"))
+            yield event_to_json(
+                ErrorEvent(message=str(exc), recoverable=True, error_type="unknown")
+            )

@@ -25,11 +25,13 @@ log = logging.getLogger(__name__)
 # Jedi lazy import — graceful fallback if not installed
 _jedi = None
 
+
 def _get_jedi():
     global _jedi
     if _jedi is None:
         try:
             import jedi
+
             _jedi = jedi
         except ImportError:
             pass
@@ -52,11 +54,13 @@ class LspInput(BaseModel):
         description="Path to the source file (required for all except workspace_symbol)",
     )
     line: Optional[int] = Field(
-        default=None, ge=1,
+        default=None,
+        ge=1,
         description="1-based line number for position-based lookups",
     )
     character: Optional[int] = Field(
-        default=None, ge=0,
+        default=None,
+        ge=0,
         description="0-based character offset on the line",
     )
     query: Optional[str] = Field(
@@ -76,9 +80,7 @@ class LspInput(BaseModel):
             return self
         # go_to_definition, find_references, hover → need position
         if self.line is None:
-            raise ValueError(
-                f"{self.operation} requires a line parameter."
-            )
+            raise ValueError(f"{self.operation} requires a line parameter.")
         return self
 
 
@@ -97,16 +99,11 @@ class LspTool(BaseTool):
     input_model = LspInput
     permission_level = 1
 
-    async def execute(
-        self, arguments: LspInput, context: ToolExecutionContext
-    ) -> ToolResult:
+    async def execute(self, arguments: LspInput, context: ToolExecutionContext) -> ToolResult:
         jedi = _get_jedi()
         if jedi is None:
             return ToolResult(
-                output=(
-                    "The 'jedi' package is not installed. "
-                    "Run: pip install jedi"
-                ),
+                output=("The 'jedi' package is not installed. " "Run: pip install jedi"),
                 is_error=True,
             )
 
@@ -127,7 +124,9 @@ class LspTool(BaseTool):
             if not file_path.exists():
                 return ToolResult(output=f"File not found: {file_path}", is_error=True)
             if file_path.suffix != ".py":
-                return ToolResult(output="Only Python (.py) files are currently supported.", is_error=True)
+                return ToolResult(
+                    output="Only Python (.py) files are currently supported.", is_error=True
+                )
 
             source = file_path.read_text(encoding="utf-8", errors="replace")
             script = jedi.Script(source, path=str(file_path), project=jedi.Project(path=str(root)))
@@ -153,7 +152,7 @@ class LspTool(BaseTool):
         project = jedi.Project(path=str(root))
         names = jedi.Script("", project=project).complete(1, 0)
 
-        # Jedi의 search는 project.complete로는 부족하므로 
+        # Jedi의 search는 project.complete로는 부족하므로
         # 파일을 순회하며 names를 수집합니다.
         results = []
         for py_file in root.rglob("*.py"):
@@ -182,14 +181,16 @@ class LspTool(BaseTool):
             return ToolResult(output="(no symbols)")
         lines = []
         for n in names:
-            indent = "  " * (n.get_line_code_position() if hasattr(n, 'get_line_code_position') else 0)
+            indent = "  " * (
+                n.get_line_code_position() if hasattr(n, "get_line_code_position") else 0
+            )
             lines.append(f"{n.type:>12}  {indent}{n.name}  (line {n.line})")
         rel = _rel_path(file_path, root)
         return ToolResult(output=f"Symbols in {rel}:\n" + "\n".join(lines))
 
     def _go_to_definition(self, script, args: LspInput, root: Path) -> ToolResult:
         """심볼의 정의 위치로 이동합니다."""
-        col = (args.character or 0)
+        col = args.character or 0
         defs = script.goto(args.line, col)
         if not defs:
             return ToolResult(output="Definition not found.")
@@ -204,23 +205,24 @@ class LspTool(BaseTool):
 
     def _find_references(self, script, args: LspInput, root: Path) -> ToolResult:
         """심볼의 모든 참조를 찾습니다."""
-        col = (args.character or 0)
+        col = args.character or 0
         refs = script.get_references(args.line, col)
         if not refs:
             return ToolResult(output="No references found.")
         lines = []
         for r in refs[:100]:
             p = Path(r.module_path) if r.module_path else Path("(unknown)")
-            code = r.get_line_code().strip() if hasattr(r, 'get_line_code') else ""
+            code = r.get_line_code().strip() if hasattr(r, "get_line_code") else ""
             lines.append(f"{_rel_path(p, root)}:{r.line}:{r.column}  {code}")
         return ToolResult(
-            output=f"Found {len(refs)} references:\n" + "\n".join(lines)
+            output=f"Found {len(refs)} references:\n"
+            + "\n".join(lines)
             + ("\n... (truncated)" if len(refs) > 100 else "")
         )
 
     def _hover(self, script, args: LspInput, root: Path) -> ToolResult:
         """심볼의 타입 정보와 독스트링을 반환합니다."""
-        col = (args.character or 0)
+        col = args.character or 0
         names = script.infer(args.line, col)
         if not names:
             return ToolResult(output="(no hover results)")
@@ -238,6 +240,7 @@ class LspTool(BaseTool):
 
 
 # ── helpers ──────────────────────────────────────────────────────
+
 
 def _rel_path(path: Path, root: Path) -> str:
     try:

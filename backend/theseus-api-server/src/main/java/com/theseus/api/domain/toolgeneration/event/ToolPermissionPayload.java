@@ -5,5 +5,4 @@ public record ToolPermissionPayload(
 	Boolean canUseTool,
 	Boolean canUpdateTool,
 	Boolean canDeleteTool
-) {
-}
+) {}

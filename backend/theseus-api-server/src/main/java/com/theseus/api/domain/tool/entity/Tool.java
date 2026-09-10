@@ -33,12 +33,15 @@ import lombok.NoArgsConstructor;
 @Table(
 	name = "tools",
 	uniqueConstraints = {
-		@UniqueConstraint(name = "uk_tools_project_file_name", columnNames = {"project_id", "file_name"}),
-		@UniqueConstraint(name = "uk_tools_source_tool_plan", columnNames = "source_tool_plan_id")
+		@UniqueConstraint(
+			name = "uk_tools_project_file_name",
+			columnNames = { "project_id", "file_name" }
+		),
+		@UniqueConstraint(name = "uk_tools_source_tool_plan", columnNames = "source_tool_plan_id"),
 	},
 	indexes = {
 		@Index(name = "idx_tools_chat_session_status", columnList = "chat_session_id, status"),
-		@Index(name = "idx_tools_project_status", columnList = "project_id, status")
+		@Index(name = "idx_tools_project_status", columnList = "project_id, status"),
 	}
 )
 @Entity
@@ -49,11 +52,19 @@ public class Tool {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name = "fk_tools_project"))
+	@JoinColumn(
+		name = "project_id",
+		nullable = false,
+		foreignKey = @ForeignKey(name = "fk_tools_project")
+	)
 	private Project project;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "chat_session_id", nullable = false, foreignKey = @ForeignKey(name = "fk_tools_chat_session"))
+	@JoinColumn(
+		name = "chat_session_id",
+		nullable = false,
+		foreignKey = @ForeignKey(name = "fk_tools_chat_session")
+	)
 	private ChatSession chatSession;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -65,7 +76,10 @@ public class Tool {
 	private ProjectMember createdByProjectMember;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "source_tool_plan_id", foreignKey = @ForeignKey(name = "fk_tools_source_tool_plan"))
+	@JoinColumn(
+		name = "source_tool_plan_id",
+		foreignKey = @ForeignKey(name = "fk_tools_source_tool_plan")
+	)
 	private ToolPlan sourceToolPlan;
 
 	@Column(name = "file_name", nullable = false, length = 120)
@@ -247,7 +261,9 @@ public class Tool {
 		int maxOriginalLength = 120 - prefix.length();
 		String retainedOriginalName = originalFileName;
 		if (retainedOriginalName.length() > maxOriginalLength) {
-			retainedOriginalName = retainedOriginalName.substring(retainedOriginalName.length() - maxOriginalLength);
+			retainedOriginalName = retainedOriginalName.substring(
+				retainedOriginalName.length() - maxOriginalLength
+			);
 		}
 
 		return prefix + retainedOriginalName;

@@ -55,7 +55,13 @@ public class Project {
 	private LocalDateTime updatedAt;
 
 	@Builder
-	private Project(String name, String description, ProjectStatus status, User createdByUser, User projectAdminUser) {
+	private Project(
+		String name,
+		String description,
+		ProjectStatus status,
+		User createdByUser,
+		User projectAdminUser
+	) {
 		this.name = name;
 		this.description = description;
 		this.status = status == null ? ProjectStatus.ACTIVE : status;

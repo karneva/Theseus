@@ -1,3 +1,4 @@
+import { getApiErrorMessage } from '@/api/errors';
 import { useState, useEffect } from 'react';
 import { X, Code, FileText, CheckCircle, Clock, Trash2, Shield } from 'lucide-react';
 import { toolApi } from '../api';
@@ -10,13 +11,20 @@ interface ToolDetailModalProps {
   onDeleteSuccess?: () => void;
 }
 
-export function ToolDetailModal({ projectId, toolItem, onClose, onDeleteSuccess }: ToolDetailModalProps) {
+export function ToolDetailModal({
+  projectId,
+  toolItem,
+  onClose,
+  onDeleteSuccess,
+}: ToolDetailModalProps) {
   const [detail, setDetail] = useState<ToolDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!window.confirm('정말 이 도구를 삭제하시겠습니까? 삭제 후에는 도구 목록에서 보이지 않습니다.')) {
+    if (
+      !window.confirm('정말 이 도구를 삭제하시겠습니까? 삭제 후에는 도구 목록에서 보이지 않습니다.')
+    ) {
       return;
     }
 
@@ -30,8 +38,7 @@ export function ToolDetailModal({ projectId, toolItem, onClose, onDeleteSuccess 
       onClose();
     } catch (err: unknown) {
       console.error('Failed to delete tool:', err);
-      const axiosErr = err as { response?: { data?: { message?: string } } };
-      alert(axiosErr.response?.data?.message || '도구 삭제에 실패했습니다.');
+      alert(getApiErrorMessage(err, '도구 삭제에 실패했습니다.'));
     } finally {
       setIsDeleting(false);
     }
@@ -53,13 +60,15 @@ export function ToolDetailModal({ projectId, toolItem, onClose, onDeleteSuccess 
       }
     };
     fetchDetail();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [projectId, toolItem.toolId]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      
+
       <div className="relative w-full max-w-4xl max-h-[90vh] bg-[#0b0e14] border border-slate-800 rounded-xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/50">
@@ -71,7 +80,7 @@ export function ToolDetailModal({ projectId, toolItem, onClose, onDeleteSuccess 
               </span>
             )}
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="p-2 text-slate-500 hover:text-slate-300 hover:bg-slate-800 rounded-lg transition-colors"
           >
@@ -134,14 +143,18 @@ export function ToolDetailModal({ projectId, toolItem, onClose, onDeleteSuccess 
                     <Code className="w-4 h-4" />
                     <span className="text-xs uppercase tracking-wider">Module</span>
                   </div>
-                  <p className="text-sm text-slate-300 font-mono truncate">{detail.moduleName || '-'}</p>
+                  <p className="text-sm text-slate-300 font-mono truncate">
+                    {detail.moduleName || '-'}
+                  </p>
                 </div>
                 <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-800/50">
                   <div className="flex items-center gap-2 text-slate-500 mb-1">
                     <FileText className="w-4 h-4" />
                     <span className="text-xs uppercase tracking-wider">Artifact</span>
                   </div>
-                  <p className="text-sm text-slate-300 font-mono truncate">{detail.artifactPath || '-'}</p>
+                  <p className="text-sm text-slate-300 font-mono truncate">
+                    {detail.artifactPath || '-'}
+                  </p>
                 </div>
               </div>
 
@@ -149,11 +162,17 @@ export function ToolDetailModal({ projectId, toolItem, onClose, onDeleteSuccess 
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <Code className="w-5 h-5 text-blue-400" />
-                  <h3 className="text-sm font-medium text-slate-300 uppercase tracking-wider">Python Code</h3>
+                  <h3 className="text-sm font-medium text-slate-300 uppercase tracking-wider">
+                    Python Code
+                  </h3>
                 </div>
                 <div className="bg-[#1e1e1e] rounded-lg border border-slate-800 overflow-hidden">
                   <pre className="p-4 max-h-[50vh] overflow-auto text-sm font-mono text-slate-300 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
-                    <code>{detail.codeSnapshot || detail.metadataJson || '# 생성된 코드 정보를 불러올 수 없습니다.'}</code>
+                    <code>
+                      {detail.codeSnapshot ||
+                        detail.metadataJson ||
+                        '# 생성된 코드 정보를 불러올 수 없습니다.'}
+                    </code>
                   </pre>
                 </div>
               </div>
@@ -167,7 +186,7 @@ export function ToolDetailModal({ projectId, toolItem, onClose, onDeleteSuccess 
 
         {/* Footer Actions */}
         <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/50 flex justify-between items-center">
-          <button 
+          <button
             onClick={handleDelete}
             disabled={isDeleting || isLoading}
             className="flex items-center gap-2 px-4 py-2 rounded text-sm font-medium text-rose-400 border border-rose-500/20 hover:bg-rose-500/10 hover:border-rose-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -175,8 +194,8 @@ export function ToolDetailModal({ projectId, toolItem, onClose, onDeleteSuccess 
             <Trash2 className="w-4 h-4" />
             {isDeleting ? '삭제 중...' : '도구 삭제'}
           </button>
-          
-          <button 
+
+          <button
             onClick={onClose}
             className="px-4 py-2 rounded text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
           >

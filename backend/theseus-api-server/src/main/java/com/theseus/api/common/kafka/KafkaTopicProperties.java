@@ -8,5 +8,4 @@ public record KafkaTopicProperties(
 	String toolPlanEvent,
 	String toolBuildRequest,
 	String toolBuildEvent
-) {
-}
+) {}

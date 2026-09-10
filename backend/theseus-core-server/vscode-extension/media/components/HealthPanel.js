@@ -39,7 +39,7 @@ export function renderHealthPanel({
   const checks = Array.isArray(health?.checks) ? health.checks : [];
   const list = document.createElement('div');
   list.className = 'health-checks';
-  checks.forEach(check => {
+  checks.forEach((check) => {
     const row = document.createElement('div');
     row.className = `health-check ${check.status || 'unknown'}`;
     const label = document.createElement('span');
@@ -85,7 +85,9 @@ export function renderHealthPanel({
       : '',
     settings.pythonPath ? `pythonPath: ${settings.pythonPath}` : '',
     runner.runtimeMode ? `runtime: ${runner.runtimeMode}` : '',
-  ].filter(Boolean).join('\n');
+  ]
+    .filter(Boolean)
+    .join('\n');
 
   panelEl.append(header, list, meta);
 }

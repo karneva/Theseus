@@ -103,10 +103,7 @@ def _project_tool_history_notice(record: HistoryMessageRecord) -> str | None:
         return None
     if message_type in _TOOL_RESULT_MESSAGE_TYPES:
         return _summarize_tool_history_record("이전 도구 실행 결과", content, content_type)
-    if (
-        record.sender_type.upper() == "SYSTEM"
-        and message_type == "SYSTEM_NOTICE"
-    ):
+    if record.sender_type.upper() == "SYSTEM" and message_type == "SYSTEM_NOTICE":
         if content_type == "JSON":
             projected_json_notice = _project_system_notice_json_tool_history(content)
             if projected_json_notice is not None:
@@ -125,10 +122,7 @@ def _project_system_notice_json_tool_history(content: str) -> str | None:
         return None
 
     notice_type = str(
-        payload.get("noticeType")
-        or payload.get("messageType")
-        or payload.get("type")
-        or ""
+        payload.get("noticeType") or payload.get("messageType") or payload.get("type") or ""
     ).upper()
     if notice_type in _TOOL_CALL_MESSAGE_TYPES:
         return None
@@ -170,10 +164,7 @@ def _summarize_tool_history_record(prefix: str, content: str, content_type: str)
             or ""
         )
         input_payload = (
-            payload.get("input")
-            or payload.get("toolInput")
-            or payload.get("tool_input")
-            or {}
+            payload.get("input") or payload.get("toolInput") or payload.get("tool_input") or {}
         )
         parts = [f"tool={tool_name}"]
         if status is not None:
@@ -183,9 +174,7 @@ def _summarize_tool_history_record(prefix: str, content: str, content_type: str)
         if input_payload:
             parts.append(
                 "input="
-                + _limit_tool_history_context(
-                    json.dumps(input_payload, ensure_ascii=False)
-                )
+                + _limit_tool_history_context(json.dumps(input_payload, ensure_ascii=False))
             )
         if output:
             parts.append(f"output={_limit_tool_history_context(str(output))}")
@@ -257,25 +246,22 @@ def _extract_tool_notice_payload(record: HistoryMessageRecord) -> dict[str, Any]
         or payload.get("id")
         or f"history-tool-{record.message_id}"
     )
-    tool_input = (
-        payload.get("toolInput")
-        or payload.get("tool_input")
-        or payload.get("input")
-        or {}
-    )
+    tool_input = payload.get("toolInput") or payload.get("tool_input") or payload.get("input") or {}
     if not isinstance(tool_input, dict):
         tool_input = {"value": tool_input}
 
     output = (
         payload.get("output")
         if "output" in payload
-        else payload.get("toolOutput")
-        if "toolOutput" in payload
-        else payload.get("tool_output")
-        if "tool_output" in payload
-        else payload.get("result")
-        if "result" in payload
-        else payload.get("content", "")
+        else (
+            payload.get("toolOutput")
+            if "toolOutput" in payload
+            else (
+                payload.get("tool_output")
+                if "tool_output" in payload
+                else payload.get("result") if "result" in payload else payload.get("content", "")
+            )
+        )
     )
 
     return {

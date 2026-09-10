@@ -8,7 +8,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ProjectRepository extends JpaRepository<Project, Long> {
-
 	Page<Project> findByStatus(ProjectStatus status, Pageable pageable);
 
 	boolean existsByProjectAdminUserAndStatus(User projectAdminUser, ProjectStatus status);

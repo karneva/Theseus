@@ -14,7 +14,7 @@ export function createEventDispatcher(ctx) {
           ctx.currentAssistantEl.innerHTML = '';
         }
         ctx.currentAssistantTxt += event.text || '';
-        
+
         if (!ctx.markdownRenderRAF) {
           ctx.markdownRenderRAF = requestAnimationFrame(() => {
             if (ctx.currentAssistantEl) {
@@ -28,10 +28,18 @@ export function createEventDispatcher(ctx) {
 
       case 'AssistantTurnComplete':
         if (ctx.currentAssistantTxt) {
-          ctx.savedHistory.push({ type: 'message', role: 'assistant', text: ctx.currentAssistantTxt });
+          ctx.savedHistory.push({
+            type: 'message',
+            role: 'assistant',
+            text: ctx.currentAssistantTxt,
+          });
           ctx.persistState();
           if (ctx.currentAssistantArticle && ctx.currentAssistantEl) {
-            ctx.maybeAddFold(ctx.currentAssistantArticle, ctx.currentAssistantEl, ctx.currentAssistantTxt);
+            ctx.maybeAddFold(
+              ctx.currentAssistantArticle,
+              ctx.currentAssistantEl,
+              ctx.currentAssistantTxt,
+            );
           }
         } else if (ctx.currentAssistantArticle) {
           ctx.currentAssistantArticle.remove();
@@ -105,15 +113,34 @@ export function createEventDispatcher(ctx) {
         // runner가 정상화되었으므로 누적된 retry banner를 모두 제거
         ctx.clearRetryBanners?.();
         ctx.clearTransientSystemMessages?.();
-        ctx.applyRunnerStatus({ ...event, type: 'RunnerStatus', running: true, processRunning: true, lifecycle: 'ready', state: 'ready' });
+        ctx.applyRunnerStatus({
+          ...event,
+          type: 'RunnerStatus',
+          running: true,
+          processRunning: true,
+          lifecycle: 'ready',
+          state: 'ready',
+        });
         if (ctx.runnerState.connectedSessionId !== ctx.runnerState.sessionId) {
           ctx.runnerState.connectedSessionId = ctx.runnerState.sessionId;
-          ctx.appendTransientMessage('system', `✅ Connected  model: ${event.model}\ncwd: ${event.cwd}`, 'info', 1000);
+          ctx.appendTransientMessage(
+            'system',
+            `✅ Connected  model: ${event.model}\ncwd: ${event.cwd}`,
+            'info',
+            1000,
+          );
         }
         break;
 
       case 'RunnerStarting':
-        ctx.applyRunnerStatus({ ...event, type: 'RunnerStatus', running: false, processRunning: true, lifecycle: 'starting', state: 'starting' });
+        ctx.applyRunnerStatus({
+          ...event,
+          type: 'RunnerStatus',
+          running: false,
+          processRunning: true,
+          lifecycle: 'starting',
+          state: 'starting',
+        });
         break;
 
       case 'RunnerStatus':
@@ -131,7 +158,9 @@ export function createEventDispatcher(ctx) {
         }
         if (
           event.code === 'ready_timeout' &&
-          (ctx.runnerState.running || ctx.runnerState.state === 'ready' || ctx.runnerState.lifecycle === 'ready')
+          (ctx.runnerState.running ||
+            ctx.runnerState.state === 'ready' ||
+            ctx.runnerState.lifecycle === 'ready')
         ) {
           ctx.clearRetryBanners?.();
           ctx.clearTransientSystemMessages?.();
@@ -139,27 +168,53 @@ export function createEventDispatcher(ctx) {
         }
         if (event.code === 'ready_timeout') {
           ctx.setLoopStatus('error', 'starting stale');
-          ctx.appendTransientMessage('system', event.message || 'Runner startup is taking longer than expected.', 'warn');
+          ctx.appendTransientMessage(
+            'system',
+            event.message || 'Runner startup is taking longer than expected.',
+            'warn',
+          );
         } else if (event.code !== 'user_stop') {
           ctx.appendTransientMessage('system', event.message || 'Runner diagnostic', 'warn');
         }
         break;
 
       case 'RunnerExited':
-        ctx.applyRunnerStatus({ ...event, type: 'RunnerStatus', running: false, processRunning: false, lifecycle: 'exited', state: 'exited' });
+        ctx.applyRunnerStatus({
+          ...event,
+          type: 'RunnerStatus',
+          running: false,
+          processRunning: false,
+          lifecycle: 'exited',
+          state: 'exited',
+        });
         ctx.setGenerating(false);
         ctx.appendTransientMessage('system', 'Runner stopped.', 'warn');
         break;
 
       case 'RunnerStopped':
-        ctx.applyRunnerStatus({ ...event, type: 'RunnerStatus', running: false, processRunning: false, lifecycle: 'stopped', state: 'stopped' });
+        ctx.applyRunnerStatus({
+          ...event,
+          type: 'RunnerStatus',
+          running: false,
+          processRunning: false,
+          lifecycle: 'stopped',
+          state: 'stopped',
+        });
         ctx.setGenerating(false);
         ctx.appendTransientMessage('system', 'Runner stopped gracefully.', 'warn');
         break;
 
       case 'RunnerError':
         ctx.runnerState.lastDiagnostic = event;
-        ctx.applyRunnerStatus({ ...event, type: 'RunnerStatus', running: false, processRunning: false, lifecycle: 'error', state: 'error', lastDiagnostic: event });
+        ctx.applyRunnerStatus({
+          ...event,
+          type: 'RunnerStatus',
+          running: false,
+          processRunning: false,
+          lifecycle: 'error',
+          state: 'error',
+          lastDiagnostic: event,
+        });
         ctx.appendTransientMessage('system', event.message || 'Unknown error', 'error');
         if (!/falling back to stdio runner/i.test(event.message || '')) {
           ctx.appendRetryBanner();
@@ -196,11 +251,19 @@ export function createEventDispatcher(ctx) {
           ctx.clearSavedPlan();
           break;
         }
-        if (/^(세션 목록|세션 전환|세션 삭제|세션 이름 변경|새 세션으로 전환):/.test(event.message || '')) {
+        if (
+          /^(세션 목록|세션 전환|세션 삭제|세션 이름 변경|새 세션으로 전환):/.test(
+            event.message || '',
+          )
+        ) {
           ctx.appendTransientMessage('system', event.message || '', 'hint', 4000);
           break;
         }
-        if (/Request failed; retrying|Model rejected max_tokens|도구 호출 없이 작업 진행 의도/i.test(event.message || '')) {
+        if (
+          /Request failed; retrying|Model rejected max_tokens|도구 호출 없이 작업 진행 의도/i.test(
+            event.message || '',
+          )
+        ) {
           ctx.toolPanel.note({
             key: `status:${event.message || ''}`,
             label: event.message || 'status',
@@ -248,11 +311,12 @@ export function createEventDispatcher(ctx) {
         if (ctx.savedPlan) {
           const rawPhase = String(event.to_phase || '').trim();
           const normalizedPhase = rawPhase.toLowerCase();
-          const nextState = normalizedPhase === 'completed'
-            ? 'done'
-            : normalizedPhase === 'waitforreview'
-              ? 'wait'
-              : normalizedPhase || 'review';
+          const nextState =
+            normalizedPhase === 'completed'
+              ? 'done'
+              : normalizedPhase === 'waitforreview'
+                ? 'wait'
+                : normalizedPhase || 'review';
           ctx.savedPlan.reviewState = nextState;
           ctx.savedPlan.phase = rawPhase || nextState;
           ctx.setSavedPlan(ctx.savedPlan);
@@ -260,23 +324,30 @@ export function createEventDispatcher(ctx) {
         break;
 
       case 'PlanReviewEvent':
-        if (['not_reviewable', 'closed', 'stale', 'cancelled', 'canceled', 'deleted'].includes(event.action)) {
+        if (
+          ['not_reviewable', 'closed', 'stale', 'cancelled', 'canceled', 'deleted'].includes(
+            event.action,
+          )
+        ) {
           ctx.clearSavedPlan();
           break;
         }
         if (ctx.savedPlan) {
-          const nextState = event.action === 'completed'
-            ? 'done'
-            : event.action === 'approved'
-              ? 'executing'
-              : event.action === 'rejected'
-                ? 'drafting'
-                : String(event.action || event.phase || 'review').toLowerCase();
+          const nextState =
+            event.action === 'completed'
+              ? 'done'
+              : event.action === 'approved'
+                ? 'executing'
+                : event.action === 'rejected'
+                  ? 'drafting'
+                  : String(event.action || event.phase || 'review').toLowerCase();
           ctx.savedPlan.reviewState = nextState;
           ctx.savedPlan.phase = event.phase || nextState;
           if (Number.isInteger(event.totalTasks)) ctx.savedPlan.totalTasks = event.totalTasks;
-          if (Number.isInteger(event.completedTasks)) ctx.savedPlan.completedTasks = event.completedTasks;
-          if (Number.isInteger(event.remainingTasks)) ctx.savedPlan.remainingTasks = event.remainingTasks;
+          if (Number.isInteger(event.completedTasks))
+            ctx.savedPlan.completedTasks = event.completedTasks;
+          if (Number.isInteger(event.remainingTasks))
+            ctx.savedPlan.remainingTasks = event.remainingTasks;
           ctx.setSavedPlan(ctx.savedPlan);
         }
         break;
@@ -297,7 +368,7 @@ export function createEventDispatcher(ctx) {
           ctx.renderPlanPanel(ctx.savedPlan);
         }
         ctx.savedHistory = Array.isArray(event.history) ? event.history : [];
-        ctx.savedHistory.forEach(m => {
+        ctx.savedHistory.forEach((m) => {
           if (m.type === 'message') {
             const text = ctx.collapseDuplicatedHistoryText(m.text);
             const rendered = ctx.appendMessageEl(m.role, text, m.tone, false);
@@ -312,17 +383,22 @@ export function createEventDispatcher(ctx) {
         break;
 
       case 'SessionExportedEvent': {
-        const preview = event.format === 'json'
-          ? String(event.content || '').slice(0, 800)
-          : String(event.content || '').slice(0, 1200);
-        ctx.appendMessageEl('system', `Exported ${event.name} (${event.format})\n\n${preview}`, 'info');
+        const preview =
+          event.format === 'json'
+            ? String(event.content || '').slice(0, 800)
+            : String(event.content || '').slice(0, 1200);
+        ctx.appendMessageEl(
+          'system',
+          `Exported ${event.name} (${event.format})\n\n${preview}`,
+          'info',
+        );
         break;
       }
 
       case 'workspaceInfo':
         if (ctx.workspaceLabelEl) {
           ctx.workspaceLabelEl.textContent = event.name || '';
-          ctx.workspaceLabelEl.title       = event.path || '';
+          ctx.workspaceLabelEl.title = event.path || '';
         }
         break;
 
@@ -331,10 +407,11 @@ export function createEventDispatcher(ctx) {
           const name = (event.file || '').split(/[/\\]/).pop();
           const line = Number.isInteger(event.line) ? `:${event.line}` : '';
           ctx.activeFileEl.textContent = name ? `📄 ${name}${line}` : '';
-          ctx.activeFileEl.title       = event.file || '';
+          ctx.activeFileEl.title = event.file || '';
         }
         ctx.activeFileContext = event.file ? { file: event.file, line: event.line } : null;
-        if (ctx.suppressedActiveFile && ctx.suppressedActiveFile !== event.file) ctx.suppressedActiveFile = '';
+        if (ctx.suppressedActiveFile && ctx.suppressedActiveFile !== event.file)
+          ctx.suppressedActiveFile = '';
         ctx.renderContextBar();
         break;
 
@@ -349,12 +426,16 @@ export function createEventDispatcher(ctx) {
         break;
 
       case 'customToolsChanged': {
-        const icons    = { created: '🔧➕', changed: '🔧✏️', deleted: '🔧🗑' };
-        const icon     = icons[event.action] || '🔧';
+        const icons = { created: '🔧➕', changed: '🔧✏️', deleted: '🔧🗑' };
+        const icon = icons[event.action] || '🔧';
         const fileName = (event.file || '').split(/[/\\]/).pop();
         const validation = event.validation;
         const msg = validation?.message ? ` — ${validation.message}` : '';
-        ctx.appendMessageEl('system', `${icon} Tool file ${event.action}: ${fileName}${msg}`, validation?.success === false ? 'warn' : 'info');
+        ctx.appendMessageEl(
+          'system',
+          `${icon} Tool file ${event.action}: ${fileName}${msg}`,
+          validation?.success === false ? 'warn' : 'info',
+        );
         ctx.vscode.postMessage({ type: 'getCustomTools' });
         break;
       }
@@ -366,7 +447,12 @@ export function createEventDispatcher(ctx) {
           state: event.success ? 'info' : 'error',
         });
         if (!event.success) {
-          ctx.appendTransientMessage('system', event.message || 'Custom tool validation failed.', 'warn', 5000);
+          ctx.appendTransientMessage(
+            'system',
+            event.message || 'Custom tool validation failed.',
+            'warn',
+            5000,
+          );
         }
         break;
 
@@ -374,11 +460,17 @@ export function createEventDispatcher(ctx) {
         ctx.toolPanel.note({
           key: `custom-tool-install:${Array.isArray(event.packages) ? event.packages.join(',') : event.message || 'install'}`,
           label: event.message || 'Custom tool dependency install updated.',
-          detail: Array.isArray(event.packages) && event.packages.length ? event.packages.join(', ') : '',
+          detail:
+            Array.isArray(event.packages) && event.packages.length ? event.packages.join(', ') : '',
           state: event.success ? 'info' : 'error',
         });
         if (!event.success) {
-          ctx.appendTransientMessage('system', event.message || 'Custom tool dependency install failed.', 'warn', 5000);
+          ctx.appendTransientMessage(
+            'system',
+            event.message || 'Custom tool dependency install failed.',
+            'warn',
+            5000,
+          );
         }
         if (!event.success) ctx.vscode.postMessage({ type: 'getCustomTools' });
         break;
@@ -393,7 +485,7 @@ export function createEventDispatcher(ctx) {
         break;
 
       case 'changeReviewUpdated':
-        if (event.id) ctx.changeReviews = ctx.changeReviews.filter(item => item.id !== event.id);
+        if (event.id) ctx.changeReviews = ctx.changeReviews.filter((item) => item.id !== event.id);
         ctx.persistState();
         ctx.renderChangeReviewPanel();
         ctx.toolPanel.note({
@@ -402,7 +494,12 @@ export function createEventDispatcher(ctx) {
           state: event.success === false ? 'error' : 'info',
         });
         if (event.success === false) {
-          ctx.appendTransientMessage('system', event.message || 'Change review failed.', 'warn', 5000);
+          ctx.appendTransientMessage(
+            'system',
+            event.message || 'Change review failed.',
+            'warn',
+            5000,
+          );
         }
         break;
 

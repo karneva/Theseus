@@ -22,5 +22,6 @@ export const useProjectStore = create<ProjectState>((set) => ({
   setIsLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ errorMessage: error, isLoading: false }),
   refreshSessions: () => set((state) => ({ sessionFetchTrigger: state.sessionFetchTrigger + 1 })),
-  reset: () => set({ currentProject: null, isLoading: true, errorMessage: null, sessionFetchTrigger: 0 }),
+  reset: () =>
+    set({ currentProject: null, isLoading: true, errorMessage: null, sessionFetchTrigger: 0 }),
 }));

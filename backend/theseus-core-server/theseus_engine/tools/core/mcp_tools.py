@@ -19,7 +19,9 @@ class ListMcpResourcesTool(BaseTool):
     """List all available resources from connected MCP servers."""
 
     name = "list_mcp_resources"
-    description = "List all available resources (files, documentation, data) from connected MCP servers."
+    description = (
+        "List all available resources (files, documentation, data) from connected MCP servers."
+    )
     input_model = ListMcpResourcesInput
     permission_level = 1
 
@@ -30,11 +32,8 @@ class ListMcpResourcesTool(BaseTool):
         resources = manager.list_resources()
         if not resources:
             return ToolResult(output="(No connected MCP resources)")
-        
-        lines = [
-            f"{r.server_name} | {r.uri} | {r.description}"
-            for r in resources
-        ]
+
+        lines = [f"{r.server_name} | {r.uri} | {r.description}" for r in resources]
         return ToolResult(output="\n".join(lines))
 
 

@@ -9,7 +9,6 @@ from typing import Any
 
 from src.tool_plan.schemas import ToolPlanRequestEvent
 
-
 _EXECUTION_SPEC_KEYWORDS = (
     "tool",
     "custom tool",
@@ -357,7 +356,9 @@ def _validate_execution_spec_shape(execution_spec: dict[str, Any], errors: list[
             errors.append(f"execution_spec.status_values contains unsupported statuses: {invalid}.")
 
 
-def _validate_execution_spec_command_policy(execution_spec: dict[str, Any], errors: list[str]) -> None:
+def _validate_execution_spec_command_policy(
+    execution_spec: dict[str, Any], errors: list[str]
+) -> None:
     policy = execution_spec.get("command_policy")
     if policy is None:
         return
@@ -519,9 +520,7 @@ def _validate_command_text(
 def _command_segments(command: str) -> list[str]:
     normalized = re.sub(r"\|\|\s*true\s*$", "", command.strip(), flags=re.IGNORECASE)
     return [
-        segment.strip()
-        for segment in re.split(r"(?<!\|)\|(?!\|)", normalized)
-        if segment.strip()
+        segment.strip() for segment in re.split(r"(?<!\|)\|(?!\|)", normalized) if segment.strip()
     ]
 
 

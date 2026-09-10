@@ -22,9 +22,13 @@ export function renderRunnerStatusBar({
   const running = !!runnerState?.running;
   const processRunning = !!runnerState?.processRunning;
   const label = running
-    ? (runnerState?.state === 'busy' ? 'Running' : 'Ready')
+    ? runnerState?.state === 'busy'
+      ? 'Running'
+      : 'Ready'
     : processRunning
-      ? (lifecycle === 'stale' || lifecycle === 'starting_stale' ? 'Reconnecting' : 'Starting')
+      ? lifecycle === 'stale' || lifecycle === 'starting_stale'
+        ? 'Reconnecting'
+        : 'Starting'
       : lifecycle === 'error'
         ? 'Error'
         : 'Stopped';
@@ -33,17 +37,27 @@ export function renderRunnerStatusBar({
     loopStatus?.text && String(loopStatus.text).toLowerCase() !== 'idle' ? loopStatus.text : '',
     runnerState?.runtimeMode || '',
     runnerState?.daemonPort ? `:${runnerState.daemonPort}` : '',
-  ].filter(Boolean).join(' · ');
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   if (detailEl) {
     detailEl.textContent = detail;
     detailEl.title = [
       detail,
-      runnerState?.lastDiagnostic?.message ? `Last diagnostic: ${runnerState.lastDiagnostic.message}` : '',
-      runnerState?.activeRunId ? `active run: ${runnerState.activeRunId} (${runnerState.activeRunStatus || 'running'})` : '',
-      runnerState?.lastEventAt ? `last event: ${new Date(runnerState.lastEventAt).toLocaleTimeString()}` : '',
+      runnerState?.lastDiagnostic?.message
+        ? `Last diagnostic: ${runnerState.lastDiagnostic.message}`
+        : '',
+      runnerState?.activeRunId
+        ? `active run: ${runnerState.activeRunId} (${runnerState.activeRunStatus || 'running'})`
+        : '',
+      runnerState?.lastEventAt
+        ? `last event: ${new Date(runnerState.lastEventAt).toLocaleTimeString()}`
+        : '',
       runnerState?.workspaceCwd ? `cwd: ${runnerState.workspaceCwd}` : '',
-    ].filter(Boolean).join('\n');
+    ]
+      .filter(Boolean)
+      .join('\n');
     detailEl.className = `runner-status-detail ${label.toLowerCase()}`;
   }
 
@@ -80,17 +94,20 @@ export function formatAgentLoopStatus(event) {
     model_complete: count ? `${turn} Planning tools ${count}` : `${turn} Answered`,
     waiting: count ? `${turn} Running ${count}` : `${turn} Waiting for tools`,
     tool_start: toolName ? `${turn} Running tool ${toolName}` : `${turn} Running tool`,
-    tool_complete: toolName ? `${turn} ${toolName} ${event.is_error ? 'failed' : 'done'}` : `${turn} tool done`,
+    tool_complete: toolName
+      ? `${turn} ${toolName} ${event.is_error ? 'failed' : 'done'}`
+      : `${turn} tool done`,
     complete: 'Idle',
     error: 'Loop error',
   };
-  const state = event.is_error || phase === 'error'
-    ? 'error'
-    : phase === 'complete'
-      ? 'idle'
-      : phase.startsWith('tool') || phase === 'waiting'
-        ? 'tool'
-        : 'running';
+  const state =
+    event.is_error || phase === 'error'
+      ? 'error'
+      : phase === 'complete'
+        ? 'idle'
+        : phase.startsWith('tool') || phase === 'waiting'
+          ? 'tool'
+          : 'running';
   return { state, text: labels[phase] || event.message || phase };
 }
 
@@ -134,24 +151,32 @@ export function applyRunnerStatusEvent({
     lastHeartbeatAt: event.lastHeartbeatAt || runnerState.lastHeartbeatAt,
     activeRunId: Object.prototype.hasOwnProperty.call(event, 'activeRunId')
       ? event.activeRunId
-      : isBusy ? runnerState.activeRunId : undefined,
+      : isBusy
+        ? runnerState.activeRunId
+        : undefined,
     activeRunStatus: Object.prototype.hasOwnProperty.call(event, 'activeRunStatus')
       ? event.activeRunStatus
-      : isBusy ? runnerState.activeRunStatus : undefined,
+      : isBusy
+        ? runnerState.activeRunStatus
+        : undefined,
     activeRun: Object.prototype.hasOwnProperty.call(event, 'activeRun')
       ? event.activeRun
-      : isBusy ? runnerState.activeRun : undefined,
+      : isBusy
+        ? runnerState.activeRun
+        : undefined,
     stalledReason: event.stalledReason || runnerState.stalledReason,
-    pendingInput: Number.isInteger(event.pendingInput) ? event.pendingInput : runnerState.pendingInput,
+    pendingInput: Number.isInteger(event.pendingInput)
+      ? event.pendingInput
+      : runnerState.pendingInput,
     exitReason: event.exitReason || runnerState.exitReason,
   };
 
   if (nextState.running) {
-      if (nextState.state === 'busy' || nextState.lifecycle === 'busy') {
-        setLoopStatusText('running', 'Running');
-      } else {
-        setLoopStatusText('idle', 'Idle');
-      }
+    if (nextState.state === 'busy' || nextState.lifecycle === 'busy') {
+      setLoopStatusText('running', 'Running');
+    } else {
+      setLoopStatusText('idle', 'Idle');
+    }
     updateSession(event.session || nextState.session || 'default');
     if (nextState.pendingSubmitText) {
       const text = nextState.pendingSubmitText;
@@ -172,8 +197,10 @@ export function applyRunnerStatusEvent({
 
   if (nextState.processRunning) {
     const stale = lifecycle === 'starting_stale' || lifecycle === 'stale';
-    setLoopStatusText('running',
-      stale ? 'reconnecting' : lifecycle === 'starting' ? 'starting' : 'connecting');
+    setLoopStatusText(
+      'running',
+      stale ? 'reconnecting' : lifecycle === 'starting' ? 'starting' : 'connecting',
+    );
     if (stale && requestRunnerAttach()) requestRunnerStatus();
     return nextState;
   }

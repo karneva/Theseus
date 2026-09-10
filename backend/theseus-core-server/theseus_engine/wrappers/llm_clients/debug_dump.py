@@ -16,11 +16,8 @@ from typing import Any
 
 from theseus_engine.models.messages import ToolResultBlock, ToolUseBlock
 
-
 DEBUG_DUMP_ENABLED: bool = os.getenv("THESEUS_DEBUG_DUMP", "false").lower() == "true"
-DEBUG_DUMP_DIR = Path(
-    os.getenv("THESEUS_DEBUG_DUMP_DIR", Path.home() / ".theseus" / "debug_dumps")
-)
+DEBUG_DUMP_DIR = Path(os.getenv("THESEUS_DEBUG_DUMP_DIR", Path.home() / ".theseus" / "debug_dumps"))
 
 
 def sanitize_debug_path_part(value: Any, *, default: str) -> str:

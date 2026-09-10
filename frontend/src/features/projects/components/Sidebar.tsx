@@ -1,5 +1,16 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Wrench, Settings, UserCircle, LogOut, User, Key, Check, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  Wrench,
+  Settings,
+  UserCircle,
+  LogOut,
+  User,
+  Key,
+  Check,
+  X,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useProjectStore } from '../stores/useProjectStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -12,7 +23,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 
 const PermissionItem = ({ label, active }: { label: string; active?: boolean }) => (
   <div className="flex items-center gap-1.5">
@@ -21,10 +32,12 @@ const PermissionItem = ({ label, active }: { label: string; active?: boolean }) 
     ) : (
       <X className="w-2.5 h-2.5 text-slate-600" />
     )}
-    <span className={cn(
-      "text-[9px] font-medium tracking-tight",
-      active ? "text-slate-300" : "text-slate-600"
-    )}>
+    <span
+      className={cn(
+        'text-[9px] font-medium tracking-tight',
+        active ? 'text-slate-300' : 'text-slate-600',
+      )}
+    >
       {label}
     </span>
   </div>
@@ -37,7 +50,11 @@ interface SidebarProps {
 export function Sidebar({ projectId }: SidebarProps) {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
-  const { currentProject: projectMember, isLoading: isProjectLoading, errorMessage: projectErrorMessage } = useProjectStore();
+  const {
+    currentProject: projectMember,
+    isLoading: isProjectLoading,
+    errorMessage: projectErrorMessage,
+  } = useProjectStore();
   const { isCollapsed, toggle } = useSidebarStore();
 
   const isAdmin = projectMember?.projectRole === 'ADMIN';
@@ -45,10 +62,14 @@ export function Sidebar({ projectId }: SidebarProps) {
 
   const getRoleLabel = (role?: string) => {
     switch (role) {
-      case 'ADMIN': return 'Project Admin';
-      case 'MANAGER': return 'Project Manager';
-      case 'MEMBER': return 'Project Member';
-      default: return 'No Role';
+      case 'ADMIN':
+        return 'Project Admin';
+      case 'MANAGER':
+        return 'Project Manager';
+      case 'MEMBER':
+        return 'Project Member';
+      default:
+        return 'No Role';
     }
   };
 
@@ -56,19 +77,21 @@ export function Sidebar({ projectId }: SidebarProps) {
     ? 'Loading...'
     : projectMember
       ? getRoleLabel(projectMember.projectRole)
-      : (projectErrorMessage || 'Access Denied');
+      : projectErrorMessage || 'Access Denied';
 
   return (
     <>
-      <aside className={cn(
-        "h-screen shrink-0 bg-[rgba(17,24,39,0.8)] backdrop-blur-[12px] border-r border-[#1f2937] flex flex-col pt-6 z-20 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] relative transition-all duration-300 ease-in-out",
-        isCollapsed ? "w-[70px] px-2" : "w-[260px]"
-      )}>
+      <aside
+        className={cn(
+          'h-screen shrink-0 bg-[rgba(17,24,39,0.8)] backdrop-blur-[12px] border-r border-[#1f2937] flex flex-col pt-6 z-20 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] relative transition-all duration-300 ease-in-out',
+          isCollapsed ? 'w-[70px] px-2' : 'w-[260px]',
+        )}
+      >
         {/* Collapse Toggle Button */}
         <button
           onClick={toggle}
           className="absolute top-[28px] -right-[12px] z-30 w-6 h-6 rounded-full bg-[#0b1424] border border-[#1f2937] hover:bg-blue-400 hover:text-[#003a6b] flex items-center justify-center shadow-lg text-slate-400 cursor-pointer active:scale-95 transition-all duration-200"
-          title={isCollapsed ? "사이드바 펼치기" : "사이드바 접기"}
+          title={isCollapsed ? '사이드바 펼치기' : '사이드바 접기'}
         >
           {isCollapsed ? (
             <ChevronRight className="w-3.5 h-3.5" />
@@ -80,17 +103,24 @@ export function Sidebar({ projectId }: SidebarProps) {
         {/* Brand Section */}
         <div
           className={cn(
-            "mb-8 flex items-center cursor-pointer group transition-all duration-200 active:scale-[0.98]",
-            isCollapsed ? "justify-center px-0" : "px-6 gap-2"
+            'mb-8 flex items-center cursor-pointer group transition-all duration-200 active:scale-[0.98]',
+            isCollapsed ? 'justify-center px-0' : 'px-6 gap-2',
           )}
           onClick={() => navigate('/')}
         >
           <div className="w-8 h-8 rounded overflow-hidden flex items-center justify-center shrink-0">
-            <img src="/theseus_blue.png" alt="Theseus Logo" className="w-full h-full object-cover" />
+            <img
+              src="/theseus_blue.png"
+              alt="Theseus Logo"
+              className="w-full h-full object-cover"
+            />
           </div>
           {!isCollapsed && (
             <div className="flex flex-col">
-              <h1 className="font-['Space_Grotesk'] font-bold text-xl text-blue-400 tracking-[-1px] leading-tight" style={{ textShadow: '0px 0px 10px rgba(96,165,250,0.4)' }}>
+              <h1
+                className="font-['Space_Grotesk'] font-bold text-xl text-blue-400 tracking-[-1px] leading-tight"
+                style={{ textShadow: '0px 0px 10px rgba(96,165,250,0.4)' }}
+              >
                 Theseus
               </h1>
               <span className="font-['Space_Grotesk'] font-normal text-[10px] text-slate-500 tracking-[1px] uppercase">
@@ -105,46 +135,59 @@ export function Sidebar({ projectId }: SidebarProps) {
           <nav className="flex flex-col gap-1 mb-8">
             <NavLink
               to={`/projects/${projectId}/tools`}
-              className={({ isActive }) => cn(
-                "flex items-center transition-all duration-200 border-l-4",
-                isCollapsed ? "justify-center px-0 py-3 w-full" : "gap-3 px-6 py-3",
-                isActive
-                  ? "bg-[#1e293b] border-blue-400 text-blue-400"
-                  : "border-transparent text-slate-400 hover:bg-white/5 hover:text-slate-300"
-              )}
-              title={isCollapsed ? "도구 목록" : undefined}
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center transition-all duration-200 border-l-4',
+                  isCollapsed ? 'justify-center px-0 py-3 w-full' : 'gap-3 px-6 py-3',
+                  isActive
+                    ? 'bg-[#1e293b] border-blue-400 text-blue-400'
+                    : 'border-transparent text-slate-400 hover:bg-white/5 hover:text-slate-300',
+                )
+              }
+              title={isCollapsed ? '도구 목록' : undefined}
             >
-              <Wrench className={cn("w-4 h-4", !isCollapsed && "ml-0.5")} />
-              {!isCollapsed && <span className="text-sm font-medium tracking-[0.35px]">도구 목록</span>}
+              <Wrench className={cn('w-4 h-4', !isCollapsed && 'ml-0.5')} />
+              {!isCollapsed && (
+                <span className="text-sm font-medium tracking-[0.35px]">도구 목록</span>
+              )}
             </NavLink>
-          </nav >
+          </nav>
         </SessionList>
 
         {/* Footer Section */}
-        <div className={cn("mt-auto pb-6 pt-4 flex flex-col gap-4 border-t border-[rgba(31,41,55,0.5)]", isCollapsed ? "px-2" : "px-6")} >
+        <div
+          className={cn(
+            'mt-auto pb-6 pt-4 flex flex-col gap-4 border-t border-[rgba(31,41,55,0.5)]',
+            isCollapsed ? 'px-2' : 'px-6',
+          )}
+        >
           {isAdmin && (
             <NavLink
               to={`/projects/${projectId}/settings`}
-              className={({ isActive }) => cn(
-                "flex items-center transition-colors",
-                isCollapsed ? "justify-center py-2" : "gap-3 py-2",
-                isActive ? "text-blue-400" : "text-slate-400 hover:text-slate-300"
-              )}
-              title={isCollapsed ? "관리자 설정" : undefined}
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center transition-colors',
+                  isCollapsed ? 'justify-center py-2' : 'gap-3 py-2',
+                  isActive ? 'text-blue-400' : 'text-slate-400 hover:text-slate-300',
+                )
+              }
+              title={isCollapsed ? '관리자 설정' : undefined}
             >
               <Settings className="w-4 h-4" />
-              {!isCollapsed && <span className="text-sm font-medium tracking-[0.35px]">관리자 설정</span>}
+              {!isCollapsed && (
+                <span className="text-sm font-medium tracking-[0.35px]">관리자 설정</span>
+              )}
             </NavLink>
-          )
-          }
+          )}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <div className={cn(
-                "flex items-center rounded bg-white/5 cursor-pointer border border-transparent transition-all duration-200",
-                isCollapsed ? "justify-center p-2" : "gap-3 p-3"
-              )}
-              title={isCollapsed ? displayName : undefined}
+              <div
+                className={cn(
+                  'flex items-center rounded bg-white/5 cursor-pointer border border-transparent transition-all duration-200',
+                  isCollapsed ? 'justify-center p-2' : 'gap-3 p-3',
+                )}
+                title={isCollapsed ? displayName : undefined}
               >
                 <div className="w-8 h-8 rounded-full border border-blue-400/20 overflow-hidden shrink-0 flex items-center justify-center bg-slate-800">
                   <UserCircle className="w-6 h-6 text-slate-400" />
@@ -169,13 +212,17 @@ export function Sidebar({ projectId }: SidebarProps) {
             >
               <DropdownMenuLabel className="px-3 py-3">
                 <div className="flex flex-col gap-2">
-                  <span className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">User Profile</span>
+                  <span className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">
+                    User Profile
+                  </span>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-blue-400/10 flex items-center justify-center border border-blue-400/20">
                       <UserCircle className="w-6 h-6 text-blue-400" />
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className="text-sm font-bold text-slate-100 truncate">{displayName}</span>
+                      <span className="text-sm font-bold text-slate-100 truncate">
+                        {displayName}
+                      </span>
                       <span className="text-[10px] text-slate-400 font-['Space_Grotesk'] tracking-tight truncate">
                         {projectMember?.employeeNumber || 'ID: ' + user?.id}
                       </span>
@@ -211,7 +258,9 @@ export function Sidebar({ projectId }: SidebarProps) {
               <DropdownMenuSeparator className="bg-slate-800/50" />
 
               <div className="px-3 py-2">
-                <span className="text-[9px] text-slate-500 uppercase tracking-widest font-bold mb-2 block">Tool Permissions</span>
+                <span className="text-[9px] text-slate-500 uppercase tracking-widest font-bold mb-2 block">
+                  Tool Permissions
+                </span>
                 <div className="grid grid-cols-2 gap-2">
                   <PermissionItem label="Use" active={projectMember?.canUseTool} />
                   <PermissionItem label="Create" active={projectMember?.canCreateTool} />
@@ -230,10 +279,8 @@ export function Sidebar({ projectId }: SidebarProps) {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </div >
-      </aside >
-
-
+        </div>
+      </aside>
     </>
   );
 }

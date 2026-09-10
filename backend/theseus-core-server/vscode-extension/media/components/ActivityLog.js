@@ -17,7 +17,9 @@ function formatToolPayload(value) {
 }
 
 function compactPrompt(text) {
-  const normalized = String(text || '').replace(/\s+/g, ' ').trim();
+  const normalized = String(text || '')
+    .replace(/\s+/g, ' ')
+    .trim();
   if (!normalized) return 'request';
   return normalized.length > 48 ? `${normalized.slice(0, 45)}...` : normalized;
 }
@@ -105,7 +107,9 @@ export function createActivityLogController({
 
   function ensureRequest() {
     if (!currentRequest) {
-      const fallbackAnchor = Array.from(messagesEl.querySelectorAll('.message.user')).pop() || messagesEl.lastElementChild;
+      const fallbackAnchor =
+        Array.from(messagesEl.querySelectorAll('.message.user')).pop() ||
+        messagesEl.lastElementChild;
       requestSeq += 1;
       currentRequest = {
         id: requestSeq,
@@ -233,9 +237,9 @@ export function createActivityLogController({
     if (!request?.groupEl || !request.summaryTitleEl || !request.summaryMetaEl) return;
     const tools = Array.from(request.groupEl.querySelectorAll('details.tool'));
     const notes = Array.from(request.groupEl.querySelectorAll('.activity-note'));
-    const running = tools.filter(el => el.dataset.status === 'running').length;
-    const failed = tools.filter(el => el.dataset.status === 'failed').length;
-    const done = tools.filter(el => el.dataset.status === 'done').length;
+    const running = tools.filter((el) => el.dataset.status === 'running').length;
+    const failed = tools.filter((el) => el.dataset.status === 'failed').length;
+    const done = tools.filter((el) => el.dataset.status === 'done').length;
     const parts = [];
     if (running) parts.push(`${running} running`);
     if (done) parts.push(`${done} done`);
@@ -347,9 +351,10 @@ export function createActivityLogController({
   function appendTool(toolName, toolInput, output, isError, save = true, eventData = null) {
     const request = ensureRequest();
     request.groupEl.hidden = false;
-    const isRunning = eventData?.status === 'running'
-      || eventData?.type === 'ToolExecutionStarted'
-      || (!eventData && output === undefined && !isError);
+    const isRunning =
+      eventData?.status === 'running' ||
+      eventData?.type === 'ToolExecutionStarted' ||
+      (!eventData && output === undefined && !isError);
     if (isRunning) setRequestActive(request, true);
     request.lastActivityAt = Date.now();
     const item = document.createElement('details');
@@ -377,7 +382,9 @@ export function createActivityLogController({
       startedAt ? `started ${formatClock(startedAt)}` : '',
       completedAt ? `finished ${formatClock(completedAt)}` : '',
       Number.isFinite(durationMs) ? `duration ${formatDuration(durationMs)}` : '',
-    ].filter(Boolean).join(' · ');
+    ]
+      .filter(Boolean)
+      .join(' · ');
 
     item.append(summary, meta, pre);
     if (eventData) appendDiffAction(item, eventData);
@@ -389,7 +396,9 @@ export function createActivityLogController({
     }
 
     if (save) {
-      onPersistTool(buildToolEntry(toolName, toolInput, output, isError, item.dataset.status, eventData));
+      onPersistTool(
+        buildToolEntry(toolName, toolInput, output, isError, item.dataset.status, eventData),
+      );
     }
     return item;
   }
@@ -402,7 +411,8 @@ export function createActivityLogController({
       const elapsed = Math.floor((Date.now() - startedAt) / 1000);
       toolEl.classList.toggle('running-long', Date.now() - startedAt >= longRunningMs);
       const summary = toolEl.querySelector('summary');
-      if (summary) summary.innerHTML = `<span class="tool-icon spin">⚙</span> ${event.tool_name} running... ${elapsed}s`;
+      if (summary)
+        summary.innerHTML = `<span class="tool-icon spin">⚙</span> ${event.tool_name} running... ${elapsed}s`;
     }, 1000);
     runningTools.set(key, timer);
     runningToolEls.set(key, { toolEl, request: currentRequest });
@@ -448,18 +458,34 @@ export function createActivityLogController({
       runningToolEls.delete(key);
       if (running.request) running.request.lastActivityAt = completedAt;
       updateGroupSummary(running.request || currentRequest);
-      onPersistTool(buildToolEntry(event.tool_name, event.tool_input, event.output, event.is_error, existing.dataset.status, {
-        ...event,
-        startedAt,
-        completedAt,
-        durationMs,
-      }));
+      onPersistTool(
+        buildToolEntry(
+          event.tool_name,
+          event.tool_input,
+          event.output,
+          event.is_error,
+          existing.dataset.status,
+          {
+            ...event,
+            startedAt,
+            completedAt,
+            durationMs,
+          },
+        ),
+      );
       scheduleCollapse(running.request || currentRequest);
     } else {
-      const toolEl = appendTool(event.tool_name, event.tool_input, event.output, event.is_error, true, {
-        ...event,
-        completedAt,
-      });
+      const toolEl = appendTool(
+        event.tool_name,
+        event.tool_input,
+        event.output,
+        event.is_error,
+        true,
+        {
+          ...event,
+          completedAt,
+        },
+      );
       scheduleCollapse(currentRequest);
     }
     onStatsUpdate(event.tool_name, !event.is_error);
@@ -479,7 +505,7 @@ export function createActivityLogController({
     }
     requests.clear();
     currentRequest = null;
-    messagesEl.querySelectorAll('.activity-group').forEach(el => el.remove());
+    messagesEl.querySelectorAll('.activity-group').forEach((el) => el.remove());
   }
 
   return {

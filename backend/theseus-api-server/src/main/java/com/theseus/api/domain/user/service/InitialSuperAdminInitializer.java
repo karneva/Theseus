@@ -42,30 +42,39 @@ public class InitialSuperAdminInitializer implements ApplicationRunner {
 			}
 
 			if (!hasInitialAdminRequiredValues()) {
-				log.info(">>>> Initial SUPER_ADMIN was not created because required environment values are missing.");
+				log.info(
+					">>>> Initial SUPER_ADMIN was not created because required environment values are missing."
+				);
 				return;
 			}
 
 			User initialSuperAdmin = User.builder()
-					.employeeNumber(initialAdminEmployeeNumber)
-					.name(initialAdminName)
-					.email(hasText(initialAdminEmail) ? initialAdminEmail : null)
-					.password(passwordEncoder.encode(initialAdminPassword))
-					.systemRole(SystemRole.SUPER_ADMIN)
-					.status(UserStatus.ACTIVE)
-					.build();
+				.employeeNumber(initialAdminEmployeeNumber)
+				.name(initialAdminName)
+				.email(hasText(initialAdminEmail) ? initialAdminEmail : null)
+				.password(passwordEncoder.encode(initialAdminPassword))
+				.systemRole(SystemRole.SUPER_ADMIN)
+				.status(UserStatus.ACTIVE)
+				.build();
 
 			userRepository.save(initialSuperAdmin);
-			log.info(">>>> Initial SUPER_ADMIN has been created. employeeNumber={}", initialAdminEmployeeNumber);
+			log.info(
+				">>>> Initial SUPER_ADMIN has been created. employeeNumber={}",
+				initialAdminEmployeeNumber
+			);
 		} catch (DataAccessException dataAccessException) {
-			log.warn(">>>> Initial SUPER_ADMIN creation was skipped because the users table is not ready.");
+			log.warn(
+				">>>> Initial SUPER_ADMIN creation was skipped because the users table is not ready."
+			);
 		}
 	}
 
 	private boolean hasInitialAdminRequiredValues() {
-		return hasText(initialAdminEmployeeNumber)
-				&& hasText(initialAdminName)
-				&& hasText(initialAdminPassword);
+		return (
+			hasText(initialAdminEmployeeNumber) &&
+			hasText(initialAdminName) &&
+			hasText(initialAdminPassword)
+		);
 	}
 
 	private boolean hasText(String value) {

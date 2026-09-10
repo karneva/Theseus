@@ -158,9 +158,7 @@ def load_session_history(session_name: str) -> List[ConversationMessage]:
             content = msg_dict.get("content", [])
             msg = ConversationMessage(role=role, content=content)
             if "_raw_tool_calls" in msg_dict:
-                object.__setattr__(
-                    msg, "_raw_tool_calls", msg_dict["_raw_tool_calls"]
-                )
+                object.__setattr__(msg, "_raw_tool_calls", msg_dict["_raw_tool_calls"])
             messages.append(msg)
         return messages
     except Exception as e:

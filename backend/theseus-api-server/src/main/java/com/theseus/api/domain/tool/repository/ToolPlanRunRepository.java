@@ -15,32 +15,39 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ToolPlanRunRepository extends JpaRepository<ToolPlanRun, Long> {
-
 	Optional<ToolPlanRun> findByRunId(String runId);
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	@Query("""
-		select toolPlanRun
-		from ToolPlanRun toolPlanRun
-		where toolPlanRun.runId = :runId
-	""")
+	@Query(
+		"""
+			select toolPlanRun
+			from ToolPlanRun toolPlanRun
+			where toolPlanRun.runId = :runId
+		"""
+	)
 	Optional<ToolPlanRun> findByRunIdForUpdate(@Param("runId") String runId);
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	@Query("""
-		select toolPlanRun
-		from ToolPlanRun toolPlanRun
-		where toolPlanRun.status in :statuses
-			and toolPlanRun.updatedAt < :cutoff
-		order by toolPlanRun.updatedAt asc
-	""")
+	@Query(
+		"""
+			select toolPlanRun
+			from ToolPlanRun toolPlanRun
+			where toolPlanRun.status in :statuses
+				and toolPlanRun.updatedAt < :cutoff
+			order by toolPlanRun.updatedAt asc
+		"""
+	)
 	List<ToolPlanRun> findTimedOutRunsForUpdate(
 		@Param("statuses") List<ToolPlanRunStatus> statuses,
 		@Param("cutoff") LocalDateTime cutoff,
 		Pageable pageable
 	);
 
-	Optional<ToolPlanRun> findByRunIdAndProjectAndChatSession(String runId, Project project, ChatSession chatSession);
+	Optional<ToolPlanRun> findByRunIdAndProjectAndChatSession(
+		String runId,
+		Project project,
+		ChatSession chatSession
+	);
 
 	List<ToolPlanRun> findByProjectAndChatSessionAndStatusOrderByRequestedAtDesc(
 		Project project,

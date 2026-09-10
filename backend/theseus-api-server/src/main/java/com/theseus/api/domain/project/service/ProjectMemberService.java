@@ -42,12 +42,16 @@ public class ProjectMemberService {
 		Project project = getProjectEntity(projectId);
 		validateProjectMember(project, user);
 
-		List<ProjectMember> projectMembers = status == null
-			? projectMemberRepository.findByProject(project)
-			: projectMemberRepository.findByProjectAndStatus(project, status);
+		List<ProjectMember> projectMembers =
+			status == null
+				? projectMemberRepository.findByProject(project)
+				: projectMemberRepository.findByProjectAndStatus(project, status);
 
-		return projectMembers.stream()
-			.map(projectMember -> ProjectMemberResponse.createOf(projectMember, isProjectAdminUser(projectMember)))
+		return projectMembers
+			.stream()
+			.map(projectMember ->
+				ProjectMemberResponse.createOf(projectMember, isProjectAdminUser(projectMember))
+			)
 			.toList();
 	}
 
@@ -82,7 +86,9 @@ public class ProjectMemberService {
 		}
 
 		validateAccessLevel(request.getProjectRole(), request.getAccessLevel());
-		ProjectMember projectMember = projectMemberRepository.save(request.toEntity(project, targetUser, user));
+		ProjectMember projectMember = projectMemberRepository.save(
+			request.toEntity(project, targetUser, user)
+		);
 
 		return ProjectMemberResponse.createOf(projectMember, isProjectAdminUser(projectMember));
 	}
@@ -118,27 +124,32 @@ public class ProjectMemberService {
 	}
 
 	private Project getProjectEntity(Long projectId) {
-		return projectRepository.findById(projectId)
+		return projectRepository
+			.findById(projectId)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_NOT_FOUND));
 	}
 
 	private ProjectMember getProjectMemberEntity(Project project, Long projectMemberId) {
-		return projectMemberRepository.findByProjectAndId(project, projectMemberId)
+		return projectMemberRepository
+			.findByProjectAndId(project, projectMemberId)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_MEMBER_NOT_FOUND));
 	}
 
 	private ProjectMember getProjectMember(Project project, User user) {
-		return projectMemberRepository.findByProjectAndUser(project, user)
+		return projectMemberRepository
+			.findByProjectAndUser(project, user)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_MEMBER_NOT_FOUND));
 	}
 
 	private User getUserEntity(Long userId) {
-		return userRepository.findById(userId)
+		return userRepository
+			.findById(userId)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.USER_NOT_FOUND));
 	}
 
 	private User getUserEntityByEmployeeNumber(String employeeNumber) {
-		return userRepository.findByEmployeeNumber(employeeNumber)
+		return userRepository
+			.findByEmployeeNumber(employeeNumber)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.USER_NOT_FOUND));
 	}
 
@@ -151,33 +162,41 @@ public class ProjectMemberService {
 	}
 
 	private void validateProjectMember(Project project, User user) {
-		ProjectMember projectMember = projectMemberRepository.findByProjectAndUser(project, user)
+		ProjectMember projectMember = projectMemberRepository
+			.findByProjectAndUser(project, user)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_MEMBER_PERMISSION_REQUIRED));
 
-		if (!ProjectMemberStatus.IN_PROGRESS.equals(projectMember.getStatus())) {
+		if (!projectMember.isActive()) {
 			throw BusinessException.of(ErrorCode.PROJECT_MEMBER_PERMISSION_REQUIRED);
 		}
 	}
 
 	private void validateProjectAdmin(Project project, User user) {
-		ProjectMember projectMember = projectMemberRepository.findByProjectAndUser(project, user)
+		ProjectMember projectMember = projectMemberRepository
+			.findByProjectAndUser(project, user)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_ADMIN_PERMISSION_REQUIRED));
 
-		if (!ProjectRole.ADMIN.equals(projectMember.getProjectRole())
-			|| !ProjectMemberStatus.IN_PROGRESS.equals(projectMember.getStatus())) {
+		if (!projectMember.isActiveAdmin()) {
 			throw BusinessException.of(ErrorCode.PROJECT_ADMIN_PERMISSION_REQUIRED);
 		}
 	}
 
-	private void validateProjectAdminUserUpdate(ProjectMember projectMember, ProjectMemberUpdateRequest request) {
+	private void validateProjectAdminUserUpdate(
+		ProjectMember projectMember,
+		ProjectMemberUpdateRequest request
+	) {
 		if (!isProjectAdminUser(projectMember)) {
 			return;
 		}
 
-		ProjectRole nextRole = request.getProjectRole() == null ? projectMember.getProjectRole() : request.getProjectRole();
-		ProjectMemberStatus nextStatus = request.getStatus() == null ? projectMember.getStatus() : request.getStatus();
+		ProjectRole nextRole =
+			request.getProjectRole() == null ? projectMember.getProjectRole() : request.getProjectRole();
+		ProjectMemberStatus nextStatus =
+			request.getStatus() == null ? projectMember.getStatus() : request.getStatus();
 
-		if (!ProjectRole.ADMIN.equals(nextRole) || !ProjectMemberStatus.IN_PROGRESS.equals(nextStatus)) {
+		if (
+			!ProjectRole.ADMIN.equals(nextRole) || !ProjectMemberStatus.IN_PROGRESS.equals(nextStatus)
+		) {
 			throw BusinessException.of(ErrorCode.PROJECT_ADMIN_MEMBER_REQUIRED);
 		}
 	}
@@ -191,7 +210,10 @@ public class ProjectMemberService {
 		}
 	}
 
-	private ProjectRole resolveNextProjectRole(ProjectMember projectMember, ProjectMemberUpdateRequest request) {
+	private ProjectRole resolveNextProjectRole(
+		ProjectMember projectMember,
+		ProjectMemberUpdateRequest request
+	) {
 		if (request.getProjectRole() == null) {
 			return projectMember.getProjectRole();
 		}
@@ -205,6 +227,10 @@ public class ProjectMemberService {
 	}
 
 	private boolean isProjectAdminUser(ProjectMember projectMember) {
-		return projectMember.getProject().getProjectAdminUser().getId().equals(projectMember.getUser().getId());
+		return projectMember
+			.getProject()
+			.getProjectAdminUser()
+			.getId()
+			.equals(projectMember.getUser().getId());
 	}
 }

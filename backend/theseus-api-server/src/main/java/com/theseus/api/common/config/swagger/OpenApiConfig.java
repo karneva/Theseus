@@ -13,7 +13,12 @@ import org.springframework.context.annotation.Configuration;
 /**
  * OpenAPI configuration for Swagger UI and JWT Bearer authentication testing.
  */
-@ConditionalOnProperty(prefix = "springdoc.api-docs", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+	prefix = "springdoc.api-docs",
+	name = "enabled",
+	havingValue = "true",
+	matchIfMissing = true
+)
 @Configuration
 public class OpenApiConfig {
 
@@ -28,28 +33,28 @@ public class OpenApiConfig {
 	public OpenAPI openApi() {
 		Info info = new Info()
 			.title("Theseus API")
-			.description("""
+			.description(
+				"""
 				<h3>Theseus API Server</h3>
 				<ul>
 					<li>Project collaboration API</li>
 					<li>AI agent API</li>
 				</ul>
-				""")
+				"""
+			)
 			.version("v1.0.0")
-			.contact(new Contact()
-				.name("Theseus")
-				.url(""));
+			.contact(new Contact().name("Theseus").url(""));
 
-		SecurityRequirement securityRequirement = new SecurityRequirement()
-			.addList(JWT_SECURITY_SCHEME_NAME);
+		SecurityRequirement securityRequirement = new SecurityRequirement().addList(
+			JWT_SECURITY_SCHEME_NAME
+		);
 
-		Components components = new Components()
-			.addSecuritySchemes(JWT_SECURITY_SCHEME_NAME, createJwtSecurityScheme());
+		Components components = new Components().addSecuritySchemes(
+			JWT_SECURITY_SCHEME_NAME,
+			createJwtSecurityScheme()
+		);
 
-		return new OpenAPI()
-			.info(info)
-			.addSecurityItem(securityRequirement)
-			.components(components);
+		return new OpenAPI().info(info).addSecurityItem(securityRequirement).components(components);
 	}
 
 	private SecurityScheme createJwtSecurityScheme() {

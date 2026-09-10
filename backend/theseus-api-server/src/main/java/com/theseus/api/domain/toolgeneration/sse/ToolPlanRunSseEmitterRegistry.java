@@ -18,8 +18,7 @@ public class ToolPlanRunSseEmitterRegistry {
 
 	public void register(Long projectId, Long chatSessionId, String runId, SseEmitter emitter) {
 		String streamKey = createStreamKey(projectId, chatSessionId, runId);
-		emitters.computeIfAbsent(streamKey, ignored -> new CopyOnWriteArrayList<>())
-			.add(emitter);
+		emitters.computeIfAbsent(streamKey, ignored -> new CopyOnWriteArrayList<>()).add(emitter);
 
 		Runnable removeEmitter = () -> remove(projectId, chatSessionId, runId, emitter);
 		emitter.onCompletion(removeEmitter);
@@ -27,7 +26,12 @@ public class ToolPlanRunSseEmitterRegistry {
 		emitter.onError(throwable -> removeEmitter.run());
 	}
 
-	public void sendToRun(Long projectId, Long chatSessionId, String runId, ToolPlanRunSseEvent event) {
+	public void sendToRun(
+		Long projectId,
+		Long chatSessionId,
+		String runId,
+		ToolPlanRunSseEvent event
+	) {
 		String streamKey = createStreamKey(projectId, chatSessionId, runId);
 		List<SseEmitter> runEmitters = emitters.get(streamKey);
 		if (runEmitters == null || runEmitters.isEmpty()) {
@@ -47,9 +51,7 @@ public class ToolPlanRunSseEmitterRegistry {
 		ToolPlanRunSseEvent event
 	) {
 		try {
-			emitter.send(SseEmitter.event()
-				.name(event.getEventType())
-				.data(event));
+			emitter.send(SseEmitter.event().name(event.getEventType()).data(event));
 			return true;
 		} catch (IOException | IllegalStateException exception) {
 			log.warn(

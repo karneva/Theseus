@@ -60,19 +60,13 @@ public class ToolApprovalResponse {
 			.requestedByUserId(requestedByProjectMember.getUser().getId())
 			.requestedByUserName(requestedByProjectMember.getUser().getName())
 			.reviewedByProjectMemberId(
-				reviewedByProjectMember == null
-					? null
-					: reviewedByProjectMember.getId()
+				reviewedByProjectMember == null ? null : reviewedByProjectMember.getId()
 			)
 			.reviewedByUserId(
-				reviewedByProjectMember == null
-					? null
-					: reviewedByProjectMember.getUser().getId()
+				reviewedByProjectMember == null ? null : reviewedByProjectMember.getUser().getId()
 			)
 			.reviewedByUserName(
-				reviewedByProjectMember == null
-					? null
-					: reviewedByProjectMember.getUser().getName()
+				reviewedByProjectMember == null ? null : reviewedByProjectMember.getUser().getName()
 			)
 			.reviewFeedback(toolApproval.getReviewFeedback())
 			.requestedAt(toolApproval.getRequestedAt())

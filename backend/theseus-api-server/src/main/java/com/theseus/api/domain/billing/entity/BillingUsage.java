@@ -25,11 +25,11 @@ import lombok.NoArgsConstructor;
 @Table(
 	name = "billing_usages",
 	uniqueConstraints = {
-		@UniqueConstraint(name = "uk_billing_usages_idempotency_key", columnNames = "idempotency_key")
+		@UniqueConstraint(name = "uk_billing_usages_idempotency_key", columnNames = "idempotency_key"),
 	},
 	indexes = {
 		@Index(name = "idx_billing_usages_user_reported_at", columnList = "user_id, reported_at"),
-		@Index(name = "idx_billing_usages_project_reported_at", columnList = "project_id, reported_at")
+		@Index(name = "idx_billing_usages_project_reported_at", columnList = "project_id, reported_at"),
 	}
 )
 @Entity

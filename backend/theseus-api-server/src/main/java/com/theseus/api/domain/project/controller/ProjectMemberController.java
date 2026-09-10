@@ -30,58 +30,88 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/projects/{projectId}")
 public class ProjectMemberController {
 
-    private final ProjectMemberService projectMemberService;
+	private final ProjectMemberService projectMemberService;
 
-    @Operation(summary = "프로젝트 멤버 목록 조회", description = "프로젝트에 속한 멤버 목록을 조회합니다. status가 'ALL'이면 전체 조회, 없으면 진행 중인 멤버만 조회합니다.")
-    @GetMapping("/members")
-    public ResponseEntity<ApiResponse<List<ProjectMemberResponse>>> getProjectMembers(
-            @AuthenticationPrincipal AuthenticatedUser currentUser,
-            @PathVariable Long projectId,
-            @RequestParam(required = false) String status
-    ) {
-        ProjectMemberStatus memberStatus = "ALL".equalsIgnoreCase(status) ? null : parseMemberStatus(status);
-        List<ProjectMemberResponse> responses = projectMemberService.getProjectMembers(currentUser, projectId, memberStatus);
-        return ApiResponse.onSuccess(SuccessCode.OK, responses);
-    }
+	@Operation(
+		summary = "프로젝트 멤버 목록 조회",
+		description = "프로젝트에 속한 멤버 목록을 조회합니다. status가 'ALL'이면 전체 조회, 없으면 진행 중인 멤버만 조회합니다."
+	)
+	@GetMapping("/members")
+	public ResponseEntity<ApiResponse<List<ProjectMemberResponse>>> getProjectMembers(
+		@AuthenticationPrincipal AuthenticatedUser currentUser,
+		@PathVariable Long projectId,
+		@RequestParam(required = false) String status
+	) {
+		ProjectMemberStatus memberStatus = "ALL".equalsIgnoreCase(status)
+			? null
+			: parseMemberStatus(status);
+		List<ProjectMemberResponse> responses = projectMemberService.getProjectMembers(
+			currentUser,
+			projectId,
+			memberStatus
+		);
+		return ApiResponse.onSuccess(SuccessCode.OK, responses);
+	}
 
-    @Operation(summary = "프로젝트 멤버 등록", description = "프로젝트 ADMIN이 활성 사용자를 프로젝트 멤버로 등록합니다. ADMIN으로 등록해도 프로젝트 담당자(PM)는 변경되지 않습니다.")
-    @PostMapping("/members")
-    public ResponseEntity<ApiResponse<ProjectMemberResponse>> createProjectMember(
-            @AuthenticationPrincipal AuthenticatedUser currentUser,
-            @PathVariable Long projectId,
-            @Valid @RequestBody ProjectMemberCreateRequest request
-    ) {
-        ProjectMemberResponse response = projectMemberService.createProjectMember(currentUser, projectId, request);
-        return ApiResponse.onSuccess(SuccessCode.CREATED, response);
-    }
+	@Operation(
+		summary = "프로젝트 멤버 등록",
+		description = "프로젝트 ADMIN이 활성 사용자를 프로젝트 멤버로 등록합니다. ADMIN으로 등록해도 프로젝트 담당자(PM)는 변경되지 않습니다."
+	)
+	@PostMapping("/members")
+	public ResponseEntity<ApiResponse<ProjectMemberResponse>> createProjectMember(
+		@AuthenticationPrincipal AuthenticatedUser currentUser,
+		@PathVariable Long projectId,
+		@Valid @RequestBody ProjectMemberCreateRequest request
+	) {
+		ProjectMemberResponse response = projectMemberService.createProjectMember(
+			currentUser,
+			projectId,
+			request
+		);
+		return ApiResponse.onSuccess(SuccessCode.CREATED, response);
+	}
 
-    @Operation(summary = "내 프로젝트 권한 조회", description = "JWT 사용자 기준으로 해당 프로젝트의 내 멤버 권한과 프로젝트 담당자 여부를 조회합니다.")
-    @GetMapping("/me")
-    public ResponseEntity<ApiResponse<ProjectMemberResponse>> getMyProjectMember(
-            @AuthenticationPrincipal AuthenticatedUser currentUser,
-            @PathVariable Long projectId
-    ) {
-        ProjectMemberResponse response = projectMemberService.getMyProjectMember(currentUser, projectId);
-        return ApiResponse.onSuccess(SuccessCode.OK, response);
-    }
+	@Operation(
+		summary = "내 프로젝트 권한 조회",
+		description = "JWT 사용자 기준으로 해당 프로젝트의 내 멤버 권한과 프로젝트 담당자 여부를 조회합니다."
+	)
+	@GetMapping("/me")
+	public ResponseEntity<ApiResponse<ProjectMemberResponse>> getMyProjectMember(
+		@AuthenticationPrincipal AuthenticatedUser currentUser,
+		@PathVariable Long projectId
+	) {
+		ProjectMemberResponse response = projectMemberService.getMyProjectMember(
+			currentUser,
+			projectId
+		);
+		return ApiResponse.onSuccess(SuccessCode.OK, response);
+	}
 
-    @Operation(summary = "프로젝트 멤버 권한 수정", description = "프로젝트 ADMIN이 멤버 권한을 수정합니다. 현재 프로젝트 담당자(PM)는 ADMIN/진행중 상태에서 제외할 수 없습니다.")
-    @PatchMapping("/members/{projectMemberId}")
-    public ResponseEntity<ApiResponse<ProjectMemberResponse>> updateProjectMember(
-            @AuthenticationPrincipal AuthenticatedUser currentUser,
-            @PathVariable Long projectId,
-            @PathVariable Long projectMemberId,
-            @Valid @RequestBody ProjectMemberUpdateRequest request
-    ) {
-        ProjectMemberResponse response = projectMemberService.updateProjectMember(currentUser, projectId, projectMemberId, request);
-        return ApiResponse.onSuccess(SuccessCode.OK, response);
-    }
+	@Operation(
+		summary = "프로젝트 멤버 권한 수정",
+		description = "프로젝트 ADMIN이 멤버 권한을 수정합니다. 현재 프로젝트 담당자(PM)는 ADMIN/진행중 상태에서 제외할 수 없습니다."
+	)
+	@PatchMapping("/members/{projectMemberId}")
+	public ResponseEntity<ApiResponse<ProjectMemberResponse>> updateProjectMember(
+		@AuthenticationPrincipal AuthenticatedUser currentUser,
+		@PathVariable Long projectId,
+		@PathVariable Long projectMemberId,
+		@Valid @RequestBody ProjectMemberUpdateRequest request
+	) {
+		ProjectMemberResponse response = projectMemberService.updateProjectMember(
+			currentUser,
+			projectId,
+			projectMemberId,
+			request
+		);
+		return ApiResponse.onSuccess(SuccessCode.OK, response);
+	}
 
-    private ProjectMemberStatus parseMemberStatus(String status) {
-        if (status == null || status.isBlank()) {
-            return ProjectMemberStatus.IN_PROGRESS;
-        }
+	private ProjectMemberStatus parseMemberStatus(String status) {
+		if (status == null || status.isBlank()) {
+			return ProjectMemberStatus.IN_PROGRESS;
+		}
 
-        return ProjectMemberStatus.createFrom(status);
-    }
+		return ProjectMemberStatus.createFrom(status);
+	}
 }

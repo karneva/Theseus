@@ -31,7 +31,8 @@ class BaseEmbeddingProvider(ABC):
 
     @abstractmethod
     def embed_texts(
-        self, texts: List[str],
+        self,
+        texts: List[str],
     ) -> List[List[float]]:
         """다수의 텍스트를 벡터 배치로 변환합니다.
 
@@ -93,17 +94,20 @@ class LocalEmbeddingProvider(BaseEmbeddingProvider):
         """단일 텍스트를 벡터로 변환합니다."""
         self._load_model()
         vector = self._model.encode(
-            text, normalize_embeddings=True,
+            text,
+            normalize_embeddings=True,
         )
         return vector.tolist()
 
     def embed_texts(
-        self, texts: List[str],
+        self,
+        texts: List[str],
     ) -> List[List[float]]:
         """다수의 텍스트를 벡터 배치로 변환합니다."""
         self._load_model()
         vectors = self._model.encode(
-            texts, normalize_embeddings=True,
+            texts,
+            normalize_embeddings=True,
         )
         return [v.tolist() for v in vectors]
 
@@ -143,15 +147,13 @@ class RemoteEmbeddingProvider(BaseEmbeddingProvider):
                 api_key=os.getenv("OPENAI_API_KEY"),
             )
             log.info(
-                "[Embedding] Initialized OpenAI "
-                "embedding client: %s",
+                "[Embedding] Initialized OpenAI " "embedding client: %s",
                 self._model_name,
             )
             return self._client
         except ImportError as e:
             raise ImportError(
-                "openai 패키지가 설치되어 있지 않습니다. "
-                "`pip install openai`를 실행하세요."
+                "openai 패키지가 설치되어 있지 않습니다. " "`pip install openai`를 실행하세요."
             ) from e
 
     def embed_text(self, text: str) -> List[float]:
@@ -164,7 +166,8 @@ class RemoteEmbeddingProvider(BaseEmbeddingProvider):
         return response.data[0].embedding
 
     def embed_texts(
-        self, texts: List[str],
+        self,
+        texts: List[str],
     ) -> List[List[float]]:
         """다수의 텍스트를 벡터 배치로 변환합니다."""
         client = self._get_client()
@@ -172,9 +175,7 @@ class RemoteEmbeddingProvider(BaseEmbeddingProvider):
             input=texts,
             model=self._model_name,
         )
-        return [
-            item.embedding for item in response.data
-        ]
+        return [item.embedding for item in response.data]
 
     @property
     def dimension(self) -> int:
@@ -210,7 +211,5 @@ def create_embedding_provider(
         )
     else:
         raise ValueError(
-            f"Unknown EMBEDDING_PROVIDER: "
-            f"'{config.provider}'. "
-            f"Use 'local' or 'remote'."
+            f"Unknown EMBEDDING_PROVIDER: " f"'{config.provider}'. " f"Use 'local' or 'remote'."
         )

@@ -86,7 +86,8 @@ public class AuthService {
 	}
 
 	private User findLoginUser(String loginId) {
-		return userRepository.findByEmployeeNumber(loginId)
+		return userRepository
+			.findByEmployeeNumber(loginId)
 			.or(() -> userRepository.findByEmail(loginId))
 			.orElseThrow(() -> BusinessException.of(ErrorCode.LOGIN_FAILED));
 	}
@@ -116,7 +117,8 @@ public class AuthService {
 		try {
 			jwtTokenProvider.validateRefreshToken(refreshToken);
 			Long tokenUserId = jwtTokenProvider.getUserId(refreshToken);
-			String savedRefreshToken = refreshTokenStore.findByUserId(tokenUserId)
+			String savedRefreshToken = refreshTokenStore
+				.findByUserId(tokenUserId)
 				.orElseThrow(() -> BusinessException.of(ErrorCode.INVALID_REFRESH_TOKEN));
 
 			if (!savedRefreshToken.equals(refreshToken)) {
@@ -124,7 +126,8 @@ public class AuthService {
 				throw BusinessException.of(ErrorCode.INVALID_REFRESH_TOKEN);
 			}
 
-			return userRepository.findById(tokenUserId)
+			return userRepository
+				.findById(tokenUserId)
 				.orElseThrow(() -> BusinessException.of(ErrorCode.INVALID_REFRESH_TOKEN));
 		} catch (JwtException | IllegalArgumentException | BusinessException exception) {
 			throw BusinessException.of(ErrorCode.INVALID_REFRESH_TOKEN, exception);

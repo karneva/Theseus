@@ -88,7 +88,10 @@ async def handle_slash_command(
 
     # ── Plan 제어 ───────────────────────────────────────────────
     elif cmd in ("/pause", "/stop"):
-        if ctx.sm.mode == AgentMode.PLAN and ctx.sm.plan_phase in (PlanPhase.EXECUTING, PlanPhase.VERIFYING):
+        if ctx.sm.mode == AgentMode.PLAN and ctx.sm.plan_phase in (
+            PlanPhase.EXECUTING,
+            PlanPhase.VERIFYING,
+        ):
             ctx.sm.set_plan_phase(PlanPhase.WAIT_FOR_REVIEW)
             ctx.engine.set_system_prompt(ctx.sm.get_system_prompt())
             ctx.waiting_for_user = True
@@ -145,7 +148,9 @@ async def handle_slash_command(
                 "  /tools help      — 이 도움말\n"
             )
         else:
-            print(f"[!] 알 수 없는 서브커맨드: '{sub}'. '/tools help'를 입력하면 사용법을 확인할 수 있습니다.")
+            print(
+                f"[!] 알 수 없는 서브커맨드: '{sub}'. '/tools help'를 입력하면 사용법을 확인할 수 있습니다."
+            )
         return True, None
 
     # ── 도구 검증 ────────────────────────────────────────────────
@@ -154,6 +159,7 @@ async def handle_slash_command(
             print("[!] Usage: /validate <tool_name>")
             return True, None
         from theseus_engine.tools.core.tool_factory import ToolValidator, CUSTOM_TOOLS_DIR
+
         tool_name = args[0]
         file_path = os.path.join(CUSTOM_TOOLS_DIR, f"{tool_name}.py")
         if not os.path.exists(file_path):
@@ -175,6 +181,7 @@ async def handle_slash_command(
             print("[!] Usage: /kb <query>")
             return True, None
         from theseus_engine.rag.service import get_rag_service
+
         query = " ".join(args)
         print(f"[*] Searching Knowledge Base for: '{query}'...")
         try:
@@ -191,6 +198,7 @@ async def handle_slash_command(
     # ── 비용 / 통계 ──────────────────────────────────────────────
     elif cmd == "/cost":
         from theseus_engine.engine.cost_tracker import CostTracker
+
         report = "\n" + CostTracker.get_or_create().format_report()
         try:
             print(report)
@@ -200,6 +208,7 @@ async def handle_slash_command(
 
     elif cmd == "/stats":
         from theseus_engine.observability.stats import SessionStats
+
         report = "\n" + SessionStats.get().format_report()
         try:
             print(report)
@@ -222,6 +231,7 @@ async def handle_slash_command(
 
 
 # ── 내부 헬퍼 ────────────────────────────────────────────────────
+
 
 def _print_all_tools(ctx: CLIContext) -> None:
     """전체 활성 툴 목록 출력 (커스텀 툴은 [custom] 태그 표시)."""
@@ -269,16 +279,16 @@ def _print_custom_tools(ctx: CLIContext) -> None:
 
     for module_name in sorted(custom_names):
         meta = _load_meta(CUSTOM_TOOLS_DIR, module_name)
-        tool_name   = meta.get("toolName", module_name)
-        perm        = meta.get("permissionLevel", ctx.project_tool_permissions.get(tool_name, 1))
-        status      = meta.get("status", "active")
-        is_active   = meta.get("isActive", True)
-        status_tag  = f"{'✅' if is_active else '⏸️ '} {status}"
+        tool_name = meta.get("toolName", module_name)
+        perm = meta.get("permissionLevel", ctx.project_tool_permissions.get(tool_name, 1))
+        status = meta.get("status", "active")
+        is_active = meta.get("isActive", True)
+        status_tag = f"{'✅' if is_active else '⏸️ '} {status}"
 
         # description은 registry의 인스턴스에서 읽음
         instance = registry_map.get(tool_name)
         description = getattr(instance, "description", "") if instance else ""
-        desc_short  = (description[:38] + "…") if len(description) > 39 else description
+        desc_short = (description[:38] + "…") if len(description) > 39 else description
 
         print(f"  {tool_name:<22} Lv.{perm:<3}  {status_tag:<10}  {desc_short}")
 
@@ -290,6 +300,7 @@ def _print_custom_tools(ctx: CLIContext) -> None:
 
     print()
     from theseus_engine.tools.core.tool_factory import CUSTOM_TOOLS_DIR as _DIR
+
     print(f"  📁 디렉토리: {_DIR}")
     print()
 
@@ -311,6 +322,7 @@ def _get_custom_tool_names() -> set[str]:
 def _load_meta(custom_tools_dir: str, module_name: str) -> dict:
     """module_name.meta.json을 읽어 dict로 반환. 파일 없으면 빈 dict."""
     import json, os
+
     path = os.path.join(custom_tools_dir, f"{module_name}.meta.json")
     if not os.path.exists(path):
         return {}

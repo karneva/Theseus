@@ -1,9 +1,10 @@
 export function createInitialState(vscode) {
   const prevState = vscode.getState() || {};
   const currentSession = prevState.session || 'default';
-  const planBySession = prevState.planBySession && typeof prevState.planBySession === 'object'
-    ? prevState.planBySession
-    : {};
+  const planBySession =
+    prevState.planBySession && typeof prevState.planBySession === 'object'
+      ? prevState.planBySession
+      : {};
   if (prevState.plan && !planBySession[currentSession]) {
     planBySession[currentSession] = prevState.plan;
   }

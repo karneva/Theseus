@@ -3,105 +3,109 @@ import * as vscode from 'vscode';
 type ComposerChangeStatus = 'pending' | 'success' | 'failed';
 
 export type ComposerChangeItem = {
-    id?: string;
-    path?: string;
-    relativePath?: string;
-    status?: ComposerChangeStatus;
-    success?: boolean;
-    createdAt?: number;
-    updatedAt?: number;
-    completedAt?: number;
-    failedAt?: number;
-    durationMs?: number;
-    errorMessage?: string;
-    toolName?: string;
-    event?: unknown;
+  id?: string;
+  path?: string;
+  relativePath?: string;
+  status?: ComposerChangeStatus;
+  success?: boolean;
+  createdAt?: number;
+  updatedAt?: number;
+  completedAt?: number;
+  failedAt?: number;
+  durationMs?: number;
+  errorMessage?: string;
+  toolName?: string;
+  event?: unknown;
 };
 
 export class ComposerPanel {
-    public static currentPanel: ComposerPanel | undefined;
-    public static readonly viewType = 'theseusComposer';
+  public static currentPanel: ComposerPanel | undefined;
+  public static readonly viewType = 'theseusComposer';
 
-    private readonly _panel: vscode.WebviewPanel;
-    private readonly _extensionUri: vscode.Uri;
-    private _disposables: vscode.Disposable[] = [];
-    private _changes: ComposerChangeItem[] = [];
+  private readonly _panel: vscode.WebviewPanel;
+  private readonly _extensionUri: vscode.Uri;
+  private _disposables: vscode.Disposable[] = [];
+  private _changes: ComposerChangeItem[] = [];
 
-    public static createOrShow(extensionUri: vscode.Uri) {
-        const column = vscode.window.activeTextEditor
-            ? vscode.window.activeTextEditor.viewColumn
-            : undefined;
+  public static createOrShow(extensionUri: vscode.Uri) {
+    const column = vscode.window.activeTextEditor
+      ? vscode.window.activeTextEditor.viewColumn
+      : undefined;
 
-        if (ComposerPanel.currentPanel) {
-            ComposerPanel.currentPanel._panel.reveal(column);
-            return;
+    if (ComposerPanel.currentPanel) {
+      ComposerPanel.currentPanel._panel.reveal(column);
+      return;
+    }
+
+    const panel = vscode.window.createWebviewPanel(
+      ComposerPanel.viewType,
+      'Theseus Composer',
+      column || vscode.ViewColumn.One,
+      {
+        enableScripts: true,
+        localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')],
+      },
+    );
+
+    ComposerPanel.currentPanel = new ComposerPanel(panel, extensionUri);
+  }
+
+  public static updateChanges(changes: any[]) {
+    if (ComposerPanel.currentPanel) {
+      ComposerPanel.currentPanel._update(changes);
+    }
+  }
+
+  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
+    this._panel = panel;
+    this._extensionUri = extensionUri;
+
+    this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+
+    this._panel.webview.html = this._getHtmlForWebview(this._panel.webview);
+    this._update([]);
+
+    this._panel.webview.onDidReceiveMessage(
+      (message) => {
+        switch (message.command) {
+          case 'acceptAll':
+            vscode.window.showInformationMessage(
+              'No direct accept action is available yet. Review diffs in Theseus Chat.',
+            );
+            break;
+          case 'rejectAll':
+            vscode.window.showInformationMessage(
+              'No direct reject action is available yet. Use Revert from Theseus Chat change review.',
+            );
+            break;
         }
+      },
+      null,
+      this._disposables,
+    );
+  }
 
-        const panel = vscode.window.createWebviewPanel(
-            ComposerPanel.viewType,
-            'Theseus Composer',
-            column || vscode.ViewColumn.One,
-            {
-                enableScripts: true,
-                localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
-            }
-        );
+  public dispose() {
+    ComposerPanel.currentPanel = undefined;
 
-        ComposerPanel.currentPanel = new ComposerPanel(panel, extensionUri);
+    this._panel.dispose();
+
+    while (this._disposables.length) {
+      const x = this._disposables.pop();
+      if (x) {
+        x.dispose();
+      }
     }
+  }
 
-    public static updateChanges(changes: any[]) {
-        if (ComposerPanel.currentPanel) {
-            ComposerPanel.currentPanel._update(changes);
-        }
-    }
+  private _update(changes: ComposerChangeItem[]) {
+    this._changes = Array.isArray(changes) ? changes : [];
+    this._panel.title = 'Theseus Composer';
+    this._panel.webview.postMessage({ type: 'changes', changes: this._changes });
+  }
 
-    private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
-        this._panel = panel;
-        this._extensionUri = extensionUri;
-
-        this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
-
-        this._panel.webview.html = this._getHtmlForWebview(this._panel.webview);
-        this._update([]);
-
-        this._panel.webview.onDidReceiveMessage(
-            message => {
-                switch (message.command) {
-                    case 'acceptAll':
-                        vscode.window.showInformationMessage('No direct accept action is available yet. Review diffs in Theseus Chat.');
-                        break;
-                    case 'rejectAll':
-                        vscode.window.showInformationMessage('No direct reject action is available yet. Use Revert from Theseus Chat change review.');
-                        break;
-                }
-            },
-            null,
-            this._disposables
-        );
-    }
-
-    public dispose() {
-        ComposerPanel.currentPanel = undefined;
-
-        this._panel.dispose();
-
-        while (this._disposables.length) {
-            const x = this._disposables.pop();
-            if (x) {
-                x.dispose();
-            }
-        }
-    }
-
-    private _update(changes: ComposerChangeItem[]) {
-        this._changes = Array.isArray(changes) ? changes : [];
-        this._panel.title = 'Theseus Composer';
-        this._panel.webview.postMessage({ type: 'changes', changes: this._changes });
-    }
-
-    private _getHtmlForWebview(webview: vscode.Webview) {
-        return `<!DOCTYPE html>
+  private _getHtmlForWebview(webview: vscode.Webview) {
+    return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -233,5 +237,5 @@ export class ComposerPanel {
     </script>
 </body>
 </html>`;
-    }
+  }
 }

@@ -2,6 +2,7 @@ package com.theseus.api.domain.project.service;
 
 import com.theseus.api.common.exception.BusinessException;
 import com.theseus.api.common.exception.ErrorCode;
+import com.theseus.api.common.pagination.PageRequests;
 import com.theseus.api.domain.auth.token.AuthenticatedUser;
 import com.theseus.api.domain.project.dto.request.ProjectCreateRequest;
 import com.theseus.api.domain.project.dto.request.ProjectUpdateRequest;
@@ -22,7 +23,6 @@ import com.theseus.api.domain.user.entity.UserStatus;
 import com.theseus.api.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,9 +41,10 @@ public class ProjectService {
 	 */
 	public Page<MyProjectResponse> getMyProjects(AuthenticatedUser currentUser, int page, int size) {
 		User user = getCurrentUserEntity(currentUser);
-		Pageable pageable = createPageable(page, size);
+		Pageable pageable = PageRequests.create(page, size);
 
-		return projectMemberRepository.findByUserAndStatusAndProject_Status(
+		return projectMemberRepository
+			.findByUserAndStatusAndProject_Status(
 				user,
 				ProjectMemberStatus.IN_PROGRESS,
 				ProjectStatus.ACTIVE,
@@ -63,15 +64,13 @@ public class ProjectService {
 	) {
 		User user = getCurrentUserEntity(currentUser);
 		validateSuperAdmin(user);
-		Pageable pageable = createPageable(page, size);
+		Pageable pageable = PageRequests.create(page, size);
 
 		if (status == null) {
-			return projectRepository.findAll(pageable)
-				.map(ProjectSummaryResponse::createFrom);
+			return projectRepository.findAll(pageable).map(ProjectSummaryResponse::createFrom);
 		}
 
-		return projectRepository.findByStatus(status, pageable)
-			.map(ProjectSummaryResponse::createFrom);
+		return projectRepository.findByStatus(status, pageable).map(ProjectSummaryResponse::createFrom);
 	}
 
 	/**
@@ -90,11 +89,17 @@ public class ProjectService {
 	 * Super Admin이 프로젝트를 생성하고 지정한 담당자를 프로젝트 ADMIN으로 등록합니다.
 	 */
 	@Transactional
-	public ProjectResponse createProject(AuthenticatedUser currentUser, ProjectCreateRequest request) {
+	public ProjectResponse createProject(
+		AuthenticatedUser currentUser,
+		ProjectCreateRequest request
+	) {
 		User createdByUser = getCurrentUserEntity(currentUser);
 		validateSuperAdmin(createdByUser);
 
-		User projectAdminUser = getProjectAdminUser(request.getAdminEmployeeNumber(), request.getAdminName());
+		User projectAdminUser = getProjectAdminUser(
+			request.getAdminEmployeeNumber(),
+			request.getAdminName()
+		);
 		validateActiveUser(projectAdminUser);
 
 		Project project = projectRepository.save(request.toEntity(createdByUser, projectAdminUser));
@@ -107,7 +112,11 @@ public class ProjectService {
 	 * 프로젝트 기본 정보를 수정하고 필요한 경우 대표 담당자를 변경합니다.
 	 */
 	@Transactional
-	public ProjectResponse updateProject(AuthenticatedUser currentUser, Long projectId, ProjectUpdateRequest request) {
+	public ProjectResponse updateProject(
+		AuthenticatedUser currentUser,
+		Long projectId,
+		ProjectUpdateRequest request
+	) {
 		User user = getCurrentUserEntity(currentUser);
 		Project project = getProjectEntity(projectId);
 
@@ -124,7 +133,10 @@ public class ProjectService {
 			return ProjectResponse.createOf(project, findProjectAdminMember(project));
 		}
 
-		User projectAdminUser = getProjectAdminUser(request.getAdminEmployeeNumber(), request.getAdminName());
+		User projectAdminUser = getProjectAdminUser(
+			request.getAdminEmployeeNumber(),
+			request.getAdminName()
+		);
 		validateActiveUser(projectAdminUser);
 		project.updateProjectAdminUser(projectAdminUser);
 		ProjectMember adminMember = ensureProjectAdminMember(project, projectAdminUser, user);
@@ -136,11 +148,16 @@ public class ProjectService {
 	 * 프로젝트 ID로 프로젝트 엔티티를 조회합니다.
 	 */
 	public Project getProjectEntity(Long projectId) {
-		return projectRepository.findById(projectId)
+		return projectRepository
+			.findById(projectId)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_NOT_FOUND));
 	}
 
-	private ProjectMember createProjectAdminMember(Project project, User projectAdminUser, User createdByUser) {
+	private ProjectMember createProjectAdminMember(
+		Project project,
+		User projectAdminUser,
+		User createdByUser
+	) {
 		ProjectMember projectMember = ProjectMember.builder()
 			.project(project)
 			.user(projectAdminUser)
@@ -156,8 +173,13 @@ public class ProjectService {
 		return projectMemberRepository.save(projectMember);
 	}
 
-	private ProjectMember ensureProjectAdminMember(Project project, User projectAdminUser, User createdByUser) {
-		return projectMemberRepository.findByProjectAndUser(project, projectAdminUser)
+	private ProjectMember ensureProjectAdminMember(
+		Project project,
+		User projectAdminUser,
+		User createdByUser
+	) {
+		return projectMemberRepository
+			.findByProjectAndUser(project, projectAdminUser)
 			.map(projectMember -> {
 				projectMember.assignProjectAdminRole();
 				return projectMember;
@@ -166,7 +188,8 @@ public class ProjectService {
 	}
 
 	private ProjectMember findProjectAdminMember(Project project) {
-		return projectMemberRepository.findByProjectAndUser(project, project.getProjectAdminUser())
+		return projectMemberRepository
+			.findByProjectAndUser(project, project.getProjectAdminUser())
 			.orElse(null);
 	}
 
@@ -179,12 +202,14 @@ public class ProjectService {
 	}
 
 	private User getUserEntity(Long userId) {
-		return userRepository.findById(userId)
+		return userRepository
+			.findById(userId)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.USER_NOT_FOUND));
 	}
 
 	private User getProjectAdminUser(String employeeNumber, String name) {
-		return userRepository.findByEmployeeNumberAndName(employeeNumber, name)
+		return userRepository
+			.findByEmployeeNumberAndName(employeeNumber, name)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_ADMIN_USER_NOT_FOUND));
 	}
 
@@ -211,20 +236,21 @@ public class ProjectService {
 			throw BusinessException.of(ErrorCode.ACTIVE_PROJECT_REQUIRED);
 		}
 
-		ProjectMember projectMember = projectMemberRepository.findByProjectAndUser(project, user)
+		ProjectMember projectMember = projectMemberRepository
+			.findByProjectAndUser(project, user)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_MEMBER_PERMISSION_REQUIRED));
 
-		if (!ProjectMemberStatus.IN_PROGRESS.equals(projectMember.getStatus())) {
+		if (!projectMember.isActive()) {
 			throw BusinessException.of(ErrorCode.ACTIVE_PROJECT_MEMBER_REQUIRED);
 		}
 	}
 
 	private void validateProjectAdmin(Project project, User user) {
-		ProjectMember projectMember = projectMemberRepository.findByProjectAndUser(project, user)
+		ProjectMember projectMember = projectMemberRepository
+			.findByProjectAndUser(project, user)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_ADMIN_PERMISSION_REQUIRED));
 
-		if (!ProjectRole.ADMIN.equals(projectMember.getProjectRole())
-			|| !ProjectMemberStatus.IN_PROGRESS.equals(projectMember.getStatus())) {
+		if (!projectMember.isActiveAdmin()) {
 			throw BusinessException.of(ErrorCode.PROJECT_ADMIN_PERMISSION_REQUIRED);
 		}
 	}
@@ -239,9 +265,5 @@ public class ProjectService {
 		if (!UserStatus.ACTIVE.equals(user.getStatus())) {
 			throw BusinessException.of(ErrorCode.PROJECT_ADMIN_USER_ACTIVE_REQUIRED);
 		}
-	}
-
-	private Pageable createPageable(int page, int size) {
-		return PageRequest.of(Math.max(page, 0), Math.max(size, 1));
 	}
 }

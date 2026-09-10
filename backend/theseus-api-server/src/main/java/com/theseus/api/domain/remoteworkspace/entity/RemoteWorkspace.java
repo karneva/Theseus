@@ -29,7 +29,7 @@ import lombok.NoArgsConstructor;
 @Table(
 	name = "remote_workspaces",
 	indexes = {
-		@Index(name = "idx_remote_workspaces_project_status", columnList = "project_id, status")
+		@Index(name = "idx_remote_workspaces_project_status", columnList = "project_id, status"),
 	}
 )
 @Entity
@@ -40,7 +40,11 @@ public class RemoteWorkspace {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name = "fk_remote_workspaces_project"))
+	@JoinColumn(
+		name = "project_id",
+		nullable = false,
+		foreignKey = @ForeignKey(name = "fk_remote_workspaces_project")
+	)
 	private Project project;
 
 	@ManyToOne(fetch = FetchType.LAZY)

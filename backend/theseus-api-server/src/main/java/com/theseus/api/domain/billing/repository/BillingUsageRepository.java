@@ -5,6 +5,5 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BillingUsageRepository extends JpaRepository<BillingUsage, Long> {
-
 	Optional<BillingUsage> findByIdempotencyKey(String idempotencyKey);
 }

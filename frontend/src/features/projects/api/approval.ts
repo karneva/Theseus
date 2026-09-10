@@ -1,10 +1,9 @@
-import { apiClient } from '@/api/client';
-import type { ApiResponse } from '@/api/auth';
-import type { PageResponse } from '@/features/admin/api';
+import { http } from '@/api/http';
+import type { PageResponse } from '@/api/types';
 import type {
   ToolApprovalApproveRequest,
   ToolApprovalRejectRequest,
-  ToolApprovalResponse
+  ToolApprovalResponse,
 } from '@/features/projects/types/approval';
 
 export const approvalApi = {
@@ -15,7 +14,7 @@ export const approvalApi = {
     projectId: string | number,
     page = 0,
     size = 20,
-    approvalStatus?: string
+    approvalStatus?: string,
   ): Promise<PageResponse<ToolApprovalResponse>> => {
     const params: Record<string, string | number> = { page, size };
     if (approvalStatus) {
@@ -23,11 +22,10 @@ export const approvalApi = {
     }
 
     try {
-      const response = await apiClient.get<ApiResponse<PageResponse<ToolApprovalResponse>>>(
+      return await http.get<PageResponse<ToolApprovalResponse>>(
         `/api/v1/projects/${projectId}/tool-approvals`,
-        { params }
+        { params },
       );
-      return response.data.result;
     } catch (error) {
       console.error('Failed to fetch tool approvals:', error);
       throw error;
@@ -40,14 +38,13 @@ export const approvalApi = {
   approveTool: async (
     projectId: string | number,
     toolApprovalId: number,
-    data: ToolApprovalApproveRequest
+    data: ToolApprovalApproveRequest,
   ) => {
     try {
-      const response = await apiClient.patch<ApiResponse<ToolApprovalResponse>>(
+      return await http.patch<ToolApprovalResponse>(
         `/api/v1/projects/${projectId}/tool-approvals/${toolApprovalId}/approve`,
-        data
+        data,
       );
-      return response.data.result;
     } catch (error) {
       console.error(`Failed to approve tool approval ${toolApprovalId}:`, error);
       throw error;
@@ -60,17 +57,16 @@ export const approvalApi = {
   rejectTool: async (
     projectId: string | number,
     toolApprovalId: number,
-    data: ToolApprovalRejectRequest
+    data: ToolApprovalRejectRequest,
   ) => {
     try {
-      const response = await apiClient.patch<ApiResponse<ToolApprovalResponse>>(
+      return await http.patch<ToolApprovalResponse>(
         `/api/v1/projects/${projectId}/tool-approvals/${toolApprovalId}/reject`,
-        data
+        data,
       );
-      return response.data.result;
     } catch (error) {
       console.error(`Failed to reject tool approval ${toolApprovalId}:`, error);
       throw error;
     }
-  }
+  },
 };

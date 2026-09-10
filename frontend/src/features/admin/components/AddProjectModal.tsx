@@ -1,3 +1,4 @@
+import { getApiErrorMessage } from '@/api/errors';
 import { useState } from 'react';
 import { adminApi } from '../api';
 import type { UserResponse } from '../api';
@@ -41,8 +42,7 @@ export default function AddProjectModal({ isOpen, onClose, onSuccess }: AddProje
       }
     } catch (error: unknown) {
       console.error('Search failed:', error);
-      const axiosErr = error as { response?: { data?: { message?: string } } };
-      const message = axiosErr.response?.data?.message || '사용자를 찾을 수 없습니다.';
+      const message = getApiErrorMessage(error, '사용자를 찾을 수 없습니다.');
       alert(message);
       setSearchedUser(null);
     } finally {
@@ -78,12 +78,16 @@ export default function AddProjectModal({ isOpen, onClose, onSuccess }: AddProje
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-[#1c2b3c] border-[#1f2937] text-white sm:max-w-[448px] p-0 overflow-hidden shadow-[0px_20px_50px_0px_rgba(0,0,0,0.5)] rounded-[8px]">
         <DialogHeader className="px-8 pt-8 pb-6 border-b border-[rgba(65,71,81,0.3)]">
-          <DialogTitle className="font-['WenQuanYi_Zen_Hei:Medium',sans-serif] text-[20px] text-white tracking-[-0.5px]">새 프로젝트 생성</DialogTitle>
+          <DialogTitle className="font-['WenQuanYi_Zen_Hei:Medium',sans-serif] text-[20px] text-white tracking-[-0.5px]">
+            새 프로젝트 생성
+          </DialogTitle>
         </DialogHeader>
 
         <div className="px-8 py-6 flex flex-col gap-6">
           <div className="flex flex-col gap-2">
-            <Label className="font-['WenQuanYi_Zen_Hei:Medium',sans-serif] text-[#c1c7d3] text-[12px] tracking-[0.6px] uppercase">프로젝트 명</Label>
+            <Label className="font-['WenQuanYi_Zen_Hei:Medium',sans-serif] text-[#c1c7d3] text-[12px] tracking-[0.6px] uppercase">
+              프로젝트 명
+            </Label>
             <Input
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
@@ -93,7 +97,9 @@ export default function AddProjectModal({ isOpen, onClose, onSuccess }: AddProje
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label className="font-['WenQuanYi_Zen_Hei:Medium',sans-serif] text-[#c1c7d3] text-[12px] tracking-[0.6px] uppercase">프로젝트 설명</Label>
+            <Label className="font-['WenQuanYi_Zen_Hei:Medium',sans-serif] text-[#c1c7d3] text-[12px] tracking-[0.6px] uppercase">
+              프로젝트 설명
+            </Label>
             <Input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -103,7 +109,9 @@ export default function AddProjectModal({ isOpen, onClose, onSuccess }: AddProje
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label className="font-['WenQuanYi_Zen_Hei:Medium',sans-serif] text-[#c1c7d3] text-[12px] tracking-[0.6px] uppercase">담당자 사번</Label>
+            <Label className="font-['WenQuanYi_Zen_Hei:Medium',sans-serif] text-[#c1c7d3] text-[12px] tracking-[0.6px] uppercase">
+              담당자 사번
+            </Label>
             <div className="relative flex items-center">
               <Input
                 value={employeeNumber}
@@ -125,7 +133,7 @@ export default function AddProjectModal({ isOpen, onClose, onSuccess }: AddProje
                 disabled={isSearching || !employeeNumber.trim()}
                 className="absolute right-3 h-8 px-2 flex items-center justify-center text-[#60a5fa] text-[12px] hover:text-white disabled:opacity-50 font-medium z-10 transition-colors"
               >
-                {isSearching ? "..." : "검색"}
+                {isSearching ? '...' : '검색'}
               </button>
             </div>
           </div>
@@ -133,12 +141,18 @@ export default function AddProjectModal({ isOpen, onClose, onSuccess }: AddProje
           {searchedUser && (
             <div className="bg-[#0d1c2d] border border-[rgba(96,165,250,0.2)] rounded-[4px] p-[17px] flex flex-col gap-1">
               <div className="flex items-center gap-2">
-                <span className="font-['WenQuanYi_Zen_Hei:Medium',sans-serif] text-[14px] text-white">{searchedUser.name}</span>
+                <span className="font-['WenQuanYi_Zen_Hei:Medium',sans-serif] text-[14px] text-white">
+                  {searchedUser.name}
+                </span>
                 <div className="bg-[rgba(96,165,250,0.1)] px-1.5 py-0.5 rounded-[2px]">
-                  <span className="text-[#60a5fa] text-[10px] font-['Inter:Regular',sans-serif]">ID: {searchedUser.employeeNumber}</span>
+                  <span className="text-[#60a5fa] text-[10px] font-['Inter:Regular',sans-serif]">
+                    ID: {searchedUser.employeeNumber}
+                  </span>
                 </div>
               </div>
-              <span className="text-[#c1c7d3] text-[12px] font-['Inter:Regular',sans-serif]">{searchedUser.email}</span>
+              <span className="text-[#c1c7d3] text-[12px] font-['Inter:Regular',sans-serif]">
+                {searchedUser.email}
+              </span>
             </div>
           )}
         </div>

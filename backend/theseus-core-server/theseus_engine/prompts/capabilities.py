@@ -12,7 +12,6 @@ from theseus_engine.tools.tool_repair import (
     COMMON_CUSTOM_TOOL_SECURITY_RULES,
 )
 
-
 _TOOL_USE_CAPABILITY_PROMPT = """\
 # Tool Use Capability
  - CRITICAL: You may ONLY call tools that appear in your function/tool schema for the current session. \
@@ -273,9 +272,7 @@ def _build_prompt_capabilities(
         tools = _default_tool_names_for_mode(mode, plan_phase, coordinator_phase)
 
     reminders = tuple(
-        value
-        for value in (str(item).strip() for item in (runtime_reminders or ()))
-        if value
+        value for value in (str(item).strip() for item in (runtime_reminders or ())) if value
     )
     return PromptCapabilities(available_tools=tools, runtime_reminders=reminders)
 
@@ -290,7 +287,12 @@ def _render_capability_sections(capabilities: PromptCapabilities) -> str:
                 _VALIDATION_CAPABILITY_PROMPT,
             ]
         )
-    if capabilities.available_tools & {"write_file", "edit_file", "remote_write_file", "remote_edit_file"}:
+    if capabilities.available_tools & {
+        "write_file",
+        "edit_file",
+        "remote_write_file",
+        "remote_edit_file",
+    }:
         sections.append(_CODE_EDITING_SAFETY_PROMPT)
     if capabilities.available_tools & _REMOTE_CONTEXT_TOOL_NAMES:
         sections.append(_REMOTE_LOCAL_REPORT_PROMPT)

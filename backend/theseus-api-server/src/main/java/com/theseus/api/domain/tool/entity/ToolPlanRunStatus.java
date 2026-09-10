@@ -5,5 +5,5 @@ public enum ToolPlanRunStatus {
 	GENERATING,
 	COMPLETED,
 	FAILED,
-	SKIPPED
+	SKIPPED,
 }

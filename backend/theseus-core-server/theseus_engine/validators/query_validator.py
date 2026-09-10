@@ -36,9 +36,7 @@ _SQL_DDL_PATTERN = re.compile(
 
 # DML (상태 변경) 패턴
 _SQL_DML_PATTERN = re.compile(
-    r"\b(INSERT\s+INTO"
-    r"|UPDATE\s+\w+\s+SET"
-    r"|DELETE\s+FROM)",
+    r"\b(INSERT\s+INTO" r"|UPDATE\s+\w+\s+SET" r"|DELETE\s+FROM)",
     re.IGNORECASE,
 )
 
@@ -83,17 +81,16 @@ class QueryValidator:
         Returns:
             (안전 여부, 메시지) 튜플.
         """
-        use_llm = (
-            os.getenv("THESEUS_USE_LLM_VALIDATOR", "false")
-            .lower() == "true"
-        )
+        use_llm = os.getenv("THESEUS_USE_LLM_VALIDATOR", "false").lower() == "true"
 
         if use_llm:
             return cls._validate_with_llm(
-                tool_name, tool_input,
+                tool_name,
+                tool_input,
             )
         return cls._validate_with_regex(
-            tool_name, tool_input,
+            tool_name,
+            tool_input,
         )
 
     # ------------------------------------------------------------------
@@ -136,12 +133,10 @@ class QueryValidator:
             detail = "\n".join(f"  - {w}" for w in warnings)
             log.warning(
                 "Query validation warning (%d items):\n%s",
-                len(warnings), detail,
+                len(warnings),
+                detail,
             )
-            return False, (
-                f"Query validation warning "
-                f"({len(warnings)} items):\n" + detail
-            )
+            return False, (f"Query validation warning " f"({len(warnings)} items):\n" + detail)
 
         return True, "Query validation passed."
 
@@ -169,5 +164,6 @@ class QueryValidator:
             tool_name,
         )
         return cls._validate_with_regex(
-            tool_name, tool_input,
+            tool_name,
+            tool_input,
         )

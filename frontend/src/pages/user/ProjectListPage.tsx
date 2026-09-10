@@ -35,9 +35,7 @@ export default function ProjectListPage() {
       <div className="content-stretch flex flex-col items-start max-w-[896px] pb-[32px] relative shrink-0 w-full z-10">
         <div className="content-stretch flex flex-col gap-[8px] items-center max-w-[896px] relative shrink-0 w-full">
           <div className="content-stretch flex flex-col items-center relative shrink-0 w-full">
-            <h1 className="font-medium text-[#d4e4fa] text-[24px] tracking-[-0.4px]">
-              프로젝트
-            </h1>
+            <h1 className="font-medium text-[#d4e4fa] text-[24px] tracking-[-0.4px]">프로젝트</h1>
           </div>
           <div className="content-stretch flex flex-col items-center opacity-70 relative shrink-0 w-full">
             <p className="font-medium text-[#c1c7d3] text-[16px] text-center">
@@ -76,13 +74,21 @@ export default function ProjectListPage() {
                         </h3>
                       </div>
                       <div className="flex gap-[8px] items-center relative shrink-0">
-                        <div className={`border content-stretch flex flex-col items-start px-[9px] py-[3px] relative rounded-[2px] shrink-0 ${project.projectStatus === 'ACTIVE' ? 'bg-[rgba(164,201,255,0.1)] border-[rgba(164,201,255,0.2)]' : 'bg-[rgba(156,163,175,0.1)] border-[rgba(156,163,175,0.2)]'}`}>
-                          <span className={`font-normal text-[10px] leading-[15px] ${project.projectStatus === 'ACTIVE' ? 'text-[#a4c9ff]' : 'text-gray-400'}`}>
+                        <div
+                          className={`border content-stretch flex flex-col items-start px-[9px] py-[3px] relative rounded-[2px] shrink-0 ${project.projectStatus === 'ACTIVE' ? 'bg-[rgba(164,201,255,0.1)] border-[rgba(164,201,255,0.2)]' : 'bg-[rgba(156,163,175,0.1)] border-[rgba(156,163,175,0.2)]'}`}
+                        >
+                          <span
+                            className={`font-normal text-[10px] leading-[15px] ${project.projectStatus === 'ACTIVE' ? 'text-[#a4c9ff]' : 'text-gray-400'}`}
+                          >
                             {project.projectStatus}
                           </span>
                         </div>
-                        <div className={`border content-stretch flex flex-col items-start px-[9px] py-[3px] relative rounded-[2px] shrink-0 ${project.projectRole === 'ADMIN' ? 'bg-[rgba(250,189,52,0.1)] border-[rgba(250,189,52,0.2)]' : 'bg-[rgba(52,211,153,0.1)] border-[rgba(52,211,153,0.2)]'}`}>
-                          <span className={`font-normal text-[10px] leading-[15px] ${project.projectRole === 'ADMIN' ? 'text-[#fabd34]' : 'text-[#34d399]'}`}>
+                        <div
+                          className={`border content-stretch flex flex-col items-start px-[9px] py-[3px] relative rounded-[2px] shrink-0 ${project.projectRole === 'ADMIN' ? 'bg-[rgba(250,189,52,0.1)] border-[rgba(250,189,52,0.2)]' : 'bg-[rgba(52,211,153,0.1)] border-[rgba(52,211,153,0.2)]'}`}
+                        >
+                          <span
+                            className={`font-normal text-[10px] leading-[15px] ${project.projectRole === 'ADMIN' ? 'text-[#fabd34]' : 'text-[#34d399]'}`}
+                          >
                             {project.projectRole}
                           </span>
                         </div>
@@ -97,16 +103,21 @@ export default function ProjectListPage() {
                 </div>
               </div>
               <div className="relative shrink-0 flex flex-col items-end gap-[3px]">
-                <span className="font-medium text-[#8b919d] text-[12px] leading-[15px]">최근 업데이트</span>
+                <span className="font-medium text-[#8b919d] text-[12px] leading-[15px]">
+                  최근 업데이트
+                </span>
                 <span className="font-mono text-[#c1c7d3] text-[13px] leading-[16.5px]">
-                  {new Date(project.updatedAt).toLocaleString('ko-KR', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false
-                  }).replace(/\. /g, '.').replace(':', ':')}
+                  {new Date(project.updatedAt)
+                    .toLocaleString('ko-KR', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false,
+                    })
+                    .replace(/\. /g, '.')
+                    .replace(':', ':')}
                 </span>
               </div>
             </div>

@@ -12,12 +12,12 @@ from pydantic import BaseModel
 
 from theseus_engine.models.messages import ConversationMessage
 
-
 # ── Usage ─────────────────────────────────────────────────────
 
 
 class UsageSnapshot(BaseModel):
     """Token usage returned by the model provider."""
+
     input_tokens: int = 0
     output_tokens: int = 0
 
@@ -42,6 +42,7 @@ class UsageSnapshot(BaseModel):
 @dataclass(frozen=True)
 class ApiMessageRequest:
     """Input parameters for a model invocation."""
+
     model: str
     messages: list[ConversationMessage]
     system_prompt: str | None = None
@@ -58,12 +59,14 @@ class ApiMessageRequest:
 @dataclass(frozen=True)
 class ApiTextDeltaEvent:
     """Incremental text produced by the model."""
+
     text: str
 
 
 @dataclass(frozen=True)
 class ApiMessageCompleteEvent:
     """Terminal event containing the full assistant message."""
+
     message: ConversationMessage
     usage: UsageSnapshot
     stop_reason: str | None = None
@@ -72,6 +75,7 @@ class ApiMessageCompleteEvent:
 @dataclass(frozen=True)
 class ApiRetryEvent:
     """A recoverable upstream failure that will be retried automatically."""
+
     message: str
     attempt: int
     max_attempts: int
@@ -87,9 +91,7 @@ ApiStreamEvent = ApiTextDeltaEvent | ApiMessageCompleteEvent | ApiRetryEvent
 class SupportsStreamingMessages(Protocol):
     """Protocol used by the LLM router in tests and production."""
 
-    async def stream_message(
-        self, request: ApiMessageRequest
-    ) -> AsyncIterator[ApiStreamEvent]:
+    async def stream_message(self, request: ApiMessageRequest) -> AsyncIterator[ApiStreamEvent]:
         """Yield streamed events for the request."""
 
 

@@ -1,13 +1,13 @@
+import { ComposerPanel, type ComposerChangeItem } from '../composer/ComposerPanel';
+import { WebviewMessageQueue } from './WebviewMessageQueue';
+import { getExtensionBuildInfo, probeExternalServer } from './diagnostics';
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as http from 'http';
-import * as https from 'https';
 
 import { resolveReadableUri, saveAssetToWorkspace } from '../assets/AssetStore';
 import { TheseusSessionManager } from '../session/SessionManager';
 import {
-  asHostToWebviewMessage,
   asWebviewToHostMessage,
   type HostToWebviewMessage,
   type JsonObject,
@@ -48,12 +48,7 @@ async function openChangedFileDiff(
   const label = changed.relative_path || changed.path;
   const oldUri = diffProvider.createUri(label, changed.old_content);
   const newUri = vscode.Uri.file(changed.path);
-  await vscode.commands.executeCommand(
-    'vscode.diff',
-    oldUri,
-    newUri,
-    `Theseus Diff: ${label}`,
-  );
+  await vscode.commands.executeCommand('vscode.diff', oldUri, newUri, `Theseus Diff: ${label}`);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -61,9 +56,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function planLabel(key: string): string {
-  return key
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, letter => letter.toUpperCase());
+  return key.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function scalarText(value: unknown): string {
@@ -80,80 +73,13 @@ function toolEventKey(event: RunnerEvent): string {
   return id || name;
 }
 
-function fileMtimeIso(filePath: string): string {
-  try {
-    return fs.statSync(filePath).mtime.toISOString();
-  } catch {
-    return '';
-  }
-}
-
-function getExtensionBuildInfo(context: vscode.ExtensionContext): JsonObject {
-  const packageJson = context.extension.packageJSON as Record<string, unknown> | undefined;
-  const extensionRoot = context.extensionUri.fsPath;
-  return {
-    version: typeof packageJson?.version === 'string' ? packageJson.version : '',
-    extensionPath: extensionRoot,
-    builtAt: fileMtimeIso(path.join(extensionRoot, 'out', 'extension.js')),
-    mediaBuiltAt: fileMtimeIso(path.join(extensionRoot, 'media', 'main.js')),
-    sourceMarker: 'ui-regression-fixes-2026-05-19',
-  };
-}
-
-function requestWithTimeout(url: URL, timeoutMs: number): Promise<{ statusCode: number; statusMessage: string }> {
-  return new Promise((resolve, reject) => {
-    const client = url.protocol === 'https:' ? https : http;
-    const request = client.request(url, { method: 'GET', timeout: timeoutMs }, response => {
-      response.resume();
-      response.on('end', () => resolve({
-        statusCode: response.statusCode || 0,
-        statusMessage: response.statusMessage || '',
-      }));
-    });
-    request.on('timeout', () => {
-      request.destroy(new Error(`timeout after ${timeoutMs}ms`));
-    });
-    request.on('error', reject);
-    request.end();
-  });
-}
-
-async function probeExternalServer(serverUrl: string): Promise<JsonObject> {
-  const raw = String(serverUrl || '').trim();
-  if (!raw) {
-    return { status: 'standalone', url: '', detail: 'Standalone mode; no external Theseus server URL configured.' };
-  }
-  let healthUrl: URL;
-  try {
-    const base = new URL(raw.endsWith('/') ? raw : `${raw}/`);
-    healthUrl = new URL('health', base);
-  } catch (err) {
-    return { status: 'unreachable', url: raw, detail: `Invalid serverUrl: ${err instanceof Error ? err.message : String(err)}` };
-  }
-  try {
-    const response = await requestWithTimeout(healthUrl, 1500);
-    const ok = response.statusCode >= 200 && response.statusCode < 500;
-    return {
-      status: ok ? 'connected' : 'unreachable',
-      url: raw,
-      healthUrl: healthUrl.toString(),
-      detail: `GET /health -> ${response.statusCode}${response.statusMessage ? ` ${response.statusMessage}` : ''}`,
-    };
-  } catch (err) {
-    return {
-      status: 'unreachable',
-      url: raw,
-      healthUrl: healthUrl.toString(),
-      detail: err instanceof Error ? err.message : String(err),
-    };
-  }
-}
-
 function isInsidePath(child: string, parent: string): boolean {
   const resolvedChild = path.resolve(child);
   const resolvedParent = path.resolve(parent);
   const relative = path.relative(resolvedParent, resolvedChild);
-  return relative === '' || (!!relative && !relative.startsWith('..') && !path.isAbsolute(relative));
+  return (
+    relative === '' || (!!relative && !relative.startsWith('..') && !path.isAbsolute(relative))
+  );
 }
 
 function withoutUiState(plan: JsonObject): JsonObject {
@@ -175,7 +101,9 @@ function appendMarkdownValue(lines: string[], key: string, value: unknown, level
     lines.push(`${heading} ${label}`, '');
     for (const [index, item] of value.entries()) {
       if (isRecord(item)) {
-        const title = scalarText(item.title || item.name || item.description || item.id || `Item ${index + 1}`);
+        const title = scalarText(
+          item.title || item.name || item.description || item.id || `Item ${index + 1}`,
+        );
         lines.push(`${'#'.repeat(Math.min(level + 1, 6))} ${title}`, '');
         for (const [childKey, childValue] of Object.entries(item)) {
           if (['title', 'name'].includes(childKey)) continue;
@@ -190,7 +118,9 @@ function appendMarkdownValue(lines: string[], key: string, value: unknown, level
   }
 
   if (isRecord(value)) {
-    const entries = Object.entries(value).filter(([childKey, childValue]) => childKey !== 'reviewState' && childValue !== undefined);
+    const entries = Object.entries(value).filter(
+      ([childKey, childValue]) => childKey !== 'reviewState' && childValue !== undefined,
+    );
     if (!entries.length) return;
     lines.push(`${heading} ${label}`, '');
     for (const [childKey, childValue] of entries) {
@@ -215,12 +145,7 @@ function planTaskTitle(task: Record<string, unknown>, index: number): string {
 
 function formatPlanMarkdown(plan: JsonObject): string {
   const sanitized = withoutUiState(plan);
-  const lines = [
-    '# Theseus Plan',
-    '',
-    `Generated: ${new Date().toLocaleString()}`,
-    '',
-  ];
+  const lines = ['# Theseus Plan', '', `Generated: ${new Date().toLocaleString()}`, ''];
 
   const tasks = Array.isArray(sanitized.tasks) ? sanitized.tasks : [];
   if (tasks.length) {
@@ -255,7 +180,9 @@ function formatPlanMarkdown(plan: JsonObject): string {
  * @param sessionManager 변경 후 runner가 실행 중이면 재시작 안내/자동 재시작을 위해 전달.
  *                       전달하지 않으면 안내만 표시하지 않음.
  */
-export async function pickWorktree(sessionManager?: TheseusSessionManager): Promise<string | undefined> {
+export async function pickWorktree(
+  sessionManager?: TheseusSessionManager,
+): Promise<string | undefined> {
   const cfg = vscode.workspace.getConfiguration('theseus');
   const current = expandTheseusPath(cfg.get<string>('workspacePath')) || '';
   const folders = vscode.workspace.workspaceFolders ?? [];
@@ -273,7 +200,7 @@ export async function pickWorktree(sessionManager?: TheseusSessionManager): Prom
     });
   }
 
-  if (current && !folders.some(f => f.uri.fsPath === current)) {
+  if (current && !folders.some((f) => f.uri.fsPath === current)) {
     items.push({
       label: `$(folder-active) Custom path`,
       description: '(current, not in VSCode folders)',
@@ -282,9 +209,17 @@ export async function pickWorktree(sessionManager?: TheseusSessionManager): Prom
     });
   }
 
-  items.push({ label: '$(folder-opened) Browse...', detail: 'OS 파일 선택 대화상자로 폴더 선택', action: 'browse' });
+  items.push({
+    label: '$(folder-opened) Browse...',
+    detail: 'OS 파일 선택 대화상자로 폴더 선택',
+    action: 'browse',
+  });
   if (current) {
-    items.push({ label: '$(clear-all) Clear', detail: '설정을 비우고 첫 번째 VSCode 작업 폴더로 자동 사용', action: 'clear' });
+    items.push({
+      label: '$(clear-all) Clear',
+      detail: '설정을 비우고 첫 번째 VSCode 작업 폴더로 자동 사용',
+      action: 'clear',
+    });
   }
 
   const picked = await vscode.window.showQuickPick(items, {
@@ -362,40 +297,6 @@ async function openPlanMarkdownPreview(plan: JsonObject): Promise<void> {
   });
 }
 
-class WebviewMessageQueue {
-  private queue: HostToWebviewMessage[] = [];
-  private flushing = false;
-
-  constructor(private readonly getWebview: () => vscode.Webview | undefined) {}
-
-  post(message: HostToWebviewMessage): void {
-    const normalized = asHostToWebviewMessage(message);
-    if (!normalized) return;
-    this.queue.push(normalized);
-    void this.flush();
-  }
-
-  private async flush(): Promise<void> {
-    if (this.flushing) return;
-    this.flushing = true;
-    try {
-      while (this.queue.length) {
-        const webview = this.getWebview();
-        if (!webview) {
-          this.queue = this.queue.slice(-20);
-          return;
-        }
-        const message = this.queue.shift();
-        if (message) await webview.postMessage(message);
-      }
-    } finally {
-      this.flushing = false;
-    }
-  }
-}
-
-import { ComposerPanel, type ComposerChangeItem } from '../composer/ComposerPanel';
-
 export class TheseusChatViewProvider implements vscode.WebviewViewProvider {
   static readonly viewType = 'theseus.chatView';
   private view: vscode.WebviewView | undefined;
@@ -416,9 +317,8 @@ export class TheseusChatViewProvider implements vscode.WebviewViewProvider {
     private readonly diffProvider: TheseusDiffContentProvider,
     private readonly onStartRunner: () => void,
   ) {
-    this.sessionController = new SessionController(
-      this.sessionManager,
-      event => this.postRunnerEvent(event),
+    this.sessionController = new SessionController(this.sessionManager, (event) =>
+      this.postRunnerEvent(event),
     );
     this.sessionManager.onEvent((event) => {
       if (event.type === 'customToolInventoryUpdated' && Array.isArray(event.tools)) {
@@ -454,7 +354,9 @@ export class TheseusChatViewProvider implements vscode.WebviewViewProvider {
           completedAt: isFailed ? undefined : now,
           failedAt: isFailed ? now : undefined,
           durationMs: Math.max(0, now - startedAt),
-          errorMessage: isFailed ? String(event.output || event.message || 'Tool execution failed.') : undefined,
+          errorMessage: isFailed
+            ? String(event.output || event.message || 'Tool execution failed.')
+            : undefined,
           toolName: typeof event.tool_name === 'string' ? event.tool_name : 'tool',
           event,
         };
@@ -474,7 +376,10 @@ export class TheseusChatViewProvider implements vscode.WebviewViewProvider {
   postSessionState(): void {
     this.sessionManager.reattachIfPossible('post_session_state');
     this.postRunnerEvent(this.sessionManager.status);
-    this.messageQueue.post({ type: 'historySnapshot', history: this.sessionManager.historySnapshot });
+    this.messageQueue.post({
+      type: 'historySnapshot',
+      history: this.sessionManager.historySnapshot,
+    });
     if (this.sessionManager.hasProcess) {
       this.refreshRuntimeToolRegistry('webview_attach');
     } else {
@@ -522,7 +427,7 @@ export class TheseusChatViewProvider implements vscode.WebviewViewProvider {
     this.hostRefreshTimer = setTimeout(() => {
       this.hostRefreshTimer = undefined;
       const scheduledReason = this.hostRefreshReason;
-      void this.refreshCustomTools().catch(err => {
+      void this.refreshCustomTools().catch((err) => {
         this.postRunnerEvent({
           type: 'customToolValidation',
           success: false,
@@ -557,19 +462,28 @@ export class TheseusChatViewProvider implements vscode.WebviewViewProvider {
     const status = this.sessionManager.status;
     const customToolRoots = getCustomToolSearchRoots();
     const server = await probeExternalServer(serverUrl);
-    const serverRuntimeNote = status.processRunning && serverUrl
-      ? 'serverUrl changes apply to the active daemon after runner restart.'
-      : '';
+    const serverRuntimeNote =
+      status.processRunning && serverUrl
+        ? 'serverUrl changes apply to the active daemon after runner restart.'
+        : '';
     const serverForHealth: JsonObject = {
       ...server,
       runtimeNote: serverRuntimeNote,
       detail: [server.detail, serverRuntimeNote].filter(Boolean).join(' · '),
     };
     const serverHealthStatus = String(serverForHealth.status || server.status || 'standalone');
-    const toolInventory = Array.isArray(this.latestCustomToolInventory) ? this.latestCustomToolInventory : [];
-    const availableCount = toolInventory.filter(item => isRecord(item) && item.loadState === 'available').length;
-    const unavailableCount = toolInventory.filter(item => isRecord(item) && item.loadState === 'unavailable').length;
-    const inactiveCount = toolInventory.filter(item => isRecord(item) && item.loadState === 'inactive').length;
+    const toolInventory = Array.isArray(this.latestCustomToolInventory)
+      ? this.latestCustomToolInventory
+      : [];
+    const availableCount = toolInventory.filter(
+      (item) => isRecord(item) && item.loadState === 'available',
+    ).length;
+    const unavailableCount = toolInventory.filter(
+      (item) => isRecord(item) && item.loadState === 'unavailable',
+    ).length;
+    const inactiveCount = toolInventory.filter(
+      (item) => isRecord(item) && item.loadState === 'inactive',
+    ).length;
     const daemonStatus = status.processRunning
       ? status.lifecycle === 'busy'
         ? 'Running'
@@ -623,7 +537,9 @@ export class TheseusChatViewProvider implements vscode.WebviewViewProvider {
         {
           label: 'Core path',
           status: coreRoot ? 'ok' : usingBundledRunner ? 'warn' : 'error',
-          detail: coreRoot || (usingBundledRunner ? 'bundled runner 사용 중' : 'theseus.corePath를 설정하세요.'),
+          detail:
+            coreRoot ||
+            (usingBundledRunner ? 'bundled runner 사용 중' : 'theseus.corePath를 설정하세요.'),
         },
         {
           label: 'Workspace',
@@ -647,7 +563,9 @@ export class TheseusChatViewProvider implements vscode.WebviewViewProvider {
             daemonStatus,
             status.daemonPid ? `pid ${status.daemonPid}` : '',
             status.daemonPort ? `port ${status.daemonPort}` : '',
-          ].filter(Boolean).join(' · '),
+          ]
+            .filter(Boolean)
+            .join(' · '),
         },
         {
           label: 'Server URL',
@@ -656,7 +574,7 @@ export class TheseusChatViewProvider implements vscode.WebviewViewProvider {
         },
         {
           label: 'Custom tools',
-          status: customToolRoots.length ? unavailableCount ? 'warn' : 'ok' : 'warn',
+          status: customToolRoots.length ? (unavailableCount ? 'warn' : 'ok') : 'warn',
           detail: customToolRoots.length
             ? `${availableCount} available, ${unavailableCount} unavailable${inactiveCount ? `, ${inactiveCount} inactive` : ''}`
             : 'corePath 또는 workspacePath를 확인하세요.',
@@ -684,7 +602,7 @@ export class TheseusChatViewProvider implements vscode.WebviewViewProvider {
 
   private isAllowedFilePath(filePath: string): boolean {
     if (!path.isAbsolute(filePath)) return true;
-    return this.allowedFileRoots().some(root => isInsidePath(filePath, root));
+    return this.allowedFileRoots().some((root) => isInsidePath(filePath, root));
   }
 
   private resolveUserFilePath(filePath: string): vscode.Uri | undefined {
@@ -718,7 +636,11 @@ export class TheseusChatViewProvider implements vscode.WebviewViewProvider {
     await vscode.env.openExternal(uri);
   }
 
-  private async revertChangedFile(id: string | undefined, filePath: string | undefined, oldContent: string | undefined): Promise<void> {
+  private async revertChangedFile(
+    id: string | undefined,
+    filePath: string | undefined,
+    oldContent: string | undefined,
+  ): Promise<void> {
     if (!filePath || typeof oldContent !== 'string') {
       this.postRunnerEvent({
         type: 'changeReviewUpdated',
@@ -795,7 +717,9 @@ export class TheseusChatViewProvider implements vscode.WebviewViewProvider {
         case 'sendInput':
           if (typeof msg.text === 'string') {
             const resolvedText = await resolveContextMentions(msg.text);
-            this.sessionManager.send(this.withOptionalCursorContext(resolvedText, msg.skipCursorContext));
+            this.sessionManager.send(
+              this.withOptionalCursorContext(resolvedText, msg.skipCursorContext),
+            );
           }
           break;
         case 'setMode':
@@ -879,13 +803,12 @@ export class TheseusChatViewProvider implements vscode.WebviewViewProvider {
         case 'getWorkspaceName': {
           // 실제 활성 워크스페이스 경로 = setting(workspacePath)이 있으면 그것, 없으면 첫 번째 폴더
           const resolved = getWorkspaceCwd() ?? '';
-          const folder = vscode.workspace.workspaceFolders?.find(
-            f => f.uri.fsPath === resolved,
-          );
-          const name = folder?.name
-            || (resolved ? path.basename(resolved) : '')
-            || vscode.workspace.workspaceFolders?.[0]?.name
-            || 'unknown';
+          const folder = vscode.workspace.workspaceFolders?.find((f) => f.uri.fsPath === resolved);
+          const name =
+            folder?.name ||
+            (resolved ? path.basename(resolved) : '') ||
+            vscode.workspace.workspaceFolders?.[0]?.name ||
+            'unknown';
           this.postRunnerEvent({ type: 'workspaceInfo', name, path: resolved });
           break;
         }
@@ -893,7 +816,7 @@ export class TheseusChatViewProvider implements vscode.WebviewViewProvider {
           const next = await pickWorktree(this.sessionManager);
           if (next !== undefined) {
             // 변경된 워크트리 정보를 webview에 알리고 활성 파일 컨텍스트도 갱신
-            const folder = vscode.workspace.workspaceFolders?.find(f => f.uri.fsPath === next);
+            const folder = vscode.workspace.workspaceFolders?.find((f) => f.uri.fsPath === next);
             const name = folder?.name || (next ? path.basename(next) : 'unknown');
             this.postRunnerEvent({ type: 'workspaceInfo', name, path: next });
             this.refreshActiveCursor();
@@ -915,7 +838,10 @@ export class TheseusChatViewProvider implements vscode.WebviewViewProvider {
           break;
         case 'updateToolPermission': {
           if (typeof msg.metadataPath === 'string') {
-            const result = await updateCustomToolPermission(msg.metadataPath, Number(msg.permissionLevel));
+            const result = await updateCustomToolPermission(
+              msg.metadataPath,
+              Number(msg.permissionLevel),
+            );
             if (result.success) vscode.window.showInformationMessage(result.message);
             else vscode.window.showErrorMessage(result.message);
             this.postRunnerEvent({ type: 'customToolValidation', ...result });
@@ -965,10 +891,16 @@ export class TheseusChatViewProvider implements vscode.WebviewViewProvider {
         }
         case 'savePastedImage': {
           try {
-            const relativePath = await saveAssetToWorkspace(String(msg.name || 'image.png'), msg.data);
+            const relativePath = await saveAssetToWorkspace(
+              String(msg.name || 'image.png'),
+              msg.data,
+            );
             this.postRunnerEvent({ type: 'assetSaved', path: relativePath });
           } catch (err) {
-            this.postRunnerEvent({ type: 'assetSaveFailed', message: err instanceof Error ? err.message : String(err) });
+            this.postRunnerEvent({
+              type: 'assetSaveFailed',
+              message: err instanceof Error ? err.message : String(err),
+            });
           }
           break;
         }

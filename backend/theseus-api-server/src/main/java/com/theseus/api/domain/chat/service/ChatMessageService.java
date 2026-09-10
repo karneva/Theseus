@@ -3,8 +3,8 @@ package com.theseus.api.domain.chat.service;
 import com.theseus.api.common.exception.BusinessException;
 import com.theseus.api.common.exception.ErrorCode;
 import com.theseus.api.domain.auth.token.AuthenticatedUser;
-import com.theseus.api.domain.chat.dto.response.ChatMessageResponse;
 import com.theseus.api.domain.chat.dto.request.ChatMessageCreateRequest;
+import com.theseus.api.domain.chat.dto.response.ChatMessageResponse;
 import com.theseus.api.domain.chat.entity.ChatMessage;
 import com.theseus.api.domain.chat.entity.ChatMessageContentType;
 import com.theseus.api.domain.chat.entity.ChatMessageSenderType;
@@ -14,7 +14,6 @@ import com.theseus.api.domain.chat.repository.ChatMessageRepository;
 import com.theseus.api.domain.chat.repository.ChatSessionRepository;
 import com.theseus.api.domain.project.entity.Project;
 import com.theseus.api.domain.project.entity.ProjectMember;
-import com.theseus.api.domain.project.entity.ProjectMemberStatus;
 import com.theseus.api.domain.project.repository.ProjectMemberRepository;
 import com.theseus.api.domain.project.repository.ProjectRepository;
 import com.theseus.api.domain.tool.entity.Tool;
@@ -106,7 +105,9 @@ public class ChatMessageService {
 	) {
 		ChatSession chatSession = getAccessibleChatSession(currentUser, projectId, sessionId);
 
-		return chatMessageRepository.findByChatSessionOrderByMessageOrderAsc(chatSession).stream()
+		return chatMessageRepository
+			.findByChatSessionOrderByMessageOrderAsc(chatSession)
+			.stream()
 			.map(ChatMessageResponse::createFrom)
 			.toList();
 	}
@@ -275,18 +276,21 @@ public class ChatMessageService {
 		validateToolPlanRunChatSession(chatSession, toolPlanRun);
 
 		if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-			return chatMessageRepository.findByIdempotencyKey(idempotencyKey)
-				.orElseGet(() -> saveMessage(
-					chatSession,
-					null,
-					toolPlan,
-					toolPlanRun,
-					senderType,
-					messageType,
-					contentType,
-					content,
-					idempotencyKey
-				));
+			return chatMessageRepository
+				.findByIdempotencyKey(idempotencyKey)
+				.orElseGet(() ->
+					saveMessage(
+						chatSession,
+						null,
+						toolPlan,
+						toolPlanRun,
+						senderType,
+						messageType,
+						contentType,
+						content,
+						idempotencyKey
+					)
+				);
 		}
 
 		return saveMessage(
@@ -306,11 +310,7 @@ public class ChatMessageService {
 	 * 실패나 상태 안내에 필요한 System Notice 메시지를 저장합니다.
 	 */
 	@Transactional
-	public ChatMessage saveSystemNoticeMessage(
-		ChatSession chatSession,
-		Tool tool,
-		String content
-	) {
+	public ChatMessage saveSystemNoticeMessage(ChatSession chatSession, Tool tool, String content) {
 		if (tool != null) {
 			validateToolChatSession(chatSession, tool);
 		}
@@ -333,7 +333,17 @@ public class ChatMessageService {
 		ChatMessageContentType contentType,
 		String content
 	) {
-		return saveMessage(chatSession, tool, null, null, senderType, messageType, contentType, content, null);
+		return saveMessage(
+			chatSession,
+			tool,
+			null,
+			null,
+			senderType,
+			messageType,
+			contentType,
+			content,
+			null
+		);
 	}
 
 	private ChatMessage saveMessage(
@@ -387,7 +397,8 @@ public class ChatMessageService {
 	}
 
 	private Integer getNextMessageOrder(ChatSession chatSession) {
-		return chatMessageRepository.findTopByChatSessionOrderByMessageOrderDesc(chatSession)
+		return chatMessageRepository
+			.findTopByChatSessionOrderByMessageOrderDesc(chatSession)
 			.map(chatMessage -> chatMessage.getMessageOrder() + 1)
 			.orElse(1);
 	}
@@ -399,13 +410,18 @@ public class ChatMessageService {
 	}
 
 	private void validateToolPlanChatSession(ChatSession chatSession, ToolPlan toolPlan) {
-		if (toolPlan != null && !Objects.equals(toolPlan.getChatSession().getId(), chatSession.getId())) {
+		if (
+			toolPlan != null && !Objects.equals(toolPlan.getChatSession().getId(), chatSession.getId())
+		) {
 			throw BusinessException.of(ErrorCode.TOOL_CHAT_SESSION_MISMATCH);
 		}
 	}
 
 	private void validateToolPlanRunChatSession(ChatSession chatSession, ToolPlanRun toolPlanRun) {
-		if (toolPlanRun == null || !Objects.equals(toolPlanRun.getChatSession().getId(), chatSession.getId())) {
+		if (
+			toolPlanRun == null ||
+			!Objects.equals(toolPlanRun.getChatSession().getId(), chatSession.getId())
+		) {
 			throw BusinessException.of(ErrorCode.TOOL_CHAT_SESSION_MISMATCH);
 		}
 	}
@@ -416,11 +432,16 @@ public class ChatMessageService {
 		}
 
 		Project project = getProjectEntity(projectId);
-		return toolRepository.findByIdAndProjectAndChatSession(toolId, project, chatSession)
+		return toolRepository
+			.findByIdAndProjectAndChatSession(toolId, project, chatSession)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.TOOL_CHAT_SESSION_MISMATCH));
 	}
 
-	private ChatSession getAccessibleChatSession(AuthenticatedUser currentUser, Long projectId, Long sessionId) {
+	private ChatSession getAccessibleChatSession(
+		AuthenticatedUser currentUser,
+		Long projectId,
+		Long sessionId
+	) {
 		User user = getCurrentUserEntity(currentUser);
 		return getAccessibleChatSession(user, projectId, sessionId);
 	}
@@ -429,11 +450,16 @@ public class ChatMessageService {
 		Project project = getProjectEntity(projectId);
 		ProjectMember projectMember = getActiveProjectMember(project, user);
 
-		return chatSessionRepository.findByIdAndProjectAndProjectMember(sessionId, project, projectMember)
+		return chatSessionRepository
+			.findByIdAndProjectAndProjectMember(sessionId, project, projectMember)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.CHAT_SESSION_NOT_FOUND));
 	}
 
-	private ChatSession getAccessibleChatSessionForUpdate(AuthenticatedUser currentUser, Long projectId, Long sessionId) {
+	private ChatSession getAccessibleChatSessionForUpdate(
+		AuthenticatedUser currentUser,
+		Long projectId,
+		Long sessionId
+	) {
 		User user = getCurrentUserEntity(currentUser);
 		return getAccessibleChatSessionForUpdate(user, projectId, sessionId);
 	}
@@ -442,7 +468,8 @@ public class ChatMessageService {
 		Project project = getProjectEntity(projectId);
 		ProjectMember projectMember = getActiveProjectMember(project, user);
 
-		return chatSessionRepository.findByIdAndProjectAndProjectMemberForUpdate(sessionId, project, projectMember)
+		return chatSessionRepository
+			.findByIdAndProjectAndProjectMemberForUpdate(sessionId, project, projectMember)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.CHAT_SESSION_NOT_FOUND));
 	}
 
@@ -455,20 +482,23 @@ public class ChatMessageService {
 	}
 
 	private User getUserEntity(Long userId) {
-		return userRepository.findById(userId)
+		return userRepository
+			.findById(userId)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.USER_NOT_FOUND));
 	}
 
 	private Project getProjectEntity(Long projectId) {
-		return projectRepository.findById(projectId)
+		return projectRepository
+			.findById(projectId)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_NOT_FOUND));
 	}
 
 	private ProjectMember getActiveProjectMember(Project project, User user) {
-		ProjectMember projectMember = projectMemberRepository.findByProjectAndUser(project, user)
+		ProjectMember projectMember = projectMemberRepository
+			.findByProjectAndUser(project, user)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_MEMBER_PERMISSION_REQUIRED));
 
-		if (!ProjectMemberStatus.IN_PROGRESS.equals(projectMember.getStatus())) {
+		if (!projectMember.isActive()) {
 			throw BusinessException.of(ErrorCode.ACTIVE_PROJECT_MEMBER_REQUIRED);
 		}
 

@@ -80,12 +80,14 @@ public class ToolPlanRunStatePublisher {
 			return;
 		}
 
-		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-			@Override
-			public void afterCommit() {
-				saveAction.run();
+		TransactionSynchronizationManager.registerSynchronization(
+			new TransactionSynchronization() {
+				@Override
+				public void afterCommit() {
+					saveAction.run();
+				}
 			}
-		});
+		);
 	}
 
 	private boolean saveStateSafely(String eventType, ToolPlanRunState state, Runnable saveAction) {

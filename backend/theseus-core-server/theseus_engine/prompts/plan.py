@@ -4,7 +4,6 @@ from theseus_engine.prompts.capabilities import (
     GENERATED_CUSTOM_TOOL_SECURITY_RULES as _GENERATED_CUSTOM_TOOL_SECURITY_RULES,
 )
 
-
 _PLAN_DRAFTING_PROMPT = """\
 # Current Mode: PLAN — Phase: DRAFTING
 

@@ -7,5 +7,4 @@ public record AuthenticatedUser(
 	String employeeNumber,
 	String name,
 	SystemRole systemRole
-) {
-}
+) {}

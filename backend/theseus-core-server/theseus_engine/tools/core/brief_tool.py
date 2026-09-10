@@ -31,20 +31,18 @@ class BriefTool(BaseTool):
     input_model = BriefInput
     permission_level = 1
 
-    async def execute(
-        self, arguments: BriefInput, context: ToolExecutionContext
-    ) -> ToolResult:
+    async def execute(self, arguments: BriefInput, context: ToolExecutionContext) -> ToolResult:
         text = arguments.text.strip()
         if not text:
             return ToolResult(output="(No content to summarize)")
 
         # TODO: Future enhancement - Use LLM to summarize if api_client is available in context
         # For now, implement smart structural compression
-        
+
         lines = text.splitlines()
         if len(lines) <= 20:
             return ToolResult(output=text)
-        
+
         # Keep the first 10 and last 10 lines, with a summary gap
         summary = (
             f"[Summary of {len(lines)} lines, structural compression applied]\n"
@@ -52,7 +50,7 @@ class BriefTool(BaseTool):
             + "\n\n... (omitted) ...\n\n"
             + "\n".join(lines[-10:])
         )
-        
+
         return ToolResult(
             output=(
                 f"📋 Summary (compressed):\n\n"

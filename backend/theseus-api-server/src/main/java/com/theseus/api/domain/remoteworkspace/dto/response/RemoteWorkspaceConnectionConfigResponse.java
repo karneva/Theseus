@@ -21,7 +21,9 @@ public class RemoteWorkspaceConnectionConfigResponse {
 	private Boolean allowWriteExecution;
 	private RemoteWorkspaceStatus status;
 
-	public static RemoteWorkspaceConnectionConfigResponse createFrom(RemoteWorkspace remoteWorkspace) {
+	public static RemoteWorkspaceConnectionConfigResponse createFrom(
+		RemoteWorkspace remoteWorkspace
+	) {
 		return RemoteWorkspaceConnectionConfigResponse.builder()
 			.remoteWorkspaceId(remoteWorkspace.getId())
 			.projectId(remoteWorkspace.getProject().getId())

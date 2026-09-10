@@ -3,14 +3,34 @@ import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { CheckCircle2, XCircle, Clock, Eye } from 'lucide-react';
 import { approvalApi } from '@/features/projects/api/approval';
 import type { ToolApprovalResponse } from '@/features/projects/types/approval';
@@ -31,20 +51,24 @@ export function ToolApprovalManagement({ projectId }: ToolApprovalManagementProp
   const filterStatus = searchParams.get('status') || 'PENDING';
 
   const setFilterStatus = (status: string) => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.set('status', status);
-      return next;
-    }, { replace: true });
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set('status', status);
+        return next;
+      },
+      { replace: true },
+    );
   };
 
   const [approvals, setApprovals] = useState<ToolApprovalResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-
   // States for Detail Modal
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [selectedDetailApproval, setSelectedDetailApproval] = useState<ToolApprovalResponse | null>(null);
+  const [selectedDetailApproval, setSelectedDetailApproval] = useState<ToolApprovalResponse | null>(
+    null,
+  );
 
   // States for Approve/Reject Dialog
   const [isActionOpen, setIsActionOpen] = useState(false);
@@ -56,8 +80,6 @@ export function ToolApprovalManagement({ projectId }: ToolApprovalManagementProp
   const [reviewFeedback, setReviewFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadingStage, setLoadingStage] = useState('');
-
-
 
   useEffect(() => {
     let cancelled = false;
@@ -75,7 +97,9 @@ export function ToolApprovalManagement({ projectId }: ToolApprovalManagementProp
       }
     };
     fetchApprovals();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [projectId, filterStatus]);
 
   const openDetailModal = (approval: ToolApprovalResponse) => {
@@ -123,7 +147,7 @@ export function ToolApprovalManagement({ projectId }: ToolApprovalManagementProp
 
         // 백엔드 API를 호출하지 않고 프론트엔드 상태에서 해당 항목을 제외하여 승인 연출
         setApprovals((prev) =>
-          prev.filter((item) => item.toolApprovalId !== selectedApproval.toolApprovalId)
+          prev.filter((item) => item.toolApprovalId !== selectedApproval.toolApprovalId),
         );
         toast.success('도구가 성공적으로 승인 및 생성되었습니다.');
       } else {
@@ -141,7 +165,7 @@ export function ToolApprovalManagement({ projectId }: ToolApprovalManagementProp
 
         // 반려 시에도 API 호출 대신 프론트엔드 목록에서 제외 처리
         setApprovals((prev) =>
-          prev.filter((item) => item.toolApprovalId !== selectedApproval.toolApprovalId)
+          prev.filter((item) => item.toolApprovalId !== selectedApproval.toolApprovalId),
         );
         toast.success('도구가 반려되었습니다.');
       }
@@ -157,10 +181,14 @@ export function ToolApprovalManagement({ projectId }: ToolApprovalManagementProp
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'PENDING': return <Clock className="w-3 h-3 text-amber-500" />;
-      case 'APPROVED': return <CheckCircle2 className="w-3 h-3 text-green-500" />;
-      case 'REJECTED': return <XCircle className="w-3 h-3 text-red-500" />;
-      default: return null;
+      case 'PENDING':
+        return <Clock className="w-3 h-3 text-amber-500" />;
+      case 'APPROVED':
+        return <CheckCircle2 className="w-3 h-3 text-green-500" />;
+      case 'REJECTED':
+        return <XCircle className="w-3 h-3 text-red-500" />;
+      default:
+        return null;
     }
   };
 
@@ -169,12 +197,18 @@ export function ToolApprovalManagement({ projectId }: ToolApprovalManagementProp
       <Card className="bg-slate-900/40 backdrop-blur-xl border-slate-800 shadow-2xl shadow-blue-500/5 overflow-x-auto">
         <CardHeader className="flex flex-row items-center justify-between border-b border-slate-800/50 mb-6 min-w-[900px]">
           <div className="min-w-max">
-            <CardTitle className="text-white font-['Space_Grotesk'] mb-1 whitespace-nowrap">도구 승인 대기열</CardTitle>
-            <CardDescription className="text-slate-400 whitespace-nowrap">멤버들이 생성 요청한 도구를 검토하고 승인합니다.</CardDescription>
+            <CardTitle className="text-white font-['Space_Grotesk'] mb-1 whitespace-nowrap">
+              도구 승인 대기열
+            </CardTitle>
+            <CardDescription className="text-slate-400 whitespace-nowrap">
+              멤버들이 생성 요청한 도구를 검토하고 승인합니다.
+            </CardDescription>
           </div>
 
           <div className="flex items-center gap-3">
-            <Label className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">필터</Label>
+            <Label className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">
+              필터
+            </Label>
             <Select value={filterStatus} onValueChange={setFilterStatus}>
               <SelectTrigger className="w-[140px] bg-slate-950/50 border-slate-800 text-slate-200">
                 <SelectValue placeholder="상태 필터" />
@@ -191,50 +225,81 @@ export function ToolApprovalManagement({ projectId }: ToolApprovalManagementProp
 
         <CardContent>
           {isLoading ? (
-            <div className="py-12 text-center text-slate-500 animate-pulse">요청 목록을 불러오는 중...</div>
+            <div className="py-12 text-center text-slate-500 animate-pulse">
+              요청 목록을 불러오는 중...
+            </div>
           ) : (
             <div className="border border-slate-800 rounded-lg overflow-x-auto bg-slate-950/20">
               <Table className="min-w-[900px]">
                 <TableHeader className="bg-slate-950/50">
                   <TableRow className="border-slate-800 hover:bg-transparent">
-                    <TableHead className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">도구 이름 / 유형</TableHead>
-                    <TableHead className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">요청자</TableHead>
-                    <TableHead className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">상태</TableHead>
-                    <TableHead className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">요청일</TableHead>
-                    <TableHead className="text-right text-slate-400 font-bold uppercase text-[10px] tracking-widest">작업</TableHead>
+                    <TableHead className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">
+                      도구 이름 / 유형
+                    </TableHead>
+                    <TableHead className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">
+                      요청자
+                    </TableHead>
+                    <TableHead className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">
+                      상태
+                    </TableHead>
+                    <TableHead className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">
+                      요청일
+                    </TableHead>
+                    <TableHead className="text-right text-slate-400 font-bold uppercase text-[10px] tracking-widest">
+                      작업
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {approvals.length === 0 ? (
                     <TableRow className="border-slate-800">
-                      <TableCell colSpan={5} className="text-center py-12 text-slate-500 font-medium">
+                      <TableCell
+                        colSpan={5}
+                        className="text-center py-12 text-slate-500 font-medium"
+                      >
                         대기 중인 승인 요청이 없습니다.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    approvals.map(approval => (
-                      <TableRow key={approval.toolApprovalId} className="border-slate-800 hover:bg-slate-900/40 transition-colors">
+                    approvals.map((approval) => (
+                      <TableRow
+                        key={approval.toolApprovalId}
+                        className="border-slate-800 hover:bg-slate-900/40 transition-colors"
+                      >
                         <TableCell>
                           <div className="font-bold text-slate-200">
-                            {approval.displayName || approval.fileName || `설계안 #${approval.toolPlanId ?? '-'}`}
-                            {approval.toolPlanId && <span className="ml-2 text-[10px] text-blue-400 font-normal border border-blue-400/30 px-1 py-0.5 rounded">설계안</span>}
+                            {approval.displayName ||
+                              approval.fileName ||
+                              `설계안 #${approval.toolPlanId ?? '-'}`}
+                            {approval.toolPlanId && (
+                              <span className="ml-2 text-[10px] text-blue-400 font-normal border border-blue-400/30 px-1 py-0.5 rounded">
+                                설계안
+                              </span>
+                            )}
                           </div>
                           <div className="text-[10px] text-blue-400 font-mono mt-0.5 tracking-wider uppercase">
                             {approval.toolPlanStatus || approval.toolStatus || '-'}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="text-sm text-slate-300 font-medium">{approval.requestedByUserName}</div>
+                          <div className="text-sm text-slate-300 font-medium">
+                            {approval.requestedByUserName}
+                          </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             {getStatusIcon(approval.approvalStatus)}
-                            <Badge variant="outline" className={cn(
-                              "font-bold text-[10px] uppercase",
-                              approval.approvalStatus === 'PENDING' ? "border-amber-900 bg-amber-950/30 text-amber-400" :
-                                approval.approvalStatus === 'APPROVED' ? "border-green-900 bg-green-950/30 text-green-400" :
-                                  "border-red-900 bg-red-950/30 text-red-400"
-                            )}>
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                'font-bold text-[10px] uppercase',
+                                approval.approvalStatus === 'PENDING'
+                                  ? 'border-amber-900 bg-amber-950/30 text-amber-400'
+                                  : approval.approvalStatus === 'APPROVED'
+                                    ? 'border-green-900 bg-green-950/30 text-green-400'
+                                    : 'border-red-900 bg-red-950/30 text-red-400',
+                              )}
+                            >
                               {approval.approvalStatus}
                             </Badge>
                           </div>
@@ -264,40 +329,54 @@ export function ToolApprovalManagement({ projectId }: ToolApprovalManagementProp
           )}
         </CardContent>
 
-        <Dialog open={isActionOpen} onOpenChange={(open) => {
-          if (!isSubmitting) setIsActionOpen(open);
-        }}>
+        <Dialog
+          open={isActionOpen}
+          onOpenChange={(open) => {
+            if (!isSubmitting) setIsActionOpen(open);
+          }}
+        >
           <DialogContent className="max-w-lg bg-[#0b1424] border-slate-800 text-slate-100">
             <DialogHeader>
               <DialogTitle className="text-white flex items-center gap-2">
                 <Clock className="w-5 h-5 text-blue-400" /> 도구 승인 검토
               </DialogTitle>
               <DialogDescription className="text-slate-400 font-medium">
-                <span className="text-blue-400 font-bold">{selectedApproval?.displayName || selectedApproval?.fileName || '도구/설계안'}</span>에 대한 승인 요청을 검토합니다.
+                <span className="text-blue-400 font-bold">
+                  {selectedApproval?.displayName || selectedApproval?.fileName || '도구/설계안'}
+                </span>
+                에 대한 승인 요청을 검토합니다.
               </DialogDescription>
             </DialogHeader>
 
             {isSubmitting ? (
               <div className="flex flex-col items-center justify-center py-20 text-slate-400">
                 <div className="w-12 h-12 border-4 border-slate-800 border-t-blue-500 rounded-full animate-spin mb-6" />
-                <p className="text-base font-bold text-blue-400 mb-2 animate-pulse">도구 엔진 동적 생성 중</p>
+                <p className="text-base font-bold text-blue-400 mb-2 animate-pulse">
+                  도구 엔진 동적 생성 중
+                </p>
                 <p className="text-sm font-medium text-slate-300 transition-all duration-300 min-h-[40px] text-center px-4">
                   {loadingStage || '도구를 생성하고 서버에 반영하는 중입니다...'}
                 </p>
-                <p className="text-[10px] text-slate-600 mt-4 font-mono">SANDBOX CONTAINER ENGINES ACTIVE</p>
+                <p className="text-[10px] text-slate-600 mt-4 font-mono">
+                  SANDBOX CONTAINER ENGINES ACTIVE
+                </p>
               </div>
             ) : (
               <>
                 <div className="space-y-6 py-6">
                   <div className="space-y-4">
-                    <Label className="text-slate-300 uppercase text-[10px] font-bold tracking-widest">승인 결정</Label>
+                    <Label className="text-slate-300 uppercase text-[10px] font-bold tracking-widest">
+                      승인 결정
+                    </Label>
                     <div className="flex gap-4">
                       <Button
                         variant={actionType === 'APPROVE' ? 'default' : 'outline'}
                         onClick={() => setActionType('APPROVE')}
                         className={cn(
-                          "flex-1 font-bold",
-                          actionType === 'APPROVE' ? "bg-green-600 hover:bg-green-700 text-white" : "border-slate-800 text-slate-500 hover:bg-slate-900"
+                          'flex-1 font-bold',
+                          actionType === 'APPROVE'
+                            ? 'bg-green-600 hover:bg-green-700 text-white'
+                            : 'border-slate-800 text-slate-500 hover:bg-slate-900',
                         )}
                       >
                         승인 (Approve)
@@ -306,8 +385,10 @@ export function ToolApprovalManagement({ projectId }: ToolApprovalManagementProp
                         variant={actionType === 'REJECT' ? 'default' : 'outline'}
                         onClick={() => setActionType('REJECT')}
                         className={cn(
-                          "flex-1 font-bold",
-                          actionType === 'REJECT' ? "bg-red-600 hover:bg-red-700 text-white" : "border-slate-800 text-slate-500 hover:bg-slate-900"
+                          'flex-1 font-bold',
+                          actionType === 'REJECT'
+                            ? 'bg-red-600 hover:bg-red-700 text-white'
+                            : 'border-slate-800 text-slate-500 hover:bg-slate-900',
                         )}
                       >
                         반려 (Reject)
@@ -317,7 +398,9 @@ export function ToolApprovalManagement({ projectId }: ToolApprovalManagementProp
 
                   {actionType === 'APPROVE' && !selectedApproval?.toolPlanId && (
                     <div className="space-y-2">
-                      <Label className="text-slate-300 uppercase text-[10px] font-bold tracking-widest">도구 등급 (Tool Grade)</Label>
+                      <Label className="text-slate-300 uppercase text-[10px] font-bold tracking-widest">
+                        도구 등급 (Tool Grade)
+                      </Label>
                       <Input
                         type="number"
                         min={DEFAULT_TOOL_GRADE}
@@ -331,9 +414,15 @@ export function ToolApprovalManagement({ projectId }: ToolApprovalManagementProp
                   )}
 
                   <div className="space-y-2">
-                    <Label className="text-slate-300 uppercase text-[10px] font-bold tracking-widest">검토 의견</Label>
+                    <Label className="text-slate-300 uppercase text-[10px] font-bold tracking-widest">
+                      검토 의견
+                    </Label>
                     <Textarea
-                      placeholder={actionType === 'APPROVE' ? "승인 사유를 입력하세요..." : "반려 사유를 입력하세요..."}
+                      placeholder={
+                        actionType === 'APPROVE'
+                          ? '승인 사유를 입력하세요...'
+                          : '반려 사유를 입력하세요...'
+                      }
                       value={reviewFeedback}
                       onChange={(e) => setReviewFeedback(e.target.value)}
                       className="bg-slate-950 border-slate-800 text-white min-h-[100px]"
@@ -342,12 +431,20 @@ export function ToolApprovalManagement({ projectId }: ToolApprovalManagementProp
                 </div>
 
                 <DialogFooter className="gap-2">
-                  <Button variant="outline" onClick={() => setIsActionOpen(false)} className="border-slate-700 text-slate-300 hover:bg-slate-800">취소</Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsActionOpen(false)}
+                    className="border-slate-700 text-slate-300 hover:bg-slate-800"
+                  >
+                    취소
+                  </Button>
                   <Button
                     onClick={handleActionSubmit}
                     className={cn(
-                      "font-bold px-8",
-                      actionType === 'APPROVE' ? "bg-green-600 hover:bg-green-700 text-white" : "bg-red-600 hover:bg-red-700 text-white"
+                      'font-bold px-8',
+                      actionType === 'APPROVE'
+                        ? 'bg-green-600 hover:bg-green-700 text-white'
+                        : 'bg-red-600 hover:bg-red-700 text-white',
                     )}
                   >
                     {actionType === 'APPROVE' ? '승인하기' : '반려하기'}

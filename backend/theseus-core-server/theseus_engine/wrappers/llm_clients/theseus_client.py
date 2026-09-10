@@ -62,14 +62,9 @@ def _required_api_key(provider: str, *env_names: str) -> str:
             continue
         return candidate
     expected = " or ".join(env_names)
-    suffix = (
-        f" Ignored placeholder values in {', '.join(placeholders)}."
-        if placeholders
-        else ""
-    )
+    suffix = f" Ignored placeholder values in {', '.join(placeholders)}." if placeholders else ""
     raise AuthenticationFailure(
-        f"{provider} API key is not configured. Set {expected} before starting Theseus."
-        f"{suffix}"
+        f"{provider} API key is not configured. Set {expected} before starting Theseus." f"{suffix}"
     )
 
 
@@ -103,18 +98,15 @@ class TheseusGeminiClient(TheseusOpenAICompatClient):
     (thought_signature) across multi-turn tool-calling conversations.
     """
 
-    async def _stream_once(
-        self, request: ApiMessageRequest
-    ) -> AsyncIterator[ApiStreamEvent]:
+    async def _stream_once(self, request: ApiMessageRequest) -> AsyncIterator[ApiStreamEvent]:
         # 1. Convert messages and patch thought_signatures
         openai_messages = _convert_messages_to_openai(
-            request.messages, request.system_prompt,
+            request.messages,
+            request.system_prompt,
         )
         patch_assistant_tool_calls(openai_messages, request.messages)
 
-        openai_tools = (
-            _convert_tools_to_openai(request.tools) if request.tools else None
-        )
+        openai_tools = _convert_tools_to_openai(request.tools) if request.tools else None
 
         params: dict[str, Any] = {
             "model": request.model,
@@ -224,9 +216,13 @@ class TheseusGeminiClient(TheseusOpenAICompatClient):
                 # 빈 dict로 조용히 넘기지 않고 에이전트가 인지할 수 있도록 에러를 노출
                 # ToolUseBlock은 남겨 히스토리 구조를 유지하되, input에 에러 정보를 담음
                 args = {"_parse_error": str(parse_err), "_raw": tc["arguments"][:200]}
-            content.append(ToolUseBlock(
-                id=tc["id"], name=tc["name"], input=args,
-            ))
+            content.append(
+                ToolUseBlock(
+                    id=tc["id"],
+                    name=tc["name"],
+                    input=args,
+                )
+            )
 
             raw_tool_calls_dict[tc["id"]] = rebuild_tool_call_dict(
                 tc_id=tc["id"],
@@ -238,7 +234,9 @@ class TheseusGeminiClient(TheseusOpenAICompatClient):
         final_message = ConversationMessage(role="assistant", content=content)
         if raw_tool_calls_dict:
             object.__setattr__(
-                final_message, "_raw_tool_calls", raw_tool_calls_dict,
+                final_message,
+                "_raw_tool_calls",
+                raw_tool_calls_dict,
             )
 
         if collected_reasoning:
@@ -266,9 +264,7 @@ class TheseusLLMClient(SupportsStreamingMessages):
         self._last_tool_calls: list[str] = []
         self._current_mode: str = "Agent"
 
-    def _initialize_backend(
-        self, model_name: str
-    ) -> SupportsStreamingMessages:
+    def _initialize_backend(self, model_name: str) -> SupportsStreamingMessages:
         model_lower = model_name.lower()
 
         # 1. Anthropic (Claude)
@@ -281,7 +277,9 @@ class TheseusLLMClient(SupportsStreamingMessages):
             api_key = _required_api_key("Gemini", "GEMINI_API_KEY", "GOOGLE_API_KEY")
             base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
             return TheseusGeminiClient(
-                api_key=api_key, base_url=base_url, timeout=120.0,
+                api_key=api_key,
+                base_url=base_url,
+                timeout=120.0,
             )
 
         # 3. DeepSeek
@@ -289,14 +287,18 @@ class TheseusLLMClient(SupportsStreamingMessages):
             api_key = _required_api_key("DeepSeek", "DEEPSEEK_API_KEY")
             base_url = "https://api.deepseek.com/v1"
             return TheseusOpenAICompatClient(
-                api_key=api_key, base_url=base_url, timeout=120.0,
+                api_key=api_key,
+                base_url=base_url,
+                timeout=120.0,
             )
 
         # 4. Ollama
         elif model_lower.startswith("ollama/"):
             base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1")
             return TheseusOpenAICompatClient(
-                api_key="ollama", base_url=base_url, timeout=120.0,
+                api_key="ollama",
+                base_url=base_url,
+                timeout=120.0,
             )
 
         # 5. vLLM / Custom OpenAI Compatible
@@ -311,10 +313,7 @@ class TheseusLLMClient(SupportsStreamingMessages):
                     "THESEUS_VLLM_AUTO_DISCOVER_MODEL",
                     True,
                 ),
-                preferred_model=(
-                    os.getenv("THESEUS_VLLM_MODEL")
-                    or os.getenv("VLLM_MODEL")
-                ),
+                preferred_model=(os.getenv("THESEUS_VLLM_MODEL") or os.getenv("VLLM_MODEL")),
             )
 
         # 6. Default (OpenAI: gpt-4o, o1, etc.)
@@ -322,20 +321,27 @@ class TheseusLLMClient(SupportsStreamingMessages):
             api_key = _required_api_key("OpenAI", "OPENAI_API_KEY")
             base_url = os.getenv("OPENAI_BASE_URL", None)
             return TheseusOpenAICompatClient(
-                api_key=api_key, base_url=base_url, timeout=120.0,
+                api_key=api_key,
+                base_url=base_url,
+                timeout=120.0,
             )
 
     async def stream_message(
-        self, request: ApiMessageRequest,
+        self,
+        request: ApiMessageRequest,
     ) -> AsyncIterator[ApiStreamEvent]:
         """Strip provider prefixes and delegate to the backend client."""
         # --- DEBUG: Dump incoming request to Router ---
         request_tool_summary = summarize_api_message_request(request)
-        dump_debug_payload("router_incoming_request", {
-            "target_model": self.model_name,
-            "request": request,
-            **request_tool_summary,
-        }, debug_context=request.debug_context)
+        dump_debug_payload(
+            "router_incoming_request",
+            {
+                "target_model": self.model_name,
+                "request": request,
+                **request_tool_summary,
+            },
+            debug_context=request.debug_context,
+        )
         # ----------------------------------------------
 
         # Patch a copy of messages to make tool errors explicit for open-source
@@ -355,8 +361,7 @@ class TheseusLLMClient(SupportsStreamingMessages):
                     and not block.content.startswith("[TOOL EXECUTION ERROR]")
                 ):
                     prefix = (
-                        "[TOOL EXECUTION ERROR] "
-                        "The tool failed with the following output:\n"
+                        "[TOOL EXECUTION ERROR] " "The tool failed with the following output:\n"
                     )
                     patched_blocks.append(
                         block.model_copy(update={"content": f"{prefix}{block.content}"})
@@ -374,10 +379,7 @@ class TheseusLLMClient(SupportsStreamingMessages):
             mode=self._current_mode,
         )
         # 라우팅된 모델이 기본과 다르면 백엔드 재초기화
-        if (
-            self._model_router.enabled
-            and routed_model != self.model_name
-        ):
+        if self._model_router.enabled and routed_model != self.model_name:
             self._backend = self._initialize_backend(routed_model)
             actual_model = routed_model
             if "/" in actual_model:
@@ -406,6 +408,7 @@ class TheseusLLMClient(SupportsStreamingMessages):
                 if event.usage:
                     try:
                         from theseus_engine.engine.cost_tracker import CostTracker
+
                         CostTracker.get_or_create().record_usage(
                             model=actual_model,
                             input_tokens=event.usage.input_tokens,

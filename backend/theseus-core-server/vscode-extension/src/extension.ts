@@ -14,32 +14,39 @@ import {
 } from './workspace/WorkspaceContext';
 import { InlineEditController } from './inline/InlineEditController';
 
-function startRunner(context: vscode.ExtensionContext, sessionManager: TheseusSessionManager): void {
+function startRunner(
+  context: vscode.ExtensionContext,
+  sessionManager: TheseusSessionManager,
+): void {
   const runnerPath = getRunnerPath();
   const runtimeMode = getRuntimeModeSetting();
   if (runtimeMode === 'bundled-runner' && !runnerPath) {
-    vscode.window.showErrorMessage(
-      'theseus.runtimeMode is bundled-runner, but theseus.runnerPath is empty.',
-      'Open Settings',
-    ).then(c => {
-      if (c === 'Open Settings') {
-        vscode.commands.executeCommand('workbench.action.openSettings', 'theseus.runnerPath');
-      }
-    });
+    vscode.window
+      .showErrorMessage(
+        'theseus.runtimeMode is bundled-runner, but theseus.runnerPath is empty.',
+        'Open Settings',
+      )
+      .then((c) => {
+        if (c === 'Open Settings') {
+          vscode.commands.executeCommand('workbench.action.openSettings', 'theseus.runnerPath');
+        }
+      });
     return;
   }
 
   const coreRoot = getCoreRoot(context);
   const useBundledRunner = shouldUseBundledRunner();
   if (!coreRoot && !useBundledRunner) {
-    vscode.window.showErrorMessage(
-      'Cannot find theseus_engine/. Set "theseus.corePath" to the theseus-core-server directory.',
-      'Open Settings',
-    ).then(c => {
-      if (c === 'Open Settings') {
-        vscode.commands.executeCommand('workbench.action.openSettings', 'theseus.corePath');
-      }
-    });
+    vscode.window
+      .showErrorMessage(
+        'Cannot find theseus_engine/. Set "theseus.corePath" to the theseus-core-server directory.',
+        'Open Settings',
+      )
+      .then((c) => {
+        if (c === 'Open Settings') {
+          vscode.commands.executeCommand('workbench.action.openSettings', 'theseus.corePath');
+        }
+      });
     return;
   }
 
@@ -53,7 +60,7 @@ function startRunner(context: vscode.ExtensionContext, sessionManager: TheseusSe
 function diagnosticAtCursor(editor: vscode.TextEditor): vscode.Diagnostic | undefined {
   const diagnostics = vscode.languages.getDiagnostics(editor.document.uri);
   const position = editor.selection.active;
-  return diagnostics.find(diagnostic => diagnostic.range.contains(position)) || diagnostics[0];
+  return diagnostics.find((diagnostic) => diagnostic.range.contains(position)) || diagnostics[0];
 }
 
 function isDiagnosticLike(value: unknown): value is vscode.Diagnostic {
@@ -71,7 +78,10 @@ function uriFromCommandArgs(args: unknown[]): vscode.Uri | undefined {
   return undefined;
 }
 
-function diagnosticFromCommandArgs(args: unknown[], uri: vscode.Uri | undefined): vscode.Diagnostic | undefined {
+function diagnosticFromCommandArgs(
+  args: unknown[],
+  uri: vscode.Uri | undefined,
+): vscode.Diagnostic | undefined {
   for (const arg of args) {
     if (isDiagnosticLike(arg)) return arg;
     const record = arg as { diagnostic?: unknown } | undefined;
@@ -81,24 +91,32 @@ function diagnosticFromCommandArgs(args: unknown[], uri: vscode.Uri | undefined)
   return undefined;
 }
 
-function diagnosticPrompt(kind: 'explain' | 'fix', uri: vscode.Uri, diagnostic: vscode.Diagnostic): string {
+function diagnosticPrompt(
+  kind: 'explain' | 'fix',
+  uri: vscode.Uri,
+  diagnostic: vscode.Diagnostic,
+): string {
   const rel = vscode.workspace.asRelativePath(uri);
   const line = diagnostic.range.start.line + 1;
-  const code = diagnostic.code === undefined
-    ? ''
-    : typeof diagnostic.code === 'object'
-      ? String(diagnostic.code.value)
-      : String(diagnostic.code);
+  const code =
+    diagnostic.code === undefined
+      ? ''
+      : typeof diagnostic.code === 'object'
+        ? String(diagnostic.code.value)
+        : String(diagnostic.code);
   const details = [
     `file: ${rel}`,
     `line: ${line}`,
     `message: ${diagnostic.message}`,
     code ? `code: ${code}` : '',
     diagnostic.source ? `source: ${diagnostic.source}` : '',
-  ].filter(Boolean).join('\n');
-  const instruction = kind === 'fix'
-    ? 'Fix this VSCode Problems diagnostic.'
-    : 'Explain the cause of this VSCode Problems diagnostic and suggest a fix direction.';
+  ]
+    .filter(Boolean)
+    .join('\n');
+  const instruction =
+    kind === 'fix'
+      ? 'Fix this VSCode Problems diagnostic.'
+      : 'Explain the cause of this VSCode Problems diagnostic and suggest a fix direction.';
   return `@${rel}:${line}\n${details}\n\n${instruction}`;
 }
 
@@ -109,7 +127,8 @@ function injectProblemPrompt(
 ): void {
   const editor = vscode.window.activeTextEditor;
   const uri = uriFromCommandArgs(args) || editor?.document.uri;
-  const diagnostic = diagnosticFromCommandArgs(args, uri) || (editor ? diagnosticAtCursor(editor) : undefined);
+  const diagnostic =
+    diagnosticFromCommandArgs(args, uri) || (editor ? diagnosticAtCursor(editor) : undefined);
   if (!uri) {
     vscode.window.showWarningMessage('Theseus: 진단을 보낼 파일을 찾지 못했습니다.');
     return;
@@ -129,11 +148,8 @@ function injectProblemPrompt(
 export function activate(context: vscode.ExtensionContext): void {
   const sessionManager = new TheseusSessionManager(context);
   const diffProvider = new TheseusDiffContentProvider();
-  const provider = new TheseusChatViewProvider(
-    context,
-    sessionManager,
-    diffProvider,
-    () => startRunner(context, sessionManager),
+  const provider = new TheseusChatViewProvider(context, sessionManager, diffProvider, () =>
+    startRunner(context, sessionManager),
   );
 
   const inlineEditController = new InlineEditController(sessionManager);
@@ -181,8 +197,12 @@ export function activate(context: vscode.ExtensionContext): void {
       vscode.commands.executeCommand('theseus.chatView.focus');
     }),
 
-    vscode.commands.registerCommand('theseus.explainProblem', (...args: unknown[]) => injectProblemPrompt(provider, 'explain', args)),
-    vscode.commands.registerCommand('theseus.fixProblem', (...args: unknown[]) => injectProblemPrompt(provider, 'fix', args)),
+    vscode.commands.registerCommand('theseus.explainProblem', (...args: unknown[]) =>
+      injectProblemPrompt(provider, 'explain', args),
+    ),
+    vscode.commands.registerCommand('theseus.fixProblem', (...args: unknown[]) =>
+      injectProblemPrompt(provider, 'fix', args),
+    ),
 
     vscode.commands.registerCommand('theseus.explainSelected', () => {
       const editor = vscode.window.activeTextEditor;
@@ -204,7 +224,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('theseus.moveToSecondarySidebar', () => {
       vscode.window.showInformationMessage(
         'Drag the Theseus icon from the Activity Bar to the Secondary Side Bar (right side). ' +
-        'Or right-click the icon -> "Move to Secondary Side Bar".',
+          'Or right-click the icon -> "Move to Secondary Side Bar".',
       );
     }),
     vscode.commands.registerCommand('theseus.moveToPanel', () => {
@@ -220,7 +240,9 @@ export function activate(context: vscode.ExtensionContext): void {
         restartRequired: sessionManager.isRunning,
       });
       if (sessionManager.isRunning) {
-        vscode.window.showInformationMessage('Theseus settings changed. Restart the agent to apply them.');
+        vscode.window.showInformationMessage(
+          'Theseus settings changed. Restart the agent to apply them.',
+        );
       }
     }),
   );

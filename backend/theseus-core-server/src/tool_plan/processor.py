@@ -7,7 +7,11 @@ from typing import Any, Callable
 
 from pydantic import ValidationError
 
-from src.db.repositories.core_runs import CoreRunAlreadyFinished, CoreRunLeaseHeld, CoreRunRepository
+from src.db.repositories.core_runs import (
+    CoreRunAlreadyFinished,
+    CoreRunLeaseHeld,
+    CoreRunRepository,
+)
 from src.tool_plan.planner import ToolPlanPlanner, ToolPlanPlannerError
 from src.tool_plan.publisher import ToolPlanEventPublisher
 from src.tool_plan.schemas import (
@@ -37,7 +41,9 @@ class ToolPlanProcessor:
         *,
         publisher: ToolPlanEventPublisher,
         planner: ToolPlanPlanner | None = None,
-        checkpoint_repo_factory: Callable[[], AbstractContextManager[CoreRunRepository]] | None = None,
+        checkpoint_repo_factory: (
+            Callable[[], AbstractContextManager[CoreRunRepository]] | None
+        ) = None,
     ) -> None:
         self.publisher = publisher
         self.planner = planner or ToolPlanPlanner()
@@ -50,7 +56,9 @@ class ToolPlanProcessor:
         event_type = payload.get("eventType")
         try:
             if event_type == "TOOL_PLAN_REQUESTED":
-                await self.process_plan(ToolPlanRequestedEvent.model_validate(payload), request_type="GENERATE_PLAN")
+                await self.process_plan(
+                    ToolPlanRequestedEvent.model_validate(payload), request_type="GENERATE_PLAN"
+                )
             elif event_type == "TOOL_PLAN_REGENERATION_REQUESTED":
                 await self.process_plan(
                     ToolPlanRegenerationRequestedEvent.model_validate(payload),
@@ -79,7 +87,9 @@ class ToolPlanProcessor:
                 chunk_callback=None,
                 status_chunk_callback=lambda content: self.publish_chunk(event, content),
                 checkpoint=self.load_agent_checkpoint(event.run_id),
-                checkpoint_callback=lambda checkpoint: self.save_agent_checkpoint(event.run_id, checkpoint),
+                checkpoint_callback=lambda checkpoint: self.save_agent_checkpoint(
+                    event.run_id, checkpoint
+                ),
             )
             if isinstance(result, ToolPlanSkippedResult):
                 await self.publish_skipped(event, result.message)
@@ -90,14 +100,22 @@ class ToolPlanProcessor:
             logger.error("ToolPlan event publish failed. runId=%s", event.run_id, exc_info=True)
             raise
         except ToolPlanPlannerError as exc:
-            logger.error("ToolPlan generation failed. runId=%s error=%s", event.run_id, exc, exc_info=True)
+            logger.error(
+                "ToolPlan generation failed. runId=%s error=%s", event.run_id, exc, exc_info=True
+            )
             code = "TOOL_PLAN_GENERATION_FAILED"
-            message = await self._explain_failure(event, code=code, message=str(exc), stage="planner")
+            message = await self._explain_failure(
+                event, code=code, message=str(exc), stage="planner"
+            )
             await self.publish_failed(event, code, message)
         except Exception as exc:
-            logger.error("Unexpected ToolPlan failure. runId=%s error=%s", event.run_id, exc, exc_info=True)
+            logger.error(
+                "Unexpected ToolPlan failure. runId=%s error=%s", event.run_id, exc, exc_info=True
+            )
             code = "TOOL_PLAN_FAILED"
-            message = await self._explain_failure(event, code=code, message=str(exc), stage="unexpected")
+            message = await self._explain_failure(
+                event, code=code, message=str(exc), stage="unexpected"
+            )
             await self.publish_failed(event, code, message)
 
     async def _explain_failure(
@@ -175,7 +193,9 @@ class ToolPlanProcessor:
                 progress_json=checkpoint.get("progress"),
             )
 
-    async def publish_progress(self, event: ToolPlanRequestEvent, message: str, progress_rate: int | None) -> None:
+    async def publish_progress(
+        self, event: ToolPlanRequestEvent, message: str, progress_rate: int | None
+    ) -> None:
         progress = ToolPlanProgressEvent(
             runId=event.run_id,
             eventSequence=self.next_sequence(event.run_id),

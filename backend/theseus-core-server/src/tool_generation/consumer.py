@@ -71,11 +71,16 @@ class ToolGenerationKafkaConsumer:
                 await self.processor.process_message(message.value)
                 await self._consumer.commit()
             except Exception as exc:
-                logger.error("Legacy ToolGeneration Kafka message handling failed: %s", exc, exc_info=True)
+                logger.error(
+                    "Legacy ToolGeneration Kafka message handling failed: %s", exc, exc_info=True
+                )
 
 
 async def start_tool_generation_consumer() -> ToolGenerationKafkaConsumer | None:
-    if not settings.CORE_KAFKA_CONSUMER_ENABLED or not settings.CORE_LEGACY_TOOL_GENERATION_CONSUMER_ENABLED:
+    if (
+        not settings.CORE_KAFKA_CONSUMER_ENABLED
+        or not settings.CORE_LEGACY_TOOL_GENERATION_CONSUMER_ENABLED
+    ):
         logger.info("Legacy ToolGeneration Kafka consumer is disabled.")
         return None
 

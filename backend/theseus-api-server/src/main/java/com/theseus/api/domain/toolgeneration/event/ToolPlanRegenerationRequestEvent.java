@@ -19,5 +19,4 @@ public record ToolPlanRegenerationRequestEvent(
 	List<ToolFeedbackItemRequest> feedbackItems,
 	List<ToolPlanHistoryMessagePayload> history,
 	LocalDateTime requestedAt
-) {
-}
+) {}

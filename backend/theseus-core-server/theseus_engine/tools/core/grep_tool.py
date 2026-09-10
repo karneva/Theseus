@@ -12,15 +12,19 @@ from theseus_engine.tools.core.file_utils import _resolve_path, _check_path_secu
 
 log = logging.getLogger(__name__)
 
+
 class GrepInput(BaseModel):
     """Input for searching content."""
+
     query: str = Field(description="Text or regex pattern to search for")
     path: str = Field(default=".", description="Directory or file to search in")
     recursive: bool = Field(default=True, description="Search sub-directories")
     case_insensitive: bool = Field(default=True, description="Ignore case")
 
+
 class GrepTool(BaseTool):
     """Searches for text patterns in files."""
+
     name = "grep"
     description = "Search for a pattern in file contents within the workspace."
     input_model = GrepInput

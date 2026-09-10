@@ -5,5 +5,5 @@ public enum ToolStatus {
 	PENDING,
 	REJECTED,
 	APPROVED,
-	DELETED
+	DELETED,
 }

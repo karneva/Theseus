@@ -19,7 +19,14 @@ interface EditUserModalProps {
   initialEmail: string;
 }
 
-export function EditUserModal({ isOpen, onClose, onSuccess, userId, initialName, initialEmail }: EditUserModalProps) {
+export function EditUserModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  userId,
+  initialName,
+  initialEmail,
+}: EditUserModalProps) {
   const [editUserForm, setEditUserForm] = useState({ name: initialName, email: initialEmail });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -46,7 +53,9 @@ export function EditUserModal({ isOpen, onClose, onSuccess, userId, initialName,
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-[#051424] border-[rgba(65,71,81,0.3)] text-white sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="text-[#d4e4fa] text-lg font-semibold">사용자 정보 수정</DialogTitle>
+          <DialogTitle className="text-[#d4e4fa] text-lg font-semibold">
+            사용자 정보 수정
+          </DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">

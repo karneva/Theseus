@@ -64,9 +64,7 @@ def _build_mode_assertion(
     if previous_name and previous_name != mode_name:
         prefix += f" Previous runtime mode was {previous_name}."
     if explicit_selection:
-        prefix += (
-            f" The user selected this mode through the {source_label} mode control."
-        )
+        prefix += f" The user selected this mode through the {source_label} mode control."
     else:
         prefix += f" This mode was provided by {source_label}."
     return prefix

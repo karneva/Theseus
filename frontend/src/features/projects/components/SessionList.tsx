@@ -45,7 +45,9 @@ export function SessionList({ projectId, children, isCollapsed }: SessionListPro
       }
     };
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [projectId, sessionFetchTrigger]);
 
   const handleNewChat = async () => {
@@ -73,7 +75,9 @@ export function SessionList({ projectId, children, isCollapsed }: SessionListPro
     if (!editingSession || !projectId) return;
     try {
       await chatApi.updateSessionTitle(projectId, editingSession.id.toString(), newTitle);
-      setSessions(prev => prev.map(s => s.sessionId === editingSession.id ? { ...s, title: newTitle } : s));
+      setSessions((prev) =>
+        prev.map((s) => (s.sessionId === editingSession.id ? { ...s, title: newTitle } : s)),
+      );
 
       const currentActiveSessionId = window.location.pathname.split('/').pop();
       if (currentActiveSessionId === editingSession.id.toString()) {
@@ -91,7 +95,9 @@ export function SessionList({ projectId, children, isCollapsed }: SessionListPro
 
     try {
       await chatApi.closeSession(projectId, sessionId.toString());
-      setSessions(prev => prev.map(s => s.sessionId === sessionId ? { ...s, isClosed: true } : s));
+      setSessions((prev) =>
+        prev.map((s) => (s.sessionId === sessionId ? { ...s, isClosed: true } : s)),
+      );
 
       const currentActiveSessionId = window.location.pathname.split('/').pop();
       if (currentActiveSessionId === sessionId.toString()) {
@@ -105,11 +111,11 @@ export function SessionList({ projectId, children, isCollapsed }: SessionListPro
     }
   };
 
-  const activeSessions = sessions.filter(s => !s.isClosed);
+  const activeSessions = sessions.filter((s) => !s.isClosed);
 
   return (
     <>
-      <div className={cn(isCollapsed ? "px-1 mb-6 flex justify-center" : "px-4 mb-6")}>
+      <div className={cn(isCollapsed ? 'px-1 mb-6 flex justify-center' : 'px-4 mb-6')}>
         {isCollapsed ? (
           <button
             onClick={handleNewChat}
@@ -140,60 +146,63 @@ export function SessionList({ projectId, children, isCollapsed }: SessionListPro
           </div>
           <ul className="flex flex-col gap-1">
             {isSessionsLoading ? (
-            <li className="px-3 py-2 text-[10px] text-slate-500 animate-pulse">
-              세션 목록 로딩 중...
-            </li>
-          ) : activeSessions.length > 0 ? (
-            activeSessions.map((session) => (
-              <li key={session.sessionId} className="group relative">
-                <NavLink
-                  to={`/projects/${projectId}/sessions/${session.sessionId}`}
-                  className={({ isActive }) => cn(
-                    "flex items-center justify-between w-full px-3 py-2 rounded text-xs tracking-[0.35px] transition-colors",
-                    isActive
-                      ? "bg-white/10 text-white font-medium"
-                      : "text-slate-400 hover:bg-white/5 hover:text-slate-300"
-                  )}
-                >
-                  <span className="truncate flex-1">{session.title}</span>
-                </NavLink>
-
-                <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="p-1 hover:text-white text-slate-500 rounded transition-colors">
-                        <MoreVertical size={14} />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-[#0b0e14] border-slate-800 text-slate-300 min-w-[100px]">
-                      <DropdownMenuItem
-                        onClick={() => handleRenameSession(session.sessionId, session.title)}
-                        className="flex items-center gap-2 text-xs focus:bg-white/5 focus:text-white cursor-pointer"
-                      >
-                        <Pencil size={12} />
-                        <span>이름 수정</span>
-                      </DropdownMenuItem>
-                      {!session.isClosed && (
-                        <DropdownMenuItem
-                          onClick={() => handleCloseSession(session.sessionId)}
-                          className="flex items-center gap-2 text-xs focus:bg-red-500/10 focus:text-red-400 text-red-400/80 cursor-pointer"
-                        >
-                          <Trash2 size={12} />
-                          <span>세션 종료</span>
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+              <li className="px-3 py-2 text-[10px] text-slate-500 animate-pulse">
+                세션 목록 로딩 중...
               </li>
-            ))
-          ) : (
-            <li className="px-3 py-2 text-[10px] text-slate-500 italic">
-              활성 세션이 없습니다.
-            </li>
-          )}
-        </ul>
-      </div>
+            ) : activeSessions.length > 0 ? (
+              activeSessions.map((session) => (
+                <li key={session.sessionId} className="group relative">
+                  <NavLink
+                    to={`/projects/${projectId}/sessions/${session.sessionId}`}
+                    className={({ isActive }) =>
+                      cn(
+                        'flex items-center justify-between w-full px-3 py-2 rounded text-xs tracking-[0.35px] transition-colors',
+                        isActive
+                          ? 'bg-white/10 text-white font-medium'
+                          : 'text-slate-400 hover:bg-white/5 hover:text-slate-300',
+                      )
+                    }
+                  >
+                    <span className="truncate flex-1">{session.title}</span>
+                  </NavLink>
+
+                  <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="p-1 hover:text-white text-slate-500 rounded transition-colors">
+                          <MoreVertical size={14} />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="bg-[#0b0e14] border-slate-800 text-slate-300 min-w-[100px]"
+                      >
+                        <DropdownMenuItem
+                          onClick={() => handleRenameSession(session.sessionId, session.title)}
+                          className="flex items-center gap-2 text-xs focus:bg-white/5 focus:text-white cursor-pointer"
+                        >
+                          <Pencil size={12} />
+                          <span>이름 수정</span>
+                        </DropdownMenuItem>
+                        {!session.isClosed && (
+                          <DropdownMenuItem
+                            onClick={() => handleCloseSession(session.sessionId)}
+                            className="flex items-center gap-2 text-xs focus:bg-red-500/10 focus:text-red-400 text-red-400/80 cursor-pointer"
+                          >
+                            <Trash2 size={12} />
+                            <span>세션 종료</span>
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </li>
+              ))
+            ) : (
+              <li className="px-3 py-2 text-[10px] text-slate-500 italic">활성 세션이 없습니다.</li>
+            )}
+          </ul>
+        </div>
       )}
 
       {isRenameModalOpen && editingSession && (

@@ -15,10 +15,12 @@ def _coerce_int(value: object) -> int:
             return int(stripped)
     raise ValueError("identifier must be an integer or numeric string")
 
+
 class UserSession(BaseModel):
     """
     Spring Boot 인증 서버에서 토큰 검증 후 반환하는 세션 정보 모델
     """
+
     user_id: int
     project_id: int
     permission_level: int = Field(default=1, description="1: Read, 2: Write, 3: Admin")
@@ -29,10 +31,12 @@ class UserSession(BaseModel):
     def validate_identifier(cls, value: object) -> int:
         return _coerce_int(value)
 
+
 class SessionContext(BaseModel):
     """
     FastAPI 내부적으로 의존성 주입을 통해 전달될 세션 컨텍스트
     """
+
     user_id: int
     project_id: int
     permission_level: int
@@ -43,19 +47,23 @@ class SessionContext(BaseModel):
     def validate_identifier(cls, value: object) -> int:
         return _coerce_int(value)
 
+
 class UsageMetrics(BaseModel):
     """
     AI 에이전트 실행 중 발생하는 리소스 사용량 모델
     """
+
     prompt_tokens: int = 0
     completion_tokens: int = 0
     total_tokens: int = 0
     model_name: str = "default"
 
+
 class BillingUsageReport(BaseModel):
     """
     Spring Boot Billing API로 전송할 최종 과금 보고서 모델
     """
+
     user_id: int
     project_id: int
     usage: UsageMetrics
@@ -66,7 +74,9 @@ class BillingUsageReport(BaseModel):
     def validate_identifier(cls, value: object) -> int:
         return _coerce_int(value)
 
+
 # --- PLAN Draft Storage Schemas ---
+
 
 class PlanStep(BaseModel):
     stepNumber: int
@@ -77,6 +87,7 @@ class PlanStep(BaseModel):
     estimatedComplexity: str
     outputArtifacts: list[str]
 
+
 class StructuredPlan(BaseModel):
     goal: str
     overview: list[str]
@@ -86,10 +97,12 @@ class StructuredPlan(BaseModel):
     risks: list[str]
     successCriteria: list[str]
 
+
 class AgentToolPlanPayload(BaseModel):
     """
     AI 서버가 PLAN draft 생성을 완료한 후 Backend(Spring)에 저장을 요청할 때 사용하는 페이로드
     """
+
     projectMemberId: int
     chatSessionId: int
     toolName: str

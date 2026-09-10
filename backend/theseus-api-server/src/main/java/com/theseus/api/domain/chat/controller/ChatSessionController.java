@@ -33,18 +33,28 @@ public class ChatSessionController {
 
 	private final ChatSessionService chatSessionService;
 
-	@Operation(summary = "ChatSession create", description = "Creates a chat session for a project member.")
+	@Operation(
+		summary = "ChatSession create",
+		description = "Creates a chat session for a project member."
+	)
 	@PostMapping
 	public ResponseEntity<ApiResponse<ChatSessionResponse>> createChatSession(
 		@AuthenticationPrincipal AuthenticatedUser currentUser,
 		@PathVariable Long projectId,
 		@Valid @RequestBody ChatSessionCreateRequest request
 	) {
-		ChatSessionResponse response = chatSessionService.createChatSession(currentUser, projectId, request);
+		ChatSessionResponse response = chatSessionService.createChatSession(
+			currentUser,
+			projectId,
+			request
+		);
 		return ApiResponse.onSuccess(SuccessCode.CREATED, response);
 	}
 
-	@Operation(summary = "ChatSession list", description = "Returns accessible chat sessions for the project member.")
+	@Operation(
+		summary = "ChatSession list",
+		description = "Returns accessible chat sessions for the project member."
+	)
 	@GetMapping
 	public ResponseEntity<ApiResponse<ChatSessionPageResponse<ChatSessionResponse>>> getChatSessions(
 		@AuthenticationPrincipal AuthenticatedUser currentUser,
@@ -52,18 +62,30 @@ public class ChatSessionController {
 		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "20") int size
 	) {
-		Page<ChatSessionResponse> chatSessions = chatSessionService.getChatSessions(currentUser, projectId, page, size);
+		Page<ChatSessionResponse> chatSessions = chatSessionService.getChatSessions(
+			currentUser,
+			projectId,
+			page,
+			size
+		);
 		return ApiResponse.onSuccess(SuccessCode.OK, ChatSessionPageResponse.createFrom(chatSessions));
 	}
 
-	@Operation(summary = "ChatSession detail", description = "Returns a chat session and ordered messages.")
+	@Operation(
+		summary = "ChatSession detail",
+		description = "Returns a chat session and ordered messages."
+	)
 	@GetMapping("/{sessionId}")
 	public ResponseEntity<ApiResponse<ChatSessionDetailResponse>> getChatSession(
 		@AuthenticationPrincipal AuthenticatedUser currentUser,
 		@PathVariable Long projectId,
 		@PathVariable Long sessionId
 	) {
-		ChatSessionDetailResponse response = chatSessionService.getChatSession(currentUser, projectId, sessionId);
+		ChatSessionDetailResponse response = chatSessionService.getChatSession(
+			currentUser,
+			projectId,
+			sessionId
+		);
 		return ApiResponse.onSuccess(SuccessCode.OK, response);
 	}
 
@@ -75,18 +97,30 @@ public class ChatSessionController {
 		@PathVariable Long sessionId,
 		@Valid @RequestBody ChatSessionUpdateRequest request
 	) {
-		ChatSessionResponse response = chatSessionService.updateChatSessionTitle(currentUser, projectId, sessionId, request);
+		ChatSessionResponse response = chatSessionService.updateChatSessionTitle(
+			currentUser,
+			projectId,
+			sessionId,
+			request
+		);
 		return ApiResponse.onSuccess(SuccessCode.OK, response);
 	}
 
-	@Operation(summary = "ChatSession close", description = "Closes a chat session and records closedAt.")
+	@Operation(
+		summary = "ChatSession close",
+		description = "Closes a chat session and records closedAt."
+	)
 	@PatchMapping("/{sessionId}/close")
 	public ResponseEntity<ApiResponse<ChatSessionResponse>> closeChatSession(
 		@AuthenticationPrincipal AuthenticatedUser currentUser,
 		@PathVariable Long projectId,
 		@PathVariable Long sessionId
 	) {
-		ChatSessionResponse response = chatSessionService.closeChatSession(currentUser, projectId, sessionId);
+		ChatSessionResponse response = chatSessionService.closeChatSession(
+			currentUser,
+			projectId,
+			sessionId
+		);
 		return ApiResponse.onSuccess(SuccessCode.OK, response);
 	}
 }

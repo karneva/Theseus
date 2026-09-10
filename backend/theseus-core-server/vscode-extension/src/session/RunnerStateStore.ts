@@ -3,7 +3,11 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 import { isPidRunning, killPidTree } from './ProcessUtils';
-import { RUNNER_STATE_SCHEMA_VERSION, type DaemonRunnerState, type TheseusSessionMetadata } from './runnerTypes';
+import {
+  RUNNER_STATE_SCHEMA_VERSION,
+  type DaemonRunnerState,
+  type TheseusSessionMetadata,
+} from './runnerTypes';
 
 type ReadDaemonOptions = {
   coreRoot?: string;
@@ -88,7 +92,11 @@ export class RunnerStateStore {
     }
   }
 
-  writeStdio(pid: number | undefined, sessionId: string, metadata: TheseusSessionMetadata | undefined): void {
+  writeStdio(
+    pid: number | undefined,
+    sessionId: string,
+    metadata: TheseusSessionMetadata | undefined,
+  ): void {
     if (!pid || !metadata) return;
     const file = this.path(metadata.workspaceCwd);
     if (!file) return;
@@ -186,7 +194,10 @@ export class RunnerStateStore {
     if (!args.stateWorkspace || !samePath(args.stateWorkspace, args.workspaceCwd)) {
       return 'runner state workspace does not match current workspace';
     }
-    if (args.expectedCoreRoot && (!args.stateCoreRoot || !samePath(args.stateCoreRoot, args.expectedCoreRoot))) {
+    if (
+      args.expectedCoreRoot &&
+      (!args.stateCoreRoot || !samePath(args.stateCoreRoot, args.expectedCoreRoot))
+    ) {
       return 'runner state coreRoot does not match current Extension configuration';
     }
     if (typeof args.state.sessionId !== 'string' || !args.state.sessionId) {

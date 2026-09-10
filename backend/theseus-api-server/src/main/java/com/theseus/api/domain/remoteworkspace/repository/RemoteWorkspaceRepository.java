@@ -8,8 +8,10 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RemoteWorkspaceRepository extends JpaRepository<RemoteWorkspace, Long> {
-
-	List<RemoteWorkspace> findByProjectAndStatusNotOrderByUpdatedAtDesc(Project project, RemoteWorkspaceStatus status);
+	List<RemoteWorkspace> findByProjectAndStatusNotOrderByUpdatedAtDesc(
+		Project project,
+		RemoteWorkspaceStatus status
+	);
 
 	Optional<RemoteWorkspace> findByIdAndProjectAndStatusNot(
 		Long id,

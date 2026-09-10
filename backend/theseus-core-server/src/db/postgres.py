@@ -6,9 +6,9 @@ from src.config import settings
 engine = create_engine(
     settings.database_url,
     echo=False,  # 쿼리 로깅이 필요하면 True로 변경
-    pool_pre_ping=True, # 끊어진 연결 자동 재연결
+    pool_pre_ping=True,  # 끊어진 연결 자동 재연결
     pool_size=5,
-    max_overflow=10
+    max_overflow=10,
 )
 
 # 세션 팩토리 생성
@@ -27,6 +27,7 @@ def init_db() -> None:
     import src.db.models  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
+
 
 def get_db():
     """

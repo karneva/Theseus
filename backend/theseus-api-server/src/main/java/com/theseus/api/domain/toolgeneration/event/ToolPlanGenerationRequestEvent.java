@@ -16,5 +16,4 @@ public record ToolPlanGenerationRequestEvent(
 	String prompt,
 	List<ToolPlanHistoryMessagePayload> history,
 	LocalDateTime requestedAt
-) {
-}
+) {}

@@ -12,7 +12,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Long> {
-
 	boolean existsByProjectAndUser(Project project, User user);
 
 	List<ProjectMember> findByProject(Project project);

@@ -16,7 +16,9 @@ class TaskOutputInput(BaseModel):
 
     task_id: str = Field(description="Task identifier (returned by task_create)")
     max_bytes: int = Field(
-        default=12000, ge=1, le=100000,
+        default=12000,
+        ge=1,
+        le=100000,
         description="Maximum bytes of output to return",
     )
 

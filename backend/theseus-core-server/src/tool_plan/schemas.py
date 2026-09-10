@@ -143,14 +143,18 @@ class ToolPlanChunkEvent(BaseModel):
 class ToolPlanCompletedEvent(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
-    event_type: Literal["TOOL_PLAN_COMPLETED"] = Field(default="TOOL_PLAN_COMPLETED", alias="eventType")
+    event_type: Literal["TOOL_PLAN_COMPLETED"] = Field(
+        default="TOOL_PLAN_COMPLETED", alias="eventType"
+    )
     run_id: str = Field(alias="runId")
     event_sequence: int = Field(alias="eventSequence")
     project_id: int = Field(alias="projectId")
     chat_session_id: int = Field(alias="chatSessionId")
     assistant_message: AssistantMessagePayload = Field(alias="assistantMessage")
     tool_plan: ToolPlanPayload = Field(alias="toolPlan")
-    completed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), alias="completedAt")
+    completed_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), alias="completedAt"
+    )
 
 
 class ToolPlanSkippedEvent(BaseModel):
@@ -162,7 +166,9 @@ class ToolPlanSkippedEvent(BaseModel):
     project_id: int = Field(alias="projectId")
     chat_session_id: int = Field(alias="chatSessionId")
     assistant_message: AssistantMessagePayload = Field(alias="assistantMessage")
-    completed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), alias="completedAt")
+    completed_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), alias="completedAt"
+    )
 
 
 class ToolPlanFailedEvent(BaseModel):
@@ -175,4 +181,6 @@ class ToolPlanFailedEvent(BaseModel):
     chat_session_id: int = Field(alias="chatSessionId")
     code: str
     message: str
-    failed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), alias="failedAt")
+    failed_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), alias="failedAt"
+    )

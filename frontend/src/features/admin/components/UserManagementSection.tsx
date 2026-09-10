@@ -22,7 +22,6 @@ import { Pagination } from '@/components/Pagination';
 import { AddUserModal } from './AddUserModal';
 import { EditUserModal } from './EditUserModal';
 
-
 export default function UserManagementSection() {
   const [users, setUsers] = useState<UserResponse[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -41,7 +40,7 @@ export default function UserManagementSection() {
   const [totalElements, setTotalElements] = useState(0);
   const [fetchTrigger, setFetchTrigger] = useState(0);
 
-  const refetch = () => setFetchTrigger(n => n + 1);
+  const refetch = () => setFetchTrigger((n) => n + 1);
 
   useEffect(() => {
     let cancelled = false;
@@ -66,7 +65,9 @@ export default function UserManagementSection() {
       }
     };
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [page, fetchTrigger]);
 
   const openEditUserDialog = (user: UserResponse) => {
@@ -87,10 +88,11 @@ export default function UserManagementSection() {
     }
   };
 
-  const filteredUsers = users.filter(user =>
-    user.name.includes(searchTerm) ||
-    user.employeeNumber.includes(searchTerm) ||
-    (user.email && user.email.includes(searchTerm))
+  const filteredUsers = users.filter(
+    (user) =>
+      user.name.includes(searchTerm) ||
+      user.employeeNumber.includes(searchTerm) ||
+      (user.email && user.email.includes(searchTerm)),
   );
 
   return (
@@ -110,7 +112,10 @@ export default function UserManagementSection() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6b7280]" />
             <Input
               value={searchTerm}
-              onChange={(e) => { setSearchTerm(e.target.value); setPage(0); }}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(0);
+              }}
               placeholder="사용자 검색..."
               className="w-[192px] h-8 pl-9 bg-[#010f1f] border-[rgba(65,71,81,0.2)] text-[#6b7280] text-[12px] placeholder:text-[#6b7280] focus-visible:ring-1 focus-visible:ring-white/20 rounded"
             />
@@ -129,7 +134,11 @@ export default function UserManagementSection() {
             className={`flex items-center gap-2 transition-colors px-4 py-1.5 rounded h-8 ${isEditing ? 'bg-[#3b82f6] hover:bg-[#2563eb]' : 'bg-[#273647] hover:bg-[#34485e]'}`}
           >
             <Settings2 className={`w-3.5 h-3.5 ${isEditing ? 'text-white' : 'text-[#60a5fa]'}`} />
-            <span className={`text-[14px] font-medium ${isEditing ? 'text-white' : 'text-[#60a5fa]'}`}>{isEditing ? '완료' : '편집'}</span>
+            <span
+              className={`text-[14px] font-medium ${isEditing ? 'text-white' : 'text-[#60a5fa]'}`}
+            >
+              {isEditing ? '완료' : '편집'}
+            </span>
           </button>
         </div>
       </div>
@@ -138,67 +147,86 @@ export default function UserManagementSection() {
         <Table className="table-fixed">
           <TableHeader className="bg-[rgba(28,43,60,0.5)] border-b border-[rgba(65,71,81,0.1)] sticky top-0 z-10">
             <TableRow className="border-none hover:bg-transparent">
-              <TableHead className="text-[#c1c7d3] font-medium text-[14px] tracking-[1.2px] uppercase h-[40px] px-8 py-[10px] w-[120px]">사번</TableHead>
-              <TableHead className="text-[#c1c7d3] font-medium text-[14px] tracking-[1.2px] uppercase h-[40px] px-8 py-[10px] w-[130px]">이름</TableHead>
-              <TableHead className="text-[#c1c7d3] font-medium text-[14px] tracking-[1.2px] uppercase h-[40px] px-16 py-[10px]">이메일</TableHead>
-              <TableHead className="text-[#c1c7d3] font-medium text-[14px] tracking-[1.2px] uppercase h-[40px] px-6 py-[10px] text-center w-[100px]">상태</TableHead>
+              <TableHead className="text-[#c1c7d3] font-medium text-[14px] tracking-[1.2px] uppercase h-[40px] px-8 py-[10px] w-[120px]">
+                사번
+              </TableHead>
+              <TableHead className="text-[#c1c7d3] font-medium text-[14px] tracking-[1.2px] uppercase h-[40px] px-8 py-[10px] w-[130px]">
+                이름
+              </TableHead>
+              <TableHead className="text-[#c1c7d3] font-medium text-[14px] tracking-[1.2px] uppercase h-[40px] px-16 py-[10px]">
+                이메일
+              </TableHead>
+              <TableHead className="text-[#c1c7d3] font-medium text-[14px] tracking-[1.2px] uppercase h-[40px] px-6 py-[10px] text-center w-[100px]">
+                상태
+              </TableHead>
               <TableHead className="text-center text-white/60 font-medium h-10 px-6 py-2 w-[80px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredUsers.length === 0 ? (
-              !isLoading && (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-white/40">
-                    사용자가 없습니다.
-                  </TableCell>
-                </TableRow>
-              )
-            ) : (
-              filteredUsers.map((user) => (
-                <TableRow key={user.id} className="border-t border-[rgba(65,71,81,0.1)] h-[57px]">
-                  <TableCell className="text-[#a4c9ff] px-6 py-[10px] text-[14px] font-mono truncate whitespace-nowrap">{user.employeeNumber}</TableCell>
-                  <TableCell className="text-[#d4e4fa] px-6 py-[10px] text-[15px] font-medium truncate whitespace-nowrap">{user.name}</TableCell>
-                  <TableCell className="text-[#c1c7d3] px-6 py-[10px] text-[15px] truncate whitespace-nowrap">{user.email || '-'}</TableCell>
-                  <TableCell className="px-6 py-[10px] text-center">
-                    <StatusBadge status={user.status} />
-                  </TableCell>
-                  <TableCell className="pl-0 pr-6 text-left py-3">
-                    {isEditing && (
-                      <div className="flex items-center justify-start gap-1">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger className="p-2 hover:bg-white/10 rounded-md transition-colors outline-none text-white/60">
-                            <MoreVertical className="w-4 h-4" />
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="bg-[#051424] border-white/10 text-white min-w-[150px]">
-                            <DropdownMenuItem
-                              onClick={() => openEditUserDialog(user)}
-                              className="hover:bg-white/10 focus:bg-white/10 cursor-pointer gap-2"
+            {filteredUsers.length === 0
+              ? !isLoading && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-white/40">
+                      사용자가 없습니다.
+                    </TableCell>
+                  </TableRow>
+                )
+              : filteredUsers.map((user) => (
+                  <TableRow key={user.id} className="border-t border-[rgba(65,71,81,0.1)] h-[57px]">
+                    <TableCell className="text-[#a4c9ff] px-6 py-[10px] text-[14px] font-mono truncate whitespace-nowrap">
+                      {user.employeeNumber}
+                    </TableCell>
+                    <TableCell className="text-[#d4e4fa] px-6 py-[10px] text-[15px] font-medium truncate whitespace-nowrap">
+                      {user.name}
+                    </TableCell>
+                    <TableCell className="text-[#c1c7d3] px-6 py-[10px] text-[15px] truncate whitespace-nowrap">
+                      {user.email || '-'}
+                    </TableCell>
+                    <TableCell className="px-6 py-[10px] text-center">
+                      <StatusBadge status={user.status} />
+                    </TableCell>
+                    <TableCell className="pl-0 pr-6 text-left py-3">
+                      {isEditing && (
+                        <div className="flex items-center justify-start gap-1">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger className="p-2 hover:bg-white/10 rounded-md transition-colors outline-none text-white/60">
+                              <MoreVertical className="w-4 h-4" />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                              align="end"
+                              className="bg-[#051424] border-white/10 text-white min-w-[150px]"
                             >
-                              <Edit className="w-4 h-4" />
-                              <span>정보 수정</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        <button
-                          onClick={() => handleStatusToggle(user.id, user.status)}
-                          className="p-2 hover:bg-red-500/10 rounded-md transition-colors text-red-400/60 hover:text-red-400"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-            {!isLoading && filteredUsers.length > 0 && filteredUsers.length < 8 && (
+                              <DropdownMenuItem
+                                onClick={() => openEditUserDialog(user)}
+                                className="hover:bg-white/10 focus:bg-white/10 cursor-pointer gap-2"
+                              >
+                                <Edit className="w-4 h-4" />
+                                <span>정보 수정</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                          <button
+                            onClick={() => handleStatusToggle(user.id, user.status)}
+                            className="p-2 hover:bg-red-500/10 rounded-md transition-colors text-red-400/60 hover:text-red-400"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+            {!isLoading &&
+              filteredUsers.length > 0 &&
+              filteredUsers.length < 8 &&
               Array.from({ length: 8 - filteredUsers.length }).map((_, index) => (
-                <TableRow key={`empty-${index}`} className="border-t border-[rgba(65,71,81,0.05)] h-[57px] hover:bg-transparent">
+                <TableRow
+                  key={`empty-${index}`}
+                  className="border-t border-[rgba(65,71,81,0.05)] h-[57px] hover:bg-transparent"
+                >
                   <TableCell colSpan={5} />
                 </TableRow>
-              ))
-            )}
+              ))}
           </TableBody>
         </Table>
       </div>

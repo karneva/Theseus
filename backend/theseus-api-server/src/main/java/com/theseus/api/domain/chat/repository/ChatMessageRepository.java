@@ -10,12 +10,14 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
-
 	List<ChatMessage> findByChatSessionOrderByMessageOrderAsc(ChatSession chatSession);
 
 	List<ChatMessage> findByChatSessionAndToolIsNullOrderByMessageOrderAsc(ChatSession chatSession);
 
-	List<ChatMessage> findByChatSessionAndToolOrderByMessageOrderAsc(ChatSession chatSession, Tool tool);
+	List<ChatMessage> findByChatSessionAndToolOrderByMessageOrderAsc(
+		ChatSession chatSession,
+		Tool tool
+	);
 
 	List<ChatMessage> findByToolOrderByMessageOrderAsc(Tool tool);
 
@@ -23,13 +25,19 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 
 	List<ChatMessage> findByToolPlanRunOrderByMessageOrderAsc(ToolPlanRun toolPlanRun);
 
-	Optional<ChatMessage> findByChatSessionAndMessageOrder(ChatSession chatSession, Integer messageOrder);
+	Optional<ChatMessage> findByChatSessionAndMessageOrder(
+		ChatSession chatSession,
+		Integer messageOrder
+	);
 
 	Optional<ChatMessage> findByIdempotencyKey(String idempotencyKey);
 
 	Optional<ChatMessage> findTopByChatSessionOrderByMessageOrderDesc(ChatSession chatSession);
 
-	Optional<ChatMessage> findTopByChatSessionAndToolOrderByMessageOrderDesc(ChatSession chatSession, Tool tool);
+	Optional<ChatMessage> findTopByChatSessionAndToolOrderByMessageOrderDesc(
+		ChatSession chatSession,
+		Tool tool
+	);
 
 	boolean existsByIdempotencyKey(String idempotencyKey);
 }

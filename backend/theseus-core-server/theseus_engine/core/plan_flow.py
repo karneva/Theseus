@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-
 PLAN_EXECUTION_COMPLETE_MARKERS: tuple[str, ...] = (
     "plan complete",
     "all steps complete",

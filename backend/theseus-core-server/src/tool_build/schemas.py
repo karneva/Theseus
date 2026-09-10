@@ -101,14 +101,18 @@ class ToolBuildChunkEvent(BaseModel):
 class ToolBuildCompletedEvent(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
-    event_type: Literal["TOOL_BUILD_COMPLETED"] = Field(default="TOOL_BUILD_COMPLETED", alias="eventType")
+    event_type: Literal["TOOL_BUILD_COMPLETED"] = Field(
+        default="TOOL_BUILD_COMPLETED", alias="eventType"
+    )
     run_id: str = Field(alias="runId")
     event_sequence: int = Field(alias="eventSequence")
     project_id: int = Field(alias="projectId")
     chat_session_id: int = Field(alias="chatSessionId")
     tool_plan_id: int = Field(alias="toolPlanId")
     artifact: ToolArtifactPayload
-    completed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), alias="completedAt")
+    completed_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), alias="completedAt"
+    )
 
 
 class ToolBuildFailedEvent(BaseModel):
@@ -122,4 +126,6 @@ class ToolBuildFailedEvent(BaseModel):
     tool_plan_id: int = Field(alias="toolPlanId")
     code: str
     message: str
-    failed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), alias="failedAt")
+    failed_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), alias="failedAt"
+    )

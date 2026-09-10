@@ -4,7 +4,13 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 import { asRunnerEvent, type RunnerEvent } from '../shared/protocol';
-import type { DaemonRunnerState, DaemonStatus, RunnerClient, RunnerProcess, RunnerStartConfig } from './runnerTypes';
+import type {
+  DaemonRunnerState,
+  DaemonStatus,
+  RunnerClient,
+  RunnerProcess,
+  RunnerStartConfig,
+} from './runnerTypes';
 
 const DAEMON_REQUEST_TIMEOUT_MS = 5000;
 
@@ -37,7 +43,8 @@ export function isDaemonHttpStatus(err: unknown, statusCode: number): err is Dae
 export function isDaemonConnectionError(err: unknown): boolean {
   const maybeCode = (err as NodeJS.ErrnoException | undefined)?.code;
   const code = typeof maybeCode === 'string' ? maybeCode : '';
-  if (['ECONNRESET', 'ECONNREFUSED', 'EPIPE', 'ETIMEDOUT', 'ECONNABORTED'].includes(code)) return true;
+  if (['ECONNRESET', 'ECONNREFUSED', 'EPIPE', 'ETIMEDOUT', 'ECONNABORTED'].includes(code))
+    return true;
   return /socket hang up|read ECONNRESET|connect ECONNREFUSED|write EPIPE/i.test(errorMessage(err));
 }
 
@@ -103,9 +110,10 @@ export class DaemonRunnerClient implements RunnerClient {
       );
     }
 
-    const extraPython = config.coreRoot !== config.workspaceCwd
-      ? config.coreRoot + path.delimiter + (process.env.PYTHONPATH || '')
-      : (process.env.PYTHONPATH || '');
+    const extraPython =
+      config.coreRoot !== config.workspaceCwd
+        ? config.coreRoot + path.delimiter + (process.env.PYTHONPATH || '')
+        : process.env.PYTHONPATH || '';
 
     return cp.spawn(
       config.pythonExec,
@@ -156,7 +164,9 @@ export class DaemonRunnerClient implements RunnerClient {
           method,
           headers: {
             Authorization: `Bearer ${daemon.token}`,
-            ...(payload ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } : {}),
+            ...(payload
+              ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) }
+              : {}),
           },
         },
         (res) => {
@@ -166,17 +176,19 @@ export class DaemonRunnerClient implements RunnerClient {
           res.on('end', () => {
             const text = Buffer.concat(chunks).toString('utf8');
             if ((res.statusCode || 0) >= 400) {
-              reject(new DaemonHttpError(
-                method,
-                pathname,
-                res.statusCode || 0,
-                text,
-                daemonErrorDetail(text),
-              ));
+              reject(
+                new DaemonHttpError(
+                  method,
+                  pathname,
+                  res.statusCode || 0,
+                  text,
+                  daemonErrorDetail(text),
+                ),
+              );
               return;
             }
             try {
-              resolve(text ? JSON.parse(text) as Record<string, unknown> : {});
+              resolve(text ? (JSON.parse(text) as Record<string, unknown>) : {});
             } catch (err) {
               reject(err);
             }
@@ -193,7 +205,7 @@ export class DaemonRunnerClient implements RunnerClient {
   }
 
   async status(daemon: DaemonRunnerState | undefined): Promise<DaemonStatus> {
-    return await this.request(daemon, 'GET', '/status') as DaemonStatus;
+    return (await this.request(daemon, 'GET', '/status')) as DaemonStatus;
   }
 
   streamEvents(
@@ -219,7 +231,9 @@ export class DaemonRunnerClient implements RunnerClient {
         },
         (res) => {
           if ((res.statusCode || 0) >= 400) {
-            reject(new DaemonHttpError('GET', streamPath, res.statusCode || 0, '', 'Daemon SSE failed'));
+            reject(
+              new DaemonHttpError('GET', streamPath, res.statusCode || 0, '', 'Daemon SSE failed'),
+            );
             res.resume();
             return;
           }
@@ -231,8 +245,11 @@ export class DaemonRunnerClient implements RunnerClient {
               const frame = buffer.slice(0, match.index);
               buffer = buffer.slice(match.index + match[0].length);
               const lines = frame.split(/\r?\n/);
-              const data = lines.filter(line => line.startsWith('data:')).map(line => line.slice(5).trimStart()).join('\n');
-              const idLine = lines.find(line => line.startsWith('id:'));
+              const data = lines
+                .filter((line) => line.startsWith('data:'))
+                .map((line) => line.slice(5).trimStart())
+                .join('\n');
+              const idLine = lines.find((line) => line.startsWith('id:'));
               const sequence = idLine ? Number(idLine.slice(3).trim()) : undefined;
               if (!data) continue;
               try {

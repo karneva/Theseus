@@ -1,7 +1,7 @@
 package com.theseus.api.domain.chat.dto.request;
 
-import com.theseus.api.domain.chat.entity.ChatMessageSenderType;
 import com.theseus.api.domain.chat.entity.ChatMessageContentType;
+import com.theseus.api.domain.chat.entity.ChatMessageSenderType;
 import com.theseus.api.domain.chat.entity.ChatMessageType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

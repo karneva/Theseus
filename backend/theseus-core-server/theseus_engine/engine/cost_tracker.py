@@ -28,20 +28,20 @@ log = logging.getLogger(__name__)
 
 _DEFAULT_PRICING: Dict[str, Dict[str, float]] = {
     # OpenAI
-    "gpt-4o":             {"input": 2.50,  "output": 10.00, "cache_read": 1.25,  "cache_write": 0.0},
-    "gpt-4o-mini":        {"input": 0.15,  "output": 0.60,  "cache_read": 0.075, "cache_write": 0.0},
-    "gpt-4-turbo":        {"input": 10.00, "output": 30.00, "cache_read": 0.0,   "cache_write": 0.0},
-    "o1":                 {"input": 15.00, "output": 60.00, "cache_read": 7.50,  "cache_write": 0.0},
+    "gpt-4o": {"input": 2.50, "output": 10.00, "cache_read": 1.25, "cache_write": 0.0},
+    "gpt-4o-mini": {"input": 0.15, "output": 0.60, "cache_read": 0.075, "cache_write": 0.0},
+    "gpt-4-turbo": {"input": 10.00, "output": 30.00, "cache_read": 0.0, "cache_write": 0.0},
+    "o1": {"input": 15.00, "output": 60.00, "cache_read": 7.50, "cache_write": 0.0},
     # Anthropic Claude
-    "claude-opus-4":      {"input": 15.00, "output": 75.00, "cache_read": 1.50,  "cache_write": 3.75},
-    "claude-sonnet-4":    {"input": 3.00,  "output": 15.00, "cache_read": 0.30,  "cache_write": 3.75},
-    "claude-haiku-4":     {"input": 0.80,  "output": 4.00,  "cache_read": 0.08,  "cache_write": 1.00},
-    "claude-opus-4-5":    {"input": 15.00, "output": 75.00, "cache_read": 1.50,  "cache_write": 3.75},
-    "claude-sonnet-4-6":  {"input": 3.00,  "output": 15.00, "cache_read": 0.30,  "cache_write": 3.75},
+    "claude-opus-4": {"input": 15.00, "output": 75.00, "cache_read": 1.50, "cache_write": 3.75},
+    "claude-sonnet-4": {"input": 3.00, "output": 15.00, "cache_read": 0.30, "cache_write": 3.75},
+    "claude-haiku-4": {"input": 0.80, "output": 4.00, "cache_read": 0.08, "cache_write": 1.00},
+    "claude-opus-4-5": {"input": 15.00, "output": 75.00, "cache_read": 1.50, "cache_write": 3.75},
+    "claude-sonnet-4-6": {"input": 3.00, "output": 15.00, "cache_read": 0.30, "cache_write": 3.75},
     # Google Gemini
-    "gemini-2.5-pro":     {"input": 1.25,  "output": 10.00, "cache_read": 0.0,   "cache_write": 0.0},
-    "gemini-2.5-flash":   {"input": 0.075, "output": 0.30,  "cache_read": 0.0,   "cache_write": 0.0},
-    "gemini-2.0-flash":   {"input": 0.10,  "output": 0.40,  "cache_read": 0.0,   "cache_write": 0.0},
+    "gemini-2.5-pro": {"input": 1.25, "output": 10.00, "cache_read": 0.0, "cache_write": 0.0},
+    "gemini-2.5-flash": {"input": 0.075, "output": 0.30, "cache_read": 0.0, "cache_write": 0.0},
+    "gemini-2.0-flash": {"input": 0.10, "output": 0.40, "cache_read": 0.0, "cache_write": 0.0},
 }
 
 _LOG_DIR = Path(os.getenv("THESEUS_DATA_DIR", Path.home() / ".theseus"))
@@ -67,9 +67,11 @@ def _load_pricing() -> Dict[str, Dict[str, float]]:
 # 데이터 구조
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ModelUsage:
     """모델 한 종류의 누적 토큰 사용량."""
+
     input_tokens: int = 0
     output_tokens: int = 0
     cache_read_tokens: int = 0
@@ -81,6 +83,7 @@ class ModelUsage:
 @dataclass
 class SessionCost:
     """세션 전체 비용 집계."""
+
     session_id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
     started_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
     total_cost_usd: float = 0.0
@@ -95,6 +98,7 @@ class SessionCost:
 # ---------------------------------------------------------------------------
 # CostTracker 싱글톤
 # ---------------------------------------------------------------------------
+
 
 class CostTracker:
     """세션 단위 비용 추적기 (싱글톤).
@@ -155,8 +159,11 @@ class CostTracker:
     ) -> float:
         """토큰 사용량을 직접 기록하고 발생 비용(USD)을 반환합니다."""
         cost = self._calculate_cost(
-            model, input_tokens, output_tokens,
-            cache_read_tokens, cache_creation_tokens,
+            model,
+            input_tokens,
+            output_tokens,
+            cache_read_tokens,
+            cache_creation_tokens,
         )
 
         # 모델별 집계
@@ -181,7 +188,10 @@ class CostTracker:
 
         log.debug(
             "[CostTracker] %s: +%d/%d tokens → +$%.6f (total $%.4f)",
-            canonical, input_tokens, output_tokens, cost,
+            canonical,
+            input_tokens,
+            output_tokens,
+            cost,
             self._session.total_cost_usd,
         )
         return cost
@@ -208,8 +218,9 @@ class CostTracker:
         cache_creation_tokens: int,
     ) -> float:
         canonical = self._canonical_model(model)
-        rates = self._pricing.get(canonical, {"input": 0.0, "output": 0.0,
-                                               "cache_read": 0.0, "cache_write": 0.0})
+        rates = self._pricing.get(
+            canonical, {"input": 0.0, "output": 0.0, "cache_read": 0.0, "cache_write": 0.0}
+        )
         cost = (
             input_tokens * rates.get("input", 0.0) / 1_000_000
             + output_tokens * rates.get("output", 0.0) / 1_000_000
@@ -233,12 +244,8 @@ class CostTracker:
             "-" * 60,
         ]
 
-        for model_name, mu in sorted(
-            s.model_usage.items(), key=lambda x: -x[1].cost_usd
-        ):
-            cache_str = (
-                f"{mu.cache_read_tokens:>8,}" if mu.cache_read_tokens else "       -"
-            )
+        for model_name, mu in sorted(s.model_usage.items(), key=lambda x: -x[1].cost_usd):
+            cache_str = f"{mu.cache_read_tokens:>8,}" if mu.cache_read_tokens else "       -"
             lines.append(
                 f"  {model_name:<20} {mu.input_tokens:>8,} {mu.output_tokens:>8,} "
                 f"{cache_str} ${mu.cost_usd:>9.4f}"

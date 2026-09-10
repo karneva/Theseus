@@ -38,6 +38,7 @@ class PermissionInvalidResponseError(PermissionClientError):
 class PermissionBackendUnavailableError(PermissionClientError):
     """Raised when the backend cannot serve permission lookups."""
 
+
 class AuthClient:
     def __init__(self):
         self.verify_url = settings.SPRING_BOOT_AUTH_VERIFY_URL
@@ -64,9 +65,9 @@ class AuthClient:
                     self.verify_url,
                     headers=internal_api_headers(),
                     json=payload,
-                    timeout=self.timeout
+                    timeout=self.timeout,
                 )
-                
+
                 if response.status_code == 200:
                     try:
                         return UserSession(**unwrap_api_response(response.json()))
@@ -74,25 +75,24 @@ class AuthClient:
                         logger.error(f"Invalid auth response schema: {exc}")
                         raise HTTPException(
                             status_code=status.HTTP_502_BAD_GATEWAY,
-                            detail="Authentication service returned invalid session data"
+                            detail="Authentication service returned invalid session data",
                         )
                 elif response.status_code in [401, 403]:
                     raise HTTPException(
-                        status_code=response.status_code,
-                        detail="Invalid or expired token"
+                        status_code=response.status_code, detail="Invalid or expired token"
                     )
                 else:
                     logger.error(f"Auth server error: {response.status_code} - {response.text}")
                     raise HTTPException(
                         status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                        detail="Authentication service error"
+                        detail="Authentication service error",
                     )
-                    
+
             except httpx.RequestError as exc:
                 logger.error(f"Failed to connect to auth server: {exc}")
                 raise HTTPException(
                     status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                    detail="Authentication service unavailable"
+                    detail="Authentication service unavailable",
                 )
 
 
@@ -136,6 +136,7 @@ class PermissionClient:
         )
         raise PermissionBackendUnavailableError
 
+
 class BillingClient:
     def __init__(self):
         self.usage_url = settings.SPRING_BOOT_BILLING_USAGE_URL
@@ -160,24 +161,28 @@ class BillingClient:
                     self.usage_url,
                     json=report.model_dump(mode="json"),
                     headers=headers,
-                    timeout=self.timeout
+                    timeout=self.timeout,
                 )
-                
+
                 if response.status_code == 200:
                     logger.info(f"Successfully reported usage for user {report.user_id}")
                     return True
                 else:
-                    logger.error(f"Failed to report usage: {response.status_code} - {response.text}")
+                    logger.error(
+                        f"Failed to report usage: {response.status_code} - {response.text}"
+                    )
                     return False
-                    
+
             except httpx.RequestError as exc:
                 logger.error(f"Failed to connect to billing server: {exc}")
                 return False
+
 
 class AgentClient:
     """
     AI 에이전트의 PLAN draft 결과물을 Backend(Spring)에 전송하는 클라이언트
     """
+
     def __init__(self):
         self.save_plan_url = settings.SPRING_BOOT_TOOL_PLAN_URL
         self.timeout = settings.INTERNAL_API_TIMEOUT_SECONDS
@@ -192,19 +197,22 @@ class AgentClient:
                     self.save_plan_url,
                     headers=internal_api_headers(),
                     json=payload.model_dump(mode="json"),
-                    timeout=self.timeout
+                    timeout=self.timeout,
                 )
-                
+
                 if response.status_code in [200, 201]:
                     logger.info(f"Successfully saved tool plan: {payload.toolName}")
                     return True
                 else:
-                    logger.error(f"Failed to save tool plan: {response.status_code} - {response.text}")
+                    logger.error(
+                        f"Failed to save tool plan: {response.status_code} - {response.text}"
+                    )
                     return False
-                    
+
             except httpx.RequestError as exc:
                 logger.error(f"Failed to connect to backend server for plan storage: {exc}")
                 return False
+
 
 auth_client = AuthClient()
 permission_client = PermissionClient()

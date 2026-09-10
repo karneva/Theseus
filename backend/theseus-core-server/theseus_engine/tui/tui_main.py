@@ -122,13 +122,24 @@ Screen { padding: 0; }
 # 커스텀 Input — 슬래시 커맨드 인터셉트
 # ──────────────────────────────────────────────────────────────────
 
+
 class TheseusInput(Input):
     """Theseus 슬래시 커맨드를 위젯 레벨에서 선제 차단하는 커스텀 Input."""
 
     _THESEUS_CMDS = {
-        "plan", "agent", "ask", "coordinator",
-        "session", "clear", "cost", "stats", "tools", "validate",
-        "quit", "exit", "bye",
+        "plan",
+        "agent",
+        "ask",
+        "coordinator",
+        "session",
+        "clear",
+        "cost",
+        "stats",
+        "tools",
+        "validate",
+        "quit",
+        "exit",
+        "bye",
     }
 
     @on(Input.Submitted)
@@ -157,33 +168,43 @@ class TheseusInput(Input):
 # TheseusTUI
 # ──────────────────────────────────────────────────────────────────
 
+
 class TheseusTUI(App):
     """Theseus-native Textual TUI."""
 
     CSS = THESEUS_BASE_CSS + THESEUS_TUI_CSS
     BINDINGS = [
-        Binding("ctrl+p", "switch_plan",        "Plan Mode"),
-        Binding("ctrl+a", "switch_agent",       "Agent Mode"),
-        Binding("ctrl+s", "switch_ask",         "Ask Mode"),
-        Binding("ctrl+q", "quit_session",       "Quit"),
+        Binding("ctrl+p", "switch_plan", "Plan Mode"),
+        Binding("ctrl+a", "switch_agent", "Agent Mode"),
+        Binding("ctrl+s", "switch_ask", "Ask Mode"),
+        Binding("ctrl+q", "quit_session", "Quit"),
     ]
 
     def __init__(self, model: str = "gpt-4o", **kwargs):
         super().__init__(**kwargs)
         self._model = model
-        self.theseus_sm   = TheseusStateMachine(initial_mode=AgentMode.AGENT)
+        self.theseus_sm = TheseusStateMachine(initial_mode=AgentMode.AGENT)
         self.current_session = "default"
-        self._busy        = False
+        self._busy = False
         self._bundle: TheseusBundle | None = None
         self.auto_helper: AutocompleteHelper | None = None
         self._always_approve_tools: set[str] = set()  # approve_all 누적
 
         self.project_tool_permissions: dict = {
-            "bash": 3, "read_file": 1, "write_file": 2, "edit_file": 2,
+            "bash": 3,
+            "read_file": 1,
+            "write_file": 2,
+            "edit_file": 2,
             "local_write_report": 2,
-            "glob": 1, "grep": 1, "web_search": 1, "web_fetch": 1,
-            "dummy_echo": 1, "create_tool": 2, "system_reboot": 5,
-            "search_knowledge_base": 1, "ingest_document": 2,
+            "glob": 1,
+            "grep": 1,
+            "web_search": 1,
+            "web_fetch": 1,
+            "dummy_echo": 1,
+            "create_tool": 2,
+            "system_reboot": 5,
+            "search_knowledge_base": 1,
+            "ingest_document": 2,
         }
         self.user_level = 5
         self.actor_role = "ADMIN"  # standalone: 로컬 사용자 = ADMIN
@@ -207,8 +228,8 @@ class TheseusTUI(App):
                     )
                 with Vertical(id="side-column"):
                     yield Static("Initializing…", id="status-bar")
-                    yield Static("",              id="tasks-panel")
-                    yield Static("",              id="tools-panel")
+                    yield Static("", id="tasks-panel")
+                    yield Static("", id="tools-panel")
         yield Footer()
 
     # ── 초기화 ──────────────────────────────────────────────────
@@ -226,7 +247,9 @@ class TheseusTUI(App):
                     self.project_tool_permissions.update(proj_cfg.tool_permissions)
                 self._session_id = proj_cfg.session_id
             except Exception as _e:
-                self._append_line(f"system> [yellow]프로젝트 설정 로드 실패 — standalone 기본값 사용: {_e}[/yellow]")
+                self._append_line(
+                    f"system> [yellow]프로젝트 설정 로드 실패 — standalone 기본값 사용: {_e}[/yellow]"
+                )
 
         engine, full_registry = await setup_engine(
             sm=self.theseus_sm,
@@ -265,19 +288,19 @@ class TheseusTUI(App):
 
     def _register_commands(self) -> None:
         cmds = [
-            SlashCommand("plan",        "Switch to PLAN mode",        self._cmd_plan),
-            SlashCommand("agent",       "Switch to AGENT mode",       self._cmd_agent),
-            SlashCommand("ask",         "Switch to ASK mode",         self._cmd_ask),
+            SlashCommand("plan", "Switch to PLAN mode", self._cmd_plan),
+            SlashCommand("agent", "Switch to AGENT mode", self._cmd_agent),
+            SlashCommand("ask", "Switch to ASK mode", self._cmd_ask),
             SlashCommand("coordinator", "Switch to COORDINATOR mode", self._cmd_coordinator),
-            SlashCommand("session",     "Manage sessions",            self._cmd_session),
-            SlashCommand("clear",       "Clear session history",      self._cmd_clear),
-            SlashCommand("cost",        "Token usage & cost report",  self._cmd_cost),
-            SlashCommand("stats",       "Tool execution statistics",  self._cmd_stats),
-            SlashCommand("tools",       "List tools",                 self._cmd_tools),
-            SlashCommand("validate",    "Validate a custom tool",     self._cmd_validate),
-            SlashCommand("quit",        "Save session and quit",      self._cmd_quit),
-            SlashCommand("exit",        "Save session and quit",      self._cmd_quit),
-            SlashCommand("bye",         "Save session and quit",      self._cmd_quit),
+            SlashCommand("session", "Manage sessions", self._cmd_session),
+            SlashCommand("clear", "Clear session history", self._cmd_clear),
+            SlashCommand("cost", "Token usage & cost report", self._cmd_cost),
+            SlashCommand("stats", "Tool execution statistics", self._cmd_stats),
+            SlashCommand("tools", "List tools", self._cmd_tools),
+            SlashCommand("validate", "Validate a custom tool", self._cmd_validate),
+            SlashCommand("quit", "Save session and quit", self._cmd_quit),
+            SlashCommand("exit", "Save session and quit", self._cmd_quit),
+            SlashCommand("bye", "Save session and quit", self._cmd_quit),
         ]
         for cmd in cmds:
             self._bundle.commands.register(cmd)  # type: ignore[union-attr]
@@ -300,9 +323,7 @@ class TheseusTUI(App):
         if tool_name not in _DESTRUCTIVE:
             return True
 
-        result = await self.push_screen_wait(
-            SecurityApprovalModal(tool_name, tool_input)
-        )
+        result = await self.push_screen_wait(SecurityApprovalModal(tool_name, tool_input))
         if result == "approve_all":
             self._always_approve_tools.add(tool_name)
             return True
@@ -337,9 +358,9 @@ class TheseusTUI(App):
 
         # ── 슬래시 커맨드 처리 ────────────────────────────────
         if line.strip().startswith("/"):
-            parts  = line.strip().split(None, 1)
-            cmd    = parts[0][1:].lower()
-            args   = parts[1] if len(parts) > 1 else ""
+            parts = line.strip().split(None, 1)
+            cmd = parts[0][1:].lower()
+            args = parts[1] if len(parts) > 1 else ""
             result = await self._bundle.commands.dispatch(cmd, args)
             if result is None:
                 await self._print_system(f"Unknown command: /{cmd}")
@@ -361,9 +382,9 @@ class TheseusTUI(App):
 
         while True:
             accumulated_text = ""
-            tool_called      = False
-            tool_error       = False
-            plan_drafted     = False
+            tool_called = False
+            tool_error = False
+            plan_drafted = False
             transitioned_to_verifying = False
             verification_complete = False
 
@@ -374,7 +395,7 @@ class TheseusTUI(App):
             runtime_reminders = ()
 
             model_name = getattr(self._bundle.engine, "_model", self._model)
-            tags     = get_tracing_tags(self.user_level, model_name, self.current_session)
+            tags = get_tracing_tags(self.user_level, model_name, self.current_session)
             metadata = get_tracing_metadata(self.user_level, model_name, self.current_session)
 
             try:
@@ -398,11 +419,14 @@ class TheseusTUI(App):
                                     f"⚠️  최대 턴 도달 — 상태를 저장하고 WAIT_FOR_REVIEW로 전환합니다."
                                 )
                                 if self.theseus_sm.mode == AgentMode.PLAN:
-                                    save_plan_state("default", {
-                                        "phase": "Executing",
-                                        "plan_json": self.theseus_sm.plan,
-                                        "last_error": event.message,
-                                    })
+                                    save_plan_state(
+                                        "default",
+                                        {
+                                            "phase": "Executing",
+                                            "plan_json": self.theseus_sm.plan,
+                                            "last_error": event.message,
+                                        },
+                                    )
                                     self.theseus_sm.set_plan_phase(PlanPhase.WAIT_FOR_REVIEW)
                                     self._bundle.engine.set_system_prompt(
                                         self.theseus_sm.get_system_prompt()
@@ -414,12 +438,8 @@ class TheseusTUI(App):
 
             # ── PLAN 단계 전환 (PlanDraftedEvent로 처리 안 된 나머지) ──
             if self.theseus_sm.mode == AgentMode.PLAN and not plan_drafted:
-                transitioned_to_verifying = self._handle_plan_executing_turn(
-                    accumulated_text
-                )
-                verification_complete = self._handle_plan_verifying_turn(
-                    accumulated_text
-                )
+                transitioned_to_verifying = self._handle_plan_executing_turn(accumulated_text)
+                verification_complete = self._handle_plan_verifying_turn(accumulated_text)
 
             # ── Auto-Resume 판단 ──────────────────────────────
             loop_decision = self._decide_loop_resume(
@@ -431,9 +451,9 @@ class TheseusTUI(App):
             should_resume = False
             resume_prompt = loop_decision.resume_prompt or PLAN_CONTINUE_PROMPT
 
-            if (
-                self.theseus_sm.mode == AgentMode.PLAN
-                and self.theseus_sm.plan_phase in (PlanPhase.EXECUTING, PlanPhase.VERIFYING)
+            if self.theseus_sm.mode == AgentMode.PLAN and self.theseus_sm.plan_phase in (
+                PlanPhase.EXECUTING,
+                PlanPhase.VERIFYING,
             ):
                 if transitioned_to_verifying:
                     should_resume = True
@@ -460,13 +480,17 @@ class TheseusTUI(App):
         if _proj_client.is_enabled and self._session_id:
             try:
                 from theseus_engine.engine.cost_tracker import CostTracker
+
                 await _proj_client.sync_history(
                     self._session_id, list(self._bundle.engine._messages), token=self._session_token
                 )
                 _cost = CostTracker.get_or_create()
                 await _proj_client.report_usage(
                     self._session_id,
-                    {"inputTokens": _cost.total_input_tokens, "outputTokens": _cost.total_output_tokens},
+                    {
+                        "inputTokens": _cost.total_input_tokens,
+                        "outputTokens": _cost.total_output_tokens,
+                    },
                     token=self._session_token,
                 )
             except Exception as _sync_err:
@@ -506,9 +530,8 @@ class TheseusTUI(App):
 
     def _handle_plan_verifying_turn(self, text: str) -> bool:
         """PLAN VERIFYING 단계에서 검증 완료 키워드를 감지합니다."""
-        if (
-            self.theseus_sm.plan_phase == PlanPhase.VERIFYING
-            and contains_verification_complete(text)
+        if self.theseus_sm.plan_phase == PlanPhase.VERIFYING and contains_verification_complete(
+            text
         ):
             self._append_line("system> ✅ PLAN 검증 완료.")
             self._refresh_sidebars(force=True)
@@ -559,9 +582,7 @@ class TheseusTUI(App):
         sub = parts[0].lower()
         if sub == "list":
             names = list_sessions()
-            lines = "\n".join(
-                f"  {'*' if n == self.current_session else ' '} {n}" for n in names
-            )
+            lines = "\n".join(f"  {'*' if n == self.current_session else ' '} {n}" for n in names)
             return CommandResult(message=f"Sessions:\n{lines}")
         if sub in ("new", "switch") and len(parts) >= 2:
             new_name = parts[1]
@@ -576,12 +597,14 @@ class TheseusTUI(App):
 
     async def _cmd_cost(self, args: str, ctx: object) -> CommandResult:
         from theseus_engine.engine.cost_tracker import CostTracker
+
         report = CostTracker.get_or_create().format_report()
         self._append_line(f"\n[bold cyan]💰 Cost Report[/bold cyan]\n{report}")
         return CommandResult()
 
     async def _cmd_stats(self, args: str, ctx: object) -> CommandResult:
         from theseus_engine.observability.stats import SessionStats
+
         report = SessionStats.get().format_report()
         self._append_line(f"\n[bold cyan]📊 Stats Report[/bold cyan]\n{report}")
         return CommandResult()
@@ -608,6 +631,7 @@ class TheseusTUI(App):
             ToolValidator,
             canonical_tool_module_stem,
         )
+
         tool_name = args.strip()
         module_stem = canonical_tool_module_stem(tool_name)
         file_path = _os.path.join(CUSTOM_TOOLS_DIR, f"{module_stem}.py")
@@ -623,7 +647,8 @@ class TheseusTUI(App):
     # ── 모드 전환 액션 ──────────────────────────────────────────
 
     def action_switch_plan(self) -> None:
-        if not self._bundle: return
+        if not self._bundle:
+            return
         previous_mode = self.theseus_sm.mode
         self.theseus_sm.switch_mode(AgentMode.PLAN)
         self._set_pending_mode_reminders(previous_mode, source="TUI")
@@ -632,7 +657,8 @@ class TheseusTUI(App):
         self._refresh_sidebars(force=True)
 
     def action_switch_agent(self) -> None:
-        if not self._bundle: return
+        if not self._bundle:
+            return
         previous_mode = self.theseus_sm.mode
         self.theseus_sm.switch_mode(AgentMode.AGENT)
         self._set_pending_mode_reminders(previous_mode, source="TUI")
@@ -641,7 +667,8 @@ class TheseusTUI(App):
         self._refresh_sidebars(force=True)
 
     def action_switch_ask(self) -> None:
-        if not self._bundle: return
+        if not self._bundle:
+            return
         previous_mode = self.theseus_sm.mode
         self.theseus_sm.switch_mode(AgentMode.ASK)
         self._set_pending_mode_reminders(previous_mode, source="TUI")
@@ -650,7 +677,8 @@ class TheseusTUI(App):
         self._refresh_sidebars(force=True)
 
     def action_switch_coordinator(self) -> None:
-        if not self._bundle: return
+        if not self._bundle:
+            return
         previous_mode = self.theseus_sm.mode
         self.theseus_sm.switch_mode(AgentMode.COORDINATOR)
         self._set_pending_mode_reminders(previous_mode, source="TUI")
@@ -664,11 +692,12 @@ class TheseusTUI(App):
         self.exit()
 
     def _sync_permission_mode(self) -> None:
-        if not self._bundle: return
+        if not self._bundle:
+            return
         mapping = {
-            AgentMode.AGENT:       PermissionMode.FULL_AUTO,
-            AgentMode.PLAN:        PermissionMode.PLAN,
-            AgentMode.ASK:         PermissionMode.DEFAULT,
+            AgentMode.AGENT: PermissionMode.FULL_AUTO,
+            AgentMode.PLAN: PermissionMode.PLAN,
+            AgentMode.ASK: PermissionMode.DEFAULT,
             AgentMode.COORDINATOR: PermissionMode.FULL_AUTO,
         }
         target = mapping.get(self.theseus_sm.mode, PermissionMode.FULL_AUTO)
@@ -783,7 +812,9 @@ class TheseusTUI(App):
                 self._append_line(f"assistant> {full_text}")
             self._set_current_response("")
         elif isinstance(event, ToolExecutionStarted):
-            self._append_line(f"[dim]🔧 {event.tool_name}({json.dumps(event.tool_input, ensure_ascii=False)[:80]})[/dim]")
+            self._append_line(
+                f"[dim]🔧 {event.tool_name}({json.dumps(event.tool_input, ensure_ascii=False)[:80]})[/dim]"
+            )
         elif isinstance(event, ToolExecutionCompleted):
             icon = "❌" if event.is_error else "✅"
             self._append_line(f"[dim]{icon} {event.tool_name}: {event.output[:100]}[/dim]")
@@ -800,20 +831,18 @@ class TheseusTUI(App):
         if self._bundle is None:
             return
 
-        state      = self._bundle.app_state.get()
-        usage      = getattr(self._bundle.engine, "total_usage", None)
+        state = self._bundle.app_state.get()
+        usage = getattr(self._bundle.engine, "total_usage", None)
         tokens_str = (
-            str(usage.total_tokens)
-            if usage and getattr(usage, "total_tokens", 0) > 0
-            else "N/A"
+            str(usage.total_tokens) if usage and getattr(usage, "total_tokens", 0) > 0 else "N/A"
         )
         msgs = len(getattr(self._bundle.engine, "_messages", []))
 
         # ── 상태 바 ──────────────────────────────────────────
         mode_color = {
-            AgentMode.AGENT:       "green",
-            AgentMode.PLAN:        "yellow",
-            AgentMode.ASK:         "blue",
+            AgentMode.AGENT: "green",
+            AgentMode.PLAN: "yellow",
+            AgentMode.ASK: "blue",
             AgentMode.COORDINATOR: "magenta",
         }.get(self.theseus_sm.mode, "white")
 
@@ -885,7 +914,8 @@ class TheseusTUI(App):
             event.prevent_default()
             autocomplete.highlighted = (
                 ((autocomplete.highlighted + 1) % autocomplete.option_count)
-                if autocomplete.highlighted is not None else 0
+                if autocomplete.highlighted is not None
+                else 0
             )
         elif event.key == "up" and autocomplete.display:
             event.prevent_default()
@@ -899,7 +929,7 @@ class TheseusTUI(App):
     def handle_input_changed(self, event: Input.Changed) -> None:
         if self.auto_helper is None:
             return
-        value       = event.value
+        value = event.value
         autocomplete = self.query_one("#autocomplete", OptionList)
         if value.startswith("/"):
             opts, _ = self.auto_helper.get_command_suggestions(value[1:])
@@ -935,6 +965,7 @@ class TheseusTUI(App):
 # 사이드바 렌더링 헬퍼 함수
 # ──────────────────────────────────────────────────────────────────
 
+
 def _render_plan_tasks(plan_json_str: str) -> str:
     """plan JSON에서 태스크 체크리스트를 렌더링합니다."""
     try:
@@ -948,9 +979,9 @@ def _render_plan_tasks(plan_json_str: str) -> str:
     _MARK = {"done": "✅", "running": "🔄", "failed": "❌", "pending": "⬜"}
     for t in tasks[:12]:  # 최대 12개
         status = t.get("status", "pending")
-        mark   = _MARK.get(status, "⬜")
-        tid    = t.get("id", "")
-        title  = t.get("title", "")[:28]
+        mark = _MARK.get(status, "⬜")
+        tid = t.get("id", "")
+        title = t.get("title", "")[:28]
         lines.append(f"  {mark} [{tid}] {title}")
     if len(tasks) > 12:
         lines.append(f"  … (+{len(tasks)-12} more)")
@@ -964,7 +995,9 @@ def _render_custom_tool_names(registry) -> str:
 
     if not os.path.isdir(CUSTOM_TOOLS_DIR):
         return ""
-    custom = {f[:-3] for f in os.listdir(CUSTOM_TOOLS_DIR) if f.endswith(".py") and not f.startswith("_")}
+    custom = {
+        f[:-3] for f in os.listdir(CUSTOM_TOOLS_DIR) if f.endswith(".py") and not f.startswith("_")
+    }
     if not custom:
         return ""
     lines = ["[b]🔧 Custom Tools[/b]"]
@@ -982,7 +1015,11 @@ def _format_tools_table(registry) -> str:
 
     try:
         custom = (
-            {f[:-3] for f in os.listdir(CUSTOM_TOOLS_DIR) if f.endswith(".py") and not f.startswith("_")}
+            {
+                f[:-3]
+                for f in os.listdir(CUSTOM_TOOLS_DIR)
+                if f.endswith(".py") and not f.startswith("_")
+            }
             if os.path.isdir(CUSTOM_TOOLS_DIR)
             else set()
         )
@@ -1009,7 +1046,11 @@ def _format_custom_tools(registry) -> str:
     if not os.path.isdir(CUSTOM_TOOLS_DIR):
         return "[italic]커스텀 툴 디렉토리가 없습니다.[/italic]"
 
-    custom = [f[:-3] for f in sorted(os.listdir(CUSTOM_TOOLS_DIR)) if f.endswith(".py") and not f.startswith("_")]
+    custom = [
+        f[:-3]
+        for f in sorted(os.listdir(CUSTOM_TOOLS_DIR))
+        if f.endswith(".py") and not f.startswith("_")
+    ]
     if not custom:
         return "[italic]등록된 커스텀 툴이 없습니다.[/italic]"
 
@@ -1024,10 +1065,10 @@ def _format_custom_tools(registry) -> str:
             except Exception:
                 pass
         tool_name = meta.get("toolName", mod)
-        perm      = meta.get("permissionLevel", 1)
-        status    = "✅" if meta.get("isActive", True) else "⏸️"
-        instance  = registry.get(tool_name) if registry else None
-        desc      = (getattr(instance, "description", "") or "")[:50]
+        perm = meta.get("permissionLevel", 1)
+        status = "✅" if meta.get("isActive", True) else "⏸️"
+        instance = registry.get(tool_name) if registry else None
+        desc = (getattr(instance, "description", "") or "")[:50]
         lines.append(f"  {status} [bold]{tool_name}[/bold] [dim]Lv.{perm}[/dim]")
         if desc:
             lines.append(f"     [dim]{desc}[/dim]")
@@ -1041,6 +1082,7 @@ def _format_custom_tools(registry) -> str:
 if __name__ == "__main__":
     try:
         from dotenv import load_dotenv
+
         load_dotenv()
     except ImportError:
         pass

@@ -43,17 +43,14 @@ class EnterWorktreeTool(BaseTool):
     ) -> ToolResult:
         top_level = await _git_output(context.cwd, "rev-parse", "--show-toplevel")
         if top_level is None:
-            return ToolResult(
-                output="Not a Git repository or Git command failed.",
-                is_error=True
-            )
+            return ToolResult(output="Not a Git repository or Git command failed.", is_error=True)
 
         repo_root = Path(top_level)
         worktree_path = _resolve_worktree_path(repo_root, arguments.branch, arguments.path)
-        
+
         # Ensure parent directory exists
         worktree_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         cmd = ["git", "worktree", "add"]
         if arguments.create_branch:
             cmd.extend(["-b", arguments.branch, str(worktree_path), arguments.base_ref])
@@ -63,7 +60,7 @@ class EnterWorktreeTool(BaseTool):
         returncode, output = await _run_git(cmd, cwd=repo_root)
         if returncode != 0:
             return ToolResult(output=f"Worktree creation failed: {output}", is_error=True)
-            
+
         return ToolResult(
             output=(
                 f"✅ Worktree created\n"
@@ -94,14 +91,14 @@ class ExitWorktreeTool(BaseTool):
         path = Path(arguments.path).expanduser()
         if not path.is_absolute():
             path = (context.cwd / path).resolve()
-            
+
         returncode, output = await _run_git(
             ["git", "worktree", "remove", "--force", str(path)],
             cwd=context.cwd,
         )
         if returncode != 0:
             return ToolResult(output=f"Worktree removal failed: {output}", is_error=True)
-            
+
         return ToolResult(output=f"✅ Worktree removed: {path}")
 
 
@@ -133,7 +130,7 @@ def _resolve_worktree_path(repo_root: Path, branch: str, path: str | None) -> Pa
         if not resolved.is_absolute():
             resolved = repo_root / resolved
         return resolved.resolve()
-    
+
     # Default path: .theseus/worktrees/<branch-slug>
     slug = re.sub(r"[^A-Za-z0-9._-]+", "-", branch).strip("-") or "worktree"
     return (repo_root / ".theseus" / "worktrees" / slug).resolve()

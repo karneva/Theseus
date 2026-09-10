@@ -1,0 +1,2 @@
+class ToolPlanPlannerError(RuntimeError):
+    pass

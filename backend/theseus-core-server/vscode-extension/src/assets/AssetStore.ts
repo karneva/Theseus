@@ -2,11 +2,16 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { expandTheseusPath, getCoreRootPathFallback, getWorkspaceCwd } from '../workspace/WorkspaceContext';
+import {
+  expandTheseusPath,
+  getCoreRootPathFallback,
+  getWorkspaceCwd,
+} from '../workspace/WorkspaceContext';
 
 function sanitizeAssetName(name: string): string {
   const ext = path.extname(name || '').toLowerCase() || '.png';
-  const base = path.basename(name || 'pasted-image', ext).replace(/[^A-Za-z0-9_.-]+/g, '_') || 'image';
+  const base =
+    path.basename(name || 'pasted-image', ext).replace(/[^A-Za-z0-9_.-]+/g, '_') || 'image';
   return `${base}-${Date.now()}${ext}`;
 }
 
@@ -25,11 +30,13 @@ export async function saveAssetToWorkspace(name: string, data: unknown): Promise
 export async function resolveReadableUri(candidate: unknown): Promise<vscode.Uri | undefined> {
   if (typeof candidate !== 'string' || !candidate.trim()) return undefined;
   const raw = candidate.trim();
-  const configuredCore = expandTheseusPath(vscode.workspace.getConfiguration('theseus').get<string>('corePath'));
-  const roots = [getWorkspaceCwd(), configuredCore, getCoreRootPathFallback()].filter((v): v is string => !!v);
-  const paths = path.isAbsolute(raw)
-    ? [raw]
-    : roots.map(root => path.resolve(root, raw));
+  const configuredCore = expandTheseusPath(
+    vscode.workspace.getConfiguration('theseus').get<string>('corePath'),
+  );
+  const roots = [getWorkspaceCwd(), configuredCore, getCoreRootPathFallback()].filter(
+    (v): v is string => !!v,
+  );
+  const paths = path.isAbsolute(raw) ? [raw] : roots.map((root) => path.resolve(root, raw));
   for (const p of paths) {
     if (fs.existsSync(p)) return vscode.Uri.file(p);
   }

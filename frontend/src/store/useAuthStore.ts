@@ -11,7 +11,7 @@ interface AuthState {
   accessToken: string | null;
   user: User | null;
   isAuthenticated: boolean;
-  
+
   // Actions
   login: (accessToken: string, user: User) => void;
   logout: () => void;
@@ -25,29 +25,31 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
 
-      login: (accessToken, user) => set({ 
-        accessToken, 
-        user, 
-        isAuthenticated: true 
-      }),
+      login: (accessToken, user) =>
+        set({
+          accessToken,
+          user,
+          isAuthenticated: true,
+        }),
 
       logout: () => {
-        set({ 
-          accessToken: null, 
-          user: null, 
-          isAuthenticated: false 
+        set({
+          accessToken: null,
+          user: null,
+          isAuthenticated: false,
         });
         // Clear persisted storage explicitly
         localStorage.removeItem('auth-storage');
       },
 
-      setAccessToken: (token) => set({ 
-        accessToken: token 
-      }),
+      setAccessToken: (token) =>
+        set({
+          accessToken: token,
+        }),
     }),
     {
       name: 'auth-storage',
       storage: createJSONStorage(() => localStorage),
-    }
-  )
+    },
+  ),
 );

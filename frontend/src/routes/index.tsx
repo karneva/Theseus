@@ -37,7 +37,11 @@ const routes: RouteObject[] = [
           },
           {
             path: 'sessions',
-            element: <div className="p-8 text-slate-500 h-full flex items-center justify-center">좌측 메뉴에서 대화 세션을 선택하거나 '새 대화'를 시작하세요.</div>,
+            element: (
+              <div className="p-8 text-slate-500 h-full flex items-center justify-center">
+                좌측 메뉴에서 대화 세션을 선택하거나 '새 대화'를 시작하세요.
+              </div>
+            ),
           },
           {
             path: 'sessions/:sessionId',

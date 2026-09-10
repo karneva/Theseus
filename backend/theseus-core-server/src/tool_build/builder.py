@@ -9,12 +9,14 @@ from typing import Any, Awaitable, Callable
 from src.builder.system_prompt import build_theseus_system_prompt
 from src.config import resolve_model_name, settings
 from src.tool_build.schemas import GeneratedToolSpec, ToolArtifactPayload, ToolBuildRequestedEvent
+from src.tooling.models import (
+    ServerToolCreationRequest,
+    ToolCreationError,
+)
 from src.tooling.service import (
     CUSTOM_TOOLS_DIR,
     PROJECT_TOOLS_DIR,
     SANDBOX_ALLOWED_DEPENDENCIES,
-    ServerToolCreationRequest,
-    ToolCreationError,
     activate_tool_artifact,
     cleanup_failed_tool_artifact,
     cleanup_report_line,
@@ -108,9 +110,7 @@ def _validate_declared_sandbox_dependencies(spec: GeneratedToolSpec) -> None:
         return
     allowed_names = {dependency.casefold() for dependency in SANDBOX_ALLOWED_DEPENDENCIES}
     unsupported = [
-        dependency
-        for dependency in dependencies
-        if dependency.casefold() not in allowed_names
+        dependency for dependency in dependencies if dependency.casefold() not in allowed_names
     ]
     if not unsupported:
         return
@@ -396,14 +396,15 @@ class ToolBuilder:
                 stage="llm_output",
                 code="LLM_OUTPUT_INVALID",
                 message=(
-                    f"Invalid tool build LLM output: {exc}\n"
-                    f"Raw output preview:\n{preview}"
+                    f"Invalid tool build LLM output: {exc}\n" f"Raw output preview:\n{preview}"
                 ),
                 metadata={"rawResponse": preview},
             ) from exc
 
     @staticmethod
-    def _build_tool_message(*, approved_plan: dict, project_id: int, chat_session_id: int, tool_plan_id: int) -> str:
+    def _build_tool_message(
+        *, approved_plan: dict, project_id: int, chat_session_id: int, tool_plan_id: int
+    ) -> str:
         return (
             "Task-specific output contract for this custom tool artifact build request.\n"
             "Follow the approved Theseus plan from the system prompt. For response shape, "
@@ -429,7 +430,7 @@ class ToolBuilder:
             "- Return ToolResult(output=<string or JSON-serializable value>) on success.\n"
             "- Return ToolResult(output=<clear error>, is_error=True) on handled failures.\n"
             "- If this tool must invoke another active Theseus tool, use "
-            "await context.call_tool(\"tool_name\", {\"arg\": \"value\"}) and handle "
+            'await context.call_tool("tool_name", {"arg": "value"}) and handle '
             "ToolResult.is_error. Do not read context.metadata['tool_registry'] directly.\n"
             "- Use nested tool calls only for bounded diagnostic composition; do not "
             "repeat the same tool and arguments, and do not use nested calls for "
@@ -513,7 +514,7 @@ class ToolBuilder:
         if stripped.startswith("```"):
             stripped = stripped.strip("`").strip()
             if stripped.lower().startswith("markdown"):
-                stripped = stripped[len("markdown"):].strip()
+                stripped = stripped[len("markdown") :].strip()
         return stripped
 
     @staticmethod

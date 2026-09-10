@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class AppState:
     """런타임 앱 상태 스냅샷."""
+
     model: str = "unknown"
     permission_mode: str = "full_auto"
     session: str = "default"
@@ -45,6 +46,7 @@ class TheseusBundle:
       - bundle.app_state       → AppState
       - bundle.external_api_client → bool
     """
+
     engine: QueryEngine
     tool_registry: Any
     api_client: Any

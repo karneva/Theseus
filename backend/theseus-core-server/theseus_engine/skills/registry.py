@@ -44,7 +44,7 @@ def load_skill_registry(cwd: Path) -> SkillRegistry:
     """Load all skills from the workspace."""
     registry = SkillRegistry()
     skills_dir = get_skills_dir(cwd)
-    
+
     if not skills_dir.exists():
         return registry
 
@@ -71,7 +71,7 @@ def load_skill_registry(cwd: Path) -> SkillRegistry:
                     )
                 except Exception as e:
                     logger.warning(f"Failed to load skill from {skill_folder}: {e}")
-    
+
     return registry
 
 

@@ -13,10 +13,6 @@ public class ChatSessionCreateRequest {
 	private String title;
 
 	public ChatSession toEntity(Project project, ProjectMember projectMember) {
-		return ChatSession.builder()
-			.project(project)
-			.projectMember(projectMember)
-			.title(title)
-			.build();
+		return ChatSession.builder().project(project).projectMember(projectMember).title(title).build();
 	}
 }

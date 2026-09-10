@@ -27,7 +27,10 @@ public class ChatSessionDetailResponse {
 	private CurrentPlanResponse currentPlan;
 	private CreatedToolResponse createdTool;
 
-	public static ChatSessionDetailResponse createOf(ChatSession chatSession, List<ChatMessage> messages) {
+	public static ChatSessionDetailResponse createOf(
+		ChatSession chatSession,
+		List<ChatMessage> messages
+	) {
 		return createOf(chatSession, messages, null, null);
 	}
 
@@ -46,9 +49,7 @@ public class ChatSessionDetailResponse {
 			.closedAt(chatSession.getClosedAt())
 			.createdAt(chatSession.getCreatedAt())
 			.updatedAt(chatSession.getUpdatedAt())
-			.messages(messages.stream()
-				.map(ChatMessageResponse::createFrom)
-				.toList())
+			.messages(messages.stream().map(ChatMessageResponse::createFrom).toList())
 			.currentPlan(currentPlan)
 			.createdTool(createdTool)
 			.build();
@@ -69,8 +70,12 @@ public class ChatSessionDetailResponse {
 			ToolPlanGroup planGroup = resolvePlanGroup(toolPlanRun, toolPlan);
 
 			String status = toolPlanRun.getStatus().name();
-			if (com.theseus.api.domain.tool.entity.ToolPlanRunRequestType.BUILD_TOOL.equals(toolPlanRun.getRequestType())
-				&& !toolPlanRun.isFinished()) {
+			if (
+				com.theseus.api.domain.tool.entity.ToolPlanRunRequestType.BUILD_TOOL.equals(
+					toolPlanRun.getRequestType()
+				) &&
+				!toolPlanRun.isFinished()
+			) {
 				status = "BUILDING";
 			}
 
@@ -121,7 +126,9 @@ public class ChatSessionDetailResponse {
 		public static CreatedToolResponse createFrom(Tool tool) {
 			return CreatedToolResponse.builder()
 				.toolId(tool.getId())
-				.sourceToolPlanId(tool.getSourceToolPlan() == null ? null : tool.getSourceToolPlan().getId())
+				.sourceToolPlanId(
+					tool.getSourceToolPlan() == null ? null : tool.getSourceToolPlan().getId()
+				)
 				.status(tool.getStatus().name())
 				.build();
 		}

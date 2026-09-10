@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '@/api/config';
 import { useCallback, useRef } from 'react';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { toast } from 'sonner';
@@ -48,159 +49,167 @@ export function useChatStreamSSE() {
     }
   }, []);
 
-  const connectChatStream = useCallback((
-    projectId: string,
-    sessionId: string,
-    mode: Extract<ToolPlanMode, 'ASK' | 'AGENT'>,
-    prompt: string,
-    remoteWorkspaceId?: number
-  ) => {
-    disconnectChatStream();
+  const connectChatStream = useCallback(
+    (
+      projectId: string,
+      sessionId: string,
+      mode: Extract<ToolPlanMode, 'ASK' | 'AGENT'>,
+      prompt: string,
+      remoteWorkspaceId?: number,
+    ) => {
+      disconnectChatStream();
 
-    const controller = new AbortController();
-    abortRef.current = controller;
-    useChatSessionStore.getState().setAbortController(controller);
+      const controller = new AbortController();
+      abortRef.current = controller;
+      useChatSessionStore.getState().setAbortController(controller);
 
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-    const token = useAuthStore.getState().accessToken;
+      const baseUrl = API_BASE_URL;
+      const token = useAuthStore.getState().accessToken;
 
-    void fetchEventSource(`${baseUrl}/api/v1/projects/${projectId}/sessions/${sessionId}/messages/stream`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'text/event-stream',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({ mode, prompt, remoteWorkspaceId }),
-      signal: controller.signal,
-      openWhenHidden: true,
+      void fetchEventSource(
+        `${baseUrl}/api/v1/projects/${projectId}/sessions/${sessionId}/messages/stream`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'text/event-stream',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ mode, prompt, remoteWorkspaceId }),
+          signal: controller.signal,
+          openWhenHidden: true,
 
-      async onopen(response) {
-        if (!response.ok) {
-          throw new Error(`Chat stream failed with status ${response.status}`);
-        }
-      },
-
-      onmessage(ev) {
-        if (!ev.data) return;
-
-        try {
-          const data = JSON.parse(ev.data) as ChatStreamEvent;
-          const eventType = (ev.event || '').toLowerCase();
-          const store = useChatSessionStore.getState();
-          const toolName = getToolName(data);
-          const toolUseId = getToolUseId(data);
-          const toolInput = getToolInput(data);
-          const toolError = isToolError(data);
-
-          switch (eventType) {
-            case 'connected':
-              store.setProgressInfo({
-                step: `${mode} connected`,
-                message: data.message || '',
-                percent: 0,
-              });
-              break;
-
-            case 'chunk':
-              if (data.content) {
-                store.updateLastMessageContent(data.content);
-              }
-              break;
-
-            case 'status':
-            case 'tool_start':
-            case 'tool_execution_started':
-              if (toolName) {
-                store.upsertToolExecutionNotice({
-                  noticeType: 'TOOL_EXECUTION_STARTED',
-                  toolName,
-                  toolUseId,
-                  toolInput,
-                  status: data.status || 'started',
-                  metadata: {
-                    message: data.message || `Executing tool: ${toolName}`,
-                    step: `Tool Running: ${toolName}`,
-                  },
-                });
-              }
-              store.setProgressInfo({
-                step: toolName ? `Tool Running: ${toolName}` : (data.message || 'Agent working'),
-                message: data.message || '',
-                percent: 0,
-              });
-              break;
-
-            case 'tool_result':
-            case 'tool_complete':
-            case 'tool_execution_completed':
-              if (toolName) {
-                store.upsertToolExecutionNotice({
-                  noticeType: toolError ? 'TOOL_EXECUTION_FAILED' : 'TOOL_EXECUTION_COMPLETED',
-                  toolName,
-                  toolUseId,
-                  toolInput,
-                  output: data.output || '',
-                  isError: toolError,
-                  status: data.status || (toolError ? 'failed' : 'completed'),
-                });
-              }
-              store.setProgressInfo({
-                step: toolName
-                  ? `${toolError ? 'Tool Failed' : 'Tool Completed'}: ${toolName}`
-                  : (toolError ? 'Tool failed' : 'Tool completed'),
-                message: data.output || '',
-                percent: 0,
-              });
-              break;
-
-            case 'completed':
-              store.setIsGenerating(false);
-              store.setProgressInfo(null);
-              store.setAbortController(null);
-              abortRef.current = null;
-              break;
-
-            case 'error': {
-              const errorMessage = data.message || 'Chat stream failed.';
-              store.setIsGenerating(false);
-              store.setProgressInfo(null);
-              store.setAbortController(null);
-              store.addMessage({
-                messageId: crypto.randomUUID(),
-                senderType: 'SYSTEM_NOTICE',
-                messageType: 'SYSTEM_NOTICE',
-                contentType: 'TEXT',
-                content: errorMessage,
-                createdAt: new Date().toISOString(),
-              });
-              toast.error(errorMessage);
-              disconnectChatStream();
-              break;
+          async onopen(response) {
+            if (!response.ok) {
+              throw new Error(`Chat stream failed with status ${response.status}`);
             }
+          },
 
-            default:
-              console.warn('[ChatStream] Unknown event type:', eventType, data);
-          }
-        } catch (error) {
-          console.warn('[ChatStream] Failed to handle event:', ev.data, error);
-        }
-      },
+          onmessage(ev) {
+            if (!ev.data) return;
 
-      onerror(error) {
-        const store = useChatSessionStore.getState();
-        store.setIsGenerating(false);
-        store.setProgressInfo(null);
-        store.setAbortController(null);
-        abortRef.current = null;
-        toast.error('Chat stream connection failed.');
-        throw error;
-      },
-    }).catch((error) => {
-      if (controller.signal.aborted) return;
-      console.error('[ChatStream] Connection failed:', error);
-    });
-  }, [disconnectChatStream]);
+            try {
+              const data = JSON.parse(ev.data) as ChatStreamEvent;
+              const eventType = (ev.event || '').toLowerCase();
+              const store = useChatSessionStore.getState();
+              const toolName = getToolName(data);
+              const toolUseId = getToolUseId(data);
+              const toolInput = getToolInput(data);
+              const toolError = isToolError(data);
+
+              switch (eventType) {
+                case 'connected':
+                  store.setProgressInfo({
+                    step: `${mode} connected`,
+                    message: data.message || '',
+                    percent: 0,
+                  });
+                  break;
+
+                case 'chunk':
+                  if (data.content) {
+                    store.updateLastMessageContent(data.content);
+                  }
+                  break;
+
+                case 'status':
+                case 'tool_start':
+                case 'tool_execution_started':
+                  if (toolName) {
+                    store.upsertToolExecutionNotice({
+                      noticeType: 'TOOL_EXECUTION_STARTED',
+                      toolName,
+                      toolUseId,
+                      toolInput,
+                      status: data.status || 'started',
+                      metadata: {
+                        message: data.message || `Executing tool: ${toolName}`,
+                        step: `Tool Running: ${toolName}`,
+                      },
+                    });
+                  }
+                  store.setProgressInfo({
+                    step: toolName ? `Tool Running: ${toolName}` : data.message || 'Agent working',
+                    message: data.message || '',
+                    percent: 0,
+                  });
+                  break;
+
+                case 'tool_result':
+                case 'tool_complete':
+                case 'tool_execution_completed':
+                  if (toolName) {
+                    store.upsertToolExecutionNotice({
+                      noticeType: toolError ? 'TOOL_EXECUTION_FAILED' : 'TOOL_EXECUTION_COMPLETED',
+                      toolName,
+                      toolUseId,
+                      toolInput,
+                      output: data.output || '',
+                      isError: toolError,
+                      status: data.status || (toolError ? 'failed' : 'completed'),
+                    });
+                  }
+                  store.setProgressInfo({
+                    step: toolName
+                      ? `${toolError ? 'Tool Failed' : 'Tool Completed'}: ${toolName}`
+                      : toolError
+                        ? 'Tool failed'
+                        : 'Tool completed',
+                    message: data.output || '',
+                    percent: 0,
+                  });
+                  break;
+
+                case 'completed':
+                  store.setIsGenerating(false);
+                  store.setProgressInfo(null);
+                  store.setAbortController(null);
+                  abortRef.current = null;
+                  break;
+
+                case 'error': {
+                  const errorMessage = data.message || 'Chat stream failed.';
+                  store.setIsGenerating(false);
+                  store.setProgressInfo(null);
+                  store.setAbortController(null);
+                  store.addMessage({
+                    messageId: crypto.randomUUID(),
+                    senderType: 'SYSTEM_NOTICE',
+                    messageType: 'SYSTEM_NOTICE',
+                    contentType: 'TEXT',
+                    content: errorMessage,
+                    createdAt: new Date().toISOString(),
+                  });
+                  toast.error(errorMessage);
+                  disconnectChatStream();
+                  break;
+                }
+
+                default:
+                  console.warn('[ChatStream] Unknown event type:', eventType, data);
+              }
+            } catch (error) {
+              console.warn('[ChatStream] Failed to handle event:', ev.data, error);
+            }
+          },
+
+          onerror(error) {
+            const store = useChatSessionStore.getState();
+            store.setIsGenerating(false);
+            store.setProgressInfo(null);
+            store.setAbortController(null);
+            abortRef.current = null;
+            toast.error('Chat stream connection failed.');
+            throw error;
+          },
+        },
+      ).catch((error) => {
+        if (controller.signal.aborted) return;
+        console.error('[ChatStream] Connection failed:', error);
+      });
+    },
+    [disconnectChatStream],
+  );
 
   return { connectChatStream, disconnectChatStream };
 }

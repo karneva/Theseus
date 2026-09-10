@@ -39,8 +39,12 @@ const LoginForm = ({ role, isLoading, onSubmit, errorMsg }: LoginFormProps) => {
           <label className="absolute -top-2 left-2 bg-[#0d1c2d] px-1 text-[#c1c7d3] text-[12px] font-medium tracking-[0.6px] z-10">
             사번
           </label>
-          <div className={`bg-[#010f1f] border ${errors.loginId ? 'border-red-500' : 'border-[rgba(65,71,81,0.3)]'} rounded-[4px] h-[50px] flex items-center px-4 mt-2 relative focus-within:border-[#60a5fa] focus-within:ring-1 focus-within:ring-[#60a5fa]/50 transition-colors`}>
-            <User className={`w-4 h-4 mr-3 ${errors.loginId ? 'text-red-500' : 'text-[#8b919d]'}`} />
+          <div
+            className={`bg-[#010f1f] border ${errors.loginId ? 'border-red-500' : 'border-[rgba(65,71,81,0.3)]'} rounded-[4px] h-[50px] flex items-center px-4 mt-2 relative focus-within:border-[#60a5fa] focus-within:ring-1 focus-within:ring-[#60a5fa]/50 transition-colors`}
+          >
+            <User
+              className={`w-4 h-4 mr-3 ${errors.loginId ? 'text-red-500' : 'text-[#8b919d]'}`}
+            />
             <input
               type="text"
               placeholder="사번"
@@ -49,7 +53,9 @@ const LoginForm = ({ role, isLoading, onSubmit, errorMsg }: LoginFormProps) => {
             />
           </div>
           {errors.loginId && (
-            <span className="text-red-500 text-[12px] mt-1 ml-1 block">{errors.loginId.message}</span>
+            <span className="text-red-500 text-[12px] mt-1 ml-1 block">
+              {errors.loginId.message}
+            </span>
           )}
         </div>
 
@@ -58,8 +64,12 @@ const LoginForm = ({ role, isLoading, onSubmit, errorMsg }: LoginFormProps) => {
           <label className="absolute -top-2 left-2 bg-[#0d1c2d] px-1 text-[#c1c7d3] text-[12px] font-medium tracking-[0.6px] z-10">
             비밀번호
           </label>
-          <div className={`bg-[#010f1f] border ${errors.password ? 'border-red-500' : 'border-[rgba(65,71,81,0.3)]'} rounded-[4px] h-[50px] flex items-center px-4 mt-2 relative focus-within:border-[#60a5fa] focus-within:ring-1 focus-within:ring-[#60a5fa]/50 transition-colors`}>
-            <Lock className={`w-4 h-4 mr-3 ${errors.password ? 'text-red-500' : 'text-[#8b919d]'}`} />
+          <div
+            className={`bg-[#010f1f] border ${errors.password ? 'border-red-500' : 'border-[rgba(65,71,81,0.3)]'} rounded-[4px] h-[50px] flex items-center px-4 mt-2 relative focus-within:border-[#60a5fa] focus-within:ring-1 focus-within:ring-[#60a5fa]/50 transition-colors`}
+          >
+            <Lock
+              className={`w-4 h-4 mr-3 ${errors.password ? 'text-red-500' : 'text-[#8b919d]'}`}
+            />
             <input
               type="password"
               placeholder="비밀번호"
@@ -68,7 +78,9 @@ const LoginForm = ({ role, isLoading, onSubmit, errorMsg }: LoginFormProps) => {
             />
           </div>
           {errors.password && (
-            <span className="text-red-500 text-[12px] mt-1 ml-1 block">{errors.password.message}</span>
+            <span className="text-red-500 text-[12px] mt-1 ml-1 block">
+              {errors.password.message}
+            </span>
           )}
         </div>
 
@@ -124,7 +136,7 @@ export default function LoginPage() {
       }
 
       // 권한 검증: 사용자 탭에서 관리자 로그인 시도 시
-      if (role === 'USER' && (res.systemRole === 'SUPER_ADMIN')) {
+      if (role === 'USER' && res.systemRole === 'SUPER_ADMIN') {
         setErrorMsg('해당 계정은 관리자입니다. 관리자 탭을 이용해주세요.');
         return;
       }
@@ -172,7 +184,6 @@ export default function LoginPage() {
 
       {/* Login Card */}
       <div className="w-full max-w-[420px] backdrop-blur-[12px] bg-[#0d1c2d] border border-[rgba(65,71,81,0.2)] rounded-[8px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.5)] overflow-hidden relative">
-
         {/* Decorative Corner Accents */}
         <div className="absolute top-0 left-0 w-[48px] h-[48px] border-t border-l border-[rgba(65,71,81,0.3)] pointer-events-none" />
         <div className="absolute top-0 right-0 w-[48px] h-[48px] border-t border-r border-[rgba(65,71,81,0.3)] pointer-events-none" />
@@ -196,12 +207,28 @@ export default function LoginPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="user" className="p-6 m-0 focus-visible:outline-none focus-visible:ring-0">
-            <LoginForm role="USER" isLoading={isLoading} onSubmit={handleLogin} errorMsg={errorMsg} />
+          <TabsContent
+            value="user"
+            className="p-6 m-0 focus-visible:outline-none focus-visible:ring-0"
+          >
+            <LoginForm
+              role="USER"
+              isLoading={isLoading}
+              onSubmit={handleLogin}
+              errorMsg={errorMsg}
+            />
           </TabsContent>
 
-          <TabsContent value="admin" className="p-6 m-0 focus-visible:outline-none focus-visible:ring-0">
-            <LoginForm role="ADMIN" isLoading={isLoading} onSubmit={handleLogin} errorMsg={errorMsg} />
+          <TabsContent
+            value="admin"
+            className="p-6 m-0 focus-visible:outline-none focus-visible:ring-0"
+          >
+            <LoginForm
+              role="ADMIN"
+              isLoading={isLoading}
+              onSubmit={handleLogin}
+              errorMsg={errorMsg}
+            />
           </TabsContent>
         </Tabs>
       </div>

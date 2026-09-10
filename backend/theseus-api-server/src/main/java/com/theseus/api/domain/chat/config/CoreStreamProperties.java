@@ -5,7 +5,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "theseus.core")
 public record CoreStreamProperties(String baseUrl) {
-
 	private static final String DEFAULT_BASE_URL = "http://localhost:8086";
 
 	public CoreStreamProperties {
@@ -15,23 +14,33 @@ public record CoreStreamProperties(String baseUrl) {
 	}
 
 	public URI streamUri(Long projectId, Long sessionId) {
-		String normalizedBaseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+		String normalizedBaseUrl = baseUrl.endsWith("/")
+			? baseUrl.substring(0, baseUrl.length() - 1)
+			: baseUrl;
 		String query = "chat_session_id=%d&project_id=%d".formatted(sessionId, projectId);
 		return URI.create(normalizedBaseUrl + "/api/v1/stream?" + query);
 	}
 
 	public URI remoteWorkspaceConnectionTestUri() {
-		String normalizedBaseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+		String normalizedBaseUrl = baseUrl.endsWith("/")
+			? baseUrl.substring(0, baseUrl.length() - 1)
+			: baseUrl;
 		return URI.create(normalizedBaseUrl + "/api/v1/remote-workspaces/test-connection");
 	}
 
 	public URI deleteToolUri(Long projectId, String toolName) {
-		String normalizedBaseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+		String normalizedBaseUrl = baseUrl.endsWith("/")
+			? baseUrl.substring(0, baseUrl.length() - 1)
+			: baseUrl;
 		return URI.create(normalizedBaseUrl + "/api/v1/tools/%d/%s".formatted(projectId, toolName));
 	}
 
 	public URI updateToolPermissionLevelUri(Long projectId, String toolName) {
-		String normalizedBaseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
-		return URI.create(normalizedBaseUrl + "/api/v1/tools/%d/%s/permission-level".formatted(projectId, toolName));
+		String normalizedBaseUrl = baseUrl.endsWith("/")
+			? baseUrl.substring(0, baseUrl.length() - 1)
+			: baseUrl;
+		return URI.create(
+			normalizedBaseUrl + "/api/v1/tools/%d/%s/permission-level".formatted(projectId, toolName)
+		);
 	}
 }

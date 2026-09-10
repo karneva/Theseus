@@ -34,7 +34,9 @@ public class ToolPlanDetailResponse {
 			.projectId(toolPlan.getProject().getId())
 			.chatSessionId(toolPlan.getChatSession().getId())
 			.createdByProjectMemberId(toolPlan.getCreatedByProjectMember().getId())
-			.baseToolPlanId(toolPlan.getBaseToolPlan() == null ? null : toolPlan.getBaseToolPlan().getId())
+			.baseToolPlanId(
+				toolPlan.getBaseToolPlan() == null ? null : toolPlan.getBaseToolPlan().getId()
+			)
 			.planVersion(toolPlan.getPlanVersion())
 			.status(toolPlan.getStatus())
 			.mode(toolPlan.getMode())

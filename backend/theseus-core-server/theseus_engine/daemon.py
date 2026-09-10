@@ -24,7 +24,6 @@ from sse_starlette.sse import EventSourceResponse
 
 from theseus_engine.runner_runtime import EditorRuntime
 
-
 RUNNER_STATE_SCHEMA_VERSION = 1
 TERMINAL_RUN_STATUSES = {"completed", "interrupted", "error"}
 
@@ -108,19 +107,23 @@ class DaemonState:
         self.started_at = time.time()
         self.runs: dict[str, RunState] = {}
         self.permission_waiters: dict[str, PermissionWaiter] = {}
-        self._permission_run: contextvars.ContextVar[RunState | None] = (
-            contextvars.ContextVar("theseus_permission_run", default=None)
+        self._permission_run: contextvars.ContextVar[RunState | None] = contextvars.ContextVar(
+            "theseus_permission_run", default=None
         )
         self.initialized = False
         self.last_event_at: float | None = None
         self._lock = asyncio.Lock()
         self.pending_registry_refresh_reason: str | None = None
-        self.runtime = runtime_factory() if runtime_factory else EditorRuntime(
-            model=model,
-            user_level=user_level,
-            cwd=workspace,
-            initial_session=initial_session,
-            permission_prompt=self.permission_prompt,
+        self.runtime = (
+            runtime_factory()
+            if runtime_factory
+            else EditorRuntime(
+                model=model,
+                user_level=user_level,
+                cwd=workspace,
+                initial_session=initial_session,
+                permission_prompt=self.permission_prompt,
+            )
         )
 
     async def initialize(self) -> list[dict[str, Any]]:
@@ -165,14 +168,10 @@ class DaemonState:
         async with self._lock:
             active = self._active_run()
             if active is not None:
-                raise DaemonBusyError(
-                    f"이미 실행 중인 run이 있습니다: {active.run_id}"
-                )
+                raise DaemonBusyError(f"이미 실행 중인 run이 있습니다: {active.run_id}")
             self._prune_runs()
             run = RunState(
-                run_id=(
-                    f"run-{int(time.time() * 1000)}-{secrets.token_hex(4)}"
-                ),
+                run_id=(f"run-{int(time.time() * 1000)}-{secrets.token_hex(4)}"),
                 text=request.text,
             )
             self.runs[run.run_id] = run
@@ -188,18 +187,30 @@ class DaemonState:
                     for event in self.runtime.set_mode(mode, announce=False):
                         await self._append(run, event)
                 else:
-                    async for event in self.runtime.submit(json.dumps({"type": "setMode", "mode": mode})):
+                    async for event in self.runtime.submit(
+                        json.dumps({"type": "setMode", "mode": mode})
+                    ):
                         await self._append(run, event)
             async for event in self.runtime.submit(run.text):
                 await self._append(run, event)
                 if run.interrupt_requested:
                     break
-            await self._set_run_status(run, "interrupted" if run.interrupt_requested else "completed")
+            await self._set_run_status(
+                run, "interrupted" if run.interrupt_requested else "completed"
+            )
         except asyncio.CancelledError:
             await self._set_run_status(run, "interrupted")
             raise
         except Exception as exc:
-            await self._append(run, {"type": "ErrorEvent", "message": str(exc), "recoverable": True, "error_type": "unknown"})
+            await self._append(
+                run,
+                {
+                    "type": "ErrorEvent",
+                    "message": str(exc),
+                    "recoverable": True,
+                    "error_type": "unknown",
+                },
+            )
             await self._set_run_status(run, "error")
         finally:
             await self._flush_pending_tool_registry_refresh(run)
@@ -209,21 +220,25 @@ class DaemonState:
 
     def _refresh_tool_registry_events(self, reason: str) -> list[dict[str, Any]]:
         if not hasattr(self.runtime, "refresh_tool_registry_events"):
-            return [{
-                "type": "ErrorEvent",
-                "message": "이 runtime은 tool registry refresh를 지원하지 않습니다.",
-                "recoverable": True,
-                "error_type": "unsupported_control_command",
-            }]
+            return [
+                {
+                    "type": "ErrorEvent",
+                    "message": "이 runtime은 tool registry refresh를 지원하지 않습니다.",
+                    "recoverable": True,
+                    "error_type": "unsupported_control_command",
+                }
+            ]
         try:
             return list(self.runtime.refresh_tool_registry_events(reason))
         except Exception as exc:
-            return [{
-                "type": "ErrorEvent",
-                "message": f"tool registry 새로고침 실패: {exc}",
-                "recoverable": True,
-                "error_type": "tool_registry_refresh_failed",
-            }]
+            return [
+                {
+                    "type": "ErrorEvent",
+                    "message": f"tool registry 새로고침 실패: {exc}",
+                    "recoverable": True,
+                    "error_type": "tool_registry_refresh_failed",
+                }
+            ]
 
     async def request_tool_registry_refresh(
         self,
@@ -235,12 +250,12 @@ class DaemonState:
             self.pending_registry_refresh_reason = reason
             return {
                 "queued": True,
-                "events": [{
-                    "type": "StatusEvent",
-                    "message": (
-                        "현재 실행이 끝난 뒤 tool registry를 새로고침합니다."
-                    ),
-                }],
+                "events": [
+                    {
+                        "type": "StatusEvent",
+                        "message": ("현재 실행이 끝난 뒤 tool registry를 새로고침합니다."),
+                    }
+                ],
             }
         async with self._lock:
             events = self._refresh_tool_registry_events(reason)
@@ -350,8 +365,7 @@ class DaemonState:
         if overflow <= 0:
             return
         removable = [
-            run_id for run_id, run in self.runs.items()
-            if run.status in TERMINAL_RUN_STATUSES
+            run_id for run_id, run in self.runs.items() if run.status in TERMINAL_RUN_STATUSES
         ]
         for run_id in removable[:overflow]:
             self.runs.pop(run_id, None)
@@ -437,10 +451,7 @@ def create_app(state: DaemonState) -> FastAPI:
                     break
                 async with run.condition:
                     event_count = run.event_offset + len(run.events)
-                    if (
-                        next_index >= event_count
-                        and run.status not in TERMINAL_RUN_STATUSES
-                    ):
+                    if next_index >= event_count and run.status not in TERMINAL_RUN_STATUSES:
                         await run.condition.wait()
 
         return EventSourceResponse(generate())

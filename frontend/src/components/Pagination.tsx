@@ -11,11 +11,13 @@ export function Pagination({
   totalPages,
   totalElements,
   onPageChange,
-  itemName = 'items'
+  itemName = 'items',
 }: PaginationProps) {
   return (
     <div className="h-[65px] px-4 border-t border-[rgba(65,71,81,0.1)] flex items-center justify-between shrink-0">
-      <span className="text-xs text-white/40">Total {totalElements} {itemName}</span>
+      <span className="text-xs text-white/40">
+        Total {totalElements} {itemName}
+      </span>
       <div className="flex items-center gap-1">
         <button
           disabled={page === 0}
@@ -24,7 +26,9 @@ export function Pagination({
         >
           Prev
         </button>
-        <span className="text-xs text-white/60 px-2">{page + 1} / {totalPages || 1}</span>
+        <span className="text-xs text-white/60 px-2">
+          {page + 1} / {totalPages || 1}
+        </span>
         <button
           disabled={page >= (totalPages || 1) - 1}
           onClick={() => onPageChange(page + 1)}

@@ -7,12 +7,25 @@ import re
 import shutil
 import threading
 import uuid
-from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from src.config import settings
+from src.tooling.sandbox_results import (
+    MISSING_MODULE_RE,
+    SANDBOX_ALLOWED_DEPENDENCIES,
+    _classify_sandbox_dependency_failure,
+    _format_sandbox_failure_message,
+    _sandbox_install_candidates,
+)
+from src.tooling.models import (
+    ToolCreationError,
+    ServerToolCreationRequest,
+    ServerToolArtifactPaths,
+    ServerToolCreationResult,
+    ServerToolSourceResult,
+)
 
 log = logging.getLogger(__name__)
 
@@ -29,9 +42,7 @@ def _sanitize_generated_code(code: str) -> str:
     - 백슬래시 뒤 후행 공백 제거 (SyntaxError: unexpected character after line continuation)
     """
     # 마크다운 코드펜스 벗기기
-    fence_match = re.match(
-        r"^\s*```(?:python)?\s*\n(.*?)\n\s*```\s*$", code, re.DOTALL
-    )
+    fence_match = re.match(r"^\s*```(?:python)?\s*\n(.*?)\n\s*```\s*$", code, re.DOTALL)
     if fence_match:
         code = fence_match.group(1)
 
@@ -39,9 +50,9 @@ def _sanitize_generated_code(code: str) -> str:
     code = code.replace("\x00", "")
     code = re.sub(r"\\ +\n", "\\\n", code)
     return code
-_DEFAULT_CUSTOM_TOOLS_DIR = (
-    Path(__file__).resolve().parents[2] / "theseus_engine" / "custom_tools"
-)
+
+
+_DEFAULT_CUSTOM_TOOLS_DIR = Path(__file__).resolve().parents[2] / "theseus_engine" / "custom_tools"
 
 
 def _configured_path(value: str | None, default: Path) -> Path:
@@ -180,11 +191,11 @@ def move_tool_to_trash(project_id: str, tool_name: str) -> bool:
     moved_any = False
     if py_path.exists() or meta_path.exists():
         trash_dir.mkdir(parents=True, exist_ok=True)
-        
+
         if py_path.exists():
             shutil.move(str(py_path), str(trash_dir / py_path.name))
             moved_any = True
-            
+
         if meta_path.exists():
             shutil.move(str(meta_path), str(trash_dir / meta_path.name))
             moved_any = True
@@ -237,6 +248,7 @@ def update_tool_permission_level(project_id: str, tool_name: str, permission_lev
 
     return True
 
+
 STATUS_DRAFT_SAVED = "draft_saved"
 STATUS_VALIDATED = "validated"
 STATUS_VALIDATION_FAILED = "validation_failed"
@@ -253,32 +265,9 @@ FAILED_ARTIFACT_CLEANUP_STATUSES = frozenset(
     }
 )
 
-SANDBOX_ALLOWED_DEPENDENCIES = frozenset(
-    {
-        "pydantic",
-        "psutil",
-        "nvidia-ml-py",
-        "markdownify",
-        "beautifulsoup4",
-        "PyYAML",
-        "requests",
-        "httpx",
-        "numpy",
-        "packaging",
-        "python-dotenv",
-    }
-)
-SANDBOX_IMPORT_PACKAGE_ALIASES = {
-    "pynvml": "nvidia-ml-py",
-    "bs4": "beautifulsoup4",
-    "yaml": "PyYAML",
-    "dotenv": "python-dotenv",
-}
-MISSING_MODULE_RE = re.compile(r"No module named ['\"]([^'\"]+)['\"]")
-
 
 def _tool_validator_cls():
-    from theseus_engine.tools.core.tool_factory import ToolValidator
+    from theseus_engine.tools.core.tool_validator import ToolValidator
 
     return ToolValidator
 
@@ -301,85 +290,6 @@ async def _run_tool_sandbox_gate(*args, **kwargs):
     return await run_tool_sandbox_gate(*args, **kwargs)
 
 
-class ToolCreationError(RuntimeError):
-    """Raised when the server-side create_tool pipeline cannot proceed."""
-
-    def __init__(
-        self,
-        stage: str,
-        message: str,
-        *,
-        errors: list[str] | None = None,
-    ) -> None:
-        super().__init__(message)
-        self.stage = stage
-        self.message = message
-        self.errors = errors or []
-
-
-@dataclass(slots=True)
-class ServerToolCreationRequest:
-    tool_name: str
-    python_code: str
-    permission_level: int
-    project_id: str
-    creator_user_id: str
-    chat_session_id: int
-    plan_id: str
-    run_id: str | None = None
-
-
-@dataclass(slots=True)
-class ServerToolArtifactPaths:
-    project_dir: Path
-    module_path: Path
-    metadata_path: Path
-    module_name: str
-
-
-@dataclass(slots=True)
-class ServerToolCreationResult:
-    status: str
-    stage: str
-    tool_name: str
-    message: str
-    module_path: str | None = None
-    metadata_path: str | None = None
-    permission_level: int | None = None
-    registry_registered: bool = False
-    errors: list[str] = field(default_factory=list)
-    trace_id: str | None = None
-
-    def to_metadata(self) -> dict[str, Any]:
-        return asdict(self)
-
-
-@dataclass(slots=True)
-class ServerToolSourceResult:
-    status: str
-    stage: str
-    tool_name: str
-    message: str
-    project_id: str
-    module_name: str
-    module_path: str
-    metadata_path: str
-    host_module_path: str | None = None
-    host_metadata_path: str | None = None
-    source: str | None = None
-    metadata: dict[str, Any] = field(default_factory=dict)
-    permission_level: int | None = None
-    registry_registered: bool = False
-    sandbox_verified: bool = False
-    errors: list[str] = field(default_factory=list)
-    trace_id: str | None = None
-
-    def to_metadata(self) -> dict[str, Any]:
-        payload = asdict(self)
-        payload.pop("source", None)
-        return payload
-
-
 def _slugify_segment(value: str | int) -> str:
     slug = re.sub(r"[^a-zA-Z0-9]+", "_", str(value)).strip("_").lower()
     return slug or "default"
@@ -393,7 +303,9 @@ def _new_trace_id() -> str:
     return uuid.uuid4().hex
 
 
-def _host_custom_tool_path_hint(path: Path, *, storage_root: Path = PROJECT_TOOLS_DIR) -> str | None:
+def _host_custom_tool_path_hint(
+    path: Path, *, storage_root: Path = PROJECT_TOOLS_DIR
+) -> str | None:
     host_root = str(settings.THESEUS_CUSTOM_TOOLS_HOST_DIR or "").strip()
     if not host_root:
         return None
@@ -668,9 +580,7 @@ def _select_project_tool_candidate(
             )
 
     active_matches = [
-        (paths, metadata)
-        for paths, metadata in candidates
-        if _is_tool_active_metadata(metadata)
+        (paths, metadata) for paths, metadata in candidates if _is_tool_active_metadata(metadata)
     ]
     if len(active_matches) == 1:
         return active_matches[0]
@@ -959,11 +869,7 @@ def inject_permission_level(python_code: str, permission_level: int) -> str:
         return python_code
 
     pattern = r'(\n\s+)name\s*=\s*(["\'][^"\']+["\'])'
-    replacement = (
-        r"\g<1>permission_level = "
-        + str(permission_level)
-        + r"\g<1>name = \2"
-    )
+    replacement = r"\g<1>permission_level = " + str(permission_level) + r"\g<1>name = \2"
     updated = re.sub(pattern, replacement, python_code, count=1)
     if updated == python_code:
         raise ToolCreationError(
@@ -1080,35 +986,6 @@ def _sandbox_metadata(result: dict[str, Any]) -> dict[str, Any]:
     return {"sandboxResult": result}
 
 
-def _sandbox_failure_text(result: dict[str, Any]) -> str:
-    metadata = result.get("metadata") if isinstance(result.get("metadata"), dict) else {}
-    candidates = [
-        result.get("error"),
-        result.get("logs"),
-        metadata.get("error"),
-        metadata.get("stdout"),
-        metadata.get("stderr"),
-    ]
-    return "\n".join(str(item) for item in candidates if item)
-
-
-def _missing_modules_from_sandbox_result(result: dict[str, Any]) -> list[str]:
-    found: list[str] = []
-    for module_name in MISSING_MODULE_RE.findall(_sandbox_failure_text(result)):
-        if module_name not in found:
-            found.append(module_name)
-    return found
-
-
-def _sandbox_install_candidates(module_names: list[str]) -> list[str]:
-    candidates: list[str] = []
-    for module_name in module_names:
-        package_name = SANDBOX_IMPORT_PACKAGE_ALIASES.get(module_name, module_name)
-        if package_name not in candidates:
-            candidates.append(package_name)
-    return candidates
-
-
 def _metadata_dependencies(metadata: dict[str, Any]) -> list[str]:
     dependencies = metadata.get("dependencies") or []
     if not isinstance(dependencies, list):
@@ -1197,63 +1074,6 @@ def _project_tool_inventory_item(
     item["canRegister"] = True
     item["canEditSource"] = True
     return item
-
-
-def _classify_sandbox_dependency_failure(result: dict[str, Any]) -> dict[str, Any]:
-    missing_modules = _missing_modules_from_sandbox_result(result)
-    if not missing_modules:
-        return result
-
-    enriched = dict(result)
-    metadata = dict(enriched.get("metadata") or {})
-    candidates = _sandbox_install_candidates(missing_modules)
-    metadata.update(
-        {
-            "errorType": "sandbox_missing_dependency",
-            "missingModules": missing_modules,
-            "installCandidates": candidates,
-            "allowedSandboxDependencies": sorted(SANDBOX_ALLOWED_DEPENDENCIES),
-            "sandboxImage": settings.SANDBOX_IMAGE,
-        }
-    )
-    enriched["metadata"] = metadata
-    enriched["errorType"] = "sandbox_missing_dependency"
-    return enriched
-
-
-def _format_sandbox_failure_message(result: dict[str, Any]) -> str:
-    message = result.get("error") or "Sandbox gate failed."
-    metadata = result.get("metadata") or {}
-    error_type = result.get("errorType") or metadata.get("errorType")
-    exit_code = result.get("exitCode")
-    if exit_code is None:
-        exit_code = metadata.get("containerExitCode")
-
-    summary = {
-        "errorType": error_type,
-        "exitCode": exit_code,
-        "timedOut": result.get("timedOut", False),
-        "resourceLimited": result.get("resourceLimited", False),
-    }
-    if error_type == "sandbox_missing_dependency":
-        missing_modules = metadata.get("missingModules") or []
-        install_candidates = metadata.get("installCandidates") or []
-        dependency_details = (
-            f"sandbox 원인=sandbox_missing_dependency, "
-            f"누락 모듈={missing_modules}, 설치 후보={install_candidates}, "
-            f"sandboxImage={metadata.get('sandboxImage') or settings.SANDBOX_IMAGE}. "
-            "requirements-sandbox.txt에 허용된 의존성을 추가하고 "
-            "Dockerfile.sandbox로 sandbox image를 수동 rebuild한 뒤 Core를 재시작해야 합니다. "
-            "ToolBuild 중에는 pip install이나 Docker build를 수행하지 않습니다. "
-        )
-    else:
-        dependency_details = ""
-    details = ", ".join(f"{key}={value}" for key, value in summary.items())
-    return (
-        "생성된 Tool 파일을 직접 실행하지 않고 Core sandbox gate에서 "
-        "컴파일/import/구조를 검증하는 중 실패했습니다. "
-        f"{dependency_details}{message} ({details})"
-    )
 
 
 def _is_tool_active_metadata(metadata: dict[str, Any]) -> bool:
@@ -1577,10 +1397,14 @@ async def create_tool_for_server(
             stage=exc.stage,
             tool_name=_safe_tool_name(request.tool_name),
             message=exc.message,
-            module_path=str(paths.module_path) if paths is not None and paths.module_path.exists() else None,
-            metadata_path=str(paths.metadata_path)
-            if paths is not None and paths.metadata_path.exists()
-            else None,
+            module_path=(
+                str(paths.module_path) if paths is not None and paths.module_path.exists() else None
+            ),
+            metadata_path=(
+                str(paths.metadata_path)
+                if paths is not None and paths.metadata_path.exists()
+                else None
+            ),
             errors=errors,
             trace_id=failed_metadata.get("latestTraceId"),
         )
@@ -1627,10 +1451,14 @@ async def create_tool_for_server(
             stage="unexpected",
             tool_name=_safe_tool_name(request.tool_name),
             message=f"Unexpected tool creation failure: {exc}",
-            module_path=str(paths.module_path) if paths is not None and paths.module_path.exists() else None,
-            metadata_path=str(paths.metadata_path)
-            if paths is not None and paths.metadata_path.exists()
-            else None,
+            module_path=(
+                str(paths.module_path) if paths is not None and paths.module_path.exists() else None
+            ),
+            metadata_path=(
+                str(paths.metadata_path)
+                if paths is not None and paths.metadata_path.exists()
+                else None
+            ),
             errors=errors,
             trace_id=failed_metadata.get("latestTraceId"),
         )
@@ -1661,8 +1489,12 @@ def read_project_tool_source(
             module_name=paths.module_name,
             module_path=str(paths.module_path),
             metadata_path=str(paths.metadata_path),
-            host_module_path=_host_custom_tool_path_hint(paths.module_path, storage_root=storage_root),
-            host_metadata_path=_host_custom_tool_path_hint(paths.metadata_path, storage_root=storage_root),
+            host_module_path=_host_custom_tool_path_hint(
+                paths.module_path, storage_root=storage_root
+            ),
+            host_metadata_path=_host_custom_tool_path_hint(
+                paths.metadata_path, storage_root=storage_root
+            ),
             source=source,
             metadata=metadata,
             permission_level=metadata.get("permissionLevel"),
@@ -1861,10 +1693,7 @@ async def update_project_tool_source(
                     f"readbackStatus={readback.status}",
                     f"readbackModulePath={readback.module_path}",
                     f"expectedModulePath={paths.module_path}",
-                    (
-                        "readbackActivationSource="
-                        f"{readback.metadata.get('activationSource')}"
-                    ),
+                    ("readbackActivationSource=" f"{readback.metadata.get('activationSource')}"),
                 ],
             )
 
@@ -1910,8 +1739,12 @@ async def update_project_tool_source(
             module_name=paths.module_name,
             module_path=str(paths.module_path),
             metadata_path=str(paths.metadata_path),
-            host_module_path=_host_custom_tool_path_hint(paths.module_path, storage_root=storage_root),
-            host_metadata_path=_host_custom_tool_path_hint(paths.metadata_path, storage_root=storage_root),
+            host_module_path=_host_custom_tool_path_hint(
+                paths.module_path, storage_root=storage_root
+            ),
+            host_metadata_path=_host_custom_tool_path_hint(
+                paths.metadata_path, storage_root=storage_root
+            ),
             source=sanitized_code,
             metadata=updated_metadata,
             permission_level=getattr(tool_class, "permission_level", permission_level),
@@ -1943,7 +1776,11 @@ async def update_project_tool_source(
             module_name=paths.module_name if paths is not None else str(module_name or ""),
             module_path=str(paths.module_path) if paths is not None else "",
             metadata_path=str(paths.metadata_path) if paths is not None else "",
-            metadata=read_tool_metadata(paths) if paths is not None and paths.metadata_path.exists() else {},
+            metadata=(
+                read_tool_metadata(paths)
+                if paths is not None and paths.metadata_path.exists()
+                else {}
+            ),
             errors=errors,
             sandbox_verified=False,
         )
@@ -1970,7 +1807,11 @@ async def update_project_tool_source(
             module_name=paths.module_name if paths is not None else str(module_name or ""),
             module_path=str(paths.module_path) if paths is not None else "",
             metadata_path=str(paths.metadata_path) if paths is not None else "",
-            metadata=read_tool_metadata(paths) if paths is not None and paths.metadata_path.exists() else {},
+            metadata=(
+                read_tool_metadata(paths)
+                if paths is not None and paths.metadata_path.exists()
+                else {}
+            ),
             errors=errors,
             sandbox_verified=False,
         )
@@ -1998,7 +1839,9 @@ def load_active_tools_for_project(
         try:
             paths, metadata = _paths_from_project_metadata(project_dir, metadata_path)
         except Exception as exc:
-            log.warning("Failed to read project tool metadata. meta=%s error=%s", metadata_path, exc)
+            log.warning(
+                "Failed to read project tool metadata. meta=%s error=%s", metadata_path, exc
+            )
             continue
         inventory_item = _project_tool_inventory_item(
             project_id=project_id,

@@ -35,7 +35,8 @@ public class ToolPlanRunStateService {
 		);
 
 		try {
-			return toolPlanRunStateStore.findByRunId(toolPlanRun.getRunId())
+			return toolPlanRunStateStore
+				.findByRunId(toolPlanRun.getRunId())
 				.map(ToolPlanRunStateResponse::createFrom)
 				.orElseGet(() -> ToolPlanRunStateResponse.createFallbackFrom(toolPlanRun));
 		} catch (RuntimeException exception) {

@@ -17,15 +17,25 @@ public class ToolGenerationKafkaProducer {
 	private final KafkaTemplate<String, Object> kafkaTemplate;
 	private final KafkaTopicProperties kafkaTopicProperties;
 
-	public CompletableFuture<SendResult<String, Object>> sendToolPlanRequest(String key, Object event) {
+	public CompletableFuture<SendResult<String, Object>> sendToolPlanRequest(
+		String key,
+		Object event
+	) {
 		return send(kafkaTopicProperties.toolPlanRequest(), key, event);
 	}
 
-	public CompletableFuture<SendResult<String, Object>> sendToolBuildRequest(String key, Object event) {
+	public CompletableFuture<SendResult<String, Object>> sendToolBuildRequest(
+		String key,
+		Object event
+	) {
 		return send(kafkaTopicProperties.toolBuildRequest(), key, event);
 	}
 
-	private CompletableFuture<SendResult<String, Object>> send(String topic, String key, Object event) {
+	private CompletableFuture<SendResult<String, Object>> send(
+		String topic,
+		String key,
+		Object event
+	) {
 		Objects.requireNonNull(event, "Kafka event must not be null");
 
 		CompletableFuture<SendResult<String, Object>> future = kafkaTemplate.send(topic, key, event);

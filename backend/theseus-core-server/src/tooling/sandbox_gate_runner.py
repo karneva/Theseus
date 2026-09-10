@@ -79,11 +79,15 @@ def _install_stubs() -> type:
 
     def require_remote_workspace(context):
         del context
-        raise RemoteWorkspaceRuntimeError("Remote Workspace is not available in sandbox validation.")
+        raise RemoteWorkspaceRuntimeError(
+            "Remote Workspace is not available in sandbox validation."
+        )
 
     def run_remote_command(*args, **kwargs):
         del args, kwargs
-        raise RemoteWorkspaceRuntimeError("Remote Workspace command execution is disabled in sandbox validation.")
+        raise RemoteWorkspaceRuntimeError(
+            "Remote Workspace command execution is disabled in sandbox validation."
+        )
 
     def register_remote_workspace_config(config):
         del config
@@ -122,8 +126,7 @@ def _find_tool_class(namespace: dict, base_tool_cls: type) -> type:
         )
         hint = ", ".join(defined_classes) if defined_classes else "none"
         raise RuntimeError(
-            "No BaseTool subclass was found in the generated module. "
-            f"Defined classes: {hint}."
+            "No BaseTool subclass was found in the generated module. " f"Defined classes: {hint}."
         )
     return candidates[0]
 
@@ -141,7 +144,8 @@ def main() -> int:
 
         tool_class = _find_tool_class(namespace, base_tool_cls)
         missing_attrs = [
-            attr for attr in ("name", "description", "input_model")
+            attr
+            for attr in ("name", "description", "input_model")
             if not getattr(tool_class, attr, None)
         ]
         if missing_attrs:

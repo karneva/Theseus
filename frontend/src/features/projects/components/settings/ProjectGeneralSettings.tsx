@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -35,7 +42,9 @@ export function ProjectGeneralSettings({ projectId }: ProjectGeneralSettingsProp
       }
     };
     fetchProjectData();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [projectId]);
 
   const handleSave = async () => {
@@ -62,13 +71,22 @@ export function ProjectGeneralSettings({ projectId }: ProjectGeneralSettingsProp
   return (
     <Card className="bg-slate-900/40 backdrop-blur-xl border-slate-800 shadow-2xl shadow-blue-500/5 overflow-x-auto">
       <CardHeader className="min-w-[500px]">
-        <CardTitle className="text-white font-['Space_Grotesk'] whitespace-nowrap">일반 설정</CardTitle>
-        <CardDescription className="text-slate-400 whitespace-nowrap">프로젝트의 기본 정보를 수정합니다.</CardDescription>
+        <CardTitle className="text-white font-['Space_Grotesk'] whitespace-nowrap">
+          일반 설정
+        </CardTitle>
+        <CardDescription className="text-slate-400 whitespace-nowrap">
+          프로젝트의 기본 정보를 수정합니다.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6 overflow-x-auto">
         <div className="min-w-[500px] space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="projectName" className="text-slate-300 font-medium tracking-wide uppercase text-[10px]">프로젝트 이름</Label>
+            <Label
+              htmlFor="projectName"
+              className="text-slate-300 font-medium tracking-wide uppercase text-[10px]"
+            >
+              프로젝트 이름
+            </Label>
             <Input
               id="projectName"
               value={name}
@@ -79,7 +97,12 @@ export function ProjectGeneralSettings({ projectId }: ProjectGeneralSettingsProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="projectDescription" className="text-slate-300 font-medium tracking-wide uppercase text-[10px]">프로젝트 설명</Label>
+            <Label
+              htmlFor="projectDescription"
+              className="text-slate-300 font-medium tracking-wide uppercase text-[10px]"
+            >
+              프로젝트 설명
+            </Label>
             <Textarea
               id="projectDescription"
               value={description}

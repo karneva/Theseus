@@ -2,10 +2,7 @@
   'use strict';
 
   function escHtml(s) {
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
   function escAttr(s) {
@@ -48,7 +45,7 @@
 
   function renderMarkdown(text) {
     const tokens = [];
-    const token = html => {
+    const token = (html) => {
       const key = `\u0000MD${tokens.length}\u0000`;
       tokens.push(html);
       return key;
@@ -60,15 +57,19 @@
       const label = escHtml(lang || 'code');
       return token(
         `<div class="code-block">` +
-        `<div class="code-header"><span class="code-lang">${label}</span>` +
-        `<button class="copy-btn" data-id="${id}">Copy</button></div>` +
-        `<pre id="${id}"><code>${escaped}</code></pre></div>`
+          `<div class="code-header"><span class="code-lang">${label}</span>` +
+          `<button class="copy-btn" data-id="${id}">Copy</button></div>` +
+          `<pre id="${id}"><code>${escaped}</code></pre></div>`,
       );
     });
 
-    text = text.replace(/`([^`\n]+)`/g, (_, code) => token(`<code class="inline-code">${escHtml(code)}</code>`));
+    text = text.replace(/`([^`\n]+)`/g, (_, code) =>
+      token(`<code class="inline-code">${escHtml(code)}</code>`),
+    );
 
-    text = text.replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/gi, (_, label, url) => token(linkHtml(url, label)));
+    text = text.replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/gi, (_, label, url) =>
+      token(linkHtml(url, label)),
+    );
 
     text = text.replace(/https?:\/\/[^\s<]+/gi, (rawUrl) => {
       const { url, trailing } = splitTrailingUrlPunctuation(rawUrl);
@@ -86,4 +87,4 @@
     escHtml,
     renderMarkdown,
   };
-}());
+})();

@@ -110,7 +110,9 @@ class ToolGenerationCompletedEvent(BaseModel):
     tool_id: int = Field(alias="toolId")
     assistant_message: AssistantMessagePayload = Field(alias="assistantMessage")
     tool_draft: ToolDraftResultPayload = Field(alias="toolDraft")
-    completed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), alias="completedAt")
+    completed_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), alias="completedAt"
+    )
 
 
 class ToolGenerationProgressEvent(BaseModel):
@@ -149,4 +151,6 @@ class ToolGenerationFailedEvent(BaseModel):
     tool_id: int = Field(alias="toolId")
     code: str
     message: str
-    failed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), alias="failedAt")
+    failed_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), alias="failedAt"
+    )

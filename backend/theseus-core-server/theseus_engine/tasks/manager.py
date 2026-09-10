@@ -253,9 +253,8 @@ class TheseusTaskManager:
 
         try:
             if IS_WINDOWS:
-                creationflags = (
-                    getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
-                    | getattr(subprocess, "CREATE_NO_WINDOW", 0)
+                creationflags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0) | getattr(
+                    subprocess, "CREATE_NO_WINDOW", 0
                 )
                 process = await asyncio.create_subprocess_exec(
                     "cmd.exe",
@@ -355,10 +354,7 @@ class TheseusTaskManager:
         tasks = list(self._tasks.values())
         if workspace is not None:
             workspace_key = _workspace_hash(workspace)
-            tasks = [
-                t for t in tasks
-                if t.cwd and _workspace_hash(t.cwd) == workspace_key
-            ]
+            tasks = [t for t in tasks if t.cwd and _workspace_hash(t.cwd) == workspace_key]
         for task in tasks:
             self._sync_task_liveness(task)
         if status:
@@ -509,20 +505,12 @@ class TheseusTaskManager:
             type=str(record.get("type") or "shell"),
             description=str(record.get("description") or ""),
             status=str(record.get("status") or "running"),
-            command=(
-                record.get("command")
-                if isinstance(record.get("command"), str)
-                else None
-            ),
+            command=(record.get("command") if isinstance(record.get("command"), str) else None),
             cwd=record_cwd,
             pid=int(record["pid"]) if isinstance(record.get("pid"), int) else None,
             created_at=str(record.get("createdAt") or _now_iso()),
             updated_at=str(record.get("updatedAt") or _now_iso()),
-            log_path=(
-                record.get("logPath")
-                if isinstance(record.get("logPath"), str)
-                else None
-            ),
+            log_path=(record.get("logPath") if isinstance(record.get("logPath"), str) else None),
             record_path=str(path),
             metadata=metadata,
         )
@@ -536,10 +524,7 @@ class TheseusTaskManager:
             if task._process.returncode is None:
                 return
             task.status = "completed" if task._process.returncode == 0 else "failed"
-        elif (
-            not _is_pid_running(task.pid)
-            or not _pid_matches_recorded_identity(task, task.pid)
-        ):
+        elif not _is_pid_running(task.pid) or not _pid_matches_recorded_identity(task, task.pid):
             task.status = "exited"
         else:
             return
@@ -549,11 +534,7 @@ class TheseusTaskManager:
     def _save_task_record(self, task: TaskInfo) -> None:
         if not task.cwd:
             return
-        path = (
-            Path(task.record_path)
-            if task.record_path
-            else _record_path(task.cwd, task.id)
-        )
+        path = Path(task.record_path) if task.record_path else _record_path(task.cwd, task.id)
         task.record_path = str(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         tmp = path.with_suffix(".json.tmp")
@@ -572,7 +553,8 @@ class TheseusTaskManager:
         if overflow <= 0:
             return
         removable = [
-            task_id for task_id, task in self._tasks.items()
+            task_id
+            for task_id, task in self._tasks.items()
             if task.status in {"completed", "failed", "stopped", "exited"}
         ]
         for task_id in removable[:overflow]:

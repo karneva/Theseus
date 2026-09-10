@@ -185,7 +185,9 @@ class CoreRunRepository:
         record.last_error = error
         self.db.commit()
 
-    def pending_events(self, limit: int = 50, *, publish_channel: str | None = None) -> list[CoreRunEvent]:
+    def pending_events(
+        self, limit: int = 50, *, publish_channel: str | None = None
+    ) -> list[CoreRunEvent]:
         stmt = (
             select(CoreRunEvent)
             .where(CoreRunEvent.publish_status.in_([EVENT_STATUS_PENDING, EVENT_STATUS_FAILED]))
@@ -205,7 +207,9 @@ class CoreRunRepository:
     def mark_failed(self, run_id: str, code: str, message: str) -> None:
         self._mark_terminal(run_id, RUN_STATUS_FAILED, code, message)
 
-    def _mark_terminal(self, run_id: str, status: str, code: str | None, message: str | None) -> None:
+    def _mark_terminal(
+        self, run_id: str, status: str, code: str | None, message: str | None
+    ) -> None:
         checkpoint = self.db.get(CoreRunCheckpoint, run_id)
         if checkpoint is None:
             return

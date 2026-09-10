@@ -62,10 +62,12 @@ export function ToolList() {
     try {
       const updatedTool = await toolApi.updateToolAccessLevel(projectId, tool.toolId, accessLevel);
       setTools((prevTools) =>
-        prevTools.map((item) => (item.toolId === updatedTool.toolId ? { ...item, ...updatedTool } : item))
+        prevTools.map((item) =>
+          item.toolId === updatedTool.toolId ? { ...item, ...updatedTool } : item,
+        ),
       );
       setSelectedTool((prevTool) =>
-        prevTool?.toolId === updatedTool.toolId ? { ...prevTool, ...updatedTool } : prevTool
+        prevTool?.toolId === updatedTool.toolId ? { ...prevTool, ...updatedTool } : prevTool,
       );
       toast.success('도구 접근 권한이 변경되었습니다.');
     } catch (error) {
@@ -92,9 +94,7 @@ export function ToolList() {
           <div className="flex-1 flex flex-col gap-8">
             {/* Page Header */}
             <div className="flex flex-col gap-3">
-              <h1 className="text-3xl font-bold text-slate-100 pt-5">
-                도구 목록
-              </h1>
+              <h1 className="text-3xl font-bold text-slate-100 pt-5">도구 목록</h1>
             </div>
 
             {/* Tool Grid */}
@@ -112,7 +112,9 @@ export function ToolList() {
                     onClick={() => handleToolClick(tool)}
                     canEditAccessLevel={canEditAccessLevel}
                     isUpdatingAccessLevel={updatingToolId === tool.toolId}
-                    onAccessLevelChange={(accessLevel) => handleAccessLevelChange(tool, accessLevel)}
+                    onAccessLevelChange={(accessLevel) =>
+                      handleAccessLevelChange(tool, accessLevel)
+                    }
                   />
                 ))}
               </div>
@@ -125,7 +127,7 @@ export function ToolList() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
                 className="text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 transition-all"
               >
@@ -138,10 +140,11 @@ export function ToolList() {
                   <button
                     key={pageNum}
                     onClick={() => setCurrentPage(pageNum)}
-                    className={`w-8 h-8 rounded-md text-sm font-medium transition-all ${currentPage === pageNum
-                      ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]'
-                      : 'text-slate-500 hover:text-slate-200 hover:bg-slate-800'
-                      }`}
+                    className={`w-8 h-8 rounded-md text-sm font-medium transition-all ${
+                      currentPage === pageNum
+                        ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]'
+                        : 'text-slate-500 hover:text-slate-200 hover:bg-slate-800'
+                    }`}
                   >
                     {pageNum}
                   </button>
@@ -151,7 +154,7 @@ export function ToolList() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
                 className="text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 transition-all"
               >
@@ -168,10 +171,9 @@ export function ToolList() {
           projectId={projectId}
           toolItem={selectedTool}
           onClose={() => setSelectedTool(null)}
-          onDeleteSuccess={() => setFetchTrigger(prev => prev + 1)}
+          onDeleteSuccess={() => setFetchTrigger((prev) => prev + 1)}
         />
       )}
     </>
   );
 }
-

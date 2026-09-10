@@ -5,7 +5,6 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-
 REMOTE_WORKSPACE_REDACTED_VALUE = "***"
 ACTIVE_REMOTE_WORKSPACE_STATUSES = frozenset({"ACTIVE"})
 
@@ -75,9 +74,7 @@ class RemoteWorkspaceConnectionConfig(BaseModel):
 
         payload = self.model_dump(mode="json", by_alias=by_alias)
         private_key_field = "privateKeyPath" if by_alias else "private_key_path"
-        payload["password"] = (
-            REMOTE_WORKSPACE_REDACTED_VALUE if self.password else None
-        )
+        payload["password"] = REMOTE_WORKSPACE_REDACTED_VALUE if self.password else None
         payload[private_key_field] = (
             REMOTE_WORKSPACE_REDACTED_VALUE if self.private_key_path else None
         )

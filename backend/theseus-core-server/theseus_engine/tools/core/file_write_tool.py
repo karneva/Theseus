@@ -13,12 +13,18 @@ from theseus_engine.tools.core.edit_safety import (
     render_success_message,
     validate_text_update,
 )
-from theseus_engine.tools.core.file_utils import _resolve_path, _check_path_security, _strip_markdown_links
+from theseus_engine.tools.core.file_utils import (
+    _resolve_path,
+    _check_path_security,
+    _strip_markdown_links,
+)
 
 log = logging.getLogger(__name__)
 
+
 class WriteFileInput(BaseModel):
     """Input for creating/overwriting a file."""
+
     path: str = Field(description="Path of the file to write")
     content: str = Field(description="Full text content for the file")
     allow_overwrite: bool = Field(
@@ -34,8 +40,10 @@ class WriteFileInput(BaseModel):
         description="Strings that must remain present after the write, such as values the user said not to change.",
     )
 
+
 class WriteFileTool(BaseTool):
     """Creates or overwrites a file in the workspace."""
+
     name = "write_file"
     description = (
         "Create a new file. Existing file overwrite is blocked unless the user explicitly "
@@ -50,7 +58,7 @@ class WriteFileTool(BaseTool):
 
     async def execute(self, arguments: WriteFileInput, context: ToolExecutionContext) -> ToolResult:
         path = _resolve_path(context.cwd, arguments.path)
-        
+
         security_err = _check_path_security(path, context.cwd)
         if security_err:
             return ToolResult(output=security_err, is_error=True)

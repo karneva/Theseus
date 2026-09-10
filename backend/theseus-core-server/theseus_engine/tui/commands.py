@@ -9,6 +9,7 @@ from typing import Any, Awaitable, Callable, Optional
 @dataclass
 class CommandResult:
     """슬래시 커맨드 핸들러의 반환값."""
+
     message: str = ""
     exit_app: bool = False
 
@@ -16,6 +17,7 @@ class CommandResult:
 @dataclass
 class SlashCommand:
     """등록된 슬래시 커맨드 정의."""
+
     name: str
     description: str
     handler: Callable[[str, Any], Awaitable[CommandResult]]

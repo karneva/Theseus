@@ -35,7 +35,7 @@ export function isTransientSystemText(text) {
     'Dependency installation cancelled',
     'No install candidates',
     'Python path is not explicitly configured',
-  ].some(fragment => value.includes(fragment));
+  ].some((fragment) => value.includes(fragment));
 }
 
 export function shouldPersistMessage(role, text, save) {
@@ -87,13 +87,13 @@ export function createTypingIndicator(messagesEl) {
 /** 메시지 영역의 모든 retry banner를 제거. runner가 ready/running 상태가 되었을 때 호출. */
 export function clearRetryBanners(messagesEl) {
   if (!messagesEl) return;
-  messagesEl.querySelectorAll('.retry-banner').forEach(el => el.remove());
+  messagesEl.querySelectorAll('.retry-banner').forEach((el) => el.remove());
 }
 
 /** runner 상태/진단성 system message는 runner가 정상화되면 채팅 흐름에서 제거한다. */
 export function clearTransientSystemMessages(messagesEl) {
   if (!messagesEl) return;
-  messagesEl.querySelectorAll('.message.system').forEach(el => {
+  messagesEl.querySelectorAll('.message.system').forEach((el) => {
     const text = el.querySelector('.body')?.textContent || el.textContent || '';
     if (isTransientSystemText(text)) el.remove();
   });

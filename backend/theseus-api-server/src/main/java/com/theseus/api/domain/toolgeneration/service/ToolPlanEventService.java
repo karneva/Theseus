@@ -100,12 +100,21 @@ public class ToolPlanEventService {
 	public void handleCompleted(ToolPlanEvent event) {
 		toolPlanRunRepository.findByRunIdForUpdate(event.getRunId()).ifPresentOrElse(
 			toolPlanRun -> {
-				if (!hasSameProjectAndSession(event, toolPlanRun.getProject().getId(), toolPlanRun.getChatSession().getId())) {
+				if (
+					!hasSameProjectAndSession(
+						event,
+						toolPlanRun.getProject().getId(),
+						toolPlanRun.getChatSession().getId()
+					)
+				) {
 					log.warn(">>>> ToolPlan completed event target mismatch. runId={}", event.getRunId());
 					return;
 				}
 				if (toolPlanRun.isFinished()) {
-					log.info(">>>> ToolPlan completed event skipped by terminal run. runId={}", event.getRunId());
+					log.info(
+						">>>> ToolPlan completed event skipped by terminal run. runId={}",
+						event.getRunId()
+					);
 					return;
 				}
 				if (shouldSkipProcessedEventSequence(event, toolPlanRun, "completed")) {
@@ -124,20 +133,22 @@ public class ToolPlanEventService {
 				ToolPlanGroup planGroup = resolvePlanGroup(toolPlanRun);
 				supersedeLatestReviewPlan(planGroup);
 
-				ToolPlan toolPlan = toolPlanRepository.save(ToolPlan.builder()
-					.planGroup(planGroup)
-					.project(toolPlanRun.getProject())
-					.chatSession(toolPlanRun.getChatSession())
-					.createdByProjectMember(toolPlanRun.getRequestedByProjectMember())
-					.baseToolPlan(toolPlanRun.getBaseToolPlan())
-					.planVersion(resolveNextPlanVersion(planGroup))
-					.status(ToolPlanStatus.REVIEW)
-					.mode(toolPlanRun.getMode())
-					.requestedPrompt(resolveRequestedPrompt(toolPlanRun.getRequestPayloadJson()))
-					.rawMarkdown(requireText(toolPlanPayload.getRawMarkdown()))
-					.structuredPlanJson(writeJsonNodeAsString(toolPlanPayload.getStructuredPlanJson()))
-					.planSnapshot(writeJsonNodeAsString(toolPlanPayload.getPlanSnapshot()))
-					.build());
+				ToolPlan toolPlan = toolPlanRepository.save(
+					ToolPlan.builder()
+						.planGroup(planGroup)
+						.project(toolPlanRun.getProject())
+						.chatSession(toolPlanRun.getChatSession())
+						.createdByProjectMember(toolPlanRun.getRequestedByProjectMember())
+						.baseToolPlan(toolPlanRun.getBaseToolPlan())
+						.planVersion(resolveNextPlanVersion(planGroup))
+						.status(ToolPlanStatus.REVIEW)
+						.mode(toolPlanRun.getMode())
+						.requestedPrompt(resolveRequestedPrompt(toolPlanRun.getRequestPayloadJson()))
+						.rawMarkdown(requireText(toolPlanPayload.getRawMarkdown()))
+						.structuredPlanJson(writeJsonNodeAsString(toolPlanPayload.getStructuredPlanJson()))
+						.planSnapshot(writeJsonNodeAsString(toolPlanPayload.getPlanSnapshot()))
+						.build()
+				);
 
 				planGroup.markReview(toolPlan);
 				toolPlanRun.complete(toolPlan, parseCompletedAt(event));
@@ -152,7 +163,9 @@ public class ToolPlanEventService {
 					assistantContent,
 					createIdempotencyKey(event, "assistant")
 				);
-				toolPlanRunStatePublisher.publishCompletedAfterCommit(createCompletedState(event, toolPlanRun, toolPlan));
+				toolPlanRunStatePublisher.publishCompletedAfterCommit(
+					createCompletedState(event, toolPlanRun, toolPlan)
+				);
 
 				log.info(
 					">>>> ToolPlan completed event handled. runId={}, toolPlanId={}, version={}",
@@ -172,12 +185,21 @@ public class ToolPlanEventService {
 	public void handleSkipped(ToolPlanEvent event) {
 		toolPlanRunRepository.findByRunIdForUpdate(event.getRunId()).ifPresentOrElse(
 			toolPlanRun -> {
-				if (!hasSameProjectAndSession(event, toolPlanRun.getProject().getId(), toolPlanRun.getChatSession().getId())) {
+				if (
+					!hasSameProjectAndSession(
+						event,
+						toolPlanRun.getProject().getId(),
+						toolPlanRun.getChatSession().getId()
+					)
+				) {
 					log.warn(">>>> ToolPlan skipped event target mismatch. runId={}", event.getRunId());
 					return;
 				}
 				if (toolPlanRun.isFinished()) {
-					log.info(">>>> ToolPlan skipped event skipped by terminal run. runId={}", event.getRunId());
+					log.info(
+						">>>> ToolPlan skipped event skipped by terminal run. runId={}",
+						event.getRunId()
+					);
 					return;
 				}
 				if (shouldSkipProcessedEventSequence(event, toolPlanRun, "skipped")) {
@@ -185,7 +207,10 @@ public class ToolPlanEventService {
 				}
 
 				ToolPlanAssistantMessagePayload assistantMessage = requireAssistantMessage(event);
-				ChatMessageType messageType = resolveMessageType(assistantMessage.getMessageType(), ChatMessageType.CHAT);
+				ChatMessageType messageType = resolveMessageType(
+					assistantMessage.getMessageType(),
+					ChatMessageType.CHAT
+				);
 				ChatMessageContentType contentType = resolveContentType(assistantMessage.getContentType());
 				String content = requireText(assistantMessage.getContent());
 
@@ -201,7 +226,9 @@ public class ToolPlanEventService {
 					content,
 					createIdempotencyKey(event, "assistant")
 				);
-				toolPlanRunStatePublisher.publishSkippedAfterCommit(createSkippedState(event, toolPlanRun, content));
+				toolPlanRunStatePublisher.publishSkippedAfterCommit(
+					createSkippedState(event, toolPlanRun, content)
+				);
 
 				log.info(">>>> ToolPlan skipped event handled. runId={}", event.getRunId());
 			},
@@ -216,12 +243,21 @@ public class ToolPlanEventService {
 	public void handleFailed(ToolPlanEvent event) {
 		toolPlanRunRepository.findByRunIdForUpdate(event.getRunId()).ifPresentOrElse(
 			toolPlanRun -> {
-				if (!hasSameProjectAndSession(event, toolPlanRun.getProject().getId(), toolPlanRun.getChatSession().getId())) {
+				if (
+					!hasSameProjectAndSession(
+						event,
+						toolPlanRun.getProject().getId(),
+						toolPlanRun.getChatSession().getId()
+					)
+				) {
 					log.warn(">>>> ToolPlan failed event target mismatch. runId={}", event.getRunId());
 					return;
 				}
 				if (toolPlanRun.isFinished()) {
-					log.info(">>>> ToolPlan failed event skipped by terminal run. runId={}", event.getRunId());
+					log.info(
+						">>>> ToolPlan failed event skipped by terminal run. runId={}",
+						event.getRunId()
+					);
 					return;
 				}
 				if (shouldSkipProcessedEventSequence(event, toolPlanRun, "failed")) {
@@ -242,7 +278,9 @@ public class ToolPlanEventService {
 					createFailedNoticeMessage(code, message),
 					createIdempotencyKey(event, "system")
 				);
-				toolPlanRunStatePublisher.publishFailedAfterCommit(createFailedState(event, toolPlanRun, code, message));
+				toolPlanRunStatePublisher.publishFailedAfterCommit(
+					createFailedState(event, toolPlanRun, code, message)
+				);
 
 				log.warn(">>>> ToolPlan failed event handled. runId={}, code={}", event.getRunId(), code);
 			},
@@ -250,13 +288,27 @@ public class ToolPlanEventService {
 		);
 	}
 
-	private boolean shouldSkipStateEvent(ToolPlanEvent event, ToolPlanRun toolPlanRun, String eventName) {
-		if (!hasSameProjectAndSession(event, toolPlanRun.getProject().getId(), toolPlanRun.getChatSession().getId())) {
+	private boolean shouldSkipStateEvent(
+		ToolPlanEvent event,
+		ToolPlanRun toolPlanRun,
+		String eventName
+	) {
+		if (
+			!hasSameProjectAndSession(
+				event,
+				toolPlanRun.getProject().getId(),
+				toolPlanRun.getChatSession().getId()
+			)
+		) {
 			log.warn(">>>> ToolPlan {} event target mismatch. runId={}", eventName, event.getRunId());
 			return true;
 		}
 		if (toolPlanRun.isFinished()) {
-			log.info(">>>> ToolPlan {} event skipped by terminal run. runId={}", eventName, event.getRunId());
+			log.info(
+				">>>> ToolPlan {} event skipped by terminal run. runId={}",
+				eventName,
+				event.getRunId()
+			);
 			return true;
 		}
 		if (shouldSkipProcessedEventSequence(event, toolPlanRun, eventName)) {
@@ -265,7 +317,11 @@ public class ToolPlanEventService {
 		return false;
 	}
 
-	private boolean shouldSkipProcessedEventSequence(ToolPlanEvent event, ToolPlanRun toolPlanRun, String eventName) {
+	private boolean shouldSkipProcessedEventSequence(
+		ToolPlanEvent event,
+		ToolPlanRun toolPlanRun,
+		String eventName
+	) {
 		if (!toolPlanRun.hasProcessedEventSequence(event.getEventSequence())) {
 			return false;
 		}
@@ -297,7 +353,11 @@ public class ToolPlanEventService {
 			.build();
 	}
 
-	private ToolPlanRunState createCompletedState(ToolPlanEvent event, ToolPlanRun toolPlanRun, ToolPlan toolPlan) {
+	private ToolPlanRunState createCompletedState(
+		ToolPlanEvent event,
+		ToolPlanRun toolPlanRun,
+		ToolPlan toolPlan
+	) {
 		return createBaseState(event, toolPlanRun)
 			.toolPlanGroupId(toolPlan.getPlanGroup().getId())
 			.toolPlanId(toolPlan.getId())
@@ -308,7 +368,11 @@ public class ToolPlanEventService {
 			.build();
 	}
 
-	private ToolPlanRunState createSkippedState(ToolPlanEvent event, ToolPlanRun toolPlanRun, String message) {
+	private ToolPlanRunState createSkippedState(
+		ToolPlanEvent event,
+		ToolPlanRun toolPlanRun,
+		String message
+	) {
 		return createBaseState(event, toolPlanRun)
 			.eventType(EVENT_TYPE_SKIPPED)
 			.status(STATUS_SKIPPED)
@@ -333,7 +397,10 @@ public class ToolPlanEventService {
 			.build();
 	}
 
-	private ToolPlanRunState.ToolPlanRunStateBuilder createBaseState(ToolPlanEvent event, ToolPlanRun toolPlanRun) {
+	private ToolPlanRunState.ToolPlanRunStateBuilder createBaseState(
+		ToolPlanEvent event,
+		ToolPlanRun toolPlanRun
+	) {
 		ToolPlan baseToolPlan = toolPlanRun.getBaseToolPlan();
 		ToolPlanGroup planGroup = toolPlanRun.getPlanGroup();
 		if (planGroup == null && baseToolPlan != null) {
@@ -358,11 +425,13 @@ public class ToolPlanEventService {
 			return toolPlanRun.getBaseToolPlan().getPlanGroup();
 		}
 
-		return toolPlanGroupRepository.save(ToolPlanGroup.builder()
-			.project(toolPlanRun.getProject())
-			.chatSession(toolPlanRun.getChatSession())
-			.createdByProjectMember(toolPlanRun.getRequestedByProjectMember())
-			.build());
+		return toolPlanGroupRepository.save(
+			ToolPlanGroup.builder()
+				.project(toolPlanRun.getProject())
+				.chatSession(toolPlanRun.getChatSession())
+				.createdByProjectMember(toolPlanRun.getRequestedByProjectMember())
+				.build()
+		);
 	}
 
 	private void supersedeLatestReviewPlan(ToolPlanGroup planGroup) {
@@ -370,8 +439,10 @@ public class ToolPlanEventService {
 		if (latestToolPlan == null) {
 			return;
 		}
-		if (ToolPlanStatus.REVIEW.equals(latestToolPlan.getStatus())
-			|| ToolPlanStatus.REJECTED.equals(latestToolPlan.getStatus())) {
+		if (
+			ToolPlanStatus.REVIEW.equals(latestToolPlan.getStatus()) ||
+			ToolPlanStatus.REJECTED.equals(latestToolPlan.getStatus())
+		) {
 			latestToolPlan.supersede();
 		}
 	}
@@ -399,7 +470,10 @@ public class ToolPlanEventService {
 		return event.getAssistantMessage();
 	}
 
-	private ChatMessageType resolveMessageType(String messageType, ChatMessageType expectedMessageType) {
+	private ChatMessageType resolveMessageType(
+		String messageType,
+		ChatMessageType expectedMessageType
+	) {
 		if (messageType == null || messageType.isBlank()) {
 			throw BusinessException.of(ErrorCode.TOOL_PLAN_EVENT_INVALID);
 		}
@@ -456,9 +530,15 @@ public class ToolPlanEventService {
 		}
 	}
 
-	private boolean hasSameProjectAndSession(ToolPlanEvent event, Long projectId, Long chatSessionId) {
-		return Objects.equals(event.getProjectId(), projectId)
-			&& Objects.equals(event.getChatSessionId(), chatSessionId);
+	private boolean hasSameProjectAndSession(
+		ToolPlanEvent event,
+		Long projectId,
+		Long chatSessionId
+	) {
+		return (
+			Objects.equals(event.getProjectId(), projectId) &&
+			Objects.equals(event.getChatSessionId(), chatSessionId)
+		);
 	}
 
 	private LocalDateTime parseCompletedAt(ToolPlanEvent event) {

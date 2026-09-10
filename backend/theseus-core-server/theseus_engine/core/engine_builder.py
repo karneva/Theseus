@@ -28,7 +28,9 @@ from theseus_engine.wrappers.hooks.theseus_hook_executor import (
     TheseusHookExecutor,
 )
 from theseus_engine.observability.tracer import is_tracing_enabled
-from theseus_engine.observability.stats import SessionStats  # noqa: F401 (reset_stats 경로에서 사용)
+from theseus_engine.observability.stats import (
+    SessionStats,
+)  # noqa: F401 (reset_stats 경로에서 사용)
 from theseus_engine.engine.cost_tracker import CostTracker
 from theseus_engine.memory.scoped_memory import ScopedMemory
 from theseus_engine.core.tool_retriever import ToolRetriever, build_retrieved_registry
@@ -183,8 +185,10 @@ async def setup_engine(
                 print(f"✅ RAG 도구 선택 성공 ({similarity_added}개 유사도 매칭)")
         except Exception as _e:
             import logging as _logging
+
             _logging.getLogger(__name__).warning(
-                "[ToolRetriever] 도구 검색 실패, 전체 레지스트리 사용: %s", _e,
+                "[ToolRetriever] 도구 검색 실패, 전체 레지스트리 사용: %s",
+                _e,
             )
             print("⚠️ 도구 검색 중 오류 발생. 전체 레지스트리를 사용합니다.")
             rag_failed = True
@@ -192,9 +196,12 @@ async def setup_engine(
 
     # Theseus 자체 PermissionSettings 사용
     from theseus_engine.models.rbac import TheseusPermissionSettings
+
     settings = TheseusPermissionSettings()
     permission_checker = TheseusPermissionChecker(
-        settings, user_level, project_tool_permissions,
+        settings,
+        user_level,
+        project_tool_permissions,
         require_human_confirm=False,
     )
 
@@ -279,9 +286,7 @@ async def setup_engine(
             "user_level": user_level,
             "agent_mode": sm.mode.value if hasattr(sm, "mode") else "normal",
             "plan_phase": (
-                sm.plan_phase.value
-                if getattr(sm, "plan_phase", None) is not None
-                else None
+                sm.plan_phase.value if getattr(sm, "plan_phase", None) is not None else None
             ),
             "project_id": project_id,
             "actor_role": actor_role,
@@ -289,16 +294,18 @@ async def setup_engine(
             # Kafka 실행 추적 ID — ToolExecutionContext.run_id/tool_draft_id로 전달됨
             "run_id": run_id,
             "tool_draft_id": tool_draft_id,
-        }
+        },
     )
 
     if is_tracing_enabled():
         import logging
+
         _log = logging.getLogger(__name__)
         _log.info(
-            "[Observability] LangSmith 트레이싱 활성화. "
-            "RBAC Lv.%d | Model: %s | Mode: %s",
-            user_level, model_name, sm.mode.value,
+            "[Observability] LangSmith 트레이싱 활성화. " "RBAC Lv.%d | Model: %s | Mode: %s",
+            user_level,
+            model_name,
+            sm.mode.value,
         )
 
     return engine, full_registry

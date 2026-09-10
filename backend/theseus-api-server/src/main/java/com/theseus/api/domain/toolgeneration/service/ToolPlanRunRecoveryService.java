@@ -78,9 +78,11 @@ public class ToolPlanRunRecoveryService {
 
 	private void failBuildGroupIfNeeded(ToolPlanRun toolPlanRun) {
 		ToolPlanGroup planGroup = toolPlanRun.getPlanGroup();
-		if (!ToolPlanRunRequestType.BUILD_TOOL.equals(toolPlanRun.getRequestType())
-			|| planGroup == null
-			|| planGroup.isFinished()) {
+		if (
+			!ToolPlanRunRequestType.BUILD_TOOL.equals(toolPlanRun.getRequestType()) ||
+			planGroup == null ||
+			planGroup.isFinished()
+		) {
 			return;
 		}
 

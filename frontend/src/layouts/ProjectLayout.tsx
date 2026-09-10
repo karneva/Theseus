@@ -15,7 +15,7 @@ export default function ProjectLayout() {
     let cancelled = false;
     const fetchProjectInfo = async () => {
       if (!projectId) return;
-      
+
       setIsLoading(true);
       try {
         const data = await projectApi.getProjectMe(projectId);
@@ -25,7 +25,11 @@ export default function ProjectLayout() {
         if (!cancelled) {
           console.error('Failed to fetch project info:', err);
           const axiosErr = err as { response?: { data?: { message?: string } }; message?: string };
-          setError(axiosErr.response?.data?.message || axiosErr.message || '프로젝트 정보를 불러오는데 실패했습니다.');
+          setError(
+            axiosErr.response?.data?.message ||
+              axiosErr.message ||
+              '프로젝트 정보를 불러오는데 실패했습니다.',
+          );
         }
       }
     };

@@ -4,7 +4,14 @@ import * as vscode from 'vscode';
 
 import { TheseusSessionManager } from '../../session/SessionManager';
 import type { JsonObject, RunnerEvent } from '../../shared/protocol';
-import { getCoreRoot, getCustomToolSearchRoots, getPythonPath, getRunnerPath, getRuntimeModeSetting, getWorkspaceCwd } from '../../workspace/WorkspaceContext';
+import {
+  getCoreRoot,
+  getCustomToolSearchRoots,
+  getPythonPath,
+  getRunnerPath,
+  getRuntimeModeSetting,
+  getWorkspaceCwd,
+} from '../../workspace/WorkspaceContext';
 
 function getExtensionBuildInfo(context: vscode.ExtensionContext): JsonObject {
   const packageJson = context.extension.packageJSON as Record<string, unknown> | undefined;
@@ -69,7 +76,9 @@ export class HealthController {
         {
           label: 'Core path',
           status: coreRoot ? 'ok' : usingBundledRunner ? 'warn' : 'error',
-          detail: coreRoot || (usingBundledRunner ? 'bundled runner 사용 중' : 'theseus.corePath를 설정하세요.'),
+          detail:
+            coreRoot ||
+            (usingBundledRunner ? 'bundled runner 사용 중' : 'theseus.corePath를 설정하세요.'),
         },
         {
           label: 'Workspace',

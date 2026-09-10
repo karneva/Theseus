@@ -10,7 +10,6 @@ import com.theseus.api.domain.chat.entity.ChatSession;
 import com.theseus.api.domain.chat.repository.ChatSessionRepository;
 import com.theseus.api.domain.project.entity.Project;
 import com.theseus.api.domain.project.entity.ProjectMember;
-import com.theseus.api.domain.project.entity.ProjectMemberStatus;
 import com.theseus.api.domain.project.repository.ProjectMemberRepository;
 import com.theseus.api.domain.project.repository.ProjectRepository;
 import com.theseus.api.domain.remoteworkspace.entity.RemoteWorkspaceStatus;
@@ -78,13 +77,8 @@ public class ChatStreamService {
 		validateAgentModePermission(request.getMode(), projectMember);
 		validateRemoteWorkspaceIfRequested(project, request.getRemoteWorkspaceId());
 
-		return outputStream -> proxyCoreStream(
-			outputStream,
-			projectId,
-			sessionId,
-			request,
-			authorizationHeader
-		);
+		return outputStream ->
+			proxyCoreStream(outputStream, projectId, sessionId, request, authorizationHeader);
 	}
 
 	private void proxyCoreStream(
@@ -94,14 +88,12 @@ public class ChatStreamService {
 		ChatStreamRequest request,
 		String authorizationHeader
 	) throws IOException {
-		String requestBody = objectMapper.writeValueAsString(createCoreStreamRequestPayload(
-			projectId,
-			sessionId,
-			request
-		));
+		String requestBody = objectMapper.writeValueAsString(
+			createCoreStreamRequestPayload(projectId, sessionId, request)
+		);
 		HttpRequest coreRequest = HttpRequest.newBuilder(
-				coreStreamProperties.streamUri(projectId, sessionId)
-			)
+			coreStreamProperties.streamUri(projectId, sessionId)
+		)
 			.version(HttpClient.Version.HTTP_1_1)
 			.timeout(CORE_STREAM_TIMEOUT)
 			.header(HttpHeaders.ACCEPT, MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -111,7 +103,10 @@ public class ChatStreamService {
 			.build();
 
 		try {
-			HttpResponse<InputStream> response = httpClient.send(coreRequest, HttpResponse.BodyHandlers.ofInputStream());
+			HttpResponse<InputStream> response = httpClient.send(
+				coreRequest,
+				HttpResponse.BodyHandlers.ofInputStream()
+			);
 			if (response.statusCode() < 200 || response.statusCode() >= 300) {
 				String errorBodyPreview = readCoreErrorBodyPreview(response.body());
 				log.warn(
@@ -141,13 +136,18 @@ public class ChatStreamService {
 			writeSseEvent(outputStream, "error", Map.of("message", "Core chat stream was interrupted."));
 		} catch (IOException exception) {
 			log.warn(">>>> Core chat stream proxy failed.", exception);
-			writeSseEvent(outputStream, "error", Map.of("message", "Core chat stream connection failed."));
+			writeSseEvent(
+				outputStream,
+				"error",
+				Map.of("message", "Core chat stream connection failed.")
+			);
 		}
 	}
 
-	private void writeSseEvent(OutputStream outputStream, String eventType, Map<String, Object> data) throws IOException {
-		String payload = "event: " + eventType + "\n"
-			+ "data: " + objectMapper.writeValueAsString(data) + "\n\n";
+	private void writeSseEvent(OutputStream outputStream, String eventType, Map<String, Object> data)
+		throws IOException {
+		String payload =
+			"event: " + eventType + "\n" + "data: " + objectMapper.writeValueAsString(data) + "\n\n";
 		outputStream.write(payload.getBytes(StandardCharsets.UTF_8));
 		outputStream.flush();
 	}
@@ -208,28 +208,36 @@ public class ChatStreamService {
 			throw BusinessException.of(ErrorCode.UNAUTHORIZED);
 		}
 
-		return userRepository.findById(currentUser.userId())
+		return userRepository
+			.findById(currentUser.userId())
 			.orElseThrow(() -> BusinessException.of(ErrorCode.USER_NOT_FOUND));
 	}
 
 	private Project getProjectEntity(Long projectId) {
-		return projectRepository.findById(projectId)
+		return projectRepository
+			.findById(projectId)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_NOT_FOUND));
 	}
 
 	private ProjectMember getActiveProjectMember(Project project, User user) {
-		ProjectMember projectMember = projectMemberRepository.findByProjectAndUser(project, user)
+		ProjectMember projectMember = projectMemberRepository
+			.findByProjectAndUser(project, user)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_MEMBER_PERMISSION_REQUIRED));
 
-		if (!ProjectMemberStatus.IN_PROGRESS.equals(projectMember.getStatus())) {
+		if (!projectMember.isActive()) {
 			throw BusinessException.of(ErrorCode.ACTIVE_PROJECT_MEMBER_REQUIRED);
 		}
 
 		return projectMember;
 	}
 
-	private ChatSession getAccessibleChatSession(Long sessionId, Project project, ProjectMember projectMember) {
-		return chatSessionRepository.findByIdAndProjectAndProjectMember(sessionId, project, projectMember)
+	private ChatSession getAccessibleChatSession(
+		Long sessionId,
+		Project project,
+		ProjectMember projectMember
+	) {
+		return chatSessionRepository
+			.findByIdAndProjectAndProjectMember(sessionId, project, projectMember)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.CHAT_SESSION_NOT_FOUND));
 	}
 
@@ -247,10 +255,8 @@ public class ChatStreamService {
 			return;
 		}
 
-		remoteWorkspaceRepository.findByIdAndProjectAndStatusNot(
-			remoteWorkspaceId,
-			project,
-			RemoteWorkspaceStatus.DELETED
-		).orElseThrow(() -> BusinessException.of(ErrorCode.REMOTE_WORKSPACE_NOT_FOUND));
+		remoteWorkspaceRepository
+			.findByIdAndProjectAndStatusNot(remoteWorkspaceId, project, RemoteWorkspaceStatus.DELETED)
+			.orElseThrow(() -> BusinessException.of(ErrorCode.REMOTE_WORKSPACE_NOT_FOUND));
 	}
 }

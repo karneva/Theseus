@@ -154,10 +154,7 @@ def merge_feedback_into_examples(
                 combined.append(q)
         merged[tool] = combined[:max_per_tool]
 
-    added = sum(
-        len(merged.get(t, [])) - len(base_examples.get(t, []))
-        for t in feedback
-    )
+    added = sum(len(merged.get(t, [])) - len(base_examples.get(t, [])) for t in feedback)
     log.info("[ToolUsageLogger] 피드백 병합 완료: +%d 쿼리 보강", added)
     return merged
 

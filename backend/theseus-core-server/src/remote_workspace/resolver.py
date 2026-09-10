@@ -58,9 +58,7 @@ class RemoteWorkspaceResolver:
                 remote_workspace_id,
                 response.status_code,
             )
-            raise RemoteWorkspaceResolveError(
-                "Remote Workspace config resolver returned an error."
-            )
+            raise RemoteWorkspaceResolveError("Remote Workspace config resolver returned an error.")
 
         try:
             resolved_payload = unwrap_api_response(response.json())

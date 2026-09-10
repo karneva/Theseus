@@ -30,9 +30,7 @@ log = logging.getLogger(__name__)
 class AgentInput(BaseModel):
     """Arguments for spawning a sub-agent."""
 
-    description: str = Field(
-        description="Short description of the delegated task"
-    )
+    description: str = Field(description="Short description of the delegated task")
     prompt: str = Field(
         description=(
             "Full, detailed prompt for the sub-agent. "
@@ -78,9 +76,7 @@ class AgentTool(BaseTool):
     input_model = AgentInput
     permission_level = 3
 
-    async def execute(
-        self, arguments: AgentInput, context: ToolExecutionContext
-    ) -> ToolResult:
+    async def execute(self, arguments: AgentInput, context: ToolExecutionContext) -> ToolResult:
         manager = get_task_manager()
         cwd = str(context.cwd)
 
@@ -108,6 +104,7 @@ class AgentTool(BaseTool):
         # 프롬프트를 임시 파일로 저장해 셸 인젝션 방지
         # (python -c "..." 인라인 문자열 삽입 시 메타문자 이스케이프 불가)
         import tempfile, json as _json
+
         prompt_file = tempfile.NamedTemporaryFile(
             mode="w", suffix=".json", delete=False, encoding="utf-8"
         )
@@ -157,7 +154,10 @@ class AgentTool(BaseTool):
 
             log.info(
                 "[AgentTool] Sub-agent spawned: task=%s, rbac=%d (parent=%d), model=%s",
-                task.id, sub_rbac, parent_rbac, model,
+                task.id,
+                sub_rbac,
+                parent_rbac,
+                model,
             )
 
             return ToolResult(

@@ -1,5 +1,4 @@
-import { apiClient } from '@/api/client';
-import type { ApiResponse } from '@/api/auth';
+import { http } from '@/api/http';
 import type {
   RemoteWorkspaceConnectionTestResponse,
   RemoteWorkspaceCreateRequest,
@@ -8,34 +7,25 @@ import type {
 
 export const remoteWorkspaceApi = {
   getRemoteWorkspaces: async (projectId: string) => {
-    const response = await apiClient.get<ApiResponse<RemoteWorkspaceResponse[]>>(
-      `/api/v1/projects/${projectId}/remote-workspaces`
-    );
-    return response.data.result;
+    return http.get<RemoteWorkspaceResponse[]>(`/api/v1/projects/${projectId}/remote-workspaces`);
   },
 
-  createRemoteWorkspace: async (
-    projectId: string,
-    payload: RemoteWorkspaceCreateRequest
-  ) => {
-    const response = await apiClient.post<ApiResponse<RemoteWorkspaceResponse>>(
+  createRemoteWorkspace: async (projectId: string, payload: RemoteWorkspaceCreateRequest) => {
+    return http.post<RemoteWorkspaceResponse>(
       `/api/v1/projects/${projectId}/remote-workspaces`,
-      payload
+      payload,
     );
-    return response.data.result;
   },
 
   deleteRemoteWorkspace: async (projectId: string, remoteWorkspaceId: number) => {
-    const response = await apiClient.patch<ApiResponse<RemoteWorkspaceResponse>>(
-      `/api/v1/projects/${projectId}/remote-workspaces/${remoteWorkspaceId}/delete`
+    return http.patch<RemoteWorkspaceResponse>(
+      `/api/v1/projects/${projectId}/remote-workspaces/${remoteWorkspaceId}/delete`,
     );
-    return response.data.result;
   },
 
   testConnection: async (projectId: string, remoteWorkspaceId: number) => {
-    const response = await apiClient.post<ApiResponse<RemoteWorkspaceConnectionTestResponse>>(
-      `/api/v1/projects/${projectId}/remote-workspaces/${remoteWorkspaceId}/test-connection`
+    return http.post<RemoteWorkspaceConnectionTestResponse>(
+      `/api/v1/projects/${projectId}/remote-workspaces/${remoteWorkspaceId}/test-connection`,
     );
-    return response.data.result;
   },
 };

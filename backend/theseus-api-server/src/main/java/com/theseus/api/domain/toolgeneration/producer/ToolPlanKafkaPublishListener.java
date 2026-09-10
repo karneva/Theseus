@@ -17,7 +17,8 @@ public class ToolPlanKafkaPublishListener {
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void publish(ToolPlanKafkaPublishEvent event) {
 		try {
-			toolGenerationKafkaProducer.sendToolPlanRequest(event.key(), event.payload())
+			toolGenerationKafkaProducer
+				.sendToolPlanRequest(event.key(), event.payload())
 				.whenComplete((result, exception) -> {
 					if (exception != null) {
 						toolPlanGenerationService.markRunPublishFailed(event.key(), exception);

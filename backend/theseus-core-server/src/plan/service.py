@@ -38,7 +38,9 @@ def list_plans_for_session(db: Session, project_id: str, chat_session_id: int) -
                 ToolPlan.chat_session_id == chat_session_id,
             )
             .order_by(ToolPlan.created_at.desc())
-        ).scalars().all()
+        )
+        .scalars()
+        .all()
     )
 
 
@@ -74,7 +76,9 @@ def require_plan_or_404(db: Session, project_id: str, plan_id: str) -> ToolPlan:
 def transition_submit(db: Session, project_id: str, plan_id: str) -> ToolPlan:
     plan = require_plan_or_404(db, project_id, plan_id)
     if plan.status != PLAN_STATUS_DRAFTING:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only drafting plans can be submitted")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Only drafting plans can be submitted"
+        )
     plan.status = PLAN_STATUS_WAIT_FOR_REVIEW
     plan.feedback = None
     db.commit()
@@ -85,7 +89,10 @@ def transition_submit(db: Session, project_id: str, plan_id: str) -> ToolPlan:
 def transition_approve(db: Session, project_id: str, plan_id: str) -> ToolPlan:
     plan = require_plan_or_404(db, project_id, plan_id)
     if plan.status != PLAN_STATUS_WAIT_FOR_REVIEW:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only plans waiting for review can be approved")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only plans waiting for review can be approved",
+        )
     plan.status = PLAN_STATUS_APPROVED
     plan.feedback = None
     db.commit()
@@ -96,7 +103,10 @@ def transition_approve(db: Session, project_id: str, plan_id: str) -> ToolPlan:
 def transition_reject(db: Session, project_id: str, plan_id: str, feedback: str) -> ToolPlan:
     plan = require_plan_or_404(db, project_id, plan_id)
     if plan.status != PLAN_STATUS_WAIT_FOR_REVIEW:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only plans waiting for review can be rejected")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only plans waiting for review can be rejected",
+        )
     plan.status = PLAN_STATUS_REJECTED
     plan.feedback = feedback
     db.commit()
@@ -104,10 +114,14 @@ def transition_reject(db: Session, project_id: str, plan_id: str, feedback: str)
     return plan
 
 
-def transition_execute(db: Session, project_id: str, plan_id: str, executing_user_id: str) -> ToolPlan:
+def transition_execute(
+    db: Session, project_id: str, plan_id: str, executing_user_id: str
+) -> ToolPlan:
     plan = require_plan_or_404(db, project_id, plan_id)
     if plan.status != PLAN_STATUS_APPROVED:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only approved plans can be executed")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Only approved plans can be executed"
+        )
 
     session_plans = list(
         db.execute(
@@ -117,7 +131,9 @@ def transition_execute(db: Session, project_id: str, plan_id: str, executing_use
                 ToolPlan.chat_session_id == plan.chat_session_id,
             )
             .with_for_update()
-        ).scalars().all()
+        )
+        .scalars()
+        .all()
     )
     existing = next(
         (
@@ -128,7 +144,10 @@ def transition_execute(db: Session, project_id: str, plan_id: str, executing_use
         None,
     )
     if existing is not None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Another plan is already executing for this chat session")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Another plan is already executing for this chat session",
+        )
 
     plan.status = PLAN_STATUS_EXECUTING
     plan.executing_started_at = datetime.now(timezone.utc)
@@ -149,9 +168,14 @@ def validate_executing_plan_binding(
     if plan is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plan not found")
     if plan.chat_session_id != chat_session_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Plan does not belong to this chat session")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Plan does not belong to this chat session",
+        )
     if plan.status != PLAN_STATUS_EXECUTING:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Plan is not in executing state")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Plan is not in executing state"
+        )
     return plan
 
 

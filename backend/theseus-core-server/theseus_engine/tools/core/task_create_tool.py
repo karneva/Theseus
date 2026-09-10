@@ -48,6 +48,4 @@ class TaskCreateTool(BaseTool):
                 )
             )
         except Exception as exc:
-            return ToolResult(
-                output=f"Task creation failed: {exc}", is_error=True
-            )
+            return ToolResult(output=f"Task creation failed: {exc}", is_error=True)

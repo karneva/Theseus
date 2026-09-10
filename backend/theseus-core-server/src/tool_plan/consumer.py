@@ -45,7 +45,9 @@ class ToolPlanKafkaConsumer:
         )
         await self._consumer.start()
         await self.publisher.start()
-        await self.processor.republish_pending_events(limit=settings.CORE_RUN_EVENT_REPUBLISH_BATCH_SIZE)
+        await self.processor.republish_pending_events(
+            limit=settings.CORE_RUN_EVENT_REPUBLISH_BATCH_SIZE
+        )
         self._task = asyncio.create_task(self._consume_loop())
         logger.info(
             "ToolPlan Kafka consumer started. bootstrap=%s topic=%s group=%s",

@@ -22,6 +22,7 @@ class SandboxExecutionRequest(BaseModel):
     payload: Dict[str, Any]
     timeout_seconds: int = 10
 
+
 class SandboxOutput(BaseModel):
     success: bool
     result: Optional[Dict[str, Any]] = None
@@ -34,6 +35,7 @@ class SandboxOutput(BaseModel):
     resource_limited: bool = False
     execution_time_ms: int = 0
     metadata: Dict[str, Any] = Field(default_factory=dict)
+
 
 class ToolRunner(ABC):
     @abstractmethod

@@ -36,6 +36,7 @@ async def get_plan_endpoint(
     plan = get_plan_for_project(db, plan_id, str(session.project_id))
     if plan is None:
         from fastapi import HTTPException, status
+
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plan not found")
     return PlanResponse.from_model(plan)
 
@@ -75,7 +76,9 @@ async def reject_plan_endpoint(
     session: SessionContext = Depends(get_session_context),
     db: Session = Depends(get_db),
 ) -> PlanResponse:
-    return PlanResponse.from_model(transition_reject(db, str(session.project_id), plan_id, request.feedback))
+    return PlanResponse.from_model(
+        transition_reject(db, str(session.project_id), plan_id, request.feedback)
+    )
 
 
 @router.patch("/plans/{plan_id}/execute", response_model=PlanResponse)
@@ -84,4 +87,6 @@ async def execute_plan_endpoint(
     session: SessionContext = Depends(get_session_context),
     db: Session = Depends(get_db),
 ) -> PlanResponse:
-    return PlanResponse.from_model(transition_execute(db, str(session.project_id), plan_id, str(session.user_id)))
+    return PlanResponse.from_model(
+        transition_execute(db, str(session.project_id), plan_id, str(session.user_id))
+    )

@@ -4,7 +4,9 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
 @Converter(autoApply = true)
-public class ProjectMemberStatusConverter implements AttributeConverter<ProjectMemberStatus, String> {
+public class ProjectMemberStatusConverter
+	implements AttributeConverter<ProjectMemberStatus, String>
+{
 
 	@Override
 	public String convertToDatabaseColumn(ProjectMemberStatus attribute) {

@@ -87,11 +87,17 @@ public class ToolPlanRunStateResponse {
 		return null;
 	}
 
-	private static String resolveFallbackStatus(ToolPlanRun toolPlanRun, ToolPlanGroup planGroup, ToolPlan toolPlan) {
+	private static String resolveFallbackStatus(
+		ToolPlanRun toolPlanRun,
+		ToolPlanGroup planGroup,
+		ToolPlan toolPlan
+	) {
 		if (ToolPlanRunStatus.COMPLETED.equals(toolPlanRun.getStatus())) {
-			if (ToolPlanRunRequestType.BUILD_TOOL.equals(toolPlanRun.getRequestType())
-				&& planGroup != null
-				&& ToolPlanGroupStatus.BUILT.equals(planGroup.getStatus())) {
+			if (
+				ToolPlanRunRequestType.BUILD_TOOL.equals(toolPlanRun.getRequestType()) &&
+				planGroup != null &&
+				ToolPlanGroupStatus.BUILT.equals(planGroup.getStatus())
+			) {
 				return ToolPlanGroupStatus.BUILT.name();
 			}
 			if (toolPlan != null) {
@@ -99,8 +105,10 @@ public class ToolPlanRunStateResponse {
 			}
 		}
 
-		if (ToolPlanRunRequestType.BUILD_TOOL.equals(toolPlanRun.getRequestType())
-			&& !toolPlanRun.isFinished()) {
+		if (
+			ToolPlanRunRequestType.BUILD_TOOL.equals(toolPlanRun.getRequestType()) &&
+			!toolPlanRun.isFinished()
+		) {
 			return "BUILDING";
 		}
 

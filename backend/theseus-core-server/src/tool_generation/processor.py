@@ -30,6 +30,7 @@ from src.tool_plan.schemas import (
 
 logger = logging.getLogger(__name__)
 
+
 class ToolGenerationProcessor:
     """Compatibility adapter for the legacy ToolGeneration Kafka contract.
 
@@ -53,7 +54,9 @@ class ToolGenerationProcessor:
             if event_type == "TOOL_GENERATION_REQUESTED":
                 await self.process_generation(ToolGenerationRequestEvent.model_validate(payload))
             elif event_type == "TOOL_REGENERATION_REQUESTED":
-                await self.process_regeneration(ToolRegenerationRequestEvent.model_validate(payload))
+                await self.process_regeneration(
+                    ToolRegenerationRequestEvent.model_validate(payload)
+                )
             else:
                 logger.warning("Unsupported legacy ToolGeneration eventType=%s", event_type)
         except ValidationError as exc:
@@ -75,12 +78,24 @@ class ToolGenerationProcessor:
                 await self.publish_failed(event, "TOOL_PLAN_SKIPPED", result.message)
                 return
             await self.publish_markdown_chunks(event, result.raw_markdown)
-            await self.publish_completed(event, result, assistant_message_type="TOOL_DRAFT_RESPONSE")
+            await self.publish_completed(
+                event, result, assistant_message_type="TOOL_DRAFT_RESPONSE"
+            )
         except ToolPlanPlannerError as exc:
-            logger.error("Legacy Tool PLAN generation failed. runId=%s error=%s", event.run_id, exc, exc_info=True)
+            logger.error(
+                "Legacy Tool PLAN generation failed. runId=%s error=%s",
+                event.run_id,
+                exc,
+                exc_info=True,
+            )
             await self.publish_failed(event, "AI_GENERATION_FAILED", str(exc))
         except Exception as exc:
-            logger.error("Unexpected legacy Tool generation failure. runId=%s error=%s", event.run_id, exc, exc_info=True)
+            logger.error(
+                "Unexpected legacy Tool generation failure. runId=%s error=%s",
+                event.run_id,
+                exc,
+                exc_info=True,
+            )
             await self.publish_failed(event, "AI_GENERATION_FAILED", str(exc))
 
     async def process_regeneration(self, event: ToolRegenerationRequestEvent) -> None:
@@ -92,7 +107,10 @@ class ToolGenerationProcessor:
                     "Base draft payload is missing from regeneration request event",
                 )
                 return
-            if event.base_draft_version is not None and event.base_draft.version != event.base_draft_version:
+            if (
+                event.base_draft_version is not None
+                and event.base_draft.version != event.base_draft_version
+            ):
                 await self.publish_failed(
                     event,
                     "AI_REGENERATION_FAILED",
@@ -112,15 +130,29 @@ class ToolGenerationProcessor:
                 await self.publish_failed(event, "TOOL_PLAN_SKIPPED", result.message)
                 return
             await self.publish_markdown_chunks(event, result.raw_markdown)
-            await self.publish_completed(event, result, assistant_message_type="TOOL_REGENERATE_RESPONSE")
+            await self.publish_completed(
+                event, result, assistant_message_type="TOOL_REGENERATE_RESPONSE"
+            )
         except ToolPlanPlannerError as exc:
-            logger.error("Legacy Tool PLAN regeneration failed. runId=%s error=%s", event.run_id, exc, exc_info=True)
+            logger.error(
+                "Legacy Tool PLAN regeneration failed. runId=%s error=%s",
+                event.run_id,
+                exc,
+                exc_info=True,
+            )
             await self.publish_failed(event, "AI_REGENERATION_FAILED", str(exc))
         except Exception as exc:
-            logger.error("Unexpected legacy Tool regeneration failure. runId=%s error=%s", event.run_id, exc, exc_info=True)
+            logger.error(
+                "Unexpected legacy Tool regeneration failure. runId=%s error=%s",
+                event.run_id,
+                exc,
+                exc_info=True,
+            )
             await self.publish_failed(event, "AI_REGENERATION_FAILED", str(exc))
 
-    def _to_tool_plan_requested_event(self, event: ToolGenerationRequestEvent) -> ToolPlanRequestedEvent:
+    def _to_tool_plan_requested_event(
+        self, event: ToolGenerationRequestEvent
+    ) -> ToolPlanRequestedEvent:
         return ToolPlanRequestedEvent(
             eventType="TOOL_PLAN_REQUESTED",
             mode="PLAN",
@@ -152,7 +184,8 @@ class ToolGenerationProcessor:
             basePlan=BaseToolPlanPayload(
                 rawMarkdown=event.base_draft.raw_markdown or "",
                 structuredPlanJson=event.base_draft.structured_plan_json,
-                planSnapshot=event.base_draft.draft_snapshot or event.base_draft.structured_plan_json,
+                planSnapshot=event.base_draft.draft_snapshot
+                or event.base_draft.structured_plan_json,
             ),
             feedbackItems=[
                 ToolPlanFeedbackItem(blockId=item.block_id, comment=item.comment)
@@ -190,7 +223,9 @@ class ToolGenerationProcessor:
         )
         await self.publisher.publish(event.run_id, chunk)
 
-    async def publish_markdown_chunks(self, event: LegacyToolGenerationRequestEvent, content: str) -> None:
+    async def publish_markdown_chunks(
+        self, event: LegacyToolGenerationRequestEvent, content: str
+    ) -> None:
         for chunk in self._split_legacy_chunks(content):
             await self.publish_chunk(event, chunk)
 

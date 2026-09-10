@@ -59,8 +59,7 @@ class DockerExecutor(ToolRunner):
         except DockerException as exc:
             error_type = self._classify_docker_error(exc)
             raise SandboxUnavailableError(
-                "Docker daemon is unavailable or inaccessible "
-                f"({error_type}): {exc}"
+                "Docker daemon is unavailable or inaccessible " f"({error_type}): {exc}"
             ) from exc
 
         self._client = client
@@ -173,7 +172,9 @@ print(json.dumps(payload, ensure_ascii=False))
         return payload
 
     def _parse_requirements_probe_output(self, output: bytes | str) -> dict[str, Any]:
-        text = output.decode("utf-8", errors="replace") if isinstance(output, bytes) else str(output)
+        text = (
+            output.decode("utf-8", errors="replace") if isinstance(output, bytes) else str(output)
+        )
         for line in reversed([item.strip() for item in text.splitlines() if item.strip()]):
             try:
                 payload = json.loads(line)
@@ -322,8 +323,10 @@ print(json.dumps(payload, ensure_ascii=False))
                     )
 
                 success = bool(result_payload.get("success"))
-                error_type = None if success else (
-                    "resource_limit" if resource_limited else "sandbox_runner_error"
+                error_type = (
+                    None
+                    if success
+                    else ("resource_limit" if resource_limited else "sandbox_runner_error")
                 )
                 diagnostics["errorType"] = error_type
                 diagnostics["exitCode"] = exit_code
@@ -376,13 +379,10 @@ print(json.dumps(payload, ensure_ascii=False))
         host_base = Path(host_root)
         try:
             container_base.mkdir(parents=True, exist_ok=True)
-            root_dir = Path(
-                tempfile.mkdtemp(prefix="theseus-sandbox-", dir=str(container_base))
-            )
+            root_dir = Path(tempfile.mkdtemp(prefix="theseus-sandbox-", dir=str(container_base)))
         except OSError as exc:
             raise SandboxUnavailableError(
-                "Sandbox shared temp root is not writable "
-                f"(sandbox_temp_root_invalid): {exc}"
+                "Sandbox shared temp root is not writable " f"(sandbox_temp_root_invalid): {exc}"
             ) from exc
 
         try:

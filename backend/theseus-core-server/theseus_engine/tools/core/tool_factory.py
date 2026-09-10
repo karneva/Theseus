@@ -8,7 +8,6 @@ This module provides three core capabilities:
 
 import os
 import re
-import ast
 import json
 import logging
 import inspect
@@ -17,7 +16,13 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Tuple, Type, Optional, List, Set
 
 from pydantic import BaseModel, Field, field_validator
-from theseus_engine.tools.core.base_tools import BaseTool, ToolExecutionContext, ToolResult, ToolRegistry
+from theseus_engine.tools.core.tool_validator import ToolValidator
+from theseus_engine.tools.core.base_tools import (
+    BaseTool,
+    ToolExecutionContext,
+    ToolResult,
+    ToolRegistry,
+)
 from theseus_engine.tools.core.custom_tool_paths import (
     CUSTOM_TOOLS_DIR,
     PROJECT_CUSTOM_TOOLS_DIR,
@@ -58,6 +63,7 @@ def _coerce_permission_level(value: Any) -> int:
     if not (MIN_PERMISSION_LEVEL <= level <= MAX_PERMISSION_LEVEL):
         raise ValueError("permissionLevel must be an integer from 1 to 5.")
     return level
+
 
 MISSING_MODULE_PACKAGE_ALIASES = {
     "pynvml": "nvidia-ml-py",
@@ -177,9 +183,7 @@ def _sanitize_generated_code(code: str) -> str:
        원인: LLM이 ``python_code`` 인자에 ```python ... ``` 블록째로 넣는 경우.
     """
     # 4. 마크다운 코드펜스 벗기기 (```python ... ``` 또는 ``` ... ```)
-    fence_match = re.match(
-        r"^\s*```(?:python)?\s*\n(.*?)\n\s*```\s*$", code, re.DOTALL
-    )
+    fence_match = re.match(r"^\s*```(?:python)?\s*\n(.*?)\n\s*```\s*$", code, re.DOTALL)
     if fence_match:
         code = fence_match.group(1)
 
@@ -197,341 +201,6 @@ def _sanitize_generated_code(code: str) -> str:
     #    → 여기서는 보수적으로 줄 끝 패턴만 처리하고 인라인은 건드리지 않음
 
     return code
-
-
-class ToolValidator:
-    """새로 생성된 툴 코드가 Theseus 툴 규격에 맞는지 검증하는 유틸리티.
-
-    검증 항목:
-    - 파이썬 문법(Syntax) 검사
-    - BaseTool / BaseModel 참조 존재 여부
-    - execute 메소드 시그니처: (self, arguments, context) 3개 인자
-    - ToolResult 올바른 사용법: output/is_error 키워드만 허용
-    - context.input_model 안티패턴 감지
-    - 보안 위반 검사: AnalysisValidator 위임 (AST 정적 분석)
-    """
-
-    @classmethod
-    def validate_code(cls, code: str) -> Tuple[bool, str]:
-        """파이썬 코드의 문법과 Theseus 구조 규칙을 AST로 검사합니다."""
-        try:
-            tree = ast.parse(code)
-        except SyntaxError as e:
-            return False, f"Syntax Error: {e}"
-
-        if "BaseTool" not in code or "BaseModel" not in code:
-            return False, (
-                "Code must import and use both BaseTool and BaseModel. "
-                "Neither was found in the provided code."
-            )
-
-        # AST에서 BaseTool 상속 클래스 탐색
-        errors: List[str] = []
-        for node in ast.walk(tree):
-            if not isinstance(node, ast.ClassDef):
-                continue
-
-            # BaseTool을 상속하는 클래스인지 확인
-            base_names = []
-            for base in node.bases:
-                if isinstance(base, ast.Name):
-                    base_names.append(base.id)
-                elif isinstance(base, ast.Attribute):
-                    base_names.append(base.attr)
-            if "BaseTool" not in base_names:
-                continue
-
-            # execute 메소드 시그니처 검증
-            cls._check_execute_signature(node, errors)
-
-        # ToolResult 잘못된 사용 패턴 탐지
-        cls._check_tool_result_usage(tree, errors)
-
-        # context.input_model 안티패턴 탐지
-        cls._check_context_input_model(tree, errors)
-
-        # 입력 모델 클래스명 화이트리스트 검증
-        cls._check_input_model_naming(tree, errors)
-
-        # 보안 위반 검사: AnalysisValidator에 위임
-        from theseus_engine.validators.analysis_validator import (
-            AnalysisValidator,
-        )
-        security_ok, security_msg = AnalysisValidator.validate(code)
-        if not security_ok:
-            errors.append(security_msg)
-
-        if errors:
-            return False, (
-                "Theseus tool specification violations detected:\n"
-                + "\n".join(f"  - {e}" for e in errors)
-            )
-
-        return True, "Code syntax and structure validation passed."
-
-    @classmethod
-    def _check_execute_signature(
-        cls,
-        class_node: ast.ClassDef,
-        errors: List[str],
-    ) -> None:
-        """execute 메소드의 인자가 (self, arguments, context)인지 검증합니다."""
-        for item in class_node.body:
-            if not isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                continue
-            if item.name != "execute":
-                continue
-
-            args = item.args
-            # posonlyargs + args 합산 (self 포함 3개여야 함)
-            all_args = list(args.posonlyargs) + list(args.args)
-            arg_names = [a.arg for a in all_args]
-
-            if len(arg_names) != 3:
-                errors.append(
-                    f"'{class_node.name}.execute()' has {len(arg_names)} arguments. "
-                    f"Required signature: execute(self, arguments: <InputModel>, "
-                    f"context: ToolExecutionContext) — exactly 3 arguments required."
-                )
-                return
-
-            if arg_names[0] != "self":
-                errors.append(
-                    f"'{class_node.name}.execute()' first argument must be "
-                    f"'self'. (found: '{arg_names[0]}')"
-                )
-            if arg_names[1] not in ("arguments", "args", "params", "input"):
-                errors.append(
-                    f"'{class_node.name}.execute()' second argument should receive "
-                    f"the parsed input model (recommended: 'arguments'). "
-                    f"(found: '{arg_names[1]}')"
-                )
-            if arg_names[2] != "context":
-                errors.append(
-                    f"'{class_node.name}.execute()' third argument must be "
-                    f"'context'. (found: '{arg_names[2]}')"
-                )
-            return
-
-        errors.append(
-            f"Class '{class_node.name}' is missing the required "
-            f"'execute' method definition."
-        )
-
-    @classmethod
-    def _check_tool_result_usage(
-        cls,
-        tree: ast.Module,
-        errors: List[str],
-    ) -> None:
-        """ToolResult의 잘못된 사용 패턴을 감지합니다.
-
-        감지 대상:
-        - ToolResult.from_error(...)  → 존재하지 않는 클래스 메소드
-        - ToolResult(status=..., data=..., message=...)
-            → 올바른 키워드는 output, is_error, metadata 뿐
-        """
-        VALID_KEYWORDS = {"output", "is_error", "metadata"}
-
-        for node in ast.walk(tree):
-            # ToolResult.from_error(...) 패턴 감지
-            if isinstance(node, ast.Call):
-                func = node.func
-                if (
-                    isinstance(func, ast.Attribute)
-                    and isinstance(func.value, ast.Name)
-                    and func.value.id == "ToolResult"
-                    and func.attr == "from_error"
-                ):
-                    errors.append(
-                        "ToolResult.from_error() does not exist. "
-                        "Use ToolResult(output=..., is_error=True) instead."
-                    )
-
-                # ToolResult(...) 호출 시 키워드 검사
-                if isinstance(func, ast.Name) and func.id == "ToolResult":
-                    invalid_kws = [
-                        kw.arg
-                        for kw in node.keywords
-                        if kw.arg is not None
-                        and kw.arg not in VALID_KEYWORDS
-                    ]
-                    if invalid_kws:
-                        errors.append(
-                            f"ToolResult() received invalid keyword "
-                            f"arguments: {', '.join(invalid_kws)}. "
-                            f"Allowed keywords: {', '.join(sorted(VALID_KEYWORDS))}"
-                        )
-
-    @classmethod
-    def _check_context_input_model(
-        cls,
-        tree: ast.Module,
-        errors: List[str],
-    ) -> None:
-        """context.input_model 안티패턴을 감지합니다.
-
-        Theseus에서 입력 데이터는 execute의 arguments 인자로
-        전달되며, context.input_model은 존재하지 않습니다.
-        """
-        for node in ast.walk(tree):
-            if (
-                isinstance(node, ast.Attribute)
-                and node.attr == "input_model"
-                and isinstance(node.value, ast.Name)
-                and node.value.id == "context"
-            ):
-                errors.append(
-                    "context.input_model does not exist. "
-                    "Input data is passed as the 'arguments' parameter in "
-                    "execute(self, arguments, context)."
-                )
-                break  # 한 번만 보고
-
-    @classmethod
-    def _check_input_model_naming(
-        cls,
-        tree: ast.Module,
-        errors: List[str],
-    ) -> None:
-        """input_model에 실제 할당된 입력 모델 이름만 검증합니다.
-
-        기존 Core Tool들은 대부분 ``ReadFileTool -> ReadFileInput``처럼
-        Tool suffix를 제거한 이름을 사용합니다. generated tool에서는
-        ``ReadFileToolInput`` 형태도 함께 허용합니다. ``ProcessInfo``나
-        ``CPUStatsOutput`` 같은 보조 Pydantic 모델은 입력 모델이 아니므로
-        이 검증 대상에서 제외합니다.
-        """
-        base_model_names: Set[str] = set()
-        tool_input_models: Dict[str, str] = {}
-
-        for node in ast.walk(tree):
-            if not isinstance(node, ast.ClassDef):
-                continue
-            base_names = [
-                b.id for b in node.bases
-                if isinstance(b, ast.Name)
-            ]
-            if "BaseModel" in base_names:
-                base_model_names.add(node.name)
-            if "BaseTool" not in base_names:
-                continue
-
-            input_model_name = cls._extract_declared_input_model_name(node)
-            if input_model_name:
-                tool_input_models[node.name] = input_model_name
-
-        for tool_class_name, input_model_name in tool_input_models.items():
-            if input_model_name not in base_model_names:
-                errors.append(
-                    f"'{tool_class_name}.input_model' references "
-                    f"'{input_model_name}', but no matching BaseModel class "
-                    f"was found in the module."
-                )
-                continue
-
-            tool_stem = (
-                tool_class_name[:-4]
-                if tool_class_name.endswith("Tool")
-                else tool_class_name
-            )
-            allowed = {f"{tool_class_name}Input", f"{tool_stem}Input"}
-            if input_model_name not in allowed:
-                errors.append(
-                    f"Input model for '{tool_class_name}' should be named "
-                    f"'{tool_stem}Input' or '{tool_class_name}Input'. "
-                    f"(found: '{input_model_name}')"
-                )
-
-    @staticmethod
-    def _extract_declared_input_model_name(class_node: ast.ClassDef) -> str | None:
-        """Return the class name assigned to a BaseTool's input_model attr."""
-        for item in class_node.body:
-            if isinstance(item, ast.Assign):
-                if not any(
-                    isinstance(target, ast.Name) and target.id == "input_model"
-                    for target in item.targets
-                ):
-                    continue
-                if isinstance(item.value, ast.Name):
-                    return item.value.id
-            if isinstance(item, ast.AnnAssign):
-                if not (
-                    isinstance(item.target, ast.Name)
-                    and item.target.id == "input_model"
-                    and isinstance(item.value, ast.Name)
-                ):
-                    continue
-                return item.value.id
-        return None
-
-    # ------------------------------------------------------------------
-    # 2단계: 모듈 로드 및 런타임 규격 검증
-    # ------------------------------------------------------------------
-
-    @classmethod
-    def validate_and_load_module(
-        cls, module_name: str, file_path: str
-    ) -> Tuple[bool, str, Optional[Type[BaseTool]]]:
-        """모듈을 동적으로 로드하고 BaseTool 규격을 완벽히 준수하는지 검증합니다."""
-        if not os.path.exists(file_path):
-            return False, "File does not exist.", None
-
-        spec = importlib.util.spec_from_file_location(module_name, file_path)
-        if not spec or not spec.loader:
-            return False, "Failed to load module spec.", None
-
-        module = importlib.util.module_from_spec(spec)
-        try:
-            spec.loader.exec_module(module)
-        except Exception as e:
-            return False, f"Error during module execution: {e}", None
-
-        # BaseTool을 상속받은 클래스 탐색
-        tool_classes = []
-        for name, obj in inspect.getmembers(module, inspect.isclass):
-            if issubclass(obj, BaseTool) and obj is not BaseTool:
-                tool_classes.append(obj)
-
-        if not tool_classes:
-            return False, "No class inheriting from BaseTool was found.", None
-
-        tool_class = tool_classes[0]  # 첫 번째 발견된 툴 클래스 사용
-
-        # Theseus 필수 속성(name, description, input_model) 검증
-        if not hasattr(tool_class, "name") or not getattr(tool_class, "name"):
-            return False, "Tool class is missing the 'name' attribute or it is empty.", None
-        if not hasattr(tool_class, "description") or not getattr(tool_class, "description"):
-            return False, "Tool class is missing the 'description' attribute or it is empty.", None
-        if not hasattr(tool_class, "input_model") or not issubclass(
-            tool_class.input_model, BaseModel
-        ):
-            return (
-                False,
-                "Tool class is missing 'input_model' or it is not a subclass of BaseModel.",
-                None,
-            )
-
-        # execute 메소드 런타임 시그니처 검증
-        execute_method = getattr(tool_class, "execute", None)
-        if execute_method is None:
-            return False, "The 'execute' method is not defined.", None
-
-        sig = inspect.signature(execute_method)
-        params = list(sig.parameters.keys())
-        # 바운드 메소드면 self 제외, 언바운드면 self 포함
-        if params and params[0] == "self":
-            params = params[1:]
-        if len(params) != 2:
-            return (
-                False,
-                f"execute method has incorrect signature. "
-                f"({len(params)} args excluding self). "
-                f"Required: execute(self, arguments, context)",
-                None,
-            )
-
-        return True, f"Validation passed: tool '{tool_class.name}' loaded successfully.", tool_class
 
 
 # ---------------------------------------------------------------------------
@@ -570,11 +239,11 @@ def normalize_tool_meta(
 
     # 잘못된 키 → canonical 키 매핑
     _key_aliases = {
-        "name":             "toolName",
-        "tool_name":        "toolName",
-        "module_name":      "moduleName",
-        "input_model":      None,           # meta에 불필요 — 제거
-        "description":      None,           # .py에서 읽어야 함 — meta에서 제거
+        "name": "toolName",
+        "tool_name": "toolName",
+        "module_name": "moduleName",
+        "input_model": None,  # meta에 불필요 — 제거
+        "description": None,  # .py에서 읽어야 함 — meta에서 제거
         "permission_level": "permissionLevel",
     }
     normalized: Dict[str, Any] = {}
@@ -585,21 +254,22 @@ def normalize_tool_meta(
 
     # 필수 필드 채우기 (py 클래스가 source of truth)
     canonical_meta: Dict[str, Any] = {
-        "toolName":      tool_name,
-        "moduleName":    module_name,
-        "projectId":     normalized.get("projectId", "local"),
+        "toolName": tool_name,
+        "moduleName": module_name,
+        "projectId": normalized.get("projectId", "local"),
         "chatSessionId": normalized.get("chatSessionId"),
         "creatorUserId": normalized.get("creatorUserId", "cli_user"),
-        "planId":        normalized.get("planId"),
-        "fileName":      f"{module_name}.py",
-        "createdAt":     normalized.get("createdAt", now),
-        "updatedAt":     now,
+        "planId": normalized.get("planId"),
+        "fileName": f"{module_name}.py",
+        "createdAt": normalized.get("createdAt", now),
+        "updatedAt": now,
         "permissionLevel": permission_level,
-        "status":        normalized.get("status", "active"),
-        "isActive":      normalized.get("isActive", True),
+        "status": normalized.get("status", "active"),
+        "isActive": normalized.get("isActive", True),
         "sandboxVerified": normalized.get("sandboxVerified", False),
         "activationSource": normalized.get("activationSource", "standalone_without_sandbox"),
-        "validationResult": normalized.get("validationResult") or {
+        "validationResult": normalized.get("validationResult")
+        or {
             "success": True,
             "status": "validated",
             "message": "Normalized by load_custom_tools.",
@@ -771,16 +441,22 @@ def _evaluate_tool_inventory_item(
     if not item["isActive"] or item["status"] not in {"unknown", "active"}:
         return _mark_tool_inventory_inactive(item), None
     if _metadata_requires_sandbox(meta) and not _metadata_is_sandbox_verified(meta):
-        return _mark_tool_inventory_inactive(
-            item,
-            "Project custom tool is not sandbox verified.",
-        ), None
+        return (
+            _mark_tool_inventory_inactive(
+                item,
+                "Project custom tool is not sandbox verified.",
+            ),
+            None,
+        )
 
     if not os.path.exists(file_path):
-        return _mark_tool_inventory_unavailable(
-            item,
-            f"Missing module file: {os.path.basename(file_path)}",
-        ), None
+        return (
+            _mark_tool_inventory_unavailable(
+                item,
+                f"Missing module file: {os.path.basename(file_path)}",
+            ),
+            None,
+        )
 
     is_valid, msg, tool_class = ToolValidator.validate_and_load_module(
         module_name,
@@ -934,14 +610,14 @@ def load_custom_tools(
                     load_report.append(report_item)
 
                 # 툴의 permission_level을 RBAC 맵에 자동 등록
-                level = getattr(
-                    tool_class, "permission_level", DEFAULT_PERMISSION_LEVEL
-                )
+                level = getattr(tool_class, "permission_level", DEFAULT_PERMISSION_LEVEL)
                 if tool_permissions is not None:
                     tool_permissions[tool_class.name] = level
                     log.info(
                         "Custom tool loaded: %s (level=%d, file=%s)",
-                        tool_class.name, level, file_path,
+                        tool_class.name,
+                        level,
+                        file_path,
                     )
 
                 # meta.json 정규화 (누락·이름 오류 교정)
@@ -1010,13 +686,15 @@ def load_custom_tools_for_project(
         except Exception as exc:
             log.warning("Failed to read project tool meta %s: %s", meta_path, exc)
             seen_files.add(os.path.normcase(f"{fallback_stem}.py"))
-            candidates.append((
-                fallback_stem,
-                f"{fallback_stem}.py",
-                meta_path,
-                None,
-                f"Project custom tool metadata cannot be read: {exc}",
-            ))
+            candidates.append(
+                (
+                    fallback_stem,
+                    f"{fallback_stem}.py",
+                    meta_path,
+                    None,
+                    f"Project custom tool metadata cannot be read: {exc}",
+                )
+            )
             continue
 
         file_name = os.path.basename(str(meta.get("fileName") or f"{fallback_stem}.py"))
@@ -1031,13 +709,15 @@ def load_custom_tools_for_project(
             continue
         if os.path.normcase(filename) in seen_files:
             continue
-        candidates.append((
-            filename[:-3],
-            filename,
-            None,
-            None,
-            "Project custom tool requires trusted metadata.",
-        ))
+        candidates.append(
+            (
+                filename[:-3],
+                filename,
+                None,
+                None,
+                "Project custom tool requires trusted metadata.",
+            )
+        )
 
     for module_name, filename, meta_path, meta, meta_error in candidates:
         file_path = os.path.join(project_dir, filename)
@@ -1237,7 +917,7 @@ class ToolCreatorTool(BaseTool):
     permission_level = 2
     is_destructive = True
 
-    # is_read_only is False by default for destructive tools, 
+    # is_read_only is False by default for destructive tools,
     # but we can be explicit if needed.
 
     async def execute(
@@ -1310,7 +990,9 @@ class ToolCreatorTool(BaseTool):
         }
         if result.feedback_message:
             metadata["feedbackMessage"] = result.feedback_message
-        return ToolResult(output=f"❌ Tool repair failed:\n{message}", is_error=True, metadata=metadata)
+        return ToolResult(
+            output=f"❌ Tool repair failed:\n{message}", is_error=True, metadata=metadata
+        )
 
     async def _generate_unexpected_creator_candidate(self, prompt: str) -> dict[str, Any]:
         raise ToolRepairFailure(
@@ -1335,8 +1017,12 @@ class ToolCreatorTool(BaseTool):
         fallback: ToolCreatorInput,
     ) -> ToolCreatorInput:
         return ToolCreatorInput(
-            tool_name=str(candidate.get("toolName") or candidate.get("tool_name") or fallback.tool_name),
-            python_code=str(candidate.get("pythonCode") or candidate.get("python_code") or fallback.python_code),
+            tool_name=str(
+                candidate.get("toolName") or candidate.get("tool_name") or fallback.tool_name
+            ),
+            python_code=str(
+                candidate.get("pythonCode") or candidate.get("python_code") or fallback.python_code
+            ),
             permission_level=_coerce_permission_level(
                 candidate.get("permissionLevel")
                 or candidate.get("permission_level")
@@ -1437,7 +1123,7 @@ class ToolCreatorTool(BaseTool):
     async def _execute_standalone(
         self, arguments: ToolCreatorInput, context: ToolExecutionContext
     ) -> ToolResult:
-        from theseus_engine.tools.core.tool_validator import (
+        from theseus_engine.tools.core.tool_creation import (
             inject_permission_level,
             normalize_tool_name,
             ToolCreationError,
@@ -1446,7 +1132,7 @@ class ToolCreatorTool(BaseTool):
         from datetime import datetime, timezone
 
         os.makedirs(CUSTOM_TOOLS_DIR, exist_ok=True)
-        
+
         # 0. 네이밍 룰 및 정규화
         try:
             safe_tool_name = normalize_tool_name(arguments.tool_name)
@@ -1462,7 +1148,9 @@ class ToolCreatorTool(BaseTool):
         try:
             code = inject_permission_level(arguments.python_code, arguments.permission_level)
         except ToolCreationError as e:
-            log.error("[ToolAudit] Legacy tool creation failed at permission injection: %s", e.message)
+            log.error(
+                "[ToolAudit] Legacy tool creation failed at permission injection: %s", e.message
+            )
             return ToolResult(output=f"❌ {e.message}", is_error=True)
 
         # 2. 코드 정제 (LLM 출력에서 발생하는 이스케이프 오염 제거)
@@ -1473,13 +1161,12 @@ class ToolCreatorTool(BaseTool):
         if not is_valid_code:
             # 문제 코드 7번 줄 전후를 로그에 덤프해 디버깅을 돕는다
             lines = code.splitlines()
-            snippet = "\n".join(
-                f"  {i+1:>4}: {l}" for i, l in enumerate(lines[:20])
-            )
+            snippet = "\n".join(f"  {i+1:>4}: {l}" for i, l in enumerate(lines[:20]))
             log.error(
                 "[ToolAudit] Legacy tool creation failed at validation:\n%s\n"
                 "[Code snippet (first 20 lines)]\n%s",
-                code_msg, snippet,
+                code_msg,
+                snippet,
             )
             return ToolResult(
                 output=f"❌ Code syntax/structure validation failed:\n{code_msg}",
@@ -1496,7 +1183,9 @@ class ToolCreatorTool(BaseTool):
         )
         if not is_valid_module:
             os.remove(file_path)
-            log.error("[ToolAudit] Legacy tool creation failed at module load (rolled back):\n%s", mod_msg)
+            log.error(
+                "[ToolAudit] Legacy tool creation failed at module load (rolled back):\n%s", mod_msg
+            )
             return ToolResult(
                 output=f"❌ Tool specification validation failed (file rolled back):\n{mod_msg}",
                 is_error=True,
@@ -1524,7 +1213,7 @@ class ToolCreatorTool(BaseTool):
                 "status": "validated",
                 "message": "ToolValidator validation passed.",
                 "checkedAt": now,
-            }
+            },
         }
         with open(meta_path, "w", encoding="utf-8") as f:
             json.dump(metadata, f, ensure_ascii=False, indent=2)
@@ -1559,9 +1248,18 @@ class ToolCreatorTool(BaseTool):
                 user_rbac = context.metadata.get("user_rbac_level", 1)
                 if active_registry is not None and user_rbac >= level:
                     active_registry.register(instance)
-                    log.info("[ToolAudit] Tool also registered in active_registry: %s (user_lv=%d, tool_lv=%d)", tool_class.name, user_rbac, level)
+                    log.info(
+                        "[ToolAudit] Tool also registered in active_registry: %s (user_lv=%d, tool_lv=%d)",
+                        tool_class.name,
+                        user_rbac,
+                        level,
+                    )
                 elif active_registry is not None:
-                    log.warning("[ToolAudit] Tool not added to active_registry: user_lv=%d < tool_lv=%d", user_rbac, level)
+                    log.warning(
+                        "[ToolAudit] Tool not added to active_registry: user_lv=%d < tool_lv=%d",
+                        user_rbac,
+                        level,
+                    )
 
                 log.info("[ToolAudit] Legacy tool creation activated: %s", tool_class.name)
                 return ToolResult(
@@ -1585,7 +1283,9 @@ class ToolCreatorTool(BaseTool):
                     metadata={**result_metadata, "status": "created_registration_failed"},
                 )
 
-        log.info("[ToolAudit] Legacy tool creation finished without registry access: %s", tool_class.name)
+        log.info(
+            "[ToolAudit] Legacy tool creation finished without registry access: %s", tool_class.name
+        )
         return ToolResult(
             output=(
                 f"✅ Tool '{tool_class.name}' created and validated!\n"

@@ -1,29 +1,25 @@
-import { apiClient } from '@/api/client';
-import type { ApiResponse } from '@/api/auth';
+import { http } from '@/api/http';
 import type { ProjectMemberResponse } from '@/features/projects/api';
-import type { ProjectMemberCreateRequest, ProjectMemberUpdateRequest } from '@/features/projects/types/member';
+import type {
+  ProjectMemberCreateRequest,
+  ProjectMemberUpdateRequest,
+} from '@/features/projects/types/member';
 
 export const memberApi = {
   /**
    * 프로젝트 멤버 목록 조회
    */
   getMembers: async (projectId: string | number, page = 0, size = 20, status?: string) => {
-    const response = await apiClient.get<ApiResponse<ProjectMemberResponse[]>>(
-      `/api/v1/projects/${projectId}/members`,
-      { params: { page, size, status } }
-    );
-    return response.data.result;
+    return http.get<ProjectMemberResponse[]>(`/api/v1/projects/${projectId}/members`, {
+      params: { page, size, status },
+    });
   },
 
   /**
    * 프로젝트 멤버 등록
    */
   addMember: async (projectId: string | number, data: ProjectMemberCreateRequest) => {
-    const response = await apiClient.post<ApiResponse<ProjectMemberResponse>>(
-      `/api/v1/projects/${projectId}/members`,
-      data
-    );
-    return response.data.result;
+    return http.post<ProjectMemberResponse>(`/api/v1/projects/${projectId}/members`, data);
   },
 
   /**
@@ -32,12 +28,11 @@ export const memberApi = {
   updateMember: async (
     projectId: string | number,
     projectMemberId: number,
-    data: ProjectMemberUpdateRequest
+    data: ProjectMemberUpdateRequest,
   ) => {
-    const response = await apiClient.patch<ApiResponse<ProjectMemberResponse>>(
+    return http.patch<ProjectMemberResponse>(
       `/api/v1/projects/${projectId}/members/${projectMemberId}`,
-      data
+      data,
     );
-    return response.data.result;
   },
 };

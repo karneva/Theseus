@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 from typing import Optional
 
-
 _DEFAULT_CUSTOM_TOOLS_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "custom_tools")
 )
@@ -19,9 +18,7 @@ PROJECT_CUSTOM_TOOLS_DIR = os.path.abspath(
 
 def get_custom_tools_dir() -> str:
     """Return the configured custom tool root directory."""
-    return os.path.abspath(
-        os.getenv("THESEUS_CUSTOM_TOOLS_DIR", "").strip() or CUSTOM_TOOLS_DIR
-    )
+    return os.path.abspath(os.getenv("THESEUS_CUSTOM_TOOLS_DIR", "").strip() or CUSTOM_TOOLS_DIR)
 
 
 def get_project_custom_tools_dir() -> str:
@@ -82,10 +79,12 @@ def workspace_custom_tool_dirs(
     configured_core = core_root or os.getenv("THESEUS_CORE_ROOT", "").strip()
     if configured_core:
         core_path = Path(configured_core).resolve()
-        candidates.extend([
-            core_path / "custom_tools",
-            core_path / "theseus_engine" / "custom_tools",
-        ])
+        candidates.extend(
+            [
+                core_path / "custom_tools",
+                core_path / "theseus_engine" / "custom_tools",
+            ]
+        )
 
     seen: set[str] = set()
     result: list[Path] = []

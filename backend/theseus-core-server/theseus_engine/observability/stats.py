@@ -21,6 +21,7 @@ _RESERVOIR_SIZE = 512
 # 핵심 데이터 구조
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class Histogram:
     """Reservoir Sampling(Algorithm R) 기반 히스토그램."""
@@ -96,6 +97,7 @@ class StatsReport:
 # ---------------------------------------------------------------------------
 # SessionStats 싱글톤
 # ---------------------------------------------------------------------------
+
 
 class SessionStats:
     """세션 단위 인메모리 통계 수집기 (싱글톤).
@@ -222,8 +224,7 @@ class SessionStats:
                     )
                 else:
                     lines.append(
-                        f"  {name:<20} (시간 미측정)  "
-                        f"호출:{calls:>3}  에러:{errors:>2}"
+                        f"  {name:<20} (시간 미측정)  " f"호출:{calls:>3}  에러:{errors:>2}"
                     )
 
         # RAG 검색
@@ -240,8 +241,7 @@ class SessionStats:
             lines.append("\n[LLM 쿼리]")
             h = r.llm_query
             lines.append(
-                f"  {'query':<20} p50:{h.p50:>7.0f}ms  "
-                f"p95:{h.p95:>7.0f}ms  호출:{h.count:>3}"
+                f"  {'query':<20} p50:{h.p50:>7.0f}ms  " f"p95:{h.p95:>7.0f}ms  호출:{h.count:>3}"
             )
         if r.llm_input_tokens:
             h = r.llm_input_tokens

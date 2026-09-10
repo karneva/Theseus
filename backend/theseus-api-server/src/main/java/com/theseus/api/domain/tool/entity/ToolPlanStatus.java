@@ -6,5 +6,5 @@ public enum ToolPlanStatus {
 	APPROVED,
 	REJECTED,
 	SUPERSEDED,
-	FAILED
+	FAILED,
 }

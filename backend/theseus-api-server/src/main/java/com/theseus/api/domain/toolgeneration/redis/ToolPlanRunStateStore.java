@@ -23,9 +23,12 @@ public class ToolPlanRunStateStore {
 
 	public void saveProgress(ToolPlanRunState state) {
 		ToolPlanRunState mergedState = findByRunId(state.getRunId())
-			.map(existing -> state.toBuilder()
-				.content(existing.getContent()) // Preserve existing content
-				.build())
+			.map(existing ->
+				state
+					.toBuilder()
+					.content(existing.getContent()) // Preserve existing content
+					.build()
+			)
 			.orElse(state);
 		save(mergedState);
 	}
@@ -33,11 +36,10 @@ public class ToolPlanRunStateStore {
 	public void saveChunk(ToolPlanRunState state) {
 		ToolPlanRunState mergedState = findByRunId(state.getRunId())
 			.map(existing -> {
-				String accumulatedContent = (existing.getContent() == null ? "" : existing.getContent())
-					+ (state.getContent() == null ? "" : state.getContent());
-				return state.toBuilder()
-					.content(accumulatedContent)
-					.build();
+				String accumulatedContent =
+					(existing.getContent() == null ? "" : existing.getContent()) +
+					(state.getContent() == null ? "" : state.getContent());
+				return state.toBuilder().content(accumulatedContent).build();
 			})
 			.orElse(state);
 		save(mergedState);
@@ -82,7 +84,8 @@ public class ToolPlanRunStateStore {
 	private void save(ToolPlanRunState state) {
 		ToolPlanRunState stateToSave = requireState(state);
 		try {
-			stringRedisTemplate.opsForValue()
+			stringRedisTemplate
+				.opsForValue()
 				.set(
 					buildKey(stateToSave.getRunId()),
 					objectMapper.writeValueAsString(stateToSave),
@@ -103,8 +106,6 @@ public class ToolPlanRunStateStore {
 		if (state.getUpdatedAt() != null) {
 			return state;
 		}
-		return state.toBuilder()
-			.updatedAt(LocalDateTime.now())
-			.build();
+		return state.toBuilder().updatedAt(LocalDateTime.now()).build();
 	}
 }

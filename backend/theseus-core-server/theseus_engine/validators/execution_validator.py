@@ -49,12 +49,12 @@ _FS_DESTRUCTIVE_PATTERN = re.compile(
 
 # 파일시스템 파괴 명령어 (rm -rf, dd, mkfs 등)
 _BASH_DESTRUCTIVE_PATTERN = re.compile(
-    r"(rm\s+-[a-z]*r[a-z]*f"           # rm -rf
-    r"|rm\s+-[a-z]*f[a-z]*r"           # rm -fr
+    r"(rm\s+-[a-z]*r[a-z]*f"  # rm -rf
+    r"|rm\s+-[a-z]*f[a-z]*r"  # rm -fr
     r"|rm\s+--force\s+-r"
-    r"|\bdd\s+if="                      # dd if=/dev/zero of=...
-    r"|\bmkfs\."                        # mkfs.ext4, mkfs.vfat 등
-    r"|\bformat\s+[a-z]:"              # Windows: format C:
+    r"|\bdd\s+if="  # dd if=/dev/zero of=...
+    r"|\bmkfs\."  # mkfs.ext4, mkfs.vfat 등
+    r"|\bformat\s+[a-z]:"  # Windows: format C:
     r"|\bshred\s+"
     r"|\bwipefs\s+)",
     re.IGNORECASE,
@@ -66,9 +66,9 @@ _BASH_RCE_PATTERN = re.compile(
     r"|wget\s+.+\|\s*(ba)?sh"
     r"|curl\s+.+\|\s*python3?"
     r"|wget\s+.+\|\s*python3?"
-    r"|\beval\s*\$\("                  # eval $(...)
-    r"|\beval\s+`"                     # eval `...`
-    r"|python3?\s+-c\s+['\"]import"   # python -c "import os; os.system(...)"
+    r"|\beval\s*\$\("  # eval $(...)
+    r"|\beval\s+`"  # eval `...`
+    r"|python3?\s+-c\s+['\"]import"  # python -c "import os; os.system(...)"
     r"|\bbase64\s+-d\s+.*\|\s*(ba)?sh)",
     re.IGNORECASE | re.DOTALL,
 )
@@ -91,7 +91,7 @@ _BASH_PATH_TRAVERSAL_PATTERN = re.compile(
     r"|>\s*/boot/"
     r"|>\s*/sys/"
     r"|>\s*/proc/"
-    r"|\.\./\.\./\.\./)",              # 3단계 이상 상위 탐색
+    r"|\.\./\.\./\.\./)",  # 3단계 이상 상위 탐색
     re.IGNORECASE,
 )
 
@@ -124,17 +124,16 @@ class ExecutionValidator:
         Returns:
             (안전 여부, 메시지) 튜플.
         """
-        use_llm = (
-            os.getenv("THESEUS_USE_LLM_VALIDATOR", "false")
-            .lower() == "true"
-        )
+        use_llm = os.getenv("THESEUS_USE_LLM_VALIDATOR", "false").lower() == "true"
 
         if use_llm:
             return cls._validate_with_llm(
-                tool_name, tool_input,
+                tool_name,
+                tool_input,
             )
         return cls._validate_with_regex(
-            tool_name, tool_input,
+            tool_name,
+            tool_input,
         )
 
     # ------------------------------------------------------------------
@@ -175,8 +174,7 @@ class ExecutionValidator:
 
             if _BASH_RCE_PATTERN.search(command):
                 warnings.append(
-                    f"[Bash] 원격 코드 실행 패턴 감지 "
-                    f"(curl|bash / eval 등): '{command[:80]}'"
+                    f"[Bash] 원격 코드 실행 패턴 감지 " f"(curl|bash / eval 등): '{command[:80]}'"
                 )
 
             if _BASH_PRIVILEGE_PATTERN.search(command):
@@ -187,20 +185,17 @@ class ExecutionValidator:
 
             if _BASH_PATH_TRAVERSAL_PATTERN.search(command):
                 warnings.append(
-                    f"[Bash] 시스템 경로 탈출/덮어쓰기 패턴 감지 "
-                    f"(> /etc/ 등): '{command[:80]}'"
+                    f"[Bash] 시스템 경로 탈출/덮어쓰기 패턴 감지 " f"(> /etc/ 등): '{command[:80]}'"
                 )
 
         if warnings:
             detail = "\n".join(f"  - {w}" for w in warnings)
             log.warning(
                 "Execution validation warning (%d items):\n%s",
-                len(warnings), detail,
+                len(warnings),
+                detail,
             )
-            return False, (
-                f"Execution validation warning "
-                f"({len(warnings)} items):\n" + detail
-            )
+            return False, (f"Execution validation warning " f"({len(warnings)} items):\n" + detail)
 
         return True, "Execution validation passed."
 
@@ -233,5 +228,6 @@ class ExecutionValidator:
         # Prompt: "Is this tool execution safe and non-destructive?
         #          Tool: {tool_name}, Arguments: {tool_input}"
         return cls._validate_with_regex(
-            tool_name, tool_input,
+            tool_name,
+            tool_input,
         )

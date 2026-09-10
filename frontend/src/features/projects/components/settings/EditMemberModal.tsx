@@ -1,21 +1,33 @@
+import {
+  DEFAULT_MEMBER_ACCESS_LEVEL,
+  MAX_MEMBER_ACCESS_LEVEL,
+  ADMIN_ACCESS_LEVEL,
+  clampMemberAccessLevel,
+} from '../../utils/memberPolicy';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { ShieldAlert } from 'lucide-react';
 import { memberApi } from '@/features/projects/api/member';
 import type { ProjectMemberResponse } from '@/features/projects/api';
 import type { ProjectMemberUpdateRequest } from '@/features/projects/types/member';
-
-const DEFAULT_MEMBER_ACCESS_LEVEL = 1;
-const MAX_MEMBER_ACCESS_LEVEL = 5;
-const ADMIN_ACCESS_LEVEL = 5;
-
-const clampMemberAccessLevel = (value: number) =>
-  Math.min(MAX_MEMBER_ACCESS_LEVEL, Math.max(DEFAULT_MEMBER_ACCESS_LEVEL, value));
 
 interface EditMemberModalProps {
   projectId: string;
@@ -25,18 +37,28 @@ interface EditMemberModalProps {
   selectedMember: ProjectMemberResponse | null;
 }
 
-export function EditMemberModal({ projectId, isOpen, onOpenChange, onSuccess, selectedMember }: EditMemberModalProps) {
-  const [editRole, setEditRole] = useState<'ADMIN' | 'MANAGER' | 'MEMBER'>(selectedMember?.projectRole ?? 'MEMBER');
+export function EditMemberModal({
+  projectId,
+  isOpen,
+  onOpenChange,
+  onSuccess,
+  selectedMember,
+}: EditMemberModalProps) {
+  const [editRole, setEditRole] = useState<'ADMIN' | 'MANAGER' | 'MEMBER'>(
+    selectedMember?.projectRole ?? 'MEMBER',
+  );
   const [editAccessLevel, setEditAccessLevel] = useState(
     selectedMember?.projectRole === 'ADMIN'
       ? ADMIN_ACCESS_LEVEL
-      : clampMemberAccessLevel(selectedMember?.accessLevel ?? DEFAULT_MEMBER_ACCESS_LEVEL)
+      : clampMemberAccessLevel(selectedMember?.accessLevel ?? DEFAULT_MEMBER_ACCESS_LEVEL),
   );
   const [editCanCreate, setEditCanCreate] = useState(selectedMember?.canCreateTool ?? false);
   const [editCanUse, setEditCanUse] = useState(selectedMember?.canUseTool ?? true);
   const [editCanUpdate, setEditCanUpdate] = useState(selectedMember?.canUpdateTool ?? false);
   const [editCanDelete, setEditCanDelete] = useState(selectedMember?.canDeleteTool ?? false);
-  const [editStatus, setEditStatus] = useState<'IN_PROGRESS' | 'COMPLETED'>(selectedMember?.status ?? 'IN_PROGRESS');
+  const [editStatus, setEditStatus] = useState<'IN_PROGRESS' | 'COMPLETED'>(
+    selectedMember?.status ?? 'IN_PROGRESS',
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleRoleChange = (role: 'ADMIN' | 'MANAGER' | 'MEMBER') => {
@@ -58,7 +80,8 @@ export function EditMemberModal({ projectId, isOpen, onOpenChange, onSuccess, se
     try {
       const data: ProjectMemberUpdateRequest = {
         projectRole: editRole,
-        accessLevel: editRole === 'ADMIN' ? ADMIN_ACCESS_LEVEL : clampMemberAccessLevel(editAccessLevel),
+        accessLevel:
+          editRole === 'ADMIN' ? ADMIN_ACCESS_LEVEL : clampMemberAccessLevel(editAccessLevel),
         canCreateTool: editCanCreate,
         canUseTool: editCanUse,
         canUpdateTool: editCanUpdate,
@@ -98,13 +121,18 @@ export function EditMemberModal({ projectId, isOpen, onOpenChange, onSuccess, se
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-slate-300 uppercase text-[10px] tracking-wider">역할 (Role)</Label>
+              <Label className="text-slate-300 uppercase text-[10px] tracking-wider">
+                역할 (Role)
+              </Label>
               {selectedMember?.projectRole === 'ADMIN' ? (
                 <div className="bg-slate-950 border border-slate-800 text-blue-400 font-bold h-10 rounded-md px-3 flex items-center text-sm">
                   ADMIN
                 </div>
               ) : (
-                <Select value={editRole} onValueChange={(v: 'MEMBER' | 'MANAGER' | 'ADMIN') => handleRoleChange(v)}>
+                <Select
+                  value={editRole}
+                  onValueChange={(v: 'MEMBER' | 'MANAGER' | 'ADMIN') => handleRoleChange(v)}
+                >
                   <SelectTrigger className="bg-slate-950 border-slate-800 text-white">
                     <SelectValue />
                   </SelectTrigger>
@@ -116,7 +144,9 @@ export function EditMemberModal({ projectId, isOpen, onOpenChange, onSuccess, se
               )}
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-300 uppercase text-[10px] tracking-wider">레벨 (Access Level)</Label>
+              <Label className="text-slate-300 uppercase text-[10px] tracking-wider">
+                레벨 (Access Level)
+              </Label>
               <input
                 type="number"
                 min={DEFAULT_MEMBER_ACCESS_LEVEL}
@@ -131,9 +161,13 @@ export function EditMemberModal({ projectId, isOpen, onOpenChange, onSuccess, se
           </div>
 
           <div className="space-y-4 border border-slate-800 rounded-lg p-4 bg-slate-950/30">
-            <Label className="flex items-center gap-2 mb-2 text-blue-400 font-bold text-[11px] uppercase tracking-wider"><ShieldAlert className="w-3.5 h-3.5" /> 도구 권한 세부 설정</Label>
+            <Label className="flex items-center gap-2 mb-2 text-blue-400 font-bold text-[11px] uppercase tracking-wider">
+              <ShieldAlert className="w-3.5 h-3.5" /> 도구 권한 세부 설정
+            </Label>
             <div className="flex items-center justify-between">
-              <Label htmlFor="canUse" className="text-slate-300">사용 권한 (Can Use)</Label>
+              <Label htmlFor="canUse" className="text-slate-300">
+                사용 권한 (Can Use)
+              </Label>
               <Switch
                 id="canUse"
                 checked={editCanUse}
@@ -143,7 +177,9 @@ export function EditMemberModal({ projectId, isOpen, onOpenChange, onSuccess, se
               />
             </div>
             <div className="flex items-center justify-between">
-              <Label htmlFor="canCreate" className="text-slate-300">생성 권한 (Can Create)</Label>
+              <Label htmlFor="canCreate" className="text-slate-300">
+                생성 권한 (Can Create)
+              </Label>
               <Switch
                 id="canCreate"
                 checked={editCanCreate}
@@ -153,7 +189,9 @@ export function EditMemberModal({ projectId, isOpen, onOpenChange, onSuccess, se
               />
             </div>
             <div className="flex items-center justify-between">
-              <Label htmlFor="canUpdate" className="text-slate-300">수정 권한 (Can Update)</Label>
+              <Label htmlFor="canUpdate" className="text-slate-300">
+                수정 권한 (Can Update)
+              </Label>
               <Switch
                 id="canUpdate"
                 checked={editCanUpdate}
@@ -163,7 +201,9 @@ export function EditMemberModal({ projectId, isOpen, onOpenChange, onSuccess, se
               />
             </div>
             <div className="flex items-center justify-between">
-              <Label htmlFor="canDelete" className="text-slate-300">삭제 권한 (Can Delete)</Label>
+              <Label htmlFor="canDelete" className="text-slate-300">
+                삭제 권한 (Can Delete)
+              </Label>
               <Switch
                 id="canDelete"
                 checked={editCanDelete}
@@ -175,7 +215,9 @@ export function EditMemberModal({ projectId, isOpen, onOpenChange, onSuccess, se
           </div>
 
           <div className="space-y-2">
-            <Label className="text-slate-300 uppercase text-[10px] tracking-wider">멤버 상태 (Status)</Label>
+            <Label className="text-slate-300 uppercase text-[10px] tracking-wider">
+              멤버 상태 (Status)
+            </Label>
             <Select
               value={editStatus}
               onValueChange={(v: 'IN_PROGRESS' | 'COMPLETED') => setEditStatus(v)}
@@ -192,8 +234,18 @@ export function EditMemberModal({ projectId, isOpen, onOpenChange, onSuccess, se
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-slate-700 text-slate-300 hover:bg-slate-800">취소</Button>
-          <Button onClick={handleEditMember} disabled={isSubmitting} className="bg-blue-400 hover:bg-blue-500 text-[#003a6b] font-bold">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="border-slate-700 text-slate-300 hover:bg-slate-800"
+          >
+            취소
+          </Button>
+          <Button
+            onClick={handleEditMember}
+            disabled={isSubmitting}
+            className="bg-blue-400 hover:bg-blue-500 text-[#003a6b] font-bold"
+          >
             {isSubmitting ? '저장 중...' : '변경사항 저장'}
           </Button>
         </DialogFooter>

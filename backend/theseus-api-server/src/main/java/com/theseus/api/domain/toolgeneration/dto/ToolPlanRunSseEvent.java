@@ -57,8 +57,6 @@ public class ToolPlanRunSseEvent {
 	}
 
 	public static ToolPlanRunSseEvent createReplayFrom(ToolPlanRunState state) {
-		return ToolPlanRunSseEvent.createFrom(state).toBuilder()
-			.replay(true)
-			.build();
+		return ToolPlanRunSseEvent.createFrom(state).toBuilder().replay(true).build();
 	}
 }

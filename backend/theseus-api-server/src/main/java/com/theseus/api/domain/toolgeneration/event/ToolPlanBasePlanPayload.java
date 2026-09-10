@@ -6,5 +6,4 @@ public record ToolPlanBasePlanPayload(
 	String rawMarkdown,
 	JsonNode structuredPlanJson,
 	JsonNode planSnapshot
-) {
-}
+) {}

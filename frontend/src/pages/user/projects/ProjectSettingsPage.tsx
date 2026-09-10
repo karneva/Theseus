@@ -28,7 +28,9 @@ export default function ProjectSettingsPage() {
         <div className="min-w-max">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-1.5 h-6 bg-blue-400 rounded-full" />
-            <h1 className="text-3xl font-['Space_Grotesk'] font-bold tracking-tight text-white whitespace-nowrap">프로젝트 설정</h1>
+            <h1 className="text-3xl font-['Space_Grotesk'] font-bold tracking-tight text-white whitespace-nowrap">
+              프로젝트 설정
+            </h1>
           </div>
           <p className="text-sm text-slate-400 font-medium whitespace-nowrap">
             프로젝트 정보, 멤버, ToolPlan 승인 요청, Remote Workspace를 관리합니다.
@@ -37,11 +39,36 @@ export default function ProjectSettingsPage() {
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="bg-slate-900/50 backdrop-blur border border-slate-800 p-1 mb-8">
-            <TabsTrigger value="general" className="data-[state=active]:bg-blue-400 data-[state=active]:text-[#003a6b]">일반 설정</TabsTrigger>
-            <TabsTrigger value="members" className="data-[state=active]:bg-blue-400 data-[state=active]:text-[#003a6b]">멤버 관리</TabsTrigger>
-            <TabsTrigger value="tool-usages" className="data-[state=active]:bg-blue-400 data-[state=active]:text-[#003a6b]">도구 사용 목록</TabsTrigger>
-            <TabsTrigger value="approvals" className="data-[state=active]:bg-blue-400 data-[state=active]:text-[#003a6b]">ToolPlan 승인</TabsTrigger>
-            <TabsTrigger value="remote-workspaces" className="data-[state=active]:bg-blue-400 data-[state=active]:text-[#003a6b]">Remote Workspace</TabsTrigger>
+            <TabsTrigger
+              value="general"
+              className="data-[state=active]:bg-blue-400 data-[state=active]:text-[#003a6b]"
+            >
+              일반 설정
+            </TabsTrigger>
+            <TabsTrigger
+              value="members"
+              className="data-[state=active]:bg-blue-400 data-[state=active]:text-[#003a6b]"
+            >
+              멤버 관리
+            </TabsTrigger>
+            <TabsTrigger
+              value="tool-usages"
+              className="data-[state=active]:bg-blue-400 data-[state=active]:text-[#003a6b]"
+            >
+              도구 사용 목록
+            </TabsTrigger>
+            <TabsTrigger
+              value="approvals"
+              className="data-[state=active]:bg-blue-400 data-[state=active]:text-[#003a6b]"
+            >
+              ToolPlan 승인
+            </TabsTrigger>
+            <TabsTrigger
+              value="remote-workspaces"
+              className="data-[state=active]:bg-blue-400 data-[state=active]:text-[#003a6b]"
+            >
+              Remote Workspace
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="mt-0 focus-visible:outline-none">

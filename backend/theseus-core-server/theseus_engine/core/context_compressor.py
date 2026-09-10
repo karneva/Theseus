@@ -16,9 +16,9 @@ from typing import List, Optional
 log = logging.getLogger(__name__)
 
 # 기본 설정값
-DEFAULT_MAX_MESSAGES = 30       # 이 수를 초과하면 압축 트리거
-DEFAULT_KEEP_RECENT = 10        # 최근 N개는 원본 유지
-DEFAULT_SUMMARY_ROLE = "user"   # 요약 삽입 역할 (일부 LLM은 system 거부)
+DEFAULT_MAX_MESSAGES = 30  # 이 수를 초과하면 압축 트리거
+DEFAULT_KEEP_RECENT = 10  # 최근 N개는 원본 유지
+DEFAULT_SUMMARY_ROLE = "user"  # 요약 삽입 역할 (일부 LLM은 system 거부)
 
 
 def _structural_summary(messages: list) -> str:
@@ -122,6 +122,7 @@ def _make_summary_message(summary_text: str, original_messages: list):
     # ConversationMessage 형식 감지
     if first is not None and hasattr(first, "role"):
         from theseus_engine.models.messages import ConversationMessage, TextBlock
+
         return ConversationMessage(
             role=DEFAULT_SUMMARY_ROLE,
             content=[TextBlock(text=summary_text)],

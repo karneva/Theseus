@@ -29,7 +29,7 @@ import lombok.NoArgsConstructor;
 	name = "tool_usage_logs",
 	indexes = {
 		@Index(name = "idx_tool_usage_logs_project_used_at", columnList = "project_id, used_at"),
-		@Index(name = "idx_tool_usage_logs_project_status", columnList = "project_id, status")
+		@Index(name = "idx_tool_usage_logs_project_status", columnList = "project_id, status"),
 	}
 )
 @Entity
@@ -40,11 +40,19 @@ public class ToolUsageLog {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name = "fk_tool_usage_logs_project"))
+	@JoinColumn(
+		name = "project_id",
+		nullable = false,
+		foreignKey = @ForeignKey(name = "fk_tool_usage_logs_project")
+	)
 	private Project project;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "tool_id", nullable = false, foreignKey = @ForeignKey(name = "fk_tool_usage_logs_tool"))
+	@JoinColumn(
+		name = "tool_id",
+		nullable = false,
+		foreignKey = @ForeignKey(name = "fk_tool_usage_logs_tool")
+	)
 	private Tool tool;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -76,7 +84,10 @@ public class ToolUsageLog {
 	) {
 		this.project = Objects.requireNonNull(project, "project must not be null");
 		this.tool = Objects.requireNonNull(tool, "tool must not be null");
-		this.usedByProjectMember = Objects.requireNonNull(usedByProjectMember, "usedByProjectMember must not be null");
+		this.usedByProjectMember = Objects.requireNonNull(
+			usedByProjectMember,
+			"usedByProjectMember must not be null"
+		);
 		this.status = Objects.requireNonNull(status, "status must not be null");
 		this.usedAt = usedAt;
 		this.errorMessage = errorMessage;

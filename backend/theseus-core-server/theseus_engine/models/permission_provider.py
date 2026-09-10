@@ -136,9 +136,7 @@ class ServerPermissionProvider(ToolPermissionProvider):
         self,
         fetch_permissions_func: Callable[[], Awaitable[dict[str, int]]],
         fetch_disabled_func: Optional[Callable[[], Awaitable[set[str]]]] = None,
-        sync_func: Optional[
-            Callable[[str, int, Optional[dict[str, Any]]], Awaitable[None]]
-        ] = None,
+        sync_func: Optional[Callable[[str, int, Optional[dict[str, Any]]], Awaitable[None]]] = None,
     ) -> None:
         self._fetch = fetch_permissions_func
         self._fetch_disabled = fetch_disabled_func

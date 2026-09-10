@@ -1,5 +1,16 @@
-export type DraftPhase = null | 'DRAFT' | 'PLAN' | 'REVIEW' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'BUILDING' | 'BUILT' | 'FAILED';
-export type SenderType = 'USER' | 'ASSISTANT' | 'SYSTEM' | 'SYSTEM_NOTICE' | 'TOOL_FEEDBACK' | 'TOOL_APPROVAL_REQUEST';
+export type DraftPhase =
+  | null
+  | 'DRAFT'
+  | 'PLAN'
+  | 'REVIEW'
+  | 'PENDING'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'BUILDING'
+  | 'BUILT'
+  | 'FAILED';
+export type SenderType =
+  'USER' | 'ASSISTANT' | 'SYSTEM' | 'SYSTEM_NOTICE' | 'TOOL_FEEDBACK' | 'TOOL_APPROVAL_REQUEST';
 export type MessageType =
   | 'CHAT'
   | 'TOOL_DRAFT_REQUEST'
@@ -25,9 +36,7 @@ export interface ChatMessage {
 }
 
 export type ToolExecutionNoticeType =
-  | 'TOOL_EXECUTION_STARTED'
-  | 'TOOL_EXECUTION_COMPLETED'
-  | 'TOOL_EXECUTION_FAILED';
+  'TOOL_EXECUTION_STARTED' | 'TOOL_EXECUTION_COMPLETED' | 'TOOL_EXECUTION_FAILED';
 
 export interface ToolExecutionNotice {
   noticeType: ToolExecutionNoticeType;
@@ -127,10 +136,10 @@ export interface ChatSessionDetailResponse {
 export const ToolPlanMode = {
   ASK: 'ASK',
   PLAN: 'PLAN',
-  AGENT: 'AGENT'
+  AGENT: 'AGENT',
 } as const;
 
-export type ToolPlanMode = typeof ToolPlanMode[keyof typeof ToolPlanMode];
+export type ToolPlanMode = (typeof ToolPlanMode)[keyof typeof ToolPlanMode];
 
 export interface ToolPlanGenerationResponse {
   runId: string;

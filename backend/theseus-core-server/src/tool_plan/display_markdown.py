@@ -17,7 +17,9 @@ def build_plan_display_markdown(snapshot: dict[str, Any]) -> str:
         if display_content:
             lines.extend(f"   - {line}" for line in display_content)
 
-    constraints = [str(item).strip() for item in snapshot.get("constraints", []) if str(item).strip()]
+    constraints = [
+        str(item).strip() for item in snapshot.get("constraints", []) if str(item).strip()
+    ]
     if constraints:
         lines.extend(["", "### 주의 사항"])
         lines.extend(f"- {item}" for item in constraints)
@@ -33,9 +35,7 @@ def build_plan_display_markdown(snapshot: dict[str, Any]) -> str:
         lines.extend(f"- {line}" for line in execution_lines)
 
     validation_warnings = [
-        str(item).strip()
-        for item in snapshot.get("validationWarnings", [])
-        if str(item).strip()
+        str(item).strip() for item in snapshot.get("validationWarnings", []) if str(item).strip()
     ]
     if validation_warnings:
         lines.extend(["", "### 보완 필요"])
@@ -81,11 +81,7 @@ def _display_block_content(content: str) -> list[str]:
 def _display_alternatives(alternatives: list[dict[str, Any]]) -> list[str]:
     lines: list[str] = []
     for index, alternative in enumerate(alternatives, start=1):
-        title = str(
-            alternative.get("title")
-            or alternative.get("name")
-            or f"대안 {index}"
-        ).strip()
+        title = str(alternative.get("title") or alternative.get("name") or f"대안 {index}").strip()
         reason = str(
             alternative.get("reason")
             or alternative.get("why")
@@ -154,9 +150,15 @@ def _display_execution_spec(execution_spec: dict[str, Any]) -> list[str]:
                 continue
             step_id = str(step.get("step_id") or step.get("id") or "").strip()
             description = str(step.get("description") or "").strip()
-            command_count = len(step.get("commands") or []) if isinstance(step.get("commands"), list) else 0
+            command_count = (
+                len(step.get("commands") or []) if isinstance(step.get("commands"), list) else 0
+            )
             label = step_id or description or "step"
-            suffix = f" ({command_count} command)" if command_count == 1 else f" ({command_count} commands)"
+            suffix = (
+                f" ({command_count} command)"
+                if command_count == 1
+                else f" ({command_count} commands)"
+            )
             step_titles.append(f"`{label}`{suffix}")
         if step_titles:
             lines.append("실행 단계: " + ", ".join(step_titles))

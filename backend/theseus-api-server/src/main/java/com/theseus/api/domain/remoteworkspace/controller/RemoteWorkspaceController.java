@@ -31,24 +31,37 @@ public class RemoteWorkspaceController {
 
 	private final RemoteWorkspaceService remoteWorkspaceService;
 
-	@Operation(summary = "RemoteWorkspace create", description = "Registers an external server workspace for a project.")
+	@Operation(
+		summary = "RemoteWorkspace create",
+		description = "Registers an external server workspace for a project."
+	)
 	@PostMapping
 	public ResponseEntity<ApiResponse<RemoteWorkspaceResponse>> createRemoteWorkspace(
 		@AuthenticationPrincipal AuthenticatedUser currentUser,
 		@PathVariable Long projectId,
 		@Valid @RequestBody RemoteWorkspaceCreateRequest request
 	) {
-		RemoteWorkspaceResponse response = remoteWorkspaceService.createRemoteWorkspace(currentUser, projectId, request);
+		RemoteWorkspaceResponse response = remoteWorkspaceService.createRemoteWorkspace(
+			currentUser,
+			projectId,
+			request
+		);
 		return ApiResponse.onSuccess(SuccessCode.CREATED, response);
 	}
 
-	@Operation(summary = "RemoteWorkspace list", description = "Returns active remote workspaces for a project.")
+	@Operation(
+		summary = "RemoteWorkspace list",
+		description = "Returns active remote workspaces for a project."
+	)
 	@GetMapping
 	public ResponseEntity<ApiResponse<List<RemoteWorkspaceResponse>>> getRemoteWorkspaces(
 		@AuthenticationPrincipal AuthenticatedUser currentUser,
 		@PathVariable Long projectId
 	) {
-		List<RemoteWorkspaceResponse> responses = remoteWorkspaceService.getRemoteWorkspaces(currentUser, projectId);
+		List<RemoteWorkspaceResponse> responses = remoteWorkspaceService.getRemoteWorkspaces(
+			currentUser,
+			projectId
+		);
 		return ApiResponse.onSuccess(SuccessCode.OK, responses);
 	}
 
@@ -67,7 +80,10 @@ public class RemoteWorkspaceController {
 		return ApiResponse.onSuccess(SuccessCode.OK, response);
 	}
 
-	@Operation(summary = "RemoteWorkspace update", description = "Updates remote workspace connection information.")
+	@Operation(
+		summary = "RemoteWorkspace update",
+		description = "Updates remote workspace connection information."
+	)
 	@PatchMapping("/{remoteWorkspaceId}")
 	public ResponseEntity<ApiResponse<RemoteWorkspaceResponse>> updateRemoteWorkspace(
 		@AuthenticationPrincipal AuthenticatedUser currentUser,
@@ -84,7 +100,10 @@ public class RemoteWorkspaceController {
 		return ApiResponse.onSuccess(SuccessCode.OK, response);
 	}
 
-	@Operation(summary = "RemoteWorkspace delete", description = "Marks a remote workspace as deleted.")
+	@Operation(
+		summary = "RemoteWorkspace delete",
+		description = "Marks a remote workspace as deleted."
+	)
 	@PatchMapping("/{remoteWorkspaceId}/delete")
 	public ResponseEntity<ApiResponse<RemoteWorkspaceResponse>> deleteRemoteWorkspace(
 		@AuthenticationPrincipal AuthenticatedUser currentUser,
@@ -99,7 +118,10 @@ public class RemoteWorkspaceController {
 		return ApiResponse.onSuccess(SuccessCode.OK, response);
 	}
 
-	@Operation(summary = "RemoteWorkspace connection test", description = "Returns a placeholder response until Core SSH Connector is integrated.")
+	@Operation(
+		summary = "RemoteWorkspace connection test",
+		description = "Returns a placeholder response until Core SSH Connector is integrated."
+	)
 	@PostMapping("/{remoteWorkspaceId}/test-connection")
 	public ResponseEntity<ApiResponse<RemoteWorkspaceConnectionTestResponse>> testConnection(
 		@AuthenticationPrincipal AuthenticatedUser currentUser,

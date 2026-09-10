@@ -36,11 +36,15 @@ public class BillingUsageService {
 	 * Core Server가 보고한 토큰 사용량을 멱등키 기준으로 저장합니다.
 	 */
 	@Transactional
-	public BillingUsageResponse createUsage(BillingUsageCreateRequest request, String idempotencyKey) {
+	public BillingUsageResponse createUsage(
+		BillingUsageCreateRequest request,
+		String idempotencyKey
+	) {
 		validateRequest(request);
 		String normalizedIdempotencyKey = normalizeIdempotencyKey(idempotencyKey);
 		if (normalizedIdempotencyKey != null) {
-			return billingUsageRepository.findByIdempotencyKey(normalizedIdempotencyKey)
+			return billingUsageRepository
+				.findByIdempotencyKey(normalizedIdempotencyKey)
 				.map(BillingUsageResponse::createFrom)
 				.orElseGet(() -> createNewUsage(request, normalizedIdempotencyKey));
 		}
@@ -48,11 +52,16 @@ public class BillingUsageService {
 		return createNewUsage(request, null);
 	}
 
-	private BillingUsageResponse createNewUsage(BillingUsageCreateRequest request, String idempotencyKey) {
+	private BillingUsageResponse createNewUsage(
+		BillingUsageCreateRequest request,
+		String idempotencyKey
+	) {
 		BillingUsageMetricsRequest usage = request.getUsage();
-		User user = userRepository.findById(request.getUserId())
+		User user = userRepository
+			.findById(request.getUserId())
 			.orElseThrow(() -> BusinessException.of(ErrorCode.USER_NOT_FOUND));
-		Project project = projectRepository.findById(request.getProjectId())
+		Project project = projectRepository
+			.findById(request.getProjectId())
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_NOT_FOUND));
 
 		BillingUsage billingUsage = BillingUsage.builder()
@@ -71,7 +80,12 @@ public class BillingUsageService {
 	}
 
 	private void validateRequest(BillingUsageCreateRequest request) {
-		if (request == null || request.getUserId() == null || request.getProjectId() == null || request.getUsage() == null) {
+		if (
+			request == null ||
+			request.getUserId() == null ||
+			request.getProjectId() == null ||
+			request.getUsage() == null
+		) {
 			throw BusinessException.of(ErrorCode.BILLING_USAGE_PAYLOAD_INVALID);
 		}
 	}

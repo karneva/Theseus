@@ -24,7 +24,10 @@ public class ToolUsageController {
 
 	private final ToolUsageService toolUsageService;
 
-	@Operation(summary = "Tool usage history", description = "Returns project Tool calling history for project admins.")
+	@Operation(
+		summary = "Tool usage history",
+		description = "Returns project Tool calling history for project admins."
+	)
 	@GetMapping
 	public ResponseEntity<ApiResponse<ToolUsageListResponse>> getToolUsages(
 		@AuthenticationPrincipal AuthenticatedUser currentUser,

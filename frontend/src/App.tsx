@@ -1,6 +1,6 @@
-import { RouterProvider } from 'react-router-dom'
-import { Toaster } from 'sonner'
-import { router } from './routes'
+import { RouterProvider } from 'react-router-dom';
+import { Toaster } from 'sonner';
+import { router } from './routes';
 
 function App() {
   return (
@@ -18,7 +18,7 @@ function App() {
         }}
       />
     </>
-  )
+  );
 }
 
-export default App
+export default App;

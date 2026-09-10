@@ -27,7 +27,10 @@ import lombok.NoArgsConstructor;
 @Table(
 	name = "project_members",
 	uniqueConstraints = {
-		@UniqueConstraint(name = "uk_project_members_project_user", columnNames = {"project_id", "user_id"})
+		@UniqueConstraint(
+			name = "uk_project_members_project_user",
+			columnNames = { "project_id", "user_id" }
+		),
 	}
 )
 @Entity
@@ -101,7 +104,7 @@ public class ProjectMember {
 		this.canDeleteTool = canDeleteTool != null && canDeleteTool;
 		this.status = status == null ? ProjectMemberStatus.IN_PROGRESS : status;
 		this.createdByUser = createdByUser;
-		if (ProjectRole.ADMIN.equals(this.projectRole)) {
+		if (isAdmin()) {
 			grantAllToolPermissions();
 		}
 	}
@@ -142,9 +145,21 @@ public class ProjectMember {
 		if (status != null) {
 			this.status = status;
 		}
-		if (ProjectRole.ADMIN.equals(this.projectRole)) {
+		if (isAdmin()) {
 			grantAllToolPermissions();
 		}
+	}
+
+	public boolean isActive() {
+		return ProjectMemberStatus.IN_PROGRESS.equals(status);
+	}
+
+	public boolean isAdmin() {
+		return ProjectRole.ADMIN.equals(projectRole);
+	}
+
+	public boolean isActiveAdmin() {
+		return isActive() && isAdmin();
 	}
 
 	public void assignProjectAdminRole() {

@@ -8,7 +8,11 @@ from typing import Any, Callable
 from pydantic import ValidationError
 
 from src.config import settings
-from src.db.repositories.core_runs import CoreRunAlreadyFinished, CoreRunLeaseHeld, CoreRunRepository
+from src.db.repositories.core_runs import (
+    CoreRunAlreadyFinished,
+    CoreRunLeaseHeld,
+    CoreRunRepository,
+)
 from src.tool_build.builder import ToolBuildError, ToolBuilder
 from src.tool_build.publisher import ToolBuildEventPublisher
 from src.tool_build.schemas import (
@@ -32,7 +36,9 @@ class ToolBuildProcessor:
         *,
         publisher: ToolBuildEventPublisher,
         builder: ToolBuilder | None = None,
-        checkpoint_repo_factory: Callable[[], AbstractContextManager[CoreRunRepository]] | None = None,
+        checkpoint_repo_factory: (
+            Callable[[], AbstractContextManager[CoreRunRepository]] | None
+        ) = None,
     ) -> None:
         self.publisher = publisher
         self.builder = builder or ToolBuilder()
@@ -72,7 +78,9 @@ class ToolBuildProcessor:
                     logger.info("Duplicate terminal Tool build run skipped. runId=%s", event.run_id)
                     return
                 except CoreRunLeaseHeld:
-                    logger.info("Tool build run lease is held by another worker. runId=%s", event.run_id)
+                    logger.info(
+                        "Tool build run lease is held by another worker. runId=%s", event.run_id
+                    )
                     return
 
         try:
@@ -80,7 +88,9 @@ class ToolBuildProcessor:
             artifact = await asyncio.wait_for(
                 self.builder.build(
                     event,
-                    progress_callback=lambda message, rate: self.publish_progress(event, message, rate),
+                    progress_callback=lambda message, rate: self.publish_progress(
+                        event, message, rate
+                    ),
                     chunk_callback=lambda content: self.publish_chunk(event, content),
                 ),
                 timeout=settings.CORE_TOOL_BUILD_RUN_TIMEOUT_SECONDS,
@@ -99,7 +109,9 @@ class ToolBuildProcessor:
                     repo.mark_completed(event.run_id)
             self._finished_runs.add(event.run_id)
         except ToolBuildError as exc:
-            logger.error("Tool build failed. runId=%s code=%s error=%s", event.run_id, exc.code, exc.message)
+            logger.error(
+                "Tool build failed. runId=%s code=%s error=%s", event.run_id, exc.code, exc.message
+            )
             message = await self._explain_failure(event, code=exc.code, message=exc.message)
             await self.publish_failed(event, exc.code, message)
         except ToolBuildPublishError:
@@ -113,12 +125,18 @@ class ToolBuildProcessor:
             )
             code = "TOOL_BUILD_TIMEOUT"
             message = f"Tool build exceeded {settings.CORE_TOOL_BUILD_RUN_TIMEOUT_SECONDS} seconds."
-            message = await self._explain_failure(event, code=code, message=message, stage="timeout")
+            message = await self._explain_failure(
+                event, code=code, message=message, stage="timeout"
+            )
             await self.publish_failed(event, code, message)
         except Exception as exc:
-            logger.error("Unexpected Tool build failure. runId=%s error=%s", event.run_id, exc, exc_info=True)
+            logger.error(
+                "Unexpected Tool build failure. runId=%s error=%s", event.run_id, exc, exc_info=True
+            )
             code = "TOOL_BUILD_FAILED"
-            message = await self._explain_failure(event, code=code, message=str(exc), stage="unexpected")
+            message = await self._explain_failure(
+                event, code=code, message=str(exc), stage="unexpected"
+            )
             await self.publish_failed(event, code, message)
 
     async def _explain_failure(

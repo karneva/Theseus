@@ -18,7 +18,6 @@ from theseus_engine.wrappers.llm_clients.api_types import (
     SupportsStreamingMessages,
 )
 
-
 CheckpointCallback = Callable[[dict], Awaitable[None] | None]
 ChunkCallback = Callable[[str], Awaitable[None] | None]
 ProgressCallback = Callable[[str, int | None], Awaitable[None] | None]
@@ -67,7 +66,9 @@ class ToolPlanAgentLoop:
         return {
             key: value
             for key, value in self.tool_metadata.items()
-            if key in allowed_keys and value is not None and not isinstance(value, (dict, list, tuple, set))
+            if key in allowed_keys
+            and value is not None
+            and not isinstance(value, (dict, list, tuple, set))
         }
 
     async def run(
@@ -82,8 +83,12 @@ class ToolPlanAgentLoop:
         progress_callback: ProgressCallback | None = None,
     ) -> ToolPlanAgentLoopResult:
         restored_checkpoint = checkpoint if isinstance(checkpoint, dict) else {}
-        state_machine = self._restore_state_machine(self._dict_or_none(restored_checkpoint.get("stateMachine")))
-        messages = self._restore_messages(self._list_or_empty(restored_checkpoint.get("conversation")))
+        state_machine = self._restore_state_machine(
+            self._dict_or_none(restored_checkpoint.get("stateMachine"))
+        )
+        messages = self._restore_messages(
+            self._list_or_empty(restored_checkpoint.get("conversation"))
+        )
         tool_trace = self._restore_tool_trace(restored_checkpoint.get("toolTrace"))
         completed_steps = self._restore_completed_steps(restored_checkpoint.get("progress"))
 
@@ -109,7 +114,9 @@ class ToolPlanAgentLoop:
 
         for turn_index in range(completed_steps, self.max_turns):
             if progress_callback:
-                await self._emit_progress(progress_callback, f"Analyzing request... (Turn {turn_index + 1})")
+                await self._emit_progress(
+                    progress_callback, f"Analyzing request... (Turn {turn_index + 1})"
+                )
 
             final_message = None
             async for llm_event in self.llm_client.stream_message(
@@ -143,7 +150,9 @@ class ToolPlanAgentLoop:
             if not final_message.tool_uses:
                 return ToolPlanAgentLoopResult(
                     final_text=final_message.text,
-                    checkpoint=self._checkpoint_payload(state_machine, messages, tool_trace, completed_steps),
+                    checkpoint=self._checkpoint_payload(
+                        state_machine, messages, tool_trace, completed_steps
+                    ),
                 )
 
             tool_results = []
@@ -165,7 +174,9 @@ class ToolPlanAgentLoop:
                 )
 
                 if progress_callback:
-                    await self._emit_progress(progress_callback, f"Executing tool '{tool_use.name}'...")
+                    await self._emit_progress(
+                        progress_callback, f"Executing tool '{tool_use.name}'..."
+                    )
 
                 result_block = await self._execute_tool(tool_use.name, tool_use.id, tool_use.input)
                 trace_item["status"] = "failed" if result_block.is_error else "completed"
@@ -260,7 +271,9 @@ class ToolPlanAgentLoop:
         tool_trace.append(item)
         return item
 
-    async def _execute_tool(self, tool_name: str, tool_use_id: str, tool_input: dict) -> ToolResultBlock:
+    async def _execute_tool(
+        self, tool_name: str, tool_use_id: str, tool_input: dict
+    ) -> ToolResultBlock:
         tool = self.tool_registry.get(tool_name)
         if tool is None:
             return ToolResultBlock(
@@ -392,7 +405,9 @@ class ToolPlanAgentLoop:
         if result is not None:
             await result
 
-    async def _emit_progress(self, callback: ProgressCallback | None, message: str, rate: int | None = None) -> None:
+    async def _emit_progress(
+        self, callback: ProgressCallback | None, message: str, rate: int | None = None
+    ) -> None:
         if callback is None:
             return
         result = callback(message, rate)

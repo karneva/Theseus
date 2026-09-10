@@ -5,8 +5,6 @@ import com.theseus.api.common.exception.ErrorCode;
 import com.theseus.api.domain.auth.token.AuthenticatedUser;
 import com.theseus.api.domain.project.entity.Project;
 import com.theseus.api.domain.project.entity.ProjectMember;
-import com.theseus.api.domain.project.entity.ProjectMemberStatus;
-import com.theseus.api.domain.project.entity.ProjectRole;
 import com.theseus.api.domain.project.repository.ProjectMemberRepository;
 import com.theseus.api.domain.project.repository.ProjectRepository;
 import com.theseus.api.domain.tool.dto.response.ToolUsageListResponse;
@@ -46,7 +44,8 @@ public class ToolUsageService {
 		validateProjectAdmin(projectMember);
 
 		// TODO(S14P31A308-483): Tool execution completed/failed 이벤트 수신 지점에서 ToolUsageLog 저장을 연결합니다.
-		List<ProjectMember> projectMembers = projectMemberRepository.findByProject(project)
+		List<ProjectMember> projectMembers = projectMemberRepository
+			.findByProject(project)
 			.stream()
 			.sorted(Comparator.comparing(member -> member.getUser().getName()))
 			.toList();
@@ -60,15 +59,23 @@ public class ToolUsageService {
 		int fromIndex = Math.min(normalizedPage * normalizedSize, projectMembers.size());
 		int toIndex = Math.min(fromIndex + normalizedSize, projectMembers.size());
 
-		List<ToolUsageResponse> items = projectMembers.subList(fromIndex, toIndex)
+		List<ToolUsageResponse> items = projectMembers
+			.subList(fromIndex, toIndex)
 			.stream()
-			.map(member -> ToolUsageResponse.createFrom(
-				member,
-				usageLogsByProjectMemberId.getOrDefault(member.getId(), Collections.emptyList())
-			))
+			.map(member ->
+				ToolUsageResponse.createFrom(
+					member,
+					usageLogsByProjectMemberId.getOrDefault(member.getId(), Collections.emptyList())
+				)
+			)
 			.toList();
 
-		return ToolUsageListResponse.createFrom(items, normalizedPage, normalizedSize, projectMembers.size());
+		return ToolUsageListResponse.createFrom(
+			items,
+			normalizedPage,
+			normalizedSize,
+			projectMembers.size()
+		);
 	}
 
 	private User getCurrentUserEntity(AuthenticatedUser currentUser) {
@@ -76,20 +83,23 @@ public class ToolUsageService {
 			throw BusinessException.of(ErrorCode.UNAUTHORIZED);
 		}
 
-		return userRepository.findById(currentUser.userId())
+		return userRepository
+			.findById(currentUser.userId())
 			.orElseThrow(() -> BusinessException.of(ErrorCode.USER_NOT_FOUND));
 	}
 
 	private Project getProjectEntity(Long projectId) {
-		return projectRepository.findById(projectId)
+		return projectRepository
+			.findById(projectId)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_NOT_FOUND));
 	}
 
 	private ProjectMember getActiveProjectMember(Project project, User user) {
-		ProjectMember projectMember = projectMemberRepository.findByProjectAndUser(project, user)
+		ProjectMember projectMember = projectMemberRepository
+			.findByProjectAndUser(project, user)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_MEMBER_PERMISSION_REQUIRED));
 
-		if (!ProjectMemberStatus.IN_PROGRESS.equals(projectMember.getStatus())) {
+		if (!projectMember.isActive()) {
 			throw BusinessException.of(ErrorCode.ACTIVE_PROJECT_MEMBER_REQUIRED);
 		}
 
@@ -97,9 +107,8 @@ public class ToolUsageService {
 	}
 
 	private void validateProjectAdmin(ProjectMember projectMember) {
-		if (!ProjectRole.ADMIN.equals(projectMember.getProjectRole())) {
+		if (!projectMember.isAdmin()) {
 			throw BusinessException.of(ErrorCode.PROJECT_ADMIN_PERMISSION_REQUIRED);
 		}
 	}
-
 }

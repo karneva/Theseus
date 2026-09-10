@@ -9,5 +9,5 @@ public enum ToolPlanGroupStatus {
 	BUILT,
 	REJECTED,
 	CANCELLED,
-	FAILED
+	FAILED,
 }

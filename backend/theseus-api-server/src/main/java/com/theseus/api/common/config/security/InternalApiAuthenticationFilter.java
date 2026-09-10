@@ -65,8 +65,12 @@ public class InternalApiAuthenticationFilter extends OncePerRequestFilter {
 		response.setStatus(errorCode.getStatus().value());
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 		response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-		response.getWriter().write("""
+		response.getWriter().write(
+			"""
 			{"code":"%s","message":"%s"}
-			""".formatted(errorCode.getCode(), errorCode.getMessage()).trim());
+			"""
+				.formatted(errorCode.getCode(), errorCode.getMessage())
+				.trim()
+		);
 	}
 }

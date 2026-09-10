@@ -107,22 +107,29 @@ class SecurityApprovalModal(ModalScreen[str]):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         mapping = {
-            "btn-approve":     "approve",
+            "btn-approve": "approve",
             "btn-approve-all": "approve_all",
-            "btn-deny":        "deny",
+            "btn-deny": "deny",
         }
         self.dismiss(mapping.get(event.button.id, "deny"))
 
-    def action_approve(self)     -> None: self.dismiss("approve")
-    def action_approve_all(self) -> None: self.dismiss("approve_all")
-    def action_deny(self)        -> None: self.dismiss("deny")
+    def action_approve(self) -> None:
+        self.dismiss("approve")
+
+    def action_approve_all(self) -> None:
+        self.dismiss("approve_all")
+
+    def action_deny(self) -> None:
+        self.dismiss("deny")
 
 
 # ── 헬퍼 ─────────────────────────────────────────────────────────
 
+
 def _format_tool_input(tool_input: dict, max_chars: int = 300) -> str:
     """tool_input dict를 사람이 읽기 좋은 텍스트로 변환합니다."""
     import json
+
     try:
         text = json.dumps(tool_input, ensure_ascii=False, indent=2)
     except Exception:

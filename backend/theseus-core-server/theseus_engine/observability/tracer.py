@@ -53,26 +53,17 @@ def is_tracing_enabled() -> bool:
 
     langchain_tracing_v2 = os.getenv("LANGCHAIN_TRACING_V2")
     tracing_v2_disabled = (
-        langchain_tracing_v2 is not None
-        and langchain_tracing_v2.strip().lower() in FALSE_VALUES
+        langchain_tracing_v2 is not None and langchain_tracing_v2.strip().lower() in FALSE_VALUES
     )
     api_key = os.getenv("LANGCHAIN_API_KEY", "").strip()
-    explicit_enable = (
-        os.getenv("THESEUS_TRACING_ENABLED", "false")
-        .lower() == "true"
-    )
+    explicit_enable = os.getenv("THESEUS_TRACING_ENABLED", "false").lower() == "true"
 
-    _tracing_enabled = (
-        not tracing_v2_disabled and bool(api_key) and explicit_enable
-    )
+    _tracing_enabled = not tracing_v2_disabled and bool(api_key) and explicit_enable
 
     if _tracing_enabled:
         log.info(
-            "[Theseus Tracer] LangSmith 트레이싱 활성화됨. "
-            "Project: %s",
-            os.getenv(
-                "LANGCHAIN_PROJECT", "Theseus-Core-Server"
-            ),
+            "[Theseus Tracer] LangSmith 트레이싱 활성화됨. " "Project: %s",
+            os.getenv("LANGCHAIN_PROJECT", "Theseus-Core-Server"),
         )
     else:
         log.debug(
@@ -142,9 +133,7 @@ def theseus_traceable(
             descriptor_type = staticmethod
             target = func.__func__
 
-        trace_name = name or getattr(
-            target, "__name__", target.__class__.__name__
-        )
+        trace_name = name or getattr(target, "__name__", target.__class__.__name__)
         trace_tags = list(tags or [])
         trace_metadata = dict(metadata or {})
 
@@ -207,19 +196,18 @@ def tracing_context(
         from langsmith.run_helpers import (
             tracing_context as ls_tracing_context,
         )
+
         with ls_tracing_context(
             tags=tags or [],
             metadata=metadata or {},
         ):
             yield
     except ImportError:
-        log.warning(
-            "[Theseus Tracer] langsmith 패키지가 "
-            "설치되어 있지 않습니다."
-        )
+        log.warning("[Theseus Tracer] langsmith 패키지가 " "설치되어 있지 않습니다.")
         yield
     except Exception as e:
         log.warning(
-            "[Theseus Tracer] tracing_context 오류: %s", e,
+            "[Theseus Tracer] tracing_context 오류: %s",
+            e,
         )
         yield

@@ -26,14 +26,12 @@ class SkillReadTool(BaseTool):
     input_model = SkillReadInput
     permission_level = 1
 
-    async def execute(
-        self, arguments: SkillReadInput, context: ToolExecutionContext
-    ) -> ToolResult:
+    async def execute(self, arguments: SkillReadInput, context: ToolExecutionContext) -> ToolResult:
         registry = load_skill_registry(context.cwd)
         skill = registry.get(arguments.name)
         if not skill:
             return ToolResult(output=f"Skill not found: {arguments.name}", is_error=True)
-        
+
         return ToolResult(output=f"--- SKILL: {skill.name} ---\n{skill.content}")
 
 
@@ -57,17 +55,15 @@ class SkillSaveTool(BaseTool):
     input_model = SkillSaveInput
     permission_level = 2
 
-    async def execute(
-        self, arguments: SkillSaveInput, context: ToolExecutionContext
-    ) -> ToolResult:
+    async def execute(self, arguments: SkillSaveInput, context: ToolExecutionContext) -> ToolResult:
         skills_dir = ensure_skills_dir(context.cwd)  # 쓰기 시에만 디렉터리 생성
         # Normalize folder name
         folder_name = arguments.name.lower().replace(" ", "-")
         skill_folder = skills_dir / folder_name
         skill_folder.mkdir(parents=True, exist_ok=True)
-        
+
         skill_file = skill_folder / "SKILL.md"
-        
+
         metadata = {
             "name": arguments.name,
             "description": arguments.description,
@@ -79,18 +75,11 @@ class SkillSaveTool(BaseTool):
             allow_unicode=True,
             sort_keys=False,
         ).strip()
-        markdown_content = (
-            f"---\n"
-            f"{frontmatter}\n"
-            f"---\n\n"
-            f"{arguments.content}"
-        )
-        
+        markdown_content = f"---\n" f"{frontmatter}\n" f"---\n\n" f"{arguments.content}"
+
         try:
             skill_file.write_text(markdown_content, encoding="utf-8")
-            return ToolResult(
-                output=f"✅ Skill saved: {arguments.name}\nPath: {skill_file}"
-            )
+            return ToolResult(output=f"✅ Skill saved: {arguments.name}\nPath: {skill_file}")
         except Exception as exc:
             return ToolResult(output=f"Skill save failed: {exc}", is_error=True)
 
@@ -107,16 +96,11 @@ class SkillListTool(BaseTool):
     input_model = SkillListInput
     permission_level = 1
 
-    async def execute(
-        self, arguments: SkillListInput, context: ToolExecutionContext
-    ) -> ToolResult:
+    async def execute(self, arguments: SkillListInput, context: ToolExecutionContext) -> ToolResult:
         registry = load_skill_registry(context.cwd)
         skills = registry.list_skills()
         if not skills:
             return ToolResult(output="(No saved skills)")
-        
-        lines = [
-            f"- {s.name}: {s.description}"
-            for s in skills
-        ]
+
+        lines = [f"- {s.name}: {s.description}" for s in skills]
         return ToolResult(output="\n".join(lines))

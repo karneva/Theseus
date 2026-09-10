@@ -15,7 +15,6 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-
 # ── Tool Primitives ───────────────────────────────────────────
 
 
@@ -42,10 +41,7 @@ class ToolExecutionContext:
 
         if self.tool_invoker is None:
             return ToolResult(
-                output=(
-                    "Nested tool calls are not available in this execution "
-                    "context."
-                ),
+                output=("Nested tool calls are not available in this execution " "context."),
                 is_error=True,
             )
         if arguments is None:
@@ -57,8 +53,7 @@ class ToolExecutionContext:
         else:
             return ToolResult(
                 output=(
-                    "Nested tool call arguments must be a dict, Pydantic "
-                    "BaseModel, or None."
+                    "Nested tool call arguments must be a dict, Pydantic " "BaseModel, or None."
                 ),
                 is_error=True,
             )
@@ -167,11 +162,13 @@ class ToolRegistry:
 
 class DummyInput(BaseModel):
     """Input for the dummy_echo tool."""
+
     message: str = Field(description="The message to echo back.")
 
 
 class DummyTool(BaseTool):
     """A simple tool that echoes back the input message. Used for connectivity testing."""
+
     name = "dummy_echo"
     description = "Echoes back the provided message to verify tool execution pipeline."
     input_model = DummyInput
@@ -182,15 +179,19 @@ class DummyTool(BaseTool):
 
 class SystemRebootInput(BaseModel):
     """Input for the system_reboot tool."""
+
     reason: str = Field(description="Reason for the reboot.")
 
 
 class SystemRebootTool(BaseTool):
     """A mock tool that simulates a system reboot. (Restricted RBAC)"""
+
     name = "system_reboot"
     description = "Simulates a system reboot for testing high-privilege RBAC tools."
     input_model = SystemRebootInput
     permission_level = 5
 
-    async def execute(self, arguments: SystemRebootInput, context: ToolExecutionContext) -> ToolResult:
+    async def execute(
+        self, arguments: SystemRebootInput, context: ToolExecutionContext
+    ) -> ToolResult:
         return ToolResult(output=f"System reboot initiated. Reason: {arguments.reason}")

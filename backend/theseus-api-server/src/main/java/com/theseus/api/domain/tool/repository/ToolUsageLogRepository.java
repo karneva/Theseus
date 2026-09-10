@@ -6,6 +6,5 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ToolUsageLogRepository extends JpaRepository<ToolUsageLog, Long> {
-
 	List<ToolUsageLog> findByProjectOrderByUsedAtDesc(Project project);
 }

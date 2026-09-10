@@ -48,7 +48,9 @@ export default function AdminLayout() {
       <main className="flex-1 overflow-auto bg-[#051424]">
         <div className="mx-auto pt-[20px] pb-10 w-[1302px]">
           <div className="mb-[20px]">
-            <h2 className="text-[32px] font-medium text-[#d4e4fa] tracking-[-0.8px]">관리자 페이지</h2>
+            <h2 className="text-[32px] font-medium text-[#d4e4fa] tracking-[-0.8px]">
+              관리자 페이지
+            </h2>
           </div>
 
           <Outlet />

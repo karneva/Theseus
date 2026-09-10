@@ -161,17 +161,32 @@ export type KnownRunnerEvent =
       remainingTasks?: number;
     })
   | (RunnerBaseEvent<'SessionListEvent'> & { current?: string; sessions?: SessionSummary[] })
-  | (RunnerBaseEvent<'SessionChangedEvent'> & { current?: string; history?: unknown[]; planState?: JsonObject | null })
+  | (RunnerBaseEvent<'SessionChangedEvent'> & {
+      current?: string;
+      history?: unknown[];
+      planState?: JsonObject | null;
+    })
   | (RunnerBaseEvent<'SessionExportedEvent'> & { name?: string; format?: string; content?: string })
   | (RunnerBaseEvent<'workspaceInfo'> & { name?: string; path?: string })
   | (RunnerBaseEvent<'activeFileChanged'> & { file?: string; line?: number })
   | (RunnerBaseEvent<'customToolsLoaded'> & { tools?: unknown[] })
   | (RunnerBaseEvent<'customToolInventoryUpdated'> & { tools?: unknown[] })
   | (RunnerBaseEvent<'customToolInstallProgress'> & { success?: boolean; packages?: unknown[] })
-  | (RunnerBaseEvent<'toolRegistryUpdated'> & { availableTools?: unknown[]; unavailableCount?: number })
-  | (RunnerBaseEvent<'customToolsChanged'> & { action?: string; file?: string; validation?: unknown })
+  | (RunnerBaseEvent<'toolRegistryUpdated'> & {
+      availableTools?: unknown[];
+      unavailableCount?: number;
+    })
+  | (RunnerBaseEvent<'customToolsChanged'> & {
+      action?: string;
+      file?: string;
+      validation?: unknown;
+    })
   | (RunnerBaseEvent<'customToolValidation'> & { success?: boolean })
-  | (RunnerBaseEvent<'healthStatus'> & { settings?: JsonObject; runner?: JsonObject; checks?: unknown[] })
+  | (RunnerBaseEvent<'healthStatus'> & {
+      settings?: JsonObject;
+      runner?: JsonObject;
+      checks?: unknown[];
+    })
   | (RunnerBaseEvent<'changeReviewUpdated'> & { id?: string; path?: string; success?: boolean })
   | (RunnerBaseEvent<'assetSaved'> & { path?: string })
   | RunnerBaseEvent<'assetSaveFailed'>
@@ -228,8 +243,23 @@ export type WebviewToHostMessage =
   | { type: 'reviewPlan'; action?: string }
   | { type: 'openPlanPreview'; plan?: JsonObject }
   | { type: 'getFiles'; query?: string }
-  | { type: 'updateToolPermission'; metadataPath?: string; permissionLevel?: unknown; toolName?: string | null; session?: string | null }
-  | { type: 'installCustomToolDependencies' | 'retryCustomToolLoad' | 'registerCustomTool' | 'disableCustomTool'; metadataPath?: string; modulePath?: string; toolName?: string | null }
+  | {
+      type: 'updateToolPermission';
+      metadataPath?: string;
+      permissionLevel?: unknown;
+      toolName?: string | null;
+      session?: string | null;
+    }
+  | {
+      type:
+        | 'installCustomToolDependencies'
+        | 'retryCustomToolLoad'
+        | 'registerCustomTool'
+        | 'disableCustomTool';
+      metadataPath?: string;
+      modulePath?: string;
+      toolName?: string | null;
+    }
   | { type: 'selectWorktree' }
   | { type: 'savePastedImage'; name?: string; data?: unknown }
   | { type: 'revertChangedFile'; id?: string; path?: string; oldContent?: string }
@@ -371,7 +401,9 @@ function optionalNumber(value: unknown): boolean {
 }
 
 function optionalStringArray(value: unknown): boolean {
-  return isMissing(value) || (Array.isArray(value) && value.every(item => typeof item === 'string'));
+  return (
+    isMissing(value) || (Array.isArray(value) && value.every((item) => typeof item === 'string'))
+  );
 }
 
 function isKnownRunnerEventShape(value: JsonObject, type: string): boolean {
@@ -379,9 +411,17 @@ function isKnownRunnerEventShape(value: JsonObject, type: string): boolean {
     case 'AssistantTextDelta':
       return optionalString(value.text);
     case 'AgentLoopStatus':
-      return optionalString(value.phase) && optionalNumber(value.turn) && optionalNumber(value.tool_count);
+      return (
+        optionalString(value.phase) &&
+        optionalNumber(value.turn) &&
+        optionalNumber(value.tool_count)
+      );
     case 'CompactProgressEvent':
-      return optionalString(value.phase) && optionalString(value.trigger) && optionalString(value.message);
+      return (
+        optionalString(value.phase) &&
+        optionalString(value.trigger) &&
+        optionalString(value.message)
+      );
     case 'ToolExecutionStarted':
       return optionalString(value.tool_name);
     case 'ToolExecutionCompleted':
@@ -389,16 +429,18 @@ function isKnownRunnerEventShape(value: JsonObject, type: string): boolean {
     case 'RunnerReady':
       return optionalString(value.model) && optionalString(value.cwd);
     case 'RunnerStatus':
-      return optionalBoolean(value.running)
-        && optionalBoolean(value.processRunning)
-        && optionalString(value.lifecycle)
-        && optionalString(value.state)
-        && optionalNumber(value.daemonPort)
-        && optionalNumber(value.lastEventAt)
-        && optionalNumber(value.lastHeartbeatAt)
-        && optionalString(value.activeRunId)
-        && optionalString(value.activeRunStatus)
-        && optionalString(value.stalledReason);
+      return (
+        optionalBoolean(value.running) &&
+        optionalBoolean(value.processRunning) &&
+        optionalString(value.lifecycle) &&
+        optionalString(value.state) &&
+        optionalNumber(value.daemonPort) &&
+        optionalNumber(value.lastEventAt) &&
+        optionalNumber(value.lastHeartbeatAt) &&
+        optionalString(value.activeRunId) &&
+        optionalString(value.activeRunStatus) &&
+        optionalString(value.stalledReason)
+      );
     case 'RunnerDiagnostic':
     case 'RunnerError':
     case 'ErrorEvent':
@@ -417,11 +459,15 @@ function isKnownRunnerEventShape(value: JsonObject, type: string): boolean {
     case 'SessionListEvent':
       return isMissing(value.sessions) || Array.isArray(value.sessions);
     case 'SessionChangedEvent':
-      return optionalString(value.current)
-        && (isMissing(value.history) || Array.isArray(value.history))
-        && (isMissing(value.planState) || value.planState === null || isObject(value.planState));
+      return (
+        optionalString(value.current) &&
+        (isMissing(value.history) || Array.isArray(value.history)) &&
+        (isMissing(value.planState) || value.planState === null || isObject(value.planState))
+      );
     case 'SessionExportedEvent':
-      return optionalString(value.name) && optionalString(value.format) && optionalString(value.content);
+      return (
+        optionalString(value.name) && optionalString(value.format) && optionalString(value.content)
+      );
     case 'workspaceInfo':
       return optionalString(value.name) && optionalString(value.path);
     case 'activeFileChanged':
@@ -430,16 +476,23 @@ function isKnownRunnerEventShape(value: JsonObject, type: string): boolean {
     case 'customToolInventoryUpdated':
       return value.tools === undefined || Array.isArray(value.tools);
     case 'customToolInstallProgress':
-      return optionalBoolean(value.success) && (isMissing(value.packages) || Array.isArray(value.packages));
+      return (
+        optionalBoolean(value.success) &&
+        (isMissing(value.packages) || Array.isArray(value.packages))
+      );
     case 'toolRegistryUpdated':
-      return (isMissing(value.availableTools) || Array.isArray(value.availableTools))
-        && optionalNumber(value.unavailableCount);
+      return (
+        (isMissing(value.availableTools) || Array.isArray(value.availableTools)) &&
+        optionalNumber(value.unavailableCount)
+      );
     case 'customToolValidation':
       return optionalBoolean(value.success) && optionalString(value.message);
     case 'healthStatus':
       return true;
     case 'changeReviewUpdated':
-      return optionalString(value.id) && optionalBoolean(value.success) && optionalString(value.message);
+      return (
+        optionalString(value.id) && optionalBoolean(value.success) && optionalString(value.message)
+      );
     case 'assetSaved':
       return optionalString(value.path);
     case 'assetSaveFailed':
@@ -479,13 +532,13 @@ export function asHostToWebviewMessage(value: unknown): HostToWebviewMessage | u
       return state ? { type, state } : undefined;
     }
     case 'historySnapshot':
-      return Array.isArray(value.history) ? value as HostToWebviewMessage : undefined;
+      return Array.isArray(value.history) ? (value as HostToWebviewMessage) : undefined;
     case 'transientNotice':
-      return typeof value.message === 'string' ? value as HostToWebviewMessage : undefined;
+      return typeof value.message === 'string' ? (value as HostToWebviewMessage) : undefined;
     case 'visibilityChanged':
-      return typeof value.visible === 'boolean' ? value as HostToWebviewMessage : undefined;
+      return typeof value.visible === 'boolean' ? (value as HostToWebviewMessage) : undefined;
     case 'fullState':
-      return isObject(value.state) ? value as HostToWebviewMessage : undefined;
+      return isObject(value.state) ? (value as HostToWebviewMessage) : undefined;
     default:
       return undefined;
   }
@@ -495,7 +548,11 @@ export function asWebviewToHostMessage(value: unknown): WebviewToHostMessage | u
   if (!isObject(value)) return undefined;
   const type = value.type;
   if (typeof type !== 'string' || !WEBVIEW_TO_HOST_MESSAGE_TYPES.has(type)) return undefined;
-  if ((type === 'openGeneratedTool' || type === 'openDiff') && value.event !== undefined && !asRunnerEvent(value.event)) {
+  if (
+    (type === 'openGeneratedTool' || type === 'openDiff') &&
+    value.event !== undefined &&
+    !asRunnerEvent(value.event)
+  ) {
     return undefined;
   }
   if (type === 'openPlanPreview' && value.plan !== undefined && !isObject(value.plan)) {

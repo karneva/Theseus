@@ -30,7 +30,8 @@ function makeUntitledSessionName(): string {
 const SESSION_COMMAND_WAIT_TIMEOUT_MS = 5 * 60 * 1000;
 
 export class SessionController {
-  private pendingSessionCommand: { disposable: vscode.Disposable; timer: NodeJS.Timeout } | undefined;
+  private pendingSessionCommand:
+    { disposable: vscode.Disposable; timer: NodeJS.Timeout } | undefined;
 
   constructor(
     private readonly sessionManager: TheseusSessionManager,
@@ -48,7 +49,8 @@ export class SessionController {
   }
 
   newSession(name?: string): void {
-    const sessionName = typeof name === 'string' && name.trim() ? name.trim() : makeUntitledSessionName();
+    const sessionName =
+      typeof name === 'string' && name.trim() ? name.trim() : makeUntitledSessionName();
     if (this.canRouteToRunner()) {
       this.sessionManager.send(`/session new ${JSON.stringify(sessionName)}`);
       return;
@@ -161,16 +163,22 @@ export class SessionController {
   renameSession(oldName?: string, newName?: string): void {
     if (!oldName || !newName) return;
     if (this.canRouteToRunner()) {
-      this.sessionManager.send(`/session rename ${JSON.stringify(oldName)} ${JSON.stringify(newName)}`);
+      this.sessionManager.send(
+        `/session rename ${JSON.stringify(oldName)} ${JSON.stringify(newName)}`,
+      );
       return;
     }
     if (this.isBlockedByActiveRun()) {
       this.postStatus(`세션 이름 변경: 현재 run이 끝나면 변경합니다: ${oldName} → ${newName}`);
-      this.waitForReadyThenSend(`/session rename ${JSON.stringify(oldName)} ${JSON.stringify(newName)}`);
+      this.waitForReadyThenSend(
+        `/session rename ${JSON.stringify(oldName)} ${JSON.stringify(newName)}`,
+      );
       return;
     }
     const wasCurrent = oldName === this.currentSessionName();
-    this.withLocalSnapshot(() => renameLocalSession(this.localSessionWorkspace(), oldName, newName, this.currentSessionName()));
+    this.withLocalSnapshot(() =>
+      renameLocalSession(this.localSessionWorkspace(), oldName, newName, this.currentSessionName()),
+    );
     if (wasCurrent) this.waitForReadyThenSwitch(newName);
   }
 
@@ -197,14 +205,18 @@ export class SessionController {
 
   private canRouteToRunner(): boolean {
     const status = this.sessionManager.status;
-    const state = typeof status.state === 'string' ? status.state : this.sessionManager.currentState;
+    const state =
+      typeof status.state === 'string' ? status.state : this.sessionManager.currentState;
     return !!status.processRunning && ['ready', 'waiting_input'].includes(state);
   }
 
   private isBlockedByActiveRun(): boolean {
     const status = this.sessionManager.status;
-    const state = typeof status.state === 'string' ? status.state : this.sessionManager.currentState;
-    return !!status.processRunning && (state === 'busy' || this.sessionManager.currentState === 'busy');
+    const state =
+      typeof status.state === 'string' ? status.state : this.sessionManager.currentState;
+    return (
+      !!status.processRunning && (state === 'busy' || this.sessionManager.currentState === 'busy')
+    );
   }
 
   private withLocalSnapshot(action: () => LocalSessionActionResult): void {
@@ -247,5 +259,4 @@ export class SessionController {
       message,
     });
   }
-
 }

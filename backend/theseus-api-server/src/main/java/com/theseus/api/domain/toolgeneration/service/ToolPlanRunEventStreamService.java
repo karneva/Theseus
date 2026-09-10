@@ -53,16 +53,24 @@ public class ToolPlanRunEventStreamService {
 		return emitter;
 	}
 
-	private void sendLatestStateIfPresent(Long projectId, Long chatSessionId, String runId, SseEmitter emitter) {
+	private void sendLatestStateIfPresent(
+		Long projectId,
+		Long chatSessionId,
+		String runId,
+		SseEmitter emitter
+	) {
 		try {
-			toolPlanRunStateStore.findByRunId(runId)
-				.ifPresent(state -> emitterRegistry.sendToEmitter(
-					projectId,
-					chatSessionId,
-					runId,
-					emitter,
-					ToolPlanRunSseEvent.createReplayFrom(state)
-				));
+			toolPlanRunStateStore
+				.findByRunId(runId)
+				.ifPresent(state ->
+					emitterRegistry.sendToEmitter(
+						projectId,
+						chatSessionId,
+						runId,
+						emitter,
+						ToolPlanRunSseEvent.createReplayFrom(state)
+					)
+				);
 		} catch (RuntimeException exception) {
 			log.warn(
 				">>>> Failed to replay latest ToolPlanRun state. projectId={}, chatSessionId={}, runId={}",

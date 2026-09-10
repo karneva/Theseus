@@ -14,7 +14,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ToolPlanRepository extends JpaRepository<ToolPlan, Long> {
-
 	List<ToolPlan> findByPlanGroupOrderByPlanVersionDesc(ToolPlanGroup planGroup);
 
 	List<ToolPlan> findByPlanGroupAndStatusOrderByPlanVersionDesc(
@@ -24,7 +23,11 @@ public interface ToolPlanRepository extends JpaRepository<ToolPlan, Long> {
 
 	Optional<ToolPlan> findByPlanGroupAndPlanVersion(ToolPlanGroup planGroup, Long planVersion);
 
-	Optional<ToolPlan> findByIdAndProjectAndChatSession(Long id, Project project, ChatSession chatSession);
+	Optional<ToolPlan> findByIdAndProjectAndChatSession(
+		Long id,
+		Project project,
+		ChatSession chatSession
+	);
 
 	Optional<ToolPlan> findFirstByProjectAndChatSessionAndStatusOrderByUpdatedAtDesc(
 		Project project,
@@ -39,13 +42,15 @@ public interface ToolPlanRepository extends JpaRepository<ToolPlan, Long> {
 	);
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	@Query("""
-		select toolPlan
-		from ToolPlan toolPlan
-		where toolPlan.id = :id
-			and toolPlan.project = :project
-			and toolPlan.chatSession = :chatSession
-	""")
+	@Query(
+		"""
+			select toolPlan
+			from ToolPlan toolPlan
+			where toolPlan.id = :id
+				and toolPlan.project = :project
+				and toolPlan.chatSession = :chatSession
+		"""
+	)
 	Optional<ToolPlan> findByIdAndProjectAndChatSessionForUpdate(
 		@Param("id") Long id,
 		@Param("project") Project project,
@@ -53,12 +58,14 @@ public interface ToolPlanRepository extends JpaRepository<ToolPlan, Long> {
 	);
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	@Query("""
-		select toolPlan
-		from ToolPlan toolPlan
-		where toolPlan.id = :id
-			and toolPlan.project = :project
-	""")
+	@Query(
+		"""
+			select toolPlan
+			from ToolPlan toolPlan
+			where toolPlan.id = :id
+				and toolPlan.project = :project
+		"""
+	)
 	Optional<ToolPlan> findByIdAndProjectForUpdate(
 		@Param("id") Long id,
 		@Param("project") Project project

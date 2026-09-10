@@ -33,11 +33,12 @@ import lombok.NoArgsConstructor;
 @Table(
 	name = "tool_plans",
 	uniqueConstraints = {
-		@UniqueConstraint(name = "uk_tool_plans_group_version", columnNames = {"plan_group_id", "plan_version"})
+		@UniqueConstraint(
+			name = "uk_tool_plans_group_version",
+			columnNames = { "plan_group_id", "plan_version" }
+		),
 	},
-	indexes = {
-		@Index(name = "idx_tool_plans_group_status", columnList = "plan_group_id, status")
-	}
+	indexes = { @Index(name = "idx_tool_plans_group_status", columnList = "plan_group_id, status") }
 )
 @Entity
 public class ToolPlan {
@@ -47,11 +48,19 @@ public class ToolPlan {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "plan_group_id", nullable = false, foreignKey = @ForeignKey(name = "fk_tool_plans_group"))
+	@JoinColumn(
+		name = "plan_group_id",
+		nullable = false,
+		foreignKey = @ForeignKey(name = "fk_tool_plans_group")
+	)
 	private ToolPlanGroup planGroup;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name = "fk_tool_plans_project"))
+	@JoinColumn(
+		name = "project_id",
+		nullable = false,
+		foreignKey = @ForeignKey(name = "fk_tool_plans_project")
+	)
 	private Project project;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -71,7 +80,10 @@ public class ToolPlan {
 	private ProjectMember createdByProjectMember;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "base_tool_plan_id", foreignKey = @ForeignKey(name = "fk_tool_plans_base_tool_plan"))
+	@JoinColumn(
+		name = "base_tool_plan_id",
+		foreignKey = @ForeignKey(name = "fk_tool_plans_base_tool_plan")
+	)
 	private ToolPlan baseToolPlan;
 
 	@Column(name = "plan_version", nullable = false)

@@ -13,7 +13,7 @@ function isRecord(value) {
 function planLabel(key) {
   return String(key)
     .replace(/_/g, ' ')
-    .replace(/\b\w/g, letter => letter.toUpperCase());
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function scalarText(value) {
@@ -31,7 +31,8 @@ function scalarText(value) {
 function withoutUiState(plan) {
   const copy = {};
   for (const [key, value] of Object.entries(plan || {})) {
-    if (['reviewState', 'session', 'updatedAt', 'startedAt', 'pendingTitle'].includes(key)) continue;
+    if (['reviewState', 'session', 'updatedAt', 'startedAt', 'pendingTitle'].includes(key))
+      continue;
     copy[key] = value;
   }
   return copy;
@@ -135,16 +136,33 @@ export function planToInlineMarkdown(plan) {
 
 // ── Panel renderer ────────────────────────────────────────────────────
 
-export function renderPlanPanel(plan, { panelEl, canReview, onReview, onOpenMarkdown, onCancel, onDelete }) {
+export function renderPlanPanel(
+  plan,
+  { panelEl, canReview, onReview, onOpenMarkdown, onCancel, onDelete },
+) {
   if (!panelEl) return;
   panelEl.innerHTML = '';
   const tasks = Array.isArray(plan?.tasks) ? plan.tasks : [];
-  const rawPhase = String(plan?.reviewState || plan?.phase || (canReview ? 'review' : '')).toLowerCase();
-  const doneStatuses = new Set(['done', 'completed', 'complete', 'skipped', 'cancelled', 'canceled']);
-  const isComplete = ['done', 'completed', 'complete'].includes(rawPhase) || (tasks.length > 0 && tasks.every(task => {
-    const status = String(task?.status || '').trim().toLowerCase();
-    return doneStatuses.has(status);
-  }));
+  const rawPhase = String(
+    plan?.reviewState || plan?.phase || (canReview ? 'review' : ''),
+  ).toLowerCase();
+  const doneStatuses = new Set([
+    'done',
+    'completed',
+    'complete',
+    'skipped',
+    'cancelled',
+    'canceled',
+  ]);
+  const isComplete =
+    ['done', 'completed', 'complete'].includes(rawPhase) ||
+    (tasks.length > 0 &&
+      tasks.every((task) => {
+        const status = String(task?.status || '')
+          .trim()
+          .toLowerCase();
+        return doneStatuses.has(status);
+      }));
   const phase = isComplete ? 'done' : rawPhase;
   if (!tasks.length && !phase) {
     panelEl.hidden = true;
@@ -166,7 +184,7 @@ export function renderPlanPanel(plan, { panelEl, canReview, onReview, onOpenMark
   titleGroup.append(title, count);
   const badge = document.createElement('span');
   badge.className = `plan-phase-badge ${phase || 'drafting'}`;
-  badge.textContent = isDrafting && !tasks.length ? 'Drafting' : (phase || 'Drafting');
+  badge.textContent = isDrafting && !tasks.length ? 'Drafting' : phase || 'Drafting';
   titleGroup.appendChild(badge);
 
   const actions = document.createElement('div');
@@ -230,8 +248,11 @@ export function renderPlanPanel(plan, { panelEl, canReview, onReview, onOpenMark
     completed: 'done',
     complete: 'done',
   };
-  const current = isComplete ? 'done' : (phaseMap[phase] || phase || 'wait');
-  const currentIndex = Math.max(0, steps.findIndex(([key]) => key === current));
+  const current = isComplete ? 'done' : phaseMap[phase] || phase || 'wait';
+  const currentIndex = Math.max(
+    0,
+    steps.findIndex(([key]) => key === current),
+  );
   steps.forEach(([, label], index) => {
     const step = document.createElement('span');
     step.className = `plan-step ${index < currentIndex ? 'done' : index === currentIndex ? 'active' : ''}`;

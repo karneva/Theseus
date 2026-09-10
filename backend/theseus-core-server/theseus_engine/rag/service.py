@@ -50,9 +50,7 @@ class RAGService:
         self._rag_config = rag_config or _rag
 
         self._db: Optional[DatabaseManager] = None
-        self._embedder: Optional[
-            BaseEmbeddingProvider
-        ] = None
+        self._embedder: Optional[BaseEmbeddingProvider] = None
         self._initialized = False
 
     # ------------------------------------------------------------------
@@ -79,8 +77,7 @@ class RAGService:
 
         self._initialized = True
         log.info(
-            "[RAG Service] Initialized. "
-            "Provider=%s, Model=%s, Dim=%d",
+            "[RAG Service] Initialized. " "Provider=%s, Model=%s, Dim=%d",
             self._emb_config.provider,
             self._emb_config.model,
             self._emb_config.dimension,
@@ -97,8 +94,7 @@ class RAGService:
         """활성 DatabaseManager를 반환합니다."""
         if not self._db:
             raise RuntimeError(
-                "RAGService가 초기화되지 않았습니다. "
-                "initialize()를 먼저 호출하세요."
+                "RAGService가 초기화되지 않았습니다. " "initialize()를 먼저 호출하세요."
             )
         return self._db
 
@@ -107,8 +103,7 @@ class RAGService:
         """활성 EmbeddingProvider를 반환합니다."""
         if not self._embedder:
             raise RuntimeError(
-                "RAGService가 초기화되지 않았습니다. "
-                "initialize()를 먼저 호출하세요."
+                "RAGService가 초기화되지 않았습니다. " "initialize()를 먼저 호출하세요."
             )
         return self._embedder
 
@@ -139,7 +134,8 @@ class RAGService:
 
         # 문장 단위로 분리
         sentences = re.split(
-            r"(?<=[.!?。\n])\s+", text.strip(),
+            r"(?<=[.!?。\n])\s+",
+            text.strip(),
         )
 
         chunks: List[str] = []
@@ -149,10 +145,7 @@ class RAGService:
         for sentence in sentences:
             sentence_len = len(sentence)
 
-            if (
-                current_len + sentence_len > chunk_size
-                and current_chunk
-            ):
+            if current_len + sentence_len > chunk_size and current_chunk:
                 chunk_text = " ".join(current_chunk)
                 chunks.append(chunk_text)
 
@@ -196,12 +189,13 @@ class RAGService:
         meta = metadata or {}
 
         chunks = self.chunk_text(
-            content, chunk_size, overlap,
+            content,
+            chunk_size,
+            overlap,
         )
         if not chunks:
             log.warning(
-                "[RAG Service] No chunks generated "
-                "from input text.",
+                "[RAG Service] No chunks generated " "from input text.",
             )
             return []
 
@@ -220,8 +214,7 @@ class RAGService:
 
         ids = self.db.insert_documents_batch(documents)
         log.info(
-            "[RAG Service] Ingested %d chunks "
-            "from document (source=%s)",
+            "[RAG Service] Ingested %d chunks " "from document (source=%s)",
             len(ids),
             meta.get("source", "unknown"),
         )
@@ -261,7 +254,10 @@ class RAGService:
             **(metadata or {}),
         }
         return self.ingest_text(
-            content, meta, chunk_size, overlap,
+            content,
+            meta,
+            chunk_size,
+            overlap,
         )
 
     # ------------------------------------------------------------------
@@ -297,9 +293,9 @@ class RAGService:
         )
 
         log.debug(
-            "[RAG Service] Search for '%s' returned "
-            "%d results",
-            query[:50], len(results),
+            "[RAG Service] Search for '%s' returned " "%d results",
+            query[:50],
+            len(results),
         )
         return results
 
@@ -317,13 +313,9 @@ class RAGService:
         self.initialize()
         return {
             "document_count": self.db.get_document_count(),
-            "embedding_provider": (
-                self._emb_config.provider
-            ),
+            "embedding_provider": (self._emb_config.provider),
             "embedding_model": self._emb_config.model,
-            "vector_dimension": (
-                self._emb_config.dimension
-            ),
+            "vector_dimension": (self._emb_config.dimension),
             "rag_top_k": self._rag_config.top_k,
             "rag_min_score": self._rag_config.min_score,
         }

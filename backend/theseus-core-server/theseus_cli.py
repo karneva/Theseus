@@ -6,6 +6,7 @@ from pathlib import Path
 
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
 except ImportError:
     pass
@@ -17,8 +18,11 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from theseus_engine.engine.stream_events import (
-    AssistantTextDelta, AssistantTurnComplete,
-    ToolExecutionStarted, ToolExecutionCompleted, ErrorEvent,
+    AssistantTextDelta,
+    AssistantTurnComplete,
+    ToolExecutionStarted,
+    ToolExecutionCompleted,
+    ErrorEvent,
 )
 from theseus_engine.core.engine_builder import setup_engine
 from theseus_engine.core.tool_usage_logger import record_tool_call_async as record_tool_call
@@ -38,7 +42,12 @@ from theseus_engine.wrappers.llm_clients.theseus_client import TheseusLLMClient
 from theseus_engine.client.project_client import init_project_session, get_project_client
 from theseus_cli.context import CLIContext
 from theseus_cli.ui import print_help, display_plan
-from theseus_cli.parsers import extract_plan_json, parse_plan_feedback, build_feedback_prompt, handle_plan_draft
+from theseus_cli.parsers import (
+    extract_plan_json,
+    parse_plan_feedback,
+    build_feedback_prompt,
+    handle_plan_draft,
+)
 from theseus_cli.intent import llm_is_approval
 from theseus_cli.commands import handle_slash_command
 
@@ -54,11 +63,20 @@ async def run_cli():
     user_level = 5
     actor_role = "ADMIN"  # standalone: 로컬 사용자 = ADMIN
     project_tool_permissions = {
-        "bash": 3, "read_file": 1, "write_file": 2, "edit_file": 2,
+        "bash": 3,
+        "read_file": 1,
+        "write_file": 2,
+        "edit_file": 2,
         "local_write_report": 2,
-        "glob": 1, "grep": 1, "web_search": 1, "web_fetch": 1,
-        "dummy_echo": 1, "create_tool": 2, "system_reboot": 5,
-        "search_knowledge_base": 1, "ingest_document": 2,
+        "glob": 1,
+        "grep": 1,
+        "web_search": 1,
+        "web_fetch": 1,
+        "dummy_echo": 1,
+        "create_tool": 2,
+        "system_reboot": 5,
+        "search_knowledge_base": 1,
+        "ingest_document": 2,
     }
     _project_id = os.getenv("THESEUS_PROJECT_ID", "local")
     _session_token = os.getenv("THESEUS_SESSION_TOKEN", "")
@@ -87,8 +105,12 @@ async def run_cli():
 
     client = TheseusLLMClient(model_name)
     engine, full_registry = await setup_engine(
-        sm, user_level, project_tool_permissions, ask_permission,
-        api_client=client, reset_stats=True,
+        sm,
+        user_level,
+        project_tool_permissions,
+        ask_permission,
+        api_client=client,
+        reset_stats=True,
     )
 
     history = load_session_history("default")
@@ -125,7 +147,9 @@ async def run_cli():
     )
 
     ctx = CLIContext(
-        sm=sm, engine=engine, client=client,
+        sm=sm,
+        engine=engine,
+        client=client,
         user_level=user_level,
         actor_role=actor_role,
         project_tool_permissions=project_tool_permissions,
@@ -169,17 +193,27 @@ async def run_cli():
                     ctx.auto_resume_count = 0  # 턴 단위 카운터만 리셋 (session_resume_total 유지)
                     ctx.repeated_error_count = 0
                     ctx.last_error_sig = ""
-                    print("[*] ✅ 사용자의 긍정적 동의를 확인했습니다. 계획 실행 단계를 시작합니다.")
+                    print(
+                        "[*] ✅ 사용자의 긍정적 동의를 확인했습니다. 계획 실행 단계를 시작합니다."
+                    )
                     line = f"{line}\n(계획이 승인되었습니다. 즉시 단계별 실행을 시작하세요.)"
                 else:
                     parsed_fb = parse_plan_feedback(line, ctx.sm.plan)
                     if parsed_fb:
-                        _label = f"{parsed_fb['target']}.{parsed_fb['field']}" if parsed_fb.get("field") else parsed_fb["target"]
+                        _label = (
+                            f"{parsed_fb['target']}.{parsed_fb['field']}"
+                            if parsed_fb.get("field")
+                            else parsed_fb["target"]
+                        )
                         print(f"[*] [{_label}] 피드백 반영 중...")
                         line = build_feedback_prompt(parsed_fb, ctx.sm.plan)
 
             # ── 자동 재개 초과 후 EXECUTING 진입 차단 ─────────────────
-            if ctx.waiting_for_user and ctx.sm.mode == AgentMode.PLAN and ctx.sm.plan_phase == PlanPhase.EXECUTING:
+            if (
+                ctx.waiting_for_user
+                and ctx.sm.mode == AgentMode.PLAN
+                and ctx.sm.plan_phase == PlanPhase.EXECUTING
+            ):
                 ctx.waiting_for_user = False  # 사용자가 입력했으므로 플래그 해제 후 정상 처리
 
             # ── 엔진 재구성 + 메시지 압축 ─────────────────────────────
@@ -202,8 +236,13 @@ async def run_cli():
                 )
 
             ctx.engine, new_full_registry = await setup_engine(
-                ctx.sm, ctx.user_level, ctx.project_tool_permissions, ctx.ask_permission,
-                api_client=ctx.client, user_query=line, top_k=8,
+                ctx.sm,
+                ctx.user_level,
+                ctx.project_tool_permissions,
+                ctx.ask_permission,
+                api_client=ctx.client,
+                user_query=line,
+                top_k=8,
                 history_messages=current_messages,
                 runtime_reminders=runtime_reminders,
             )
@@ -236,6 +275,7 @@ async def run_cli():
                     elif event.tool_name == "create_tool":
                         # 성공적으로 생성된 툴 이름을 output에서 파싱
                         import re as _re
+
                         m = _re.search(r"Tool '([^']+)' created", event.output)
                         if m:
                             newly_created_tools.append(m.group(1))
@@ -260,7 +300,9 @@ async def run_cli():
                                 ctx.sm.plan = json.dumps(updated, ensure_ascii=False, indent=2)
                                 try:
                                     Path("temp").mkdir(exist_ok=True)
-                                    with open("temp/plan_refactored.json", "w", encoding="utf-8") as f:
+                                    with open(
+                                        "temp/plan_refactored.json", "w", encoding="utf-8"
+                                    ) as f:
                                         json.dump(updated, f, ensure_ascii=False, indent=2)
                                 except Exception:
                                     pass
@@ -268,13 +310,28 @@ async def run_cli():
                                 print("[*] 계획이 업데이트되었습니다.")
                         elif ctx.sm.plan_phase == PlanPhase.EXECUTING:
                             lower = accumulated_text.lower()
-                            if any(kw in lower for kw in ("plan complete", "all steps complete", "execution complete", "all tasks done")):
+                            if any(
+                                kw in lower
+                                for kw in (
+                                    "plan complete",
+                                    "all steps complete",
+                                    "execution complete",
+                                    "all tasks done",
+                                )
+                            ):
                                 ctx.sm.set_plan_phase(PlanPhase.VERIFYING)
                                 print("[*] 실행 완료 — 검증(Verifying) 단계로 전환합니다.")
                                 line = "Execution is complete. Please verify the changes."
                         elif ctx.sm.plan_phase == PlanPhase.VERIFYING:
                             lower = accumulated_text.lower()
-                            if any(kw in lower for kw in ("verification complete", "all verified", "verified successfully")):
+                            if any(
+                                kw in lower
+                                for kw in (
+                                    "verification complete",
+                                    "all verified",
+                                    "verified successfully",
+                                )
+                            ):
                                 plan_complete = True
                                 clear_plan_state("default")
                 elif isinstance(event, ErrorEvent):
@@ -288,10 +345,20 @@ async def run_cli():
 
             is_asking_user = any(
                 kw in accumulated_text
-                for kw in ["?", "should I", "would you", "do you want", "please confirm", "let me know"]
+                for kw in [
+                    "?",
+                    "should I",
+                    "would you",
+                    "do you want",
+                    "please confirm",
+                    "let me know",
+                ]
             )
 
-            if ctx.sm.mode == AgentMode.PLAN and ctx.sm.plan_phase in (PlanPhase.EXECUTING, PlanPhase.VERIFYING):
+            if ctx.sm.mode == AgentMode.PLAN and ctx.sm.plan_phase in (
+                PlanPhase.EXECUTING,
+                PlanPhase.VERIFYING,
+            ):
                 if is_asking_user:
                     print("\n[*] 에이전트가 사용자 결정을 대기 중입니다. (자동 재개 취소)")
                 elif not tool_called_this_turn and not plan_complete:
@@ -317,7 +384,9 @@ async def run_cli():
                     ctx.last_error_sig = error_sig
 
                 if ctx.repeated_error_count > ctx.MAX_REPEATED_ERRORS:
-                    print(f"[!] 동일한 에러가 {ctx.repeated_error_count}회 반복되었습니다. 접근 방식 전환을 요청합니다.")
+                    print(
+                        f"[!] 동일한 에러가 {ctx.repeated_error_count}회 반복되었습니다. 접근 방식 전환을 요청합니다."
+                    )
                     resume_prompt = (
                         f"The same error has occurred {ctx.repeated_error_count} times consecutively. "
                         "You MUST completely change your approach. "
@@ -331,35 +400,54 @@ async def run_cli():
 
                 # 세션 전체 절대 상한 초과 — 무한루프 최종 차단
                 if ctx.session_resume_total > ctx.MAX_SESSION_RESUMES:
-                    print(f"[!] 세션 전체 자동 재개 {ctx.MAX_SESSION_RESUMES}회 초과. 강제 종료합니다.")
+                    print(
+                        f"[!] 세션 전체 자동 재개 {ctx.MAX_SESSION_RESUMES}회 초과. 강제 종료합니다."
+                    )
                     ctx.waiting_for_user = True
-                    if ctx.sm.mode == AgentMode.PLAN and ctx.sm.plan_phase in (PlanPhase.EXECUTING, PlanPhase.VERIFYING):
+                    if ctx.sm.mode == AgentMode.PLAN and ctx.sm.plan_phase in (
+                        PlanPhase.EXECUTING,
+                        PlanPhase.VERIFYING,
+                    ):
                         ctx.sm.set_plan_phase(PlanPhase.WAIT_FOR_REVIEW)
                         ctx.engine.set_system_prompt(ctx.sm.get_system_prompt())
-                    print("[*] 반복 실패로 인해 실행이 중단되었습니다. 문제를 직접 파악한 후 'approve'로 재개하세요.")
+                    print(
+                        "[*] 반복 실패로 인해 실행이 중단되었습니다. 문제를 직접 파악한 후 'approve'로 재개하세요."
+                    )
                     await save_session_history("default", ctx.engine.messages)
                 elif ctx.auto_resume_count > ctx.MAX_AUTO_RESUME:
                     print(f"[!] 자동 재개 {ctx.MAX_AUTO_RESUME}회 초과. 사용자 입력을 기다립니다.")
                     ctx.auto_resume_count = 0
                     ctx.waiting_for_user = True
-                    if ctx.sm.mode == AgentMode.PLAN and ctx.sm.plan_phase in (PlanPhase.EXECUTING, PlanPhase.VERIFYING):
+                    if ctx.sm.mode == AgentMode.PLAN and ctx.sm.plan_phase in (
+                        PlanPhase.EXECUTING,
+                        PlanPhase.VERIFYING,
+                    ):
                         ctx.sm.set_plan_phase(PlanPhase.WAIT_FOR_REVIEW)
                         ctx.engine.set_system_prompt(ctx.sm.get_system_prompt())
-                        print("[*] 계획 검토(Review) 단계로 전환됩니다. 대화로 문제를 파악하고 'approve'로 재개하세요.")
+                        print(
+                            "[*] 계획 검토(Review) 단계로 전환됩니다. 대화로 문제를 파악하고 'approve'로 재개하세요."
+                        )
                     await save_session_history("default", ctx.engine.messages)
                 else:
-                    print(f"[auto] {resume_prompt[:30]}... (자동 재개 {ctx.auto_resume_count}/{ctx.MAX_AUTO_RESUME}, 세션 누적 {ctx.session_resume_total}/{ctx.MAX_SESSION_RESUMES})")
+                    print(
+                        f"[auto] {resume_prompt[:30]}... (자동 재개 {ctx.auto_resume_count}/{ctx.MAX_AUTO_RESUME}, 세션 누적 {ctx.session_resume_total}/{ctx.MAX_SESSION_RESUMES})"
+                    )
                     auto_resume_line = resume_prompt
                     await save_session_history("default", ctx.engine.messages)
                     continue
 
             await save_session_history("default", ctx.engine.messages)
             if proj_client.is_enabled and _session_id:
-                await proj_client.sync_history(_session_id, list(ctx.engine.messages), token=_session_token)
+                await proj_client.sync_history(
+                    _session_id, list(ctx.engine.messages), token=_session_token
+                )
                 _cost = CostTracker.get_or_create()
                 await proj_client.report_usage(
                     _session_id,
-                    {"inputTokens": _cost.total_input_tokens, "outputTokens": _cost.total_output_tokens},
+                    {
+                        "inputTokens": _cost.total_input_tokens,
+                        "outputTokens": _cost.total_output_tokens,
+                    },
                     token=_session_token,
                 )
 
@@ -372,7 +460,12 @@ async def run_cli():
             error_str = str(e).lower()
             if any(kw in error_str for kw in ("max turns", "turn limit", "maximum", "limit")):
                 if ctx.sm.mode == AgentMode.PLAN and ctx.sm.plan_phase == PlanPhase.EXECUTING:
-                    save_plan_state("default", plan_json=getattr(ctx.sm, "plan", ""), phase="Executing", last_error=str(e))
+                    save_plan_state(
+                        "default",
+                        plan_json=getattr(ctx.sm, "plan", ""),
+                        phase="Executing",
+                        last_error=str(e),
+                    )
                     print("[*] Plan 상태가 저장되었습니다. 자동으로 재개합니다...")
                     auto_resume_line = (
                         f"[System Alert] Previous execution was interrupted due to turn limit: {e}\n"
@@ -381,13 +474,17 @@ async def run_cli():
                     ctx.auto_resume_count += 1
                     ctx.session_resume_total += 1
                     if ctx.session_resume_total > ctx.MAX_SESSION_RESUMES:
-                        print(f"[!] 세션 전체 자동 재개 {ctx.MAX_SESSION_RESUMES}회 초과. 강제 중단합니다.")
+                        print(
+                            f"[!] 세션 전체 자동 재개 {ctx.MAX_SESSION_RESUMES}회 초과. 강제 중단합니다."
+                        )
                         ctx.waiting_for_user = True
                         ctx.sm.set_plan_phase(PlanPhase.WAIT_FOR_REVIEW)
                         ctx.engine.set_system_prompt(ctx.sm.get_system_prompt())
                         print("[*] 반복 실패로 인해 실행이 중단되었습니다. 'approve'로 재개하세요.")
                     elif ctx.auto_resume_count > ctx.MAX_AUTO_RESUME:
-                        print(f"[!] 자동 재개 {ctx.MAX_AUTO_RESUME}회 초과. 사용자 입력을 기다립니다.")
+                        print(
+                            f"[!] 자동 재개 {ctx.MAX_AUTO_RESUME}회 초과. 사용자 입력을 기다립니다."
+                        )
                         ctx.auto_resume_count = 0
                         ctx.waiting_for_user = True
                         ctx.sm.set_plan_phase(PlanPhase.WAIT_FOR_REVIEW)
@@ -398,14 +495,18 @@ async def run_cli():
 
             if ctx.sm.mode == AgentMode.PLAN and ctx.sm.plan_phase == PlanPhase.EXECUTING:
                 err_sig = str(e)[:80]
-                ctx.repeated_error_count = ctx.repeated_error_count + 1 if err_sig == ctx.last_error_sig else 1
+                ctx.repeated_error_count = (
+                    ctx.repeated_error_count + 1 if err_sig == ctx.last_error_sig else 1
+                )
                 ctx.last_error_sig = err_sig
 
                 ctx.auto_resume_count += 1
                 ctx.session_resume_total += 1
 
                 if ctx.session_resume_total > ctx.MAX_SESSION_RESUMES:
-                    print(f"[!] 세션 전체 자동 재개 {ctx.MAX_SESSION_RESUMES}회 초과. 강제 중단합니다.")
+                    print(
+                        f"[!] 세션 전체 자동 재개 {ctx.MAX_SESSION_RESUMES}회 초과. 강제 중단합니다."
+                    )
                     ctx.waiting_for_user = True
                     ctx.sm.set_plan_phase(PlanPhase.WAIT_FOR_REVIEW)
                     ctx.engine.set_system_prompt(ctx.sm.get_system_prompt())
@@ -418,7 +519,9 @@ async def run_cli():
                     ctx.engine.set_system_prompt(ctx.sm.get_system_prompt())
                     print("[*] 계획 검토(Review) 단계로 전환됩니다. 'approve'로 재개하세요.")
                 elif ctx.repeated_error_count > ctx.MAX_REPEATED_ERRORS:
-                    print(f"[!] 동일 에러 {ctx.repeated_error_count}회 반복. 접근 방식 전환을 요청합니다.")
+                    print(
+                        f"[!] 동일 에러 {ctx.repeated_error_count}회 반복. 접근 방식 전환을 요청합니다."
+                    )
                     auto_resume_line = (
                         f"The same error '{str(e)[:100]}' has repeated {ctx.repeated_error_count} times. "
                         "Completely change your approach, or report the situation to the user if you cannot."
@@ -461,9 +564,9 @@ def _auto_print_created_tools(tool_names: list[str], ctx) -> None:
             except (json.JSONDecodeError, OSError):
                 pass
 
-        perm   = meta.get("permissionLevel", ctx.project_tool_permissions.get(tool_name, 1))
+        perm = meta.get("permissionLevel", ctx.project_tool_permissions.get(tool_name, 1))
         status = meta.get("status", "active")
-        fname  = meta.get("fileName", f"{module_name}.py")
+        fname = meta.get("fileName", f"{module_name}.py")
 
         # registry에서 인스턴스 조회 → description
         description = ""

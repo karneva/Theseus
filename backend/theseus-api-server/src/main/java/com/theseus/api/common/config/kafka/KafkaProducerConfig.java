@@ -30,12 +30,15 @@ public class KafkaProducerConfig {
 	}
 
 	@Bean
-	public KafkaTemplate<String, Object> kafkaTemplate(ProducerFactory<String, Object> producerFactory) {
+	public KafkaTemplate<String, Object> kafkaTemplate(
+		ProducerFactory<String, Object> producerFactory
+	) {
 		return new KafkaTemplate<>(producerFactory);
 	}
 
 	ObjectMapper createKafkaObjectMapper(ObjectMapper objectMapper) {
-		return objectMapper.copy()
+		return objectMapper
+			.copy()
 			.registerModule(new JavaTimeModule())
 			.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 	}

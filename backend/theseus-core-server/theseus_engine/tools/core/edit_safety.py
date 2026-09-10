@@ -146,9 +146,7 @@ def validate_text_update(
 
     normalized_expected = (expected_change or "modify").strip().lower()
     if normalized_expected == "add_only" and deleted_lines > 0:
-        violations.append(
-            "expected_change=add_only but the proposed edit deletes existing lines."
-        )
+        violations.append("expected_change=add_only but the proposed edit deletes existing lines.")
 
     for pattern in preserve_patterns:
         value = str(pattern)
@@ -157,22 +155,13 @@ def validate_text_update(
         if value in old_content and value not in new_content:
             violations.append(f"preserve pattern was removed: {value[:120]}")
             continue
-        old_matching_lines = [
-            line
-            for line in old_content.splitlines()
-            if value in line
-        ]
+        old_matching_lines = [line for line in old_content.splitlines() if value in line]
         if old_matching_lines:
             new_lines = set(new_content.splitlines())
-            removed_matching_lines = [
-                line
-                for line in old_matching_lines
-                if line not in new_lines
-            ]
+            removed_matching_lines = [line for line in old_matching_lines if line not in new_lines]
             if removed_matching_lines:
                 violations.append(
-                    "preserve pattern changed existing line: "
-                    f"{removed_matching_lines[0][:120]}"
+                    "preserve pattern changed existing line: " f"{removed_matching_lines[0][:120]}"
                 )
 
     changed_imports: list[str] = []
@@ -271,7 +260,9 @@ def render_blocked_message(report: EditSafetyReport) -> str:
     if report.warnings:
         lines.append("- 참고 경고:")
         lines.extend(f"  - {item}" for item in report.warnings)
-    lines.append("다음 단계: 더 작은 edit_file 패치로 다시 시도하거나, 전체 교체가 필요하면 명시적인 사유를 포함해 요청하세요.")
+    lines.append(
+        "다음 단계: 더 작은 edit_file 패치로 다시 시도하거나, 전체 교체가 필요하면 명시적인 사유를 포함해 요청하세요."
+    )
     return "\n".join(lines)
 
 
@@ -342,9 +333,7 @@ def _validate_python_update(old_content: str, new_content: str) -> _PythonUpdate
         report.syntax_ok = True
     except SyntaxError as exc:
         report.syntax_ok = False
-        report.violations.append(
-            f"Python syntax error at line {exc.lineno}: {exc.msg}"
-        )
+        report.violations.append(f"Python syntax error at line {exc.lineno}: {exc.msg}")
         return report
 
     try:
@@ -357,9 +346,7 @@ def _validate_python_update(old_content: str, new_content: str) -> _PythonUpdate
     new_structure = _collect_python_structure(new_tree)
     report.changed_imports = sorted(old_structure["imports"] - new_structure["imports"])
     report.removed_symbols = sorted(old_structure["symbols"] - new_structure["symbols"])
-    report.removed_config_keys = sorted(
-        old_structure["config_keys"] - new_structure["config_keys"]
-    )
+    report.removed_config_keys = sorted(old_structure["config_keys"] - new_structure["config_keys"])
     return report
 
 

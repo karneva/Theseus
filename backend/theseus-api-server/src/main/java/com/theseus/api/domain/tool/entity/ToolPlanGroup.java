@@ -32,7 +32,10 @@ import lombok.NoArgsConstructor;
 @Table(
 	name = "tool_plan_groups",
 	indexes = {
-		@Index(name = "idx_tool_plan_groups_project_session", columnList = "project_id, chat_session_id")
+		@Index(
+			name = "idx_tool_plan_groups_project_session",
+			columnList = "project_id, chat_session_id"
+		),
 	}
 )
 @Entity
@@ -43,7 +46,11 @@ public class ToolPlanGroup {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name = "fk_tool_plan_groups_project"))
+	@JoinColumn(
+		name = "project_id",
+		nullable = false,
+		foreignKey = @ForeignKey(name = "fk_tool_plan_groups_project")
+	)
 	private Project project;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -81,7 +88,10 @@ public class ToolPlanGroup {
 	private ToolPlan approvedToolPlan;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "created_tool_id", foreignKey = @ForeignKey(name = "fk_tool_plan_groups_created_tool"))
+	@JoinColumn(
+		name = "created_tool_id",
+		foreignKey = @ForeignKey(name = "fk_tool_plan_groups_created_tool")
+	)
 	private Tool createdTool;
 
 	@Column(name = "created_at", nullable = false, updatable = false)
@@ -130,7 +140,10 @@ public class ToolPlanGroup {
 
 	public void approve(ToolPlan approvedToolPlan) {
 		validateStatus(ToolPlanGroupStatus.PENDING);
-		this.approvedToolPlan = Objects.requireNonNull(approvedToolPlan, "approvedToolPlan must not be null");
+		this.approvedToolPlan = Objects.requireNonNull(
+			approvedToolPlan,
+			"approvedToolPlan must not be null"
+		);
 		this.latestToolPlan = approvedToolPlan;
 		status = ToolPlanGroupStatus.APPROVED;
 	}
@@ -171,9 +184,11 @@ public class ToolPlanGroup {
 	}
 
 	public boolean isFinished() {
-		return ToolPlanGroupStatus.BUILT.equals(status)
-			|| ToolPlanGroupStatus.CANCELLED.equals(status)
-			|| ToolPlanGroupStatus.FAILED.equals(status);
+		return (
+			ToolPlanGroupStatus.BUILT.equals(status) ||
+			ToolPlanGroupStatus.CANCELLED.equals(status) ||
+			ToolPlanGroupStatus.FAILED.equals(status)
+		);
 	}
 
 	@PrePersist
@@ -199,9 +214,11 @@ public class ToolPlanGroup {
 	}
 
 	private void validateMutableBuildFailure() {
-		if (ToolPlanGroupStatus.BUILT.equals(status)
-			|| ToolPlanGroupStatus.CANCELLED.equals(status)
-			|| ToolPlanGroupStatus.FAILED.equals(status)) {
+		if (
+			ToolPlanGroupStatus.BUILT.equals(status) ||
+			ToolPlanGroupStatus.CANCELLED.equals(status) ||
+			ToolPlanGroupStatus.FAILED.equals(status)
+		) {
 			throw BusinessException.of(ErrorCode.TOOL_PLAN_STATUS_TRANSITION_INVALID);
 		}
 	}

@@ -47,13 +47,10 @@ def get_remote_workspace_config(context: Any) -> RemoteWorkspaceConnectionConfig
         return None
     if isinstance(remote_workspace, RemoteWorkspaceConnectionConfig):
         return remote_workspace
-    if (
-        isinstance(remote_workspace, dict)
-        and (
-            remote_workspace.get("password") == REMOTE_WORKSPACE_REDACTED_VALUE
-            or remote_workspace.get("privateKeyPath") == REMOTE_WORKSPACE_REDACTED_VALUE
-            or remote_workspace.get("private_key_path") == REMOTE_WORKSPACE_REDACTED_VALUE
-        )
+    if isinstance(remote_workspace, dict) and (
+        remote_workspace.get("password") == REMOTE_WORKSPACE_REDACTED_VALUE
+        or remote_workspace.get("privateKeyPath") == REMOTE_WORKSPACE_REDACTED_VALUE
+        or remote_workspace.get("private_key_path") == REMOTE_WORKSPACE_REDACTED_VALUE
     ):
         raise RemoteWorkspaceRuntimeError(
             "Remote Workspace metadata is redacted. "

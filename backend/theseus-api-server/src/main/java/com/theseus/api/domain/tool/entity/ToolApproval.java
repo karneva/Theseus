@@ -30,12 +30,18 @@ import lombok.NoArgsConstructor;
 @Table(
 	name = "tool_approvals",
 	uniqueConstraints = {
-		@UniqueConstraint(name = "uk_tool_approvals_tool_request", columnNames = {"tool_id", "request_number"}),
-		@UniqueConstraint(name = "uk_tool_approvals_plan_request", columnNames = {"tool_plan_id", "request_number"})
+		@UniqueConstraint(
+			name = "uk_tool_approvals_tool_request",
+			columnNames = { "tool_id", "request_number" }
+		),
+		@UniqueConstraint(
+			name = "uk_tool_approvals_plan_request",
+			columnNames = { "tool_plan_id", "request_number" }
+		),
 	},
 	indexes = {
 		@Index(name = "idx_tool_approvals_tool_status", columnList = "tool_id, approval_status"),
-		@Index(name = "idx_tool_approvals_plan_status", columnList = "tool_plan_id, approval_status")
+		@Index(name = "idx_tool_approvals_plan_status", columnList = "tool_plan_id, approval_status"),
 	}
 )
 @Entity
@@ -72,7 +78,12 @@ public class ToolApproval {
 	private ProjectMember reviewedByProjectMember;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "approval_status", nullable = false, length = 30, columnDefinition = "VARCHAR(30) DEFAULT 'PENDING'")
+	@Column(
+		name = "approval_status",
+		nullable = false,
+		length = 30,
+		columnDefinition = "VARCHAR(30) DEFAULT 'PENDING'"
+	)
 	private ToolApprovalStatus approvalStatus;
 
 	@Column(name = "review_feedback", columnDefinition = "TEXT")
@@ -107,7 +118,11 @@ public class ToolApproval {
 		approve(reviewedByProjectMember, reviewFeedback, LocalDateTime.now());
 	}
 
-	void approve(ProjectMember reviewedByProjectMember, String reviewFeedback, LocalDateTime reviewedAt) {
+	void approve(
+		ProjectMember reviewedByProjectMember,
+		String reviewFeedback,
+		LocalDateTime reviewedAt
+	) {
 		review(ToolApprovalStatus.APPROVED, reviewedByProjectMember, reviewFeedback, reviewedAt);
 	}
 
@@ -115,7 +130,11 @@ public class ToolApproval {
 		reject(reviewedByProjectMember, reviewFeedback, LocalDateTime.now());
 	}
 
-	void reject(ProjectMember reviewedByProjectMember, String reviewFeedback, LocalDateTime reviewedAt) {
+	void reject(
+		ProjectMember reviewedByProjectMember,
+		String reviewFeedback,
+		LocalDateTime reviewedAt
+	) {
 		review(ToolApprovalStatus.REJECTED, reviewedByProjectMember, reviewFeedback, reviewedAt);
 	}
 

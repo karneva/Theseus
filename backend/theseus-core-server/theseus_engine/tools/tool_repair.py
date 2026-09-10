@@ -20,7 +20,6 @@ from theseus_engine.wrappers.llm_clients.api_types import (
     SupportsStreamingMessages,
 )
 
-
 COMMON_CUSTOM_TOOL_SECURITY_RULES = """\
 Generated Theseus custom tool security rules:
 - Do not import or call subprocess, os.system, os.popen, shutil, socket, ctypes, multiprocessing, signal, pty, resource, tempfile, webbrowser, pickle, or shelve.
@@ -102,8 +101,7 @@ class ToolRepairFailure(RuntimeError):
             parts.append("source context:\n" + self.source_context)
         if self.metadata:
             parts.append(
-                "metadata:\n"
-                + json.dumps(self.metadata, ensure_ascii=False, indent=2, default=str)
+                "metadata:\n" + json.dumps(self.metadata, ensure_ascii=False, indent=2, default=str)
             )
         return "\n".join(parts)
 
@@ -217,7 +215,9 @@ class ToolRepairLoop(Generic[T, S]):
                             attempts=attempt,
                             last_failure=failure,
                             needs_user_feedback=_needs_user_feedback(failure, should_stop),
-                            feedback_message=_recovery_feedback_message(failure) if should_stop else None,
+                            feedback_message=(
+                                _recovery_feedback_message(failure) if should_stop else None
+                            ),
                         )
                     prompt = self._build_repair_prompt(
                         task_context=task_context,
@@ -247,7 +247,9 @@ class ToolRepairLoop(Generic[T, S]):
                         attempts=attempt,
                         last_failure=failure,
                         needs_user_feedback=_needs_user_feedback(failure, should_stop),
-                        feedback_message=_recovery_feedback_message(failure) if should_stop else None,
+                        feedback_message=(
+                            _recovery_feedback_message(failure) if should_stop else None
+                        ),
                     )
 
                 prompt = self._build_repair_prompt(
@@ -272,7 +274,9 @@ class ToolRepairLoop(Generic[T, S]):
                             attempts=attempt + 1,
                             last_failure=repair_failure,
                             needs_user_feedback=_needs_user_feedback(repair_failure, should_stop),
-                            feedback_message=_recovery_feedback_message(repair_failure) if should_stop else None,
+                            feedback_message=(
+                                _recovery_feedback_message(repair_failure) if should_stop else None
+                            ),
                             raw_response=repair_failure.metadata.get("rawResponse"),
                         )
                     continue
@@ -485,7 +489,7 @@ def extract_json_object(text: str) -> str:
     start = stripped.find("{")
     end = stripped.rfind("}")
     if start >= 0 and end > start:
-        return stripped[start:end + 1]
+        return stripped[start : end + 1]
     raise ValueError("No JSON object found")
 
 
@@ -493,7 +497,9 @@ def _feedback_message(payload: dict[str, Any]) -> str:
     message = str(payload.get("message") or "").strip()
     blocked = payload.get("blockedRequirements")
     alternatives = payload.get("safeAlternatives")
-    parts = [message or "이 요구사항은 현재 custom tool 보안 정책 안에서 안전하게 구현할 수 없습니다."]
+    parts = [
+        message or "이 요구사항은 현재 custom tool 보안 정책 안에서 안전하게 구현할 수 없습니다."
+    ]
     if isinstance(blocked, list) and blocked:
         parts.append("차단된 요구사항: " + ", ".join(str(item) for item in blocked[:5]))
     if isinstance(alternatives, list) and alternatives:

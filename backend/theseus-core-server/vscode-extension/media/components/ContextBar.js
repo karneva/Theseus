@@ -33,15 +33,20 @@ export function renderContextBar({
   if (!containerEl) return;
   containerEl.innerHTML = '';
   const pills = [];
-  if (session) pills.push({ id: 'session', type: 'session', label: `session ${session}`, fixed: true });
+  if (session)
+    pills.push({ id: 'session', type: 'session', label: `session ${session}`, fixed: true });
   if (activeFile && !activeFileSuppressed) {
     const line = Number.isInteger(activeFile.line) ? `:${activeFile.line}` : '';
-    pills.push({ id: 'active-file', type: 'active-file', label: `active ${activeFile.file}${line}` });
+    pills.push({
+      id: 'active-file',
+      type: 'active-file',
+      label: `active ${activeFile.file}${line}`,
+    });
   }
   pills.push(...parseMentionPills(promptText || ''));
 
   containerEl.hidden = !pills.length;
-  pills.forEach(pill => {
+  pills.forEach((pill) => {
     const el = document.createElement('span');
     el.className = `context-pill ${pill.type}`;
     const label = document.createElement('span');

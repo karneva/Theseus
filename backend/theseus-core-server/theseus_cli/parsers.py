@@ -15,13 +15,20 @@ if TYPE_CHECKING:
 
 
 _TASK_FIELDS = {
-    "title", "problem", "solution", "target_files", "integration_points",
-    "expected_effect", "description", "tier", "status",
+    "title",
+    "problem",
+    "solution",
+    "target_files",
+    "integration_points",
+    "expected_effect",
+    "description",
+    "tier",
+    "status",
 }
 _PLAN_SECTIONS = {"context", "verification", "action_plan", "goal"}
 _SECTION_SUBFIELDS = {
-    "context":     {"current_state", "problem_analysis", "affected_files", "risks"},
-    "verification":{"test_commands", "manual_checks", "success_criteria"},
+    "context": {"current_state", "problem_analysis", "affected_files", "risks"},
+    "verification": {"test_commands", "manual_checks", "success_criteria"},
     "action_plan": {"immediate", "sequential_dependencies", "estimated_turns"},
 }
 
@@ -29,7 +36,7 @@ _SECTION_SUBFIELDS = {
 def extract_plan_json(response_text: str) -> dict | None:
     # ```json ... ``` 블록 전체를 탐욕적으로 추출 후 JSON 파싱
     # non-greedy \{.*?\} 는 중첩 JSON을 첫 } 에서 잘라버리므로 블록 전체를 넘김
-    match = re.search(r'```json\s*(.*?)\s*```', response_text, re.DOTALL)
+    match = re.search(r"```json\s*(.*?)\s*```", response_text, re.DOTALL)
     if match:
         candidate = match.group(1).strip()
         try:
@@ -41,7 +48,7 @@ def extract_plan_json(response_text: str) -> dict | None:
 
     # 코드 펜스 없이 bare JSON으로 반환하는 경우 대비
     # 첫 { 부터 마지막 } 까지 추출
-    bare = re.search(r'(\{[\s\S]*\})', response_text)
+    bare = re.search(r"(\{[\s\S]*\})", response_text)
     if bare:
         try:
             result = json.loads(bare.group(1))
@@ -69,7 +76,7 @@ def parse_plan_feedback(line: str, plan_json_str: str) -> dict | None:
     except json.JSONDecodeError:
         return None
 
-    m = re.match(r'^([a-zA-Z0-9_-]+)(?:\.([a-zA-Z_]+))?\s*:\s*(.+)$', line.strip(), re.DOTALL)
+    m = re.match(r"^([a-zA-Z0-9_-]+)(?:\.([a-zA-Z_]+))?\s*:\s*(.+)$", line.strip(), re.DOTALL)
     if not m:
         return None
 
@@ -92,28 +99,36 @@ def parse_plan_feedback(line: str, plan_json_str: str) -> dict | None:
 
 def build_feedback_prompt(parsed: dict, plan_json_str: str) -> str:
     target_type = parsed["target_type"]
-    target      = parsed["target"]
-    field       = parsed.get("field")
-    feedback    = parsed["feedback"]
+    target = parsed["target"]
+    field = parsed.get("field")
+    feedback = parsed["feedback"]
 
     if target_type == "task":
         if field:
-            location    = f"the '{field}' field of task '{target}'"
-            instruction = (f"Apply the feedback above to modify ONLY the '{field}' field of that task, "
-                           f"then output the entire plan again in the same JSON format.")
+            location = f"the '{field}' field of task '{target}'"
+            instruction = (
+                f"Apply the feedback above to modify ONLY the '{field}' field of that task, "
+                f"then output the entire plan again in the same JSON format."
+            )
         else:
-            location    = f"task '{target}'"
-            instruction = ("Apply the feedback above to modify that task (and related sub-tasks if necessary), "
-                           "then output the entire plan again in the same JSON format.")
+            location = f"task '{target}'"
+            instruction = (
+                "Apply the feedback above to modify that task (and related sub-tasks if necessary), "
+                "then output the entire plan again in the same JSON format."
+            )
     else:
         if field:
-            location    = f"the '{field}' field of the '{target}' section"
-            instruction = (f"Apply the feedback above to modify ONLY the '{target}.{field}' field, "
-                           f"then output the entire plan again in the same JSON format.")
+            location = f"the '{field}' field of the '{target}' section"
+            instruction = (
+                f"Apply the feedback above to modify ONLY the '{target}.{field}' field, "
+                f"then output the entire plan again in the same JSON format."
+            )
         else:
-            location    = f"the entire '{target}' section"
-            instruction = (f"Apply the feedback above to modify the '{target}' section, "
-                           f"then output the entire plan again in the same JSON format.")
+            location = f"the entire '{target}' section"
+            instruction = (
+                f"Apply the feedback above to modify the '{target}' section, "
+                f"then output the entire plan again in the same JSON format."
+            )
 
     return (
         f"Revision request for {location} in the plan below:\n\n"

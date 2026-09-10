@@ -335,9 +335,7 @@ def get_query_engine(
     active_registry = build_visible_registry(full_registry, visibility_policy)
     allowed_tools = tuple(tool.name for tool in active_registry.list_tools())
     if not allowed_tools and build_context.mode != AgentMode.ASK:
-        raise EngineInitializationError(
-            "No tools are available for the current server session."
-        )
+        raise EngineInitializationError("No tools are available for the current server session.")
 
     system_prompt = build_theseus_system_prompt(
         mode=build_context.mode,
@@ -355,9 +353,7 @@ def get_query_engine(
         settings=TheseusPermissionSettings(),
         user_level=build_context.user_level,
         tool_permissions=tool_permissions,
-        require_human_confirm=_server_requires_sensitive_tool_confirmation(
-            build_context
-        ),
+        require_human_confirm=_server_requires_sensitive_tool_confirmation(build_context),
     )
 
     base_hook_executor = TheseusHookExecutor(

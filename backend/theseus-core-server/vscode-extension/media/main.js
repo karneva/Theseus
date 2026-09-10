@@ -23,7 +23,10 @@ import {
   maybeAddFold,
   shouldPersistMessage,
 } from './components/MessageList.js';
-import { planToInlineMarkdown, renderPlanPanel as renderPlanPanelComponent } from './components/PlanPanel.js';
+import {
+  planToInlineMarkdown,
+  renderPlanPanel as renderPlanPanelComponent,
+} from './components/PlanPanel.js';
 import {
   applyRunnerStatusEvent,
   formatAgentLoopStatus,
@@ -40,11 +43,16 @@ import { createEventDispatcher } from './dispatcher.js';
 
   const rawVsCode = acquireVsCodeApi();
   const vscode = window.TheseusProtocol?.createVsCodeApi(rawVsCode) || rawVsCode;
-  const normalizeHostMessage = window.TheseusProtocol?.normalizeHostMessage || (message => message);
+  const normalizeHostMessage =
+    window.TheseusProtocol?.normalizeHostMessage || ((message) => message);
   const webviewMarkdown = window.TheseusMarkdown;
   const runnerStatus = window.TheseusRunnerStatus;
 
-  if (!webviewMarkdown?.renderMarkdown || !runnerStatus?.normalizeLifecycle || !runnerStatus?.runnerDiagnosticText) {
+  if (
+    !webviewMarkdown?.renderMarkdown ||
+    !runnerStatus?.normalizeLifecycle ||
+    !runnerStatus?.runnerDiagnosticText
+  ) {
     throw new Error('Theseus WebView helper modules failed to load.');
   }
 
@@ -53,34 +61,34 @@ import { createEventDispatcher } from './dispatcher.js';
   const formatRunnerDiagnostic = runnerStatus.runnerDiagnosticText;
 
   // ── DOM refs ──────────────────────────────────────────────────────
-  const messagesEl       = document.getElementById('messages');
-  const toolsEl          = document.getElementById('tools');
-  const customToolsEl    = document.getElementById('custom-tools');
-  const healthPanelEl    = document.getElementById('health-panel');
-  const changeReviewEl   = document.getElementById('change-review-panel');
-  const planPanelEl      = document.getElementById('plan-panel');
-  const promptEl         = document.getElementById('prompt');
-  const composerEl       = document.getElementById('composer');
-  const acListEl         = document.getElementById('autocomplete-list');
-  const contextBarEl     = document.getElementById('context-bar');
-  const sessionEl        = document.getElementById('session-label');
-  const sessionMenuEl    = document.getElementById('session-menu');
-  const stopGenBtn       = document.getElementById('stop-gen');
-  const loopStatusEl     = document.getElementById('loop-status');
-  const runnerDetailEl   = document.getElementById('runner-status-detail');
-  const runnerActionsEl  = document.getElementById('runner-actions');
-  const activeFileEl     = document.getElementById('active-file-label');
+  const messagesEl = document.getElementById('messages');
+  const toolsEl = document.getElementById('tools');
+  const customToolsEl = document.getElementById('custom-tools');
+  const healthPanelEl = document.getElementById('health-panel');
+  const changeReviewEl = document.getElementById('change-review-panel');
+  const planPanelEl = document.getElementById('plan-panel');
+  const promptEl = document.getElementById('prompt');
+  const composerEl = document.getElementById('composer');
+  const acListEl = document.getElementById('autocomplete-list');
+  const contextBarEl = document.getElementById('context-bar');
+  const sessionEl = document.getElementById('session-label');
+  const sessionMenuEl = document.getElementById('session-menu');
+  const stopGenBtn = document.getElementById('stop-gen');
+  const loopStatusEl = document.getElementById('loop-status');
+  const runnerDetailEl = document.getElementById('runner-status-detail');
+  const runnerActionsEl = document.getElementById('runner-actions');
+  const activeFileEl = document.getElementById('active-file-label');
   const workspaceLabelEl = document.getElementById('workspace-label');
-  const modeChipLabel    = document.getElementById('mode-chip-label');
-  const modePopupEl      = document.getElementById('mode-popup');
-  const modeChipBtn      = document.getElementById('mode-chip');
-  const plusBtn          = document.getElementById('plus-btn');
-  const plusMenuEl       = document.getElementById('plus-menu');
+  const modeChipLabel = document.getElementById('mode-chip-label');
+  const modePopupEl = document.getElementById('mode-popup');
+  const modeChipBtn = document.getElementById('mode-chip');
+  const plusBtn = document.getElementById('plus-btn');
+  const plusMenuEl = document.getElementById('plus-menu');
 
   // ── 상수 (const는 선언 전 접근 불가 → 최상단에 위치) ─────────────
   const FOLD_THRESHOLD = 25;
   const LONG_RUNNING_MS = 30000;
-  const MODE_LABELS    = { agent: 'AGENT', ask: 'ASK', plan: 'PLAN' };
+  const MODE_LABELS = { agent: 'AGENT', ask: 'ASK', plan: 'PLAN' };
   const LOOP_STALLED_MS = 30000;
   const MODE_SWITCH_GUIDANCE = '모드 전환은 입력창 아래 모드 선택을 사용하세요.';
   const SLASH_COMMANDS = [
@@ -112,41 +120,41 @@ import { createEventDispatcher } from './dispatcher.js';
   ];
   const LOCAL_HELP_TEXT = [
     '사용 가능한 명령어:',
-    ...SLASH_COMMANDS
-      .filter(command => command.kind !== 'mode')
-      .map(command => `${command.value.padEnd(18, ' ')} - ${command.description}`),
+    ...SLASH_COMMANDS.filter((command) => command.kind !== 'mode').map(
+      (command) => `${command.value.padEnd(18, ' ')} - ${command.description}`,
+    ),
     '/agent, /ask, /plan - 모드 선택 UI를 사용하세요',
   ].join('\n');
 
   // ── State ─────────────────────────────────────────────────────────
-  const initialState    = createInitialState(vscode);
-  let savedHistory      = initialState.savedHistory;
-  let savedPlan         = initialState.savedPlan;
-  let planBySession     = initialState.planBySession;
-  let currentMode       = initialState.currentMode;
-  let currentSession    = initialState.currentSession;
-  let sessions          = initialState.sessions;
-  let toolStats         = initialState.toolStats;
-  let customTools       = [];
+  const initialState = createInitialState(vscode);
+  let savedHistory = initialState.savedHistory;
+  let savedPlan = initialState.savedPlan;
+  let planBySession = initialState.planBySession;
+  let currentMode = initialState.currentMode;
+  let currentSession = initialState.currentSession;
+  let sessions = initialState.sessions;
+  let toolStats = initialState.toolStats;
+  let customTools = [];
   let customToolsSource = 'host';
   let customToolsCollapsed = initialState.customToolsCollapsed;
-  let customToolsView   = initialState.customToolsView;
-  let sessionListOpen   = initialState.sessionListOpen;
-  let changeReviews     = initialState.changeReviews;
+  let customToolsView = initialState.customToolsView;
+  let sessionListOpen = initialState.sessionListOpen;
+  let changeReviews = initialState.changeReviews;
   let activeRunnerMode = 'agent';
-  let latestHealth      = null;
+  let latestHealth = null;
   let healthPanelVisible = false;
   let activeFileContext = null;
   let suppressedActiveFile = '';
-  let lastLoopStatus    = { state: 'idle', text: 'Idle', lastEventAt: 0 };
+  let lastLoopStatus = { state: 'idle', text: 'Idle', lastEventAt: 0 };
 
   let currentAssistantArticle = null;
-  let currentAssistantEl      = null;
-  let currentAssistantTxt     = '';
-  let autocomplete            = null;
-  let toolPanel               = null;
-  let isGenerating            = false;
-  let runnerState             = {
+  let currentAssistantEl = null;
+  let currentAssistantTxt = '';
+  let autocomplete = null;
+  let toolPanel = null;
+  let isGenerating = false;
+  let runnerState = {
     running: false,
     processRunning: false,
     lifecycle: 'stopped',
@@ -167,13 +175,13 @@ import { createEventDispatcher } from './dispatcher.js';
     activeRun: null,
     stalledReason: null,
   };
-  let inputHistory            = [];
-  let inputHistoryIdx         = -1;
-  const transientNotices      = new Map();
-  let lastActiveSkillsKey     = '';
+  let inputHistory = [];
+  let inputHistoryIdx = -1;
+  const transientNotices = new Map();
+  let lastActiveSkillsKey = '';
   // 엔진이 dynamic tool retrieval로 이번 턴 활성 tool을 알려줄 때 채워짐
   // (event.metadata.active_tools 또는 active_tool_names를 수용)
-  let activeTurnTools         = null;
+  let activeTurnTools = null;
 
   // ── Persistence ───────────────────────────────────────────────────
   let persistStateTimeout = null;
@@ -210,11 +218,16 @@ import { createEventDispatcher } from './dispatcher.js';
   function activeSkillNames(event) {
     const skills = event?.metadata?.active_skills;
     if (!Array.isArray(skills)) return [];
-    return skills.map(skill => {
-      if (typeof skill === 'string') return skill;
-      if (skill && typeof skill === 'object') return skill.name || skill.path || skill.description;
-      return '';
-    }).map(String).map(name => name.trim()).filter(Boolean);
+    return skills
+      .map((skill) => {
+        if (typeof skill === 'string') return skill;
+        if (skill && typeof skill === 'object')
+          return skill.name || skill.path || skill.description;
+        return '';
+      })
+      .map(String)
+      .map((name) => name.trim())
+      .filter(Boolean);
   }
 
   function showActiveSkills(event) {
@@ -240,11 +253,12 @@ import { createEventDispatcher } from './dispatcher.js';
       compact_end: 'compaction complete',
       compact_failed: 'compaction failed',
     };
-    const state = phase === 'compact_failed'
-      ? 'error'
-      : phase.endsWith('_end') || phase === 'compact_end'
-        ? 'idle'
-        : 'running';
+    const state =
+      phase === 'compact_failed'
+        ? 'error'
+        : phase.endsWith('_end') || phase === 'compact_end'
+          ? 'idle'
+          : 'running';
     return { state, text: event.message || labels[phase] || phase };
   }
 
@@ -273,17 +287,27 @@ import { createEventDispatcher } from './dispatcher.js';
   }
 
   function normalizeSlashCommand(text) {
-    return String(text || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    return String(text || '')
+      .trim()
+      .replace(/\s+/g, ' ')
+      .toLowerCase();
   }
 
   function findSlashCommand(text) {
     const normalized = normalizeSlashCommand(text);
     const commands = [...SLASH_COMMANDS].sort((a, b) => b.value.length - a.value.length);
-    return commands.find(command => normalized === command.value || normalized.startsWith(`${command.value} `)) || null;
+    return (
+      commands.find(
+        (command) => normalized === command.value || normalized.startsWith(`${command.value} `),
+      ) || null
+    );
   }
 
   function slashCommandRemainder(text, commandValue) {
-    return String(text || '').trim().slice(commandValue.length).trim();
+    return String(text || '')
+      .trim()
+      .slice(commandValue.length)
+      .trim();
   }
 
   function _maybeAddFold(article, body, text) {
@@ -298,11 +322,12 @@ import { createEventDispatcher } from './dispatcher.js';
     labelRow.className = 'label-row';
 
     const avatar = document.createElement('span');
-    avatar.className = role === 'assistant'
-      ? 'role-avatar assistant-avatar'
-      : role === 'user'
-        ? 'role-avatar user-avatar'
-        : 'role-avatar system-avatar';
+    avatar.className =
+      role === 'assistant'
+        ? 'role-avatar assistant-avatar'
+        : role === 'user'
+          ? 'role-avatar user-avatar'
+          : 'role-avatar system-avatar';
     avatar.textContent = role === 'assistant' ? '✦' : role === 'user' ? '●' : '⚙';
     labelRow.appendChild(avatar);
 
@@ -325,10 +350,15 @@ import { createEventDispatcher } from './dispatcher.js';
       copyMsgBtn.textContent = '⎘';
       copyMsgBtn.addEventListener('click', () => {
         const raw = article.querySelector('.body')?.textContent || '';
-        navigator.clipboard.writeText(raw).then(() => {
-          copyMsgBtn.textContent = '✓';
-          setTimeout(() => { copyMsgBtn.textContent = '⎘'; }, 1500);
-        }).catch(() => {});
+        navigator.clipboard
+          .writeText(raw)
+          .then(() => {
+            copyMsgBtn.textContent = '✓';
+            setTimeout(() => {
+              copyMsgBtn.textContent = '⎘';
+            }, 1500);
+          })
+          .catch(() => {});
       });
       labelRow.appendChild(copyMsgBtn);
     }
@@ -413,7 +443,8 @@ import { createEventDispatcher } from './dispatcher.js';
   function renderLoopStatusDisplay() {
     const base = lastLoopStatus || { state: 'idle', text: 'Idle', lastEventAt: 0 };
     const active = runnerState.processRunning || runnerState.running || isGenerating;
-    const lastEventAt = base.lastEventAt || runnerState.lastEventAt || runnerState.lastStatusAt || 0;
+    const lastEventAt =
+      base.lastEventAt || runnerState.lastEventAt || runnerState.lastStatusAt || 0;
     const elapsed = lastEventAt ? Date.now() - lastEventAt : 0;
     if (active && base.state !== 'idle' && elapsed > LOOP_STALLED_MS) {
       const text = `Stalled · ${formatElapsed(elapsed)} since ${base.text || 'last activity'}`;
@@ -561,7 +592,12 @@ import { createEventDispatcher } from './dispatcher.js';
     }
     const bodyText = currentAssistantEl?.textContent?.trim() || '';
     const hasTypingIndicator = !!currentAssistantEl?.querySelector?.('.typing-indicator');
-    if (removeEmpty && currentAssistantArticle && (!currentAssistantTxt.trim() || hasTypingIndicator) && !bodyText) {
+    if (
+      removeEmpty &&
+      currentAssistantArticle &&
+      (!currentAssistantTxt.trim() || hasTypingIndicator) &&
+      !bodyText
+    ) {
       currentAssistantArticle.remove();
     }
     currentAssistantArticle = null;
@@ -570,9 +606,8 @@ import { createEventDispatcher } from './dispatcher.js';
   }
 
   function settleLoopStatusAfterGeneration() {
-    const busy = runnerState.state === 'busy'
-      || runnerState.lifecycle === 'busy'
-      || !!runnerState.activeRunId;
+    const busy =
+      runnerState.state === 'busy' || runnerState.lifecycle === 'busy' || !!runnerState.activeRunId;
     if (busy) return;
     if (runnerState.running || runnerState.state === 'ready' || runnerState.lifecycle === 'ready') {
       setLoopStatus('idle', 'Idle');
@@ -583,11 +618,12 @@ import { createEventDispatcher } from './dispatcher.js';
     renderPlanPanelComponent(plan, {
       panelEl: planPanelEl,
       canReview: !!(savedPlan && savedPlan.reviewState === 'wait'),
-      onReview: action => {
+      onReview: (action) => {
         if (action === 'approve') setGenerating(true);
         vscode.postMessage({ type: 'reviewPlan', action });
       },
-      onOpenMarkdown: planToOpen => vscode.postMessage({ type: 'openPlanPreview', plan: planToOpen }),
+      onOpenMarkdown: (planToOpen) =>
+        vscode.postMessage({ type: 'openPlanPreview', plan: planToOpen }),
       onCancel: () => cancelCurrentPlan('cancel'),
       onDelete: () => cancelCurrentPlan('delete'),
     });
@@ -597,11 +633,15 @@ import { createEventDispatcher } from './dispatcher.js';
 
   // 메인 채팅에 표시되는 plan MD 메시지 (단일 인스턴스, 변경 시 in-place 업데이트)
   let planChatArticleEl = null;
-  let planChatIdentity = '';  // 마지막으로 렌더한 plan의 식별자 (startedAt/goal 기반)
+  let planChatIdentity = ''; // 마지막으로 렌더한 plan의 식별자 (startedAt/goal 기반)
 
   function planIdentity(plan) {
     if (!plan) return '';
-    return String(plan.startedAt || '') + '|' + String(plan.goal || plan.title || plan.pendingTitle || '');
+    return (
+      String(plan.startedAt || '') +
+      '|' +
+      String(plan.goal || plan.title || plan.pendingTitle || '')
+    );
   }
 
   function removePlanChatArticle() {
@@ -675,7 +715,9 @@ import { createEventDispatcher } from './dispatcher.js';
   }
 
   function normalizePlanPhase(phase) {
-    const value = String(phase || '').trim().toLowerCase();
+    const value = String(phase || '')
+      .trim()
+      .toLowerCase();
     if (['waitforreview', 'wait_for_review', 'review', 'wait'].includes(value)) return 'wait';
     if (['execute', 'executing', 'approved'].includes(value)) return 'executing';
     if (['verify', 'verifying'].includes(value)) return 'verifying';
@@ -687,9 +729,10 @@ import { createEventDispatcher } from './dispatcher.js';
 
   function planFromSessionState(planState) {
     if (!planState || typeof planState !== 'object') return null;
-    let plan = planState.structured_plan && typeof planState.structured_plan === 'object'
-      ? planState.structured_plan
-      : null;
+    let plan =
+      planState.structured_plan && typeof planState.structured_plan === 'object'
+        ? planState.structured_plan
+        : null;
     if (!plan && typeof planState.plan_json === 'string' && planState.plan_json.trim()) {
       try {
         const parsed = JSON.parse(planState.plan_json);
@@ -733,7 +776,11 @@ import { createEventDispatcher } from './dispatcher.js';
   function cancelCurrentPlan(action) {
     clearSavedPlan();
     vscode.postMessage({ type: 'reviewPlan', action });
-    appendTransientMessage('system', action === 'delete' ? 'PLAN을 삭제했습니다.' : 'PLAN을 취소했습니다.', 'hint');
+    appendTransientMessage(
+      'system',
+      action === 'delete' ? 'PLAN을 삭제했습니다.' : 'PLAN을 취소했습니다.',
+      'hint',
+    );
   }
 
   function beginPlanDraft(text) {
@@ -798,9 +845,11 @@ import { createEventDispatcher } from './dispatcher.js';
 
   function isRunnerProcessLive() {
     return Boolean(
-      runnerState.processRunning
-      || runnerState.running
-      || ['starting', 'ready', 'busy', 'waiting_input', 'stale'].includes(runnerState.lifecycle || runnerState.state),
+      runnerState.processRunning ||
+      runnerState.running ||
+      ['starting', 'ready', 'busy', 'waiting_input', 'stale'].includes(
+        runnerState.lifecycle || runnerState.state,
+      ),
     );
   }
 
@@ -817,12 +866,12 @@ import { createEventDispatcher } from './dispatcher.js';
       collapsed: customToolsCollapsed,
       view: customToolsView,
       activeToolNames: activeTurnTools,
-      onViewChange: view => {
+      onViewChange: (view) => {
         customToolsView = view;
         persistState();
         renderCustomTools(customTools);
       },
-      onToggleCollapsed: collapsed => {
+      onToggleCollapsed: (collapsed) => {
         customToolsCollapsed = collapsed;
         persistState();
         renderCustomTools(customTools);
@@ -837,7 +886,7 @@ import { createEventDispatcher } from './dispatcher.js';
           session: currentSession,
         });
       },
-      onInstallDependencies: tool => {
+      onInstallDependencies: (tool) => {
         vscode.postMessage({
           type: 'installCustomToolDependencies',
           metadataPath: tool?.metadataPath,
@@ -845,7 +894,7 @@ import { createEventDispatcher } from './dispatcher.js';
           toolName: tool?.toolName || null,
         });
       },
-      onRetryLoad: tool => {
+      onRetryLoad: (tool) => {
         vscode.postMessage({
           type: 'retryCustomToolLoad',
           metadataPath: tool?.metadataPath,
@@ -853,7 +902,7 @@ import { createEventDispatcher } from './dispatcher.js';
           toolName: tool?.toolName || null,
         });
       },
-      onRegisterTool: tool => {
+      onRegisterTool: (tool) => {
         vscode.postMessage({
           type: 'registerCustomTool',
           metadataPath: tool?.metadataPath,
@@ -861,7 +910,7 @@ import { createEventDispatcher } from './dispatcher.js';
           toolName: tool?.toolName || null,
         });
       },
-      onDisableTool: tool => {
+      onDisableTool: (tool) => {
         vscode.postMessage({
           type: 'disableCustomTool',
           metadataPath: tool?.metadataPath,
@@ -869,7 +918,7 @@ import { createEventDispatcher } from './dispatcher.js';
           toolName: tool?.toolName || null,
         });
       },
-      onOpenFile: tool => {
+      onOpenFile: (tool) => {
         vscode.postMessage({ type: 'openFile', path: tool?.modulePath || tool?.metadataPath });
       },
     });
@@ -883,9 +932,9 @@ import { createEventDispatcher } from './dispatcher.js';
     if (!candidates) return null;
     const arr = Array.isArray(candidates) ? candidates : [];
     const names = arr
-      .map(item => (typeof item === 'string' ? item : item?.name || item?.tool_name))
+      .map((item) => (typeof item === 'string' ? item : item?.name || item?.tool_name))
       .map(String)
-      .map(s => s.trim())
+      .map((s) => s.trim())
       .filter(Boolean);
     return names.length ? new Set(names) : null;
   }
@@ -910,10 +959,7 @@ import { createEventDispatcher } from './dispatcher.js';
     const state = runnerState.state || '';
     const lifecycle = runnerState.lifecycle || '';
     return Boolean(
-      isGenerating
-      || state === 'busy'
-      || lifecycle === 'busy'
-      || runnerState.activeRunId
+      isGenerating || state === 'busy' || lifecycle === 'busy' || runnerState.activeRunId,
     );
   }
 
@@ -954,13 +1000,15 @@ import { createEventDispatcher } from './dispatcher.js';
       containerEl: contextBarEl,
       session: currentSession,
       activeFile: activeFileContext,
-      activeFileSuppressed: !!(activeFileContext?.file && activeFileContext.file === suppressedActiveFile),
+      activeFileSuppressed: !!(
+        activeFileContext?.file && activeFileContext.file === suppressedActiveFile
+      ),
       promptText: promptEl.value,
       onRemoveActiveFile: () => {
         suppressedActiveFile = activeFileContext?.file || '';
         renderContextBar();
       },
-      onRemoveMention: value => {
+      onRemoveMention: (value) => {
         promptEl.value = removeMentionFromText(promptEl.value, value);
         resizeTextarea();
         renderContextBar();
@@ -972,16 +1020,17 @@ import { createEventDispatcher } from './dispatcher.js';
     renderChangeReviewPanelComponent({
       panelEl: changeReviewEl,
       items: changeReviews,
-      onOpenDiff: item => vscode.postMessage({ type: 'openDiff', event: item.event }),
-      onOpenFile: item => vscode.postMessage({ type: 'openFile', path: item.path }),
-      onRevert: item => vscode.postMessage({
-        type: 'revertChangedFile',
-        id: item.id,
-        path: item.path,
-        oldContent: item.oldContent,
-      }),
-      onDismiss: item => {
-        changeReviews = changeReviews.filter(entry => entry.id !== item.id);
+      onOpenDiff: (item) => vscode.postMessage({ type: 'openDiff', event: item.event }),
+      onOpenFile: (item) => vscode.postMessage({ type: 'openFile', path: item.path }),
+      onRevert: (item) =>
+        vscode.postMessage({
+          type: 'revertChangedFile',
+          id: item.id,
+          path: item.path,
+          oldContent: item.oldContent,
+        }),
+      onDismiss: (item) => {
+        changeReviews = changeReviews.filter((entry) => entry.id !== item.id);
         persistState();
         renderChangeReviewPanel();
       },
@@ -997,26 +1046,30 @@ import { createEventDispatcher } from './dispatcher.js';
   toolPanel = createActivityLogController({
     messagesEl,
     longRunningMs: LONG_RUNNING_MS,
-    onOpenDiff: event => vscode.postMessage({ type: 'openDiff', event }),
+    onOpenDiff: (event) => vscode.postMessage({ type: 'openDiff', event }),
     onPersistTool: persistToolHistory,
     onStatsUpdate: updateToolStats,
-    onOpenGeneratedTool: event => vscode.postMessage({ type: 'openGeneratedTool', event }),
+    onOpenGeneratedTool: (event) => vscode.postMessage({ type: 'openGeneratedTool', event }),
     onRefreshCustomTools: () => vscode.postMessage({ type: 'getCustomTools' }),
   });
 
   // ── 기존 히스토리 복원 (helpers 모두 정의된 후 실행) ─────────────
-  savedHistory = savedHistory.filter(m => !(m?.type === 'message' && m.role === 'system' && isTransientSystemText(m.text)));
+  savedHistory = savedHistory.filter(
+    (m) => !(m?.type === 'message' && m.role === 'system' && isTransientSystemText(m.text)),
+  );
   persistState();
-  savedHistory.forEach(m => {
+  savedHistory.forEach((m) => {
     try {
       if (m.type === 'message') {
         const text = collapseDuplicatedHistoryText(m.text);
         const rendered = _appendMessageEl(m.role, text, m.tone, false);
         if (m.role === 'user') toolPanel.startRequest(text, rendered.article);
         if (m.role === 'assistant') toolPanel.attachAssistant(rendered.article);
-      }
-      else if (m.type === 'tool') toolPanel.appendTool(m.tool_name, m.tool_input, m.output, m.is_error, false, m);
-    } catch (e) { /* 손상된 히스토리 항목 무시 */ }
+      } else if (m.type === 'tool')
+        toolPanel.appendTool(m.tool_name, m.tool_input, m.output, m.is_error, false, m);
+    } catch (e) {
+      /* 손상된 히스토리 항목 무시 */
+    }
   });
   renderPlanPanel(savedPlan);
   renderRunnerStatus();
@@ -1026,7 +1079,7 @@ import { createEventDispatcher } from './dispatcher.js';
   // ── Empty state (welcome screen) ─────────────────────────────────
   function ensureWelcomeState() {
     if (!messagesEl) return;
-    if (messagesEl.querySelector('#empty-state')) return;          // 이미 있음
+    if (messagesEl.querySelector('#empty-state')) return; // 이미 있음
     if (messagesEl.querySelectorAll('.message').length > 0) return; // 대화 중
 
     const emptyState = document.createElement('div');
@@ -1043,7 +1096,7 @@ import { createEventDispatcher } from './dispatcher.js';
       </div>
     `;
     messagesEl.appendChild(emptyState);
-    emptyState.querySelectorAll('.empty-state-prompt').forEach(btn => {
+    emptyState.querySelectorAll('.empty-state-prompt').forEach((btn) => {
       btn.addEventListener('click', () => {
         if (promptEl) {
           promptEl.value = btn.dataset.prompt || '';
@@ -1062,7 +1115,10 @@ import { createEventDispatcher } from './dispatcher.js';
   requestRunnerStatus();
 
   document.addEventListener('visibilitychange', () => {
-    vscode.postMessage({ type: 'visibilityChanged', visible: document.visibilityState === 'visible' });
+    vscode.postMessage({
+      type: 'visibilityChanged',
+      visible: document.visibilityState === 'visible',
+    });
     if (document.visibilityState === 'visible') {
       requestRunnerStatus();
       vscode.postMessage({ type: 'getActiveFile' });
@@ -1075,11 +1131,16 @@ import { createEventDispatcher } from './dispatcher.js';
     if (!e.target.matches('.copy-btn')) return;
     const pre = document.getElementById(e.target.dataset.id);
     if (!pre) return;
-    navigator.clipboard.writeText(pre.textContent).then(() => {
-      const orig = e.target.textContent;
-      e.target.textContent = 'Copied!';
-      setTimeout(() => { e.target.textContent = orig; }, 1500);
-    }).catch(() => {});
+    navigator.clipboard
+      .writeText(pre.textContent)
+      .then(() => {
+        const orig = e.target.textContent;
+        e.target.textContent = 'Copied!';
+        setTimeout(() => {
+          e.target.textContent = orig;
+        }, 1500);
+      })
+      .catch(() => {});
   });
 
   document.addEventListener('click', (e) => {
@@ -1117,7 +1178,10 @@ import { createEventDispatcher } from './dispatcher.js';
   // ── + 버튼 ───────────────────────────────────────────────────────
   plusBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (plusMenuEl && !plusMenuEl.hidden) { closePopup(plusMenuEl); return; }
+    if (plusMenuEl && !plusMenuEl.hidden) {
+      closePopup(plusMenuEl);
+      return;
+    }
     closePopup(modePopupEl);
     openPopup(plusMenuEl);
   });
@@ -1146,7 +1210,7 @@ import { createEventDispatcher } from './dispatcher.js';
     currentMode = mode;
     if (modeChipLabel) modeChipLabel.textContent = MODE_LABELS[mode] || mode.toUpperCase();
     if (modeChipBtn) modeChipBtn.dataset.mode = mode;
-    document.querySelectorAll('.mode-option').forEach(b => {
+    document.querySelectorAll('.mode-option').forEach((b) => {
       b.classList.toggle('active', b.dataset.mode === mode);
     });
 
@@ -1180,12 +1244,15 @@ import { createEventDispatcher } from './dispatcher.js';
 
   modeChipBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (modePopupEl && !modePopupEl.hidden) { closePopup(modePopupEl); return; }
+    if (modePopupEl && !modePopupEl.hidden) {
+      closePopup(modePopupEl);
+      return;
+    }
     closePopup(plusMenuEl);
     openPopup(modePopupEl);
   });
 
-  document.querySelectorAll('.mode-option').forEach(btn => {
+  document.querySelectorAll('.mode-option').forEach((btn) => {
     btn.addEventListener('click', () => {
       applyMode(btn.dataset.mode, { fromUserGesture: true });
       closePopup(modePopupEl);
@@ -1203,14 +1270,17 @@ import { createEventDispatcher } from './dispatcher.js';
     promptEl,
     listEl: acListEl,
     resizeTextarea,
-    onMentionSearch: query => vscode.postMessage({ type: 'getFiles', query }),
+    onMentionSearch: (query) => vscode.postMessage({ type: 'getFiles', query }),
   });
 
   // ── Keydown (Enter / history / autocomplete) ──────────────────────
   promptEl.addEventListener('keydown', (e) => {
     if (autocomplete.handleKeydown(e)) return;
 
-    if (e.key === 'Escape') { closeAllPopups(); return; }
+    if (e.key === 'Escape') {
+      closeAllPopups();
+      return;
+    }
 
     if (e.key === 'ArrowUp' && !e.shiftKey && promptEl.selectionStart === 0) {
       if (inputHistory.length > 0 && inputHistoryIdx < inputHistory.length - 1) {
@@ -1229,7 +1299,7 @@ import { createEventDispatcher } from './dispatcher.js';
         resizeTextarea();
       } else if (inputHistoryIdx === 0) {
         inputHistoryIdx = -1;
-        promptEl.value  = '';
+        promptEl.value = '';
         resizeTextarea();
       }
       e.preventDefault();
@@ -1250,7 +1320,7 @@ import { createEventDispatcher } from './dispatcher.js';
 
   // ── Session label ─────────────────────────────────────────────────
   function sessionDisplayName(name) {
-    const session = sessions.find(item => item.name === name);
+    const session = sessions.find((item) => item.name === name);
     const title = typeof session?.title === 'string' ? session.title.trim() : '';
     return title || name || 'default';
   }
@@ -1273,22 +1343,26 @@ import { createEventDispatcher } from './dispatcher.js';
       sessions,
       currentSession,
       listOpen: sessionListOpen,
-      onListToggle: open => {
+      onListToggle: (open) => {
         sessionListOpen = open;
         persistState();
       },
       onClose: () => closePopup(sessionMenuEl),
-      onSwitch: name => vscode.postMessage({ type: 'switchSession', name }),
-      onNew: name => vscode.postMessage({ type: 'newSession', name }),
-      onDelete: name => vscode.postMessage({ type: 'deleteSession', name }),
-      onRename: (oldName, newName) => vscode.postMessage({ type: 'renameSession', oldName, newName }),
+      onSwitch: (name) => vscode.postMessage({ type: 'switchSession', name }),
+      onNew: (name) => vscode.postMessage({ type: 'newSession', name }),
+      onDelete: (name) => vscode.postMessage({ type: 'deleteSession', name }),
+      onRename: (oldName, newName) =>
+        vscode.postMessage({ type: 'renameSession', oldName, newName }),
       onExport: (name, format) => vscode.postMessage({ type: 'exportSession', name, format }),
     });
   }
 
   sessionEl?.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (sessionMenuEl && !sessionMenuEl.hidden) { closePopup(sessionMenuEl); return; }
+    if (sessionMenuEl && !sessionMenuEl.hidden) {
+      closePopup(sessionMenuEl);
+      return;
+    }
     closeAllPopups();
     renderSessionMenu();
     openPopup(sessionMenuEl);
@@ -1310,8 +1384,8 @@ import { createEventDispatcher } from './dispatcher.js';
     if (v) {
       const { article, body } = _createTypingIndicator();
       currentAssistantArticle = article;
-      currentAssistantEl      = body;
-      currentAssistantTxt     = '';
+      currentAssistantEl = body;
+      currentAssistantTxt = '';
     } else {
       resetCurrentAssistantDraft();
       settleLoopStatusAfterGeneration();
@@ -1351,7 +1425,9 @@ import { createEventDispatcher } from './dispatcher.js';
     }
     if (!isSlashCommand && currentMode === 'plan') beginPlanDraft(text);
 
-    const skipCursorContext = isSlashCommand || !!(activeFileContext?.file && activeFileContext.file === suppressedActiveFile);
+    const skipCursorContext =
+      isSlashCommand ||
+      !!(activeFileContext?.file && activeFileContext.file === suppressedActiveFile);
     if (!isSlashCommand) {
       vscode.postMessage({ type: 'sendWithMode', mode: currentMode, text, skipCursorContext });
       activeRunnerMode = currentMode;
@@ -1376,14 +1452,22 @@ import { createEventDispatcher } from './dispatcher.js';
       if (isRunnerStatusStale()) {
         runnerState.pendingSubmitText = text;
         requestRunnerStatus();
-        appendTransientMessage('system', '에이전트 연결 상태를 다시 확인 중입니다. 연결되어 있으면 자동으로 전송합니다.', 'hint');
+        appendTransientMessage(
+          'system',
+          '에이전트 연결 상태를 다시 확인 중입니다. 연결되어 있으면 자동으로 전송합니다.',
+          'hint',
+        );
         return;
       }
 
       if (runnerState.lifecycle === 'starting') {
         runnerState.pendingSubmitText = text;
         requestRunnerStatus();
-        appendTransientMessage('system', '에이전트가 시작 중입니다. 연결되면 자동으로 전송합니다.', 'hint');
+        appendTransientMessage(
+          'system',
+          '에이전트가 시작 중입니다. 연결되면 자동으로 전송합니다.',
+          'hint',
+        );
         return;
       }
 
@@ -1401,7 +1485,8 @@ import { createEventDispatcher } from './dispatcher.js';
 
       appendTransientMessage(
         'system',
-        formatRunnerDiagnostic(runnerState, runnerState.lastDiagnostic) || '에이전트가 시작되지 않았습니다. ▶ Start 버튼을 눌러주세요.',
+        formatRunnerDiagnostic(runnerState, runnerState.lastDiagnostic) ||
+          '에이전트가 시작되지 않았습니다. ▶ Start 버튼을 눌러주세요.',
         'warn',
       );
       return;
@@ -1418,9 +1503,10 @@ import { createEventDispatcher } from './dispatcher.js';
     }
 
     // plan review는 plan 모드일 때만 트리거 (다른 모드에서 plan 잔여 상태가 남아도 무시)
-    const reviewAction = (currentMode === 'plan' && savedPlan?.reviewState === 'wait')
-      ? classifyPlanReviewText(text)
-      : null;
+    const reviewAction =
+      currentMode === 'plan' && savedPlan?.reviewState === 'wait'
+        ? classifyPlanReviewText(text)
+        : null;
     if (reviewAction) {
       submitPlanReviewText(text, reviewAction);
       return;
@@ -1433,7 +1519,12 @@ import { createEventDispatcher } from './dispatcher.js';
     const command = findSlashCommand(text);
     const normalized = normalizeSlashCommand(text);
     if (!command) {
-      appendTransientMessage('system', `지원하지 않는 명령어입니다: ${normalized}\n/help로 사용 가능한 명령어를 확인하세요.`, 'warn', 5000);
+      appendTransientMessage(
+        'system',
+        `지원하지 않는 명령어입니다: ${normalized}\n/help로 사용 가능한 명령어를 확인하세요.`,
+        'warn',
+        5000,
+      );
       return true;
     }
 
@@ -1479,7 +1570,10 @@ import { createEventDispatcher } from './dispatcher.js';
         showRunnerBusy('/session new');
         return true;
       }
-      vscode.postMessage({ type: 'newSession', name: slashCommandRemainder(text, '/session new') || undefined });
+      vscode.postMessage({
+        type: 'newSession',
+        name: slashCommandRemainder(text, '/session new') || undefined,
+      });
       clearPromptAfterCommand();
       return true;
     }
@@ -1489,7 +1583,12 @@ import { createEventDispatcher } from './dispatcher.js';
         renderSessionMenu();
         openPopup(sessionMenuEl);
         vscode.postMessage({ type: 'getSessions' });
-        appendTransientMessage('system', '삭제할 세션을 목록의 x 버튼으로 선택하세요.', 'hint', 4000);
+        appendTransientMessage(
+          'system',
+          '삭제할 세션을 목록의 x 버튼으로 선택하세요.',
+          'hint',
+          4000,
+        );
       } else if (isAgentBusy()) {
         showRunnerBusy('/session delete');
       } else {
@@ -1529,7 +1628,10 @@ import { createEventDispatcher } from './dispatcher.js';
   }
 
   // form submit은 항상 preventDefault (JS 크래시 시 폼 기본동작 방지)
-  composerEl?.addEventListener('submit', (e) => { e.preventDefault(); submitPrompt(); });
+  composerEl?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    submitPrompt();
+  });
 
   document.getElementById('clear-history')?.addEventListener('click', _clearChat);
 
@@ -1584,41 +1686,99 @@ import { createEventDispatcher } from './dispatcher.js';
     for (const event of events) {
       if (!event || typeof event !== 'object') continue;
       if (!replayAll && !statusOnly.has(event.type)) continue;
-      window.dispatchEvent(new MessageEvent('message', {
-        data: { type: 'runnerEvent', event: { ...event, replay: true } },
-      }));
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: { type: 'runnerEvent', event: { ...event, replay: true } },
+        }),
+      );
     }
   }
 
   const dispatcherCtx = {
-    get currentAssistantEl() { return currentAssistantEl; },
-    set currentAssistantEl(v) { currentAssistantEl = v; },
-    get currentAssistantArticle() { return currentAssistantArticle; },
-    set currentAssistantArticle(v) { currentAssistantArticle = v; },
-    get currentAssistantTxt() { return currentAssistantTxt; },
-    set currentAssistantTxt(v) { currentAssistantTxt = v; },
-    get runnerState() { return runnerState; },
-    set runnerState(v) { runnerState = v; },
-    get changeReviews() { return changeReviews; },
-    set changeReviews(v) { changeReviews = v; },
-    get latestHealth() { return latestHealth; },
-    set latestHealth(v) { latestHealth = v; },
-    get healthPanelVisible() { return healthPanelVisible; },
-    set healthPanelVisible(v) { healthPanelVisible = v; },
-    get savedPlan() { return savedPlan; },
-    set savedPlan(v) { savedPlan = v; },
-    get sessions() { return sessions; },
-    set sessions(v) { sessions = v; },
-    get savedHistory() { return savedHistory; },
-    set savedHistory(v) { savedHistory = v; },
-    get activeFileContext() { return activeFileContext; },
-    set activeFileContext(v) { activeFileContext = v; },
-    get suppressedActiveFile() { return suppressedActiveFile; },
-    set suppressedActiveFile(v) { suppressedActiveFile = v; },
-    get activeRunnerMode() { return activeRunnerMode; },
-    set activeRunnerMode(v) { activeRunnerMode = v; },
-    get currentSession() { return currentSession; },
-    get planBySession() { return planBySession; },
+    get currentAssistantEl() {
+      return currentAssistantEl;
+    },
+    set currentAssistantEl(v) {
+      currentAssistantEl = v;
+    },
+    get currentAssistantArticle() {
+      return currentAssistantArticle;
+    },
+    set currentAssistantArticle(v) {
+      currentAssistantArticle = v;
+    },
+    get currentAssistantTxt() {
+      return currentAssistantTxt;
+    },
+    set currentAssistantTxt(v) {
+      currentAssistantTxt = v;
+    },
+    get runnerState() {
+      return runnerState;
+    },
+    set runnerState(v) {
+      runnerState = v;
+    },
+    get changeReviews() {
+      return changeReviews;
+    },
+    set changeReviews(v) {
+      changeReviews = v;
+    },
+    get latestHealth() {
+      return latestHealth;
+    },
+    set latestHealth(v) {
+      latestHealth = v;
+    },
+    get healthPanelVisible() {
+      return healthPanelVisible;
+    },
+    set healthPanelVisible(v) {
+      healthPanelVisible = v;
+    },
+    get savedPlan() {
+      return savedPlan;
+    },
+    set savedPlan(v) {
+      savedPlan = v;
+    },
+    get sessions() {
+      return sessions;
+    },
+    set sessions(v) {
+      sessions = v;
+    },
+    get savedHistory() {
+      return savedHistory;
+    },
+    set savedHistory(v) {
+      savedHistory = v;
+    },
+    get activeFileContext() {
+      return activeFileContext;
+    },
+    set activeFileContext(v) {
+      activeFileContext = v;
+    },
+    get suppressedActiveFile() {
+      return suppressedActiveFile;
+    },
+    set suppressedActiveFile(v) {
+      suppressedActiveFile = v;
+    },
+    get activeRunnerMode() {
+      return activeRunnerMode;
+    },
+    set activeRunnerMode(v) {
+      activeRunnerMode = v;
+    },
+    get currentSession() {
+      return currentSession;
+    },
+    get planBySession() {
+      return planBySession;
+    },
 
     createTypingIndicator: _createTypingIndicator,
     renderMarkdown,
@@ -1659,7 +1819,7 @@ import { createEventDispatcher } from './dispatcher.js';
     clearChat: _clearChat,
     promptEl,
     resizeTextarea,
-    autocomplete
+    autocomplete,
   };
   const eventDispatcher = createEventDispatcher(dispatcherCtx);
 
@@ -1687,5 +1847,4 @@ import { createEventDispatcher } from './dispatcher.js';
 
     eventDispatcher(event);
   });
-
-}());
+})();

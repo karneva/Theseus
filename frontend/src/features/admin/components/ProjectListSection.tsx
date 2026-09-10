@@ -35,7 +35,7 @@ export default function ProjectListSection() {
   const [totalElements, setTotalElements] = useState(0);
   const [fetchTrigger, setFetchTrigger] = useState(0);
 
-  const refetch = () => setFetchTrigger(n => n + 1);
+  const refetch = () => setFetchTrigger((n) => n + 1);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,7 +63,9 @@ export default function ProjectListSection() {
       }
     };
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [page, fetchTrigger]);
 
   const handleStatusToggle = async (projectId: number, currentStatus: 'ACTIVE' | 'INACTIVE') => {
@@ -77,7 +79,7 @@ export default function ProjectListSection() {
     }
   };
 
-  const filteredProjects = projects.filter(project => {
+  const filteredProjects = projects.filter((project) => {
     const searchLower = searchTerm.toLowerCase();
     return (
       project.name.toLowerCase().includes(searchLower) ||
@@ -103,7 +105,10 @@ export default function ProjectListSection() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6b7280]" />
             <Input
               value={searchTerm}
-              onChange={(e) => { setSearchTerm(e.target.value); setPage(0); }}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(0);
+              }}
               placeholder="프로젝트 검색..."
               className="w-[192px] h-8 pl-9 bg-[#010f1f] border-[rgba(65,71,81,0.2)] text-[#6b7280] text-[12px] placeholder:text-[#6b7280] focus-visible:ring-1 focus-visible:ring-white/20 rounded"
             />
@@ -121,8 +126,14 @@ export default function ProjectListSection() {
             onClick={() => setIsEditing(!isEditing)}
             className={`flex items-center gap-2 transition-colors px-4 py-1.5 rounded h-8 ${isEditing ? 'bg-[#fabd34] hover:bg-[#e5ac2d]' : 'bg-[#273647] hover:bg-[#34485e]'}`}
           >
-            <Settings2 className={`w-3.5 h-3.5 ${isEditing ? 'text-[#003a6b]' : 'text-[#fabd34]'}`} />
-            <span className={`text-[14px] font-medium ${isEditing ? 'text-[#003a6b]' : 'text-[#fabd34]'}`}>{isEditing ? '완료' : '편집'}</span>
+            <Settings2
+              className={`w-3.5 h-3.5 ${isEditing ? 'text-[#003a6b]' : 'text-[#fabd34]'}`}
+            />
+            <span
+              className={`text-[14px] font-medium ${isEditing ? 'text-[#003a6b]' : 'text-[#fabd34]'}`}
+            >
+              {isEditing ? '완료' : '편집'}
+            </span>
           </button>
         </div>
       </div>
@@ -131,70 +142,92 @@ export default function ProjectListSection() {
         <Table className="table-fixed">
           <TableHeader className="bg-[rgba(28,43,60,0.5)] border-b border-[rgba(65,71,81,0.1)] sticky top-0 z-10">
             <TableRow className="border-none hover:bg-transparent">
-              <TableHead className="text-[#c1c7d3] font-medium text-[14px] tracking-[1.2px] uppercase h-[40px] px-6 py-[10px] w-[180px]">프로젝트 명</TableHead>
-              <TableHead className="text-[#c1c7d3] font-medium text-[14px] tracking-[1.2px] uppercase h-[40px] px-6 py-[10px] w-[140px]">담당자 사번</TableHead>
-              <TableHead className="text-[#c1c7d3] font-medium text-[14px] tracking-[1.2px] uppercase h-[40px] px-6 py-[10px] w-[150px]">담당자 이름</TableHead>
-              <TableHead className="text-[#c1c7d3] font-medium text-[14px] tracking-[1.2px] uppercase h-[40px] px-6 py-[10px] text-center w-[80px]">상태</TableHead>
+              <TableHead className="text-[#c1c7d3] font-medium text-[14px] tracking-[1.2px] uppercase h-[40px] px-6 py-[10px] w-[180px]">
+                프로젝트 명
+              </TableHead>
+              <TableHead className="text-[#c1c7d3] font-medium text-[14px] tracking-[1.2px] uppercase h-[40px] px-6 py-[10px] w-[140px]">
+                담당자 사번
+              </TableHead>
+              <TableHead className="text-[#c1c7d3] font-medium text-[14px] tracking-[1.2px] uppercase h-[40px] px-6 py-[10px] w-[150px]">
+                담당자 이름
+              </TableHead>
+              <TableHead className="text-[#c1c7d3] font-medium text-[14px] tracking-[1.2px] uppercase h-[40px] px-6 py-[10px] text-center w-[80px]">
+                상태
+              </TableHead>
               <TableHead className="text-right text-white/60 font-medium h-10 px-6 py-2 w-[83px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredProjects.length === 0 ? (
-              !isLoading && (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-white/40">
-                    프로젝트가 없습니다.
-                  </TableCell>
-                </TableRow>
-              )
-            ) : (
-              filteredProjects.map((project) => (
-                <TableRow key={project.projectId} className="border-t border-[rgba(65,71,81,0.1)] h-[57px]">
-                  <TableCell className="text-[#d4e4fa] px-6 py-[10px] text-[14px] font-medium truncate whitespace-nowrap">{project.name}</TableCell>
-                  <TableCell className="text-[#a4c9ff] px-6 py-[10px] text-[15px] font-mono truncate whitespace-nowrap">{project.projectAdminEmployeeNumber}</TableCell>
-                  <TableCell className="text-[#c1c7d3] px-6 py-[10px] text-[15px] font-medium truncate whitespace-nowrap">{project.projectAdminName}</TableCell>
-                  <TableCell className="px-6 py-[10px] text-center">
-                    <StatusBadge status={project.status} />
-                  </TableCell>
-                  <TableCell className="px-6 text-center py-3">
-                    {isEditing && (
-                      <div className="flex items-center justify-center gap-1">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger className="p-2 hover:bg-white/10 rounded-md transition-colors outline-none text-white/60">
-                            <MoreVertical className="w-4 h-4" />
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="bg-[#051424] border-white/10 text-white min-w-[150px]">
-                            <DropdownMenuItem
-                              className="hover:bg-white/10 focus:bg-white/10 cursor-pointer gap-2"
-                              onClick={() => {
-                                setSelectedProject(project);
-                                setIsEditModalOpen(true);
-                              }}
+            {filteredProjects.length === 0
+              ? !isLoading && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-white/40">
+                      프로젝트가 없습니다.
+                    </TableCell>
+                  </TableRow>
+                )
+              : filteredProjects.map((project) => (
+                  <TableRow
+                    key={project.projectId}
+                    className="border-t border-[rgba(65,71,81,0.1)] h-[57px]"
+                  >
+                    <TableCell className="text-[#d4e4fa] px-6 py-[10px] text-[14px] font-medium truncate whitespace-nowrap">
+                      {project.name}
+                    </TableCell>
+                    <TableCell className="text-[#a4c9ff] px-6 py-[10px] text-[15px] font-mono truncate whitespace-nowrap">
+                      {project.projectAdminEmployeeNumber}
+                    </TableCell>
+                    <TableCell className="text-[#c1c7d3] px-6 py-[10px] text-[15px] font-medium truncate whitespace-nowrap">
+                      {project.projectAdminName}
+                    </TableCell>
+                    <TableCell className="px-6 py-[10px] text-center">
+                      <StatusBadge status={project.status} />
+                    </TableCell>
+                    <TableCell className="px-6 text-center py-3">
+                      {isEditing && (
+                        <div className="flex items-center justify-center gap-1">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger className="p-2 hover:bg-white/10 rounded-md transition-colors outline-none text-white/60">
+                              <MoreVertical className="w-4 h-4" />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                              align="end"
+                              className="bg-[#051424] border-white/10 text-white min-w-[150px]"
                             >
-                              <Edit className="w-4 h-4" />
-                              <span>프로젝트 수정</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        <button
-                          onClick={() => handleStatusToggle(project.projectId, project.status)}
-                          className="p-2 hover:bg-red-500/10 rounded-md transition-colors text-red-400/60 hover:text-red-400"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-            {!isLoading && filteredProjects.length > 0 && filteredProjects.length < 8 && (
+                              <DropdownMenuItem
+                                className="hover:bg-white/10 focus:bg-white/10 cursor-pointer gap-2"
+                                onClick={() => {
+                                  setSelectedProject(project);
+                                  setIsEditModalOpen(true);
+                                }}
+                              >
+                                <Edit className="w-4 h-4" />
+                                <span>프로젝트 수정</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                          <button
+                            onClick={() => handleStatusToggle(project.projectId, project.status)}
+                            className="p-2 hover:bg-red-500/10 rounded-md transition-colors text-red-400/60 hover:text-red-400"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+            {!isLoading &&
+              filteredProjects.length > 0 &&
+              filteredProjects.length < 8 &&
               Array.from({ length: 8 - filteredProjects.length }).map((_, index) => (
-                <TableRow key={`empty-${index}`} className="border-t border-[rgba(65,71,81,0.05)] h-[57px] hover:bg-transparent">
+                <TableRow
+                  key={`empty-${index}`}
+                  className="border-t border-[rgba(65,71,81,0.05)] h-[57px] hover:bg-transparent"
+                >
                   <TableCell colSpan={5} />
                 </TableRow>
-              ))
-            )}
+              ))}
           </TableBody>
         </Table>
       </div>

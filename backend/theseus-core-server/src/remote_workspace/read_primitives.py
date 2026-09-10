@@ -14,7 +14,6 @@ from theseus_engine.tools.core.file_read_tool import ReadFileInput
 from theseus_engine.tools.core.glob_tool import GlobInput
 from theseus_engine.tools.core.grep_tool import GrepInput
 
-
 ConnectorFactory = Callable[[RemoteWorkspaceConnectionConfig], SshRemoteWorkspaceConnector]
 
 REMOTE_READ_ANALYSIS_TOOL_NAMES = frozenset(
@@ -33,7 +32,9 @@ DEFAULT_REMOTE_COMMAND_TIMEOUT_SECONDS = 180
 
 class RemoteTailLogInput(BaseModel):
     path: str = Field(description="Remote log file path relative to the Remote Workspace basePath.")
-    lines: int = Field(default=200, ge=1, le=1000, description="Number of log lines to read from the end.")
+    lines: int = Field(
+        default=200, ge=1, le=1000, description="Number of log lines to read from the end."
+    )
 
 
 class RemoteNoInput(BaseModel):
@@ -60,7 +61,9 @@ class RemoteWorkspaceToolMixin:
         return ToolResult(output=output, is_error=True, metadata={"exit_code": result.exit_code})
 
     def format_remote_error(self, exc: Exception) -> ToolResult:
-        return ToolResult(output=f"Remote Workspace tool failed: {type(exc).__name__}: {exc}", is_error=True)
+        return ToolResult(
+            output=f"Remote Workspace tool failed: {type(exc).__name__}: {exc}", is_error=True
+        )
 
 
 class RemoteReadFileTool(RemoteWorkspaceToolMixin, BaseTool):
@@ -91,7 +94,7 @@ class RemoteReadFileTool(RemoteWorkspaceToolMixin, BaseTool):
                         "awk "
                         + shlex.quote(
                             f"NR > {arguments.offset} && NR <= {end_line} "
-                            "{ printf \"%6d\\t%s\\n\", NR, $0 }"
+                            '{ printf "%6d\\t%s\\n", NR, $0 }'
                         )
                         + f" {shlex.quote(remote_path)}"
                     ),
@@ -107,7 +110,9 @@ class RemoteReadFileTool(RemoteWorkspaceToolMixin, BaseTool):
                 return self.format_command_failure(result)
             output = result.stdout.strip()
             if not output:
-                return ToolResult(output=f"(File is empty or offset out of range: {arguments.path})")
+                return ToolResult(
+                    output=f"(File is empty or offset out of range: {arguments.path})"
+                )
             header = (
                 f"--- Reading remote:{arguments.path} "
                 f"(Lines {arguments.offset + 1}-{arguments.offset + arguments.limit}) ---\n"
@@ -152,7 +157,9 @@ class RemoteGlobTool(RemoteWorkspaceToolMixin, BaseTool):
                 if fnmatch(path, pattern)
             ]
             if not files:
-                return ToolResult(output=f"No matches found for pattern '{arguments.pattern}' in '{arguments.root}'")
+                return ToolResult(
+                    output=f"No matches found for pattern '{arguments.pattern}' in '{arguments.root}'"
+                )
             truncated = len(files) > 500
             visible_files = files[:500]
             return ToolResult(
@@ -222,7 +229,9 @@ class RemoteTailLogTool(RemoteWorkspaceToolMixin, BaseTool):
     def is_read_only(self, arguments) -> bool:
         return True
 
-    async def execute(self, arguments: RemoteTailLogInput, context: ToolExecutionContext) -> ToolResult:
+    async def execute(
+        self, arguments: RemoteTailLogInput, context: ToolExecutionContext
+    ) -> ToolResult:
         del context
         connector = self.create_connector()
         try:

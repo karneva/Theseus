@@ -2,22 +2,29 @@ import * as vscode from 'vscode';
 
 import { asRunnerEvent, type RunnerEvent } from '../shared/protocol';
 import { getPythonPath, getRunnerPath, getRuntimeModeSetting } from '../workspace/WorkspaceContext';
-import { DaemonRunnerClient, errorMessage, isDaemonConnectionError, isDaemonHttpStatus, sameWorkspacePath } from './DaemonRunnerClient';
+import {
+  DaemonRunnerClient,
+  errorMessage,
+  isDaemonConnectionError,
+  isDaemonHttpStatus,
+  sameWorkspacePath,
+} from './DaemonRunnerClient';
 import { killPidTree } from './ProcessUtils';
 import { RunnerStateStore } from './RunnerStateStore';
 import { StdioRunnerClient } from './StdioRunnerClient';
-import type { ActiveRunSnapshot, DaemonRunStatus, DaemonRunnerState, DaemonStatus, RunnerProcess, RunnerRuntimeMode, TheseusSessionMetadata } from './runnerTypes';
+import type {
+  ActiveRunSnapshot,
+  DaemonRunStatus,
+  DaemonRunnerState,
+  DaemonStatus,
+  RunnerProcess,
+  RunnerRuntimeMode,
+  TheseusSessionMetadata,
+} from './runnerTypes';
 // ── Session manager ─────────────────────────────────────────────────
 
 type TheseusSessionState =
-  | 'stopped'
-  | 'starting'
-  | 'ready'
-  | 'busy'
-  | 'waiting_input'
-  | 'stale'
-  | 'exited'
-  | 'error';
+  'stopped' | 'starting' | 'ready' | 'busy' | 'waiting_input' | 'stale' | 'exited' | 'error';
 
 type TheseusDiagnosticCode =
   | 'spawn_failed'
@@ -55,7 +62,13 @@ const LIFECYCLE_HISTORY_LIMIT = 100;
 const SESSION_STATE_KEY = 'theseus.lastActiveSession';
 const SELECTED_SESSION_KEY = 'theseus.selectedLocalSession';
 const TERMINAL_DAEMON_RUN_STATUSES = new Set(['completed', 'interrupted', 'error']);
-const EXPECTED_STOP_REASONS = new Set(['user_stop', 'restart', 'extension_dispose', 'daemon_connection_lost', 'worktree_changed']);
+const EXPECTED_STOP_REASONS = new Set([
+  'user_stop',
+  'restart',
+  'extension_dispose',
+  'daemon_connection_lost',
+  'worktree_changed',
+]);
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -71,11 +84,12 @@ function normalizeSessionName(name: string | undefined): string {
 }
 
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function resolveReadyTimeoutMs(): number {
-  const seconds = vscode.workspace.getConfiguration('theseus').get<number>('readyTimeoutSeconds') ?? 60;
+  const seconds =
+    vscode.workspace.getConfiguration('theseus').get<number>('readyTimeoutSeconds') ?? 60;
   if (!Number.isFinite(seconds) || seconds <= 0) return DEFAULT_READY_TIMEOUT_MS;
   return Math.min(MAX_READY_TIMEOUT_MS, Math.max(1000, Math.round(seconds * 1000)));
 }
@@ -87,13 +101,19 @@ function isExpectedStopReason(reason: string | undefined): boolean {
 function stripRecoverableCustomToolWarnings(stderr: string): string {
   return stderr
     .split(/\r?\n/)
-    .filter(line => !/Skipped invalid custom tool .*Error during module execution: .*No module named/i.test(line))
+    .filter(
+      (line) =>
+        !/Skipped invalid custom tool .*Error during module execution: .*No module named/i.test(
+          line,
+        ),
+    )
     .join('\n');
 }
 
 function classifyProcessFailure(stderr: string, code: number | null): TheseusDiagnosticCode {
   const fatalStderr = stripRecoverableCustomToolWarnings(stderr);
-  if (/ModuleNotFoundError|ImportError|No module named/i.test(fatalStderr)) return 'python_import_failed';
+  if (/ModuleNotFoundError|ImportError|No module named/i.test(fatalStderr))
+    return 'python_import_failed';
   return code === 0 || code === null ? 'runner_error' : 'crash_exit';
 }
 
@@ -136,16 +156,26 @@ export class TheseusSessionManager implements vscode.Disposable {
   private readyTimeoutMs = DEFAULT_READY_TIMEOUT_MS;
 
   constructor(private readonly context: vscode.ExtensionContext) {
-    const previous = this.context.workspaceState.get<Partial<TheseusSessionMetadata> & { sessionId?: string }>(SESSION_STATE_KEY);
+    const previous = this.context.workspaceState.get<
+      Partial<TheseusSessionMetadata> & { sessionId?: string }
+    >(SESSION_STATE_KEY);
     if (previous?.sessionId) this.sessionId = previous.sessionId;
     const selected = this.context.workspaceState.get<string>(SELECTED_SESSION_KEY);
     if (selected?.trim()) this.preferredSession = normalizeSessionName(selected);
   }
 
-  get hasProcess(): boolean { return !!this.proc || !!this.daemon; }
-  get isRunning(): boolean { return ['ready', 'busy', 'waiting_input'].includes(this.state); }
-  get currentState(): TheseusSessionState { return this.state; }
-  get preferredSessionName(): string { return this.preferredSession || 'default'; }
+  get hasProcess(): boolean {
+    return !!this.proc || !!this.daemon;
+  }
+  get isRunning(): boolean {
+    return ['ready', 'busy', 'waiting_input'].includes(this.state);
+  }
+  get currentState(): TheseusSessionState {
+    return this.state;
+  }
+  get preferredSessionName(): string {
+    return this.preferredSession || 'default';
+  }
 
   setPreferredSession(name: string): void {
     const clean = normalizeSessionName(name);
@@ -174,9 +204,11 @@ export class TheseusSessionManager implements vscode.Disposable {
     const processRunning = this.hasProcess;
     const attachableStdio = !!this.proc && !this.daemon && processRunning && !!this.lastReadyEvent;
     const hasActiveRun = !!this.activeRunId || !!this.activeRunStatus;
-    const rawState = hasActiveRun && ['ready', 'waiting_input'].includes(this.state) ? 'busy' : this.state;
+    const rawState =
+      hasActiveRun && ['ready', 'waiting_input'].includes(this.state) ? 'busy' : this.state;
     const effectiveState = rawState === 'stale' && attachableStdio ? 'ready' : rawState;
-    const lifecycle = effectiveState === 'stale' && processRunning ? 'starting_stale' : effectiveState;
+    const lifecycle =
+      effectiveState === 'stale' && processRunning ? 'starting_stale' : effectiveState;
     return {
       type: 'RunnerStatus',
       running: ['ready', 'busy', 'waiting_input'].includes(effectiveState),
@@ -226,7 +258,9 @@ export class TheseusSessionManager implements vscode.Disposable {
         this.emit(this.status);
         return;
       }
-      this.output.appendLine('[Theseus] existing local daemon failed status check on Start; restarting daemon');
+      this.output.appendLine(
+        '[Theseus] existing local daemon failed status check on Start; restarting daemon',
+      );
       this.logLifecycle('restart_unhealthy_daemon', { state: this.state });
       this.resetDaemonConnection('daemon_status_failed_on_start');
     }
@@ -241,7 +275,10 @@ export class TheseusSessionManager implements vscode.Disposable {
       this.proc = undefined;
       if (failedDaemonProc && !failedDaemonProc.killed) failedDaemonProc.kill();
       this.output.appendLine('[Theseus] local daemon unavailable; falling back to stdio runner');
-      this.emitDiagnostic('runner_error', 'Local daemon failed to start. Falling back to stdio runner.');
+      this.emitDiagnostic(
+        'runner_error',
+        'Local daemon failed to start. Falling back to stdio runner.',
+      );
     }
 
     if (this.proc) {
@@ -258,7 +295,9 @@ export class TheseusSessionManager implements vscode.Disposable {
       }
 
       if (this.state === 'stale' || this.state === 'error') {
-        this.output.appendLine(`[Theseus] unhealthy state on Start: ${this.state}; restarting process`);
+        this.output.appendLine(
+          `[Theseus] unhealthy state on Start: ${this.state}; restarting process`,
+        );
         this.logLifecycle('restart_unhealthy_process', { state: this.state });
         void this.restart(coreRoot, workspaceCwd);
         return;
@@ -307,9 +346,14 @@ export class TheseusSessionManager implements vscode.Disposable {
 
   interrupt(): void {
     if (this.daemon && this.activeRunId) {
-      void this.daemonClient.request(this.daemon, 'POST', `/runs/${this.activeRunId}/interrupt`).then(() => {
-        this.emitDiagnostic('user_stop', 'Interrupt requested.');
-      }).catch((err) => this.emitDiagnostic('send_failed', err instanceof Error ? err.message : String(err)));
+      void this.daemonClient
+        .request(this.daemon, 'POST', `/runs/${this.activeRunId}/interrupt`)
+        .then(() => {
+          this.emitDiagnostic('user_stop', 'Interrupt requested.');
+        })
+        .catch((err) =>
+          this.emitDiagnostic('send_failed', err instanceof Error ? err.message : String(err)),
+        );
       return;
     }
     if (!this.proc) {
@@ -321,11 +365,12 @@ export class TheseusSessionManager implements vscode.Disposable {
   }
 
   private async handlePermissionRequest(event: RunnerEvent): Promise<void> {
-    const requestId = typeof event.request_id === 'string'
-      ? event.request_id
-      : typeof event.requestId === 'string'
-        ? event.requestId
-        : '';
+    const requestId =
+      typeof event.request_id === 'string'
+        ? event.request_id
+        : typeof event.requestId === 'string'
+          ? event.requestId
+          : '';
     if (!requestId) {
       this.output.appendLine('[Theseus] permission request ignored: missing request_id');
       return;
@@ -347,7 +392,9 @@ export class TheseusSessionManager implements vscode.Disposable {
     const approved = choice === allowLabel;
     try {
       await this.sendPermissionResponse(event, approved);
-      this.output.appendLine(`[Theseus] permission ${approved ? 'approved' : 'denied'} request=${requestId}`);
+      this.output.appendLine(
+        `[Theseus] permission ${approved ? 'approved' : 'denied'} request=${requestId}`,
+      );
     } catch (err) {
       const message = `권한 응답 전송 실패: ${errorMessage(err)}`;
       this.output.appendLine(`[Theseus] ${message}`);
@@ -356,19 +403,21 @@ export class TheseusSessionManager implements vscode.Disposable {
   }
 
   private async sendPermissionResponse(event: RunnerEvent, approved: boolean): Promise<void> {
-    const requestId = typeof event.request_id === 'string'
-      ? event.request_id
-      : typeof event.requestId === 'string'
-        ? event.requestId
-        : '';
+    const requestId =
+      typeof event.request_id === 'string'
+        ? event.request_id
+        : typeof event.requestId === 'string'
+          ? event.requestId
+          : '';
     if (!requestId) throw new Error('Permission request_id is missing.');
 
     if (this.daemon) {
-      const runId = typeof event.run_id === 'string'
-        ? event.run_id
-        : typeof event.runId === 'string'
-          ? event.runId
-          : this.activeRunId;
+      const runId =
+        typeof event.run_id === 'string'
+          ? event.run_id
+          : typeof event.runId === 'string'
+            ? event.runId
+            : this.activeRunId;
       if (!runId) throw new Error('Permission run_id is missing.');
       await this.daemonClient.request(
         this.daemon,
@@ -397,7 +446,7 @@ export class TheseusSessionManager implements vscode.Disposable {
       // 낙관적으로 commit 후, sendDaemon 실패 시 rollback해 다음 send에서 mode 재동기화
       const prevSentMode = this.lastSentMode;
       if (effectiveMode) this.lastSentMode = effectiveMode;
-      void this.sendDaemon(normalized, effectiveMode).then(success => {
+      void this.sendDaemon(normalized, effectiveMode).then((success) => {
         if (!success) this.lastSentMode = prevSentMode;
       });
       return;
@@ -425,7 +474,7 @@ export class TheseusSessionManager implements vscode.Disposable {
     if (this.daemon) {
       const previousMode = this.lastSentMode;
       this.lastSentMode = mode;
-      void this.sendDaemon(JSON.stringify({ type: 'setMode', mode })).then(success => {
+      void this.sendDaemon(JSON.stringify({ type: 'setMode', mode })).then((success) => {
         if (!success) this.lastSentMode = previousMode;
       });
       return;
@@ -441,38 +490,49 @@ export class TheseusSessionManager implements vscode.Disposable {
   refreshToolRegistry(reason = 'manual'): void {
     const payload = JSON.stringify({ type: 'refreshToolRegistry', reason });
     if (this.daemon) {
-      void this.daemonClient.request(
-        this.daemon,
-        'POST',
-        '/control/tool-registry/refresh',
-        { reason },
-      ).then(response => {
-        const events = Array.isArray(response.events) ? response.events : [];
-        for (const raw of events) {
-          const event = asRunnerEvent(raw);
-          if (event) this.emit(event);
-        }
-        void this.pollDaemonStatus({ emitStatus: true });
-      }).catch(err => {
-        if (isDaemonHttpStatus(err, 404)) {
-          this.emit({
-            type: 'StatusEvent',
-            message: 'Tool registry refresh is not supported by the currently attached daemon. Restart Theseus to use the newer registry controls.',
-          });
-          this.emit({ type: 'toolRegistryUpdated', source: 'daemon_unsupported', reason, availableTools: [], unavailableCount: 0 });
+      void this.daemonClient
+        .request(this.daemon, 'POST', '/control/tool-registry/refresh', { reason })
+        .then((response) => {
+          const events = Array.isArray(response.events) ? response.events : [];
+          for (const raw of events) {
+            const event = asRunnerEvent(raw);
+            if (event) this.emit(event);
+          }
           void this.pollDaemonStatus({ emitStatus: true });
-          return;
-        }
-        if (isDaemonConnectionError(err)) {
-          this.markDaemonConnectionLost(errorMessage(err));
-          return;
-        }
-        this.emitDiagnostic('send_failed', errorMessage(err));
-      });
+        })
+        .catch((err) => {
+          if (isDaemonHttpStatus(err, 404)) {
+            this.emit({
+              type: 'StatusEvent',
+              message:
+                'Tool registry refresh is not supported by the currently attached daemon. Restart Theseus to use the newer registry controls.',
+            });
+            this.emit({
+              type: 'toolRegistryUpdated',
+              source: 'daemon_unsupported',
+              reason,
+              availableTools: [],
+              unavailableCount: 0,
+            });
+            void this.pollDaemonStatus({ emitStatus: true });
+            return;
+          }
+          if (isDaemonConnectionError(err)) {
+            this.markDaemonConnectionLost(errorMessage(err));
+            return;
+          }
+          this.emitDiagnostic('send_failed', errorMessage(err));
+        });
       return;
     }
     if (!this.proc) {
-      this.emit({ type: 'toolRegistryUpdated', source: 'host', reason, availableTools: [], unavailableCount: 0 });
+      this.emit({
+        type: 'toolRegistryUpdated',
+        source: 'host',
+        reason,
+        availableTools: [],
+        unavailableCount: 0,
+      });
       return;
     }
     this.writeLine(payload);
@@ -501,13 +561,24 @@ export class TheseusSessionManager implements vscode.Disposable {
     this.runtimeMode = runtimeMode;
     this.readyTimeoutMs = resolveReadyTimeoutMs();
     this.sessionId = makeSessionId();
-    this.startMetadata = { coreRoot, workspaceCwd, pythonExec, runnerPath, serverUrl, runtimeMode, initialSession: this.preferredSessionName };
+    this.startMetadata = {
+      coreRoot,
+      workspaceCwd,
+      pythonExec,
+      runnerPath,
+      serverUrl,
+      runtimeMode,
+      initialSession: this.preferredSessionName,
+    };
     this.lastReadyEvent = undefined;
     this.lastDiagnostic = undefined;
     this.exitReason = undefined;
     this.permissionRequestsHandled.clear();
     this.abortController = new AbortController();
-    this.context.workspaceState.update(SESSION_STATE_KEY, { ...this.startMetadata, sessionId: this.sessionId });
+    this.context.workspaceState.update(SESSION_STATE_KEY, {
+      ...this.startMetadata,
+      sessionId: this.sessionId,
+    });
 
     this.output.appendLine(`[Theseus] === Starting local daemon === session=${this.sessionId}`);
     this.output.appendLine(`[Theseus] core   : ${coreRoot}`);
@@ -531,11 +602,16 @@ export class TheseusSessionManager implements vscode.Disposable {
     } catch (err) {
       this.proc = undefined;
       if (isExpectedStopReason(this.exitReason) || this.abortController.signal.aborted) {
-        this.output.appendLine(`[Theseus] ignored expected daemon spawn abort: ${err instanceof Error ? err.message : String(err)}`);
+        this.output.appendLine(
+          `[Theseus] ignored expected daemon spawn abort: ${err instanceof Error ? err.message : String(err)}`,
+        );
         return;
       }
       this.setState('error', { code: 'spawn_failed' });
-      this.emitDiagnostic('spawn_failed', `Failed to start local daemon: ${err instanceof Error ? err.message : String(err)}`);
+      this.emitDiagnostic(
+        'spawn_failed',
+        `Failed to start local daemon: ${err instanceof Error ? err.message : String(err)}`,
+      );
       return;
     }
 
@@ -549,14 +625,18 @@ export class TheseusSessionManager implements vscode.Disposable {
     });
     child.on('exit', (code, signal) => {
       if (this.proc !== child) {
-        this.output.appendLine(`[Theseus] ignored stale daemon exit code: ${code}${signal ? ` signal: ${signal}` : ''}`);
+        this.output.appendLine(
+          `[Theseus] ignored stale daemon exit code: ${code}${signal ? ` signal: ${signal}` : ''}`,
+        );
         return;
       }
       this.clearTimers();
       this.proc = undefined;
       this.daemon = undefined;
       this.lastReadyEvent = undefined;
-      this.output.appendLine(`[Theseus] daemon exit code: ${code}${signal ? ` signal: ${signal}` : ''}`);
+      this.output.appendLine(
+        `[Theseus] daemon exit code: ${code}${signal ? ` signal: ${signal}` : ''}`,
+      );
       if (isExpectedStopReason(this.exitReason)) return;
       this.exitReason = signal ? `signal:${signal}` : `code:${code}`;
       if (code !== 0 && code !== null && stderrBuf.trim()) {
@@ -576,16 +656,24 @@ export class TheseusSessionManager implements vscode.Disposable {
     }
   }
 
-  private async waitForDaemonAttach(workspaceCwd: string, coreRoot: string, expectedPid?: number): Promise<boolean> {
+  private async waitForDaemonAttach(
+    workspaceCwd: string,
+    coreRoot: string,
+    expectedPid?: number,
+  ): Promise<boolean> {
     const deadline = Date.now() + this.readyTimeoutMs;
     while (Date.now() < deadline) {
       if (await this.attachExistingDaemon(workspaceCwd, coreRoot, expectedPid)) return true;
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 300));
     }
     return false;
   }
 
-  private async attachExistingDaemon(workspaceCwd: string, coreRoot: string, expectedPid?: number): Promise<boolean> {
+  private async attachExistingDaemon(
+    workspaceCwd: string,
+    coreRoot: string,
+    expectedPid?: number,
+  ): Promise<boolean> {
     const state = this.runnerState.readDaemon(workspaceCwd, { coreRoot });
     if (!state || state.mode !== 'local-daemon' || !state.port || !state.token) return false;
     if (expectedPid && state.pid && state.pid !== expectedPid) {
@@ -628,26 +716,35 @@ export class TheseusSessionManager implements vscode.Disposable {
       };
       this.applyDaemonStatus(status);
       this.clearTimers();
-      this.emit(this.lastReadyEvent || {
-        type: 'RunnerReady',
-        mode: runtimeMode,
-        model: typeof status.model === 'string' ? status.model : undefined,
-        cwd: String(status.workspaceCwd || workspaceCwd),
-        session: typeof status.session === 'string' ? status.session : 'default',
-        sessionId: this.sessionId,
-      });
-      this.output.appendLine(`[Theseus] attached local daemon pid=${state.pid} port=${state.port} session=${state.sessionId || 'unknown'}`);
+      this.emit(
+        this.lastReadyEvent || {
+          type: 'RunnerReady',
+          mode: runtimeMode,
+          model: typeof status.model === 'string' ? status.model : undefined,
+          cwd: String(status.workspaceCwd || workspaceCwd),
+          session: typeof status.session === 'string' ? status.session : 'default',
+          sessionId: this.sessionId,
+        },
+      );
+      this.output.appendLine(
+        `[Theseus] attached local daemon pid=${state.pid} port=${state.port} session=${state.sessionId || 'unknown'}`,
+      );
       return true;
     } catch (err) {
       this.daemon = previousDaemon;
-      this.output.appendLine(`[Theseus] daemon attach failed: ${err instanceof Error ? err.message : String(err)}`);
+      this.output.appendLine(
+        `[Theseus] daemon attach failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
       return false;
     }
   }
 
   private async sendDaemon(text: string, mode?: string): Promise<boolean> {
     const queued = this.daemonSendQueue.then(() => this.sendDaemonNow(text, mode));
-    this.daemonSendQueue = queued.then(() => undefined, () => undefined);
+    this.daemonSendQueue = queued.then(
+      () => undefined,
+      () => undefined,
+    );
     return queued;
   }
 
@@ -658,7 +755,12 @@ export class TheseusSessionManager implements vscode.Disposable {
     let keepBusyState = false;
     try {
       this.setState('busy');
-      const created = await this.daemonClient.request(this.daemon, 'POST', '/runs', mode ? { text, mode } : { text });
+      const created = await this.daemonClient.request(
+        this.daemon,
+        'POST',
+        '/runs',
+        mode ? { text, mode } : { text },
+      );
       const runId = String(created.runId || '');
       if (!runId) throw new Error('Daemon did not return runId.');
       this.activeRunId = runId;
@@ -689,7 +791,12 @@ export class TheseusSessionManager implements vscode.Disposable {
       this.activeRunStatus = undefined;
       this.activeRunEventCount = 0;
       this.daemonStreamReconnectAttempt = 0;
-      if (!keepBusyState && this.daemon && this.lastReadyEvent && (this.state === 'busy' || this.state === 'stale')) {
+      if (
+        !keepBusyState &&
+        this.daemon &&
+        this.lastReadyEvent &&
+        (this.state === 'busy' || this.state === 'stale')
+      ) {
         this.setState(this.pendingInput.length ? 'waiting_input' : 'ready');
         this.flushPendingInput();
       }
@@ -708,7 +815,9 @@ export class TheseusSessionManager implements vscode.Disposable {
           { after: this.activeRunEventCount },
         );
         if (await this.isDaemonRunComplete(runId)) return;
-        throw Object.assign(new Error('Daemon SSE ended before run completed.'), { code: 'ECONNRESET' });
+        throw Object.assign(new Error('Daemon SSE ended before run completed.'), {
+          code: 'ECONNRESET',
+        });
       } catch (err) {
         if (!isDaemonConnectionError(err) || !this.daemon || this.activeRunId !== runId) throw err;
         this.daemonStreamReconnectAttempt += 1;
@@ -734,8 +843,17 @@ export class TheseusSessionManager implements vscode.Disposable {
   }
 
   private recordDaemonEvent(event: RunnerEvent, sequence?: number): void {
-    if (typeof sequence === 'number' && sequence > this.activeRunEventCount + 1 && this.activeRunId) {
-      this.reportDaemonReplayGap(this.activeRunId, this.activeRunEventCount + 1, sequence, 'sse_sequence');
+    if (
+      typeof sequence === 'number' &&
+      sequence > this.activeRunEventCount + 1 &&
+      this.activeRunId
+    ) {
+      this.reportDaemonReplayGap(
+        this.activeRunId,
+        this.activeRunEventCount + 1,
+        sequence,
+        'sse_sequence',
+      );
     }
     if (typeof sequence === 'number' && sequence > this.activeRunEventCount) {
       this.activeRunEventCount = sequence;
@@ -749,41 +867,63 @@ export class TheseusSessionManager implements vscode.Disposable {
   private async isDaemonRunComplete(runId: string): Promise<boolean> {
     const status = await this.daemonClient.status(this.daemon);
     this.applyDaemonStatus(status);
-    const run = status.runs?.find(item => item.runId === runId);
+    const run = status.runs?.find((item) => item.runId === runId);
     if (!run) return true;
     this.detectDaemonReplayGap(run, 'status_check');
     if (typeof run.eventCount === 'number' && run.eventCount > this.activeRunEventCount) {
-      this.output.appendLine(`[Theseus] daemon run ${runId} has ${run.eventCount - this.activeRunEventCount} buffered events pending replay`);
+      this.output.appendLine(
+        `[Theseus] daemon run ${runId} has ${run.eventCount - this.activeRunEventCount} buffered events pending replay`,
+      );
       return false;
     }
     return TERMINAL_DAEMON_RUN_STATUSES.has(String(run.status || ''));
   }
 
   private daemonHasActiveRun(status: DaemonStatus): boolean {
-    return !!status.runs?.some(run => !TERMINAL_DAEMON_RUN_STATUSES.has(String(run.status || '')));
+    return !!status.runs?.some(
+      (run) => !TERMINAL_DAEMON_RUN_STATUSES.has(String(run.status || '')),
+    );
   }
 
   private detectDaemonReplayGap(run: DaemonRunStatus | undefined, source: string): void {
     if (!run?.runId || typeof run.eventOffset !== 'number') return;
     if (this.activeRunId !== run.runId) return;
     if (this.activeRunEventCount >= run.eventOffset) return;
-    this.reportDaemonReplayGap(run.runId, this.activeRunEventCount + 1, run.eventOffset + 1, source);
+    this.reportDaemonReplayGap(
+      run.runId,
+      this.activeRunEventCount + 1,
+      run.eventOffset + 1,
+      source,
+    );
   }
 
-  private reportDaemonReplayGap(runId: string, expectedSequence: number, nextAvailableSequence: number, source: string): void {
+  private reportDaemonReplayGap(
+    runId: string,
+    expectedSequence: number,
+    nextAvailableSequence: number,
+    source: string,
+  ): void {
     const key = `${runId}:${expectedSequence}:${nextAvailableSequence}`;
     if (this.daemonReplayGapWarnings.has(key)) return;
     this.daemonReplayGapWarnings.add(key);
     const message = `Local daemon replay buffer skipped events for ${runId}. Expected event ${expectedSequence}, next available is ${nextAvailableSequence}. Check the Theseus Output channel for full runner logs.`;
     this.output.appendLine(`[Theseus] daemon replay gap (${source}): ${message}`);
-    this.logLifecycle('daemon_replay_gap', { runId, expectedSequence, nextAvailableSequence, source });
+    this.logLifecycle('daemon_replay_gap', {
+      runId,
+      expectedSequence,
+      nextAvailableSequence,
+      source,
+    });
     this.emitDiagnostic('event_replay_gap', message);
   }
 
   private markDaemonConnectionLost(message: string): void {
     this.resetDaemonConnection('daemon_connection_lost');
     this.setState('error', { code: 'send_failed', disconnected: true });
-    this.emitDiagnostic('send_failed', `Local daemon connection lost: ${message}. Press Start to reconnect.`);
+    this.emitDiagnostic(
+      'send_failed',
+      `Local daemon connection lost: ${message}. Press Start to reconnect.`,
+    );
   }
 
   private resetDaemonConnection(reason: string): void {
@@ -817,8 +957,12 @@ export class TheseusSessionManager implements vscode.Disposable {
       this.setPreferredSession(status.session);
     }
     const lastEventAt = typeof status.lastEventAt === 'number' ? status.lastEventAt : undefined;
-    if (lastEventAt) this.lastEventAt = lastEventAt > 1_000_000_000_000 ? lastEventAt : Math.round(lastEventAt * 1000);
-    const activeRun = status.runs?.find(run => !TERMINAL_DAEMON_RUN_STATUSES.has(String(run.status || '')));
+    if (lastEventAt)
+      this.lastEventAt =
+        lastEventAt > 1_000_000_000_000 ? lastEventAt : Math.round(lastEventAt * 1000);
+    const activeRun = status.runs?.find(
+      (run) => !TERMINAL_DAEMON_RUN_STATUSES.has(String(run.status || '')),
+    );
     if (activeRun) {
       this.activeRunId = typeof activeRun.runId === 'string' ? activeRun.runId : this.activeRunId;
       this.activeRunStatus = {
@@ -836,8 +980,12 @@ export class TheseusSessionManager implements vscode.Disposable {
         pid: typeof status.pid === 'number' ? status.pid : this.daemon.pid,
         model: typeof status.model === 'string' ? status.model : this.daemon.model,
         sessionId: typeof status.sessionId === 'string' ? status.sessionId : this.daemon.sessionId,
-        workspaceHash: typeof status.workspaceHash === 'string' ? status.workspaceHash : this.daemon.workspaceHash,
-        workspaceCwd: typeof status.workspaceCwd === 'string' ? status.workspaceCwd : this.daemon.workspaceCwd,
+        workspaceHash:
+          typeof status.workspaceHash === 'string'
+            ? status.workspaceHash
+            : this.daemon.workspaceHash,
+        workspaceCwd:
+          typeof status.workspaceCwd === 'string' ? status.workspaceCwd : this.daemon.workspaceCwd,
       };
     }
     this.lastReadyEvent = {
@@ -845,7 +993,10 @@ export class TheseusSessionManager implements vscode.Disposable {
       mode: this.runtimeMode,
       model: typeof status.model === 'string' ? status.model : this.lastReadyEvent?.model,
       cwd: typeof status.workspaceCwd === 'string' ? status.workspaceCwd : this.lastReadyEvent?.cwd,
-      session: typeof status.session === 'string' ? status.session : this.lastReadyEvent?.session || 'default',
+      session:
+        typeof status.session === 'string'
+          ? status.session
+          : this.lastReadyEvent?.session || 'default',
       sessionId: this.sessionId,
     };
   }
@@ -857,14 +1008,24 @@ export class TheseusSessionManager implements vscode.Disposable {
       const status = await this.daemonClient.status(daemon);
       if (this.daemon !== daemon && this.daemon?.port !== daemon.port) return false;
       this.applyDaemonStatus(status);
-      const activeRun = this.activeRunId ? status.runs?.find(item => item.runId === this.activeRunId) : undefined;
+      const activeRun = this.activeRunId
+        ? status.runs?.find((item) => item.runId === this.activeRunId)
+        : undefined;
       this.detectDaemonReplayGap(activeRun, 'heartbeat');
       if (this.state === 'stale' && this.lastReadyEvent) {
-        this.setState(this.activeRunId ? 'busy' : this.pendingInput.length ? 'waiting_input' : 'ready', {
-          reason: 'daemon_status_recovered',
-        });
+        this.setState(
+          this.activeRunId ? 'busy' : this.pendingInput.length ? 'waiting_input' : 'ready',
+          {
+            reason: 'daemon_status_recovered',
+          },
+        );
         this.flushPendingInput();
-      } else if (this.daemon && this.state === 'busy' && !this.activeRunId && !this.daemonHasActiveRun(status)) {
+      } else if (
+        this.daemon &&
+        this.state === 'busy' &&
+        !this.activeRunId &&
+        !this.daemonHasActiveRun(status)
+      ) {
         this.setState(this.pendingInput.length ? 'waiting_input' : 'ready', {
           reason: 'daemon_busy_cleared',
         });
@@ -876,12 +1037,17 @@ export class TheseusSessionManager implements vscode.Disposable {
     } catch (err) {
       if (this.daemon !== daemon && this.daemon?.port !== daemon.port) return false;
       this.daemonHeartbeatFailures += 1;
-      this.output.appendLine(`[Theseus] daemon status check failed (${this.daemonHeartbeatFailures}): ${errorMessage(err)}`);
+      this.output.appendLine(
+        `[Theseus] daemon status check failed (${this.daemonHeartbeatFailures}): ${errorMessage(err)}`,
+      );
       this.logLifecycle('daemon_heartbeat_failed', {
         failures: this.daemonHeartbeatFailures,
         message: errorMessage(err),
       });
-      if (this.daemonHeartbeatFailures >= DAEMON_HEARTBEAT_FAILURE_LIMIT && this.state !== 'stale') {
+      if (
+        this.daemonHeartbeatFailures >= DAEMON_HEARTBEAT_FAILURE_LIMIT &&
+        this.state !== 'stale'
+      ) {
         this.setState('stale', {
           code: 'ready_timeout',
           failures: this.daemonHeartbeatFailures,
@@ -905,14 +1071,25 @@ export class TheseusSessionManager implements vscode.Disposable {
     this.runtimeMode = runtimeMode;
     this.readyTimeoutMs = resolveReadyTimeoutMs();
     this.sessionId = makeSessionId();
-    this.startMetadata = { coreRoot, workspaceCwd, pythonExec, runnerPath, serverUrl, runtimeMode, initialSession: this.preferredSessionName };
+    this.startMetadata = {
+      coreRoot,
+      workspaceCwd,
+      pythonExec,
+      runnerPath,
+      serverUrl,
+      runtimeMode,
+      initialSession: this.preferredSessionName,
+    };
     this.lastReadyEvent = undefined;
     this.lastDiagnostic = undefined;
     this.jsonParseErrorCount = 0;
     this.exitReason = undefined;
     this.permissionRequestsHandled.clear();
     this.abortController = new AbortController();
-    this.context.workspaceState.update(SESSION_STATE_KEY, { ...this.startMetadata, sessionId: this.sessionId });
+    this.context.workspaceState.update(SESSION_STATE_KEY, {
+      ...this.startMetadata,
+      sessionId: this.sessionId,
+    });
 
     this.output.appendLine(`[Theseus] === Starting === session=${this.sessionId}`);
     this.output.appendLine(`[Theseus] step   : resolve_config`);
@@ -963,7 +1140,9 @@ export class TheseusSessionManager implements vscode.Disposable {
       },
       onExit: (code, signal) => {
         if (this.proc !== child) {
-          this.output.appendLine(`[Theseus] ignored stale stdio exit code: ${code}${signal ? ` signal: ${signal}` : ''}`);
+          this.output.appendLine(
+            `[Theseus] ignored stale stdio exit code: ${code}${signal ? ` signal: ${signal}` : ''}`,
+          );
           return;
         }
         this.clearTimers();
@@ -978,7 +1157,10 @@ export class TheseusSessionManager implements vscode.Disposable {
         if (code !== 0 && code !== null && stderrBuf.trim()) {
           const diagnosticCode = classifyProcessFailure(stderrBuf, code);
           this.setState('error', { code: diagnosticCode });
-          this.emitDiagnostic(diagnosticCode, `Process exited (code ${code}):\n${stderrBuf.trim()}`);
+          this.emitDiagnostic(
+            diagnosticCode,
+            `Process exited (code ${code}):\n${stderrBuf.trim()}`,
+          );
         } else {
           this.setState('exited');
           this.emit({ type: 'RunnerExited', code, signal: signal || undefined });
@@ -1030,10 +1212,11 @@ export class TheseusSessionManager implements vscode.Disposable {
         const pending = this.pendingInput.shift();
         if (!pending) continue;
         // 동일 mode 재전송 시 runner의 mode-switch 알림을 억제
-        const effectiveMode = pending.mode && pending.mode !== this.lastSentMode ? pending.mode : undefined;
+        const effectiveMode =
+          pending.mode && pending.mode !== this.lastSentMode ? pending.mode : undefined;
         const previousMode = this.lastSentMode;
         if (effectiveMode) this.lastSentMode = effectiveMode;
-        void this.sendDaemon(pending.text, effectiveMode).then(success => {
+        void this.sendDaemon(pending.text, effectiveMode).then((success) => {
           if (!success) this.lastSentMode = previousMode;
         });
       }
@@ -1045,7 +1228,8 @@ export class TheseusSessionManager implements vscode.Disposable {
     while (this.pendingInput.length && this.proc) {
       const pending = this.pendingInput.shift();
       if (!pending) continue;
-      const effectiveMode = pending.mode && pending.mode !== this.lastSentMode ? pending.mode : undefined;
+      const effectiveMode =
+        pending.mode && pending.mode !== this.lastSentMode ? pending.mode : undefined;
       if (effectiveMode) {
         this.writeLine(JSON.stringify({ type: 'setMode', mode: effectiveMode }));
         this.lastSentMode = effectiveMode;
@@ -1080,7 +1264,10 @@ export class TheseusSessionManager implements vscode.Disposable {
       const event = asRunnerEvent(JSON.parse(line));
       if (!event) {
         this.output.appendLine(`[json-event-error] ${line}`);
-        this.emitDiagnostic('json_parse_error', 'Runner emitted JSON without a valid Theseus event type.');
+        this.emitDiagnostic(
+          'json_parse_error',
+          'Runner emitted JSON without a valid Theseus event type.',
+        );
         return;
       }
       this.emit(event);
@@ -1101,13 +1288,11 @@ export class TheseusSessionManager implements vscode.Disposable {
     this.readyTimer = setTimeout(() => {
       if (this.state !== 'starting') return;
       this.setState('stale', { code: 'ready_timeout' });
-      const message = this.runtimeMode === 'local-daemon' || this.runtimeMode === 'bundled-daemon'
-        ? `Local daemon has not become attachable after ${Math.round(this.readyTimeoutMs / 1000)}s. The Python process is still running.`
-        : `Runner has not emitted RunnerReady after ${Math.round(this.readyTimeoutMs / 1000)}s. The Python process is still running.`;
-      this.emitDiagnostic(
-        'ready_timeout',
-        message,
-      );
+      const message =
+        this.runtimeMode === 'local-daemon' || this.runtimeMode === 'bundled-daemon'
+          ? `Local daemon has not become attachable after ${Math.round(this.readyTimeoutMs / 1000)}s. The Python process is still running.`
+          : `Runner has not emitted RunnerReady after ${Math.round(this.readyTimeoutMs / 1000)}s. The Python process is still running.`;
+      this.emitDiagnostic('ready_timeout', message);
     }, this.readyTimeoutMs);
   }
 
@@ -1120,10 +1305,19 @@ export class TheseusSessionManager implements vscode.Disposable {
       return;
     }
     this.heartbeatTimer = setInterval(() => {
-      if (!this.proc || !this.lastHeartbeatAt || this.state === 'starting' || this.state === 'stale') return;
+      if (
+        !this.proc ||
+        !this.lastHeartbeatAt ||
+        this.state === 'starting' ||
+        this.state === 'stale'
+      )
+        return;
       if (Date.now() - this.lastHeartbeatAt > HEARTBEAT_STALE_MS) {
         this.setState('stale', { code: 'ready_timeout' });
-        this.emitDiagnostic('ready_timeout', 'Runner heartbeat is stale. The Python process is still running.');
+        this.emitDiagnostic(
+          'ready_timeout',
+          'Runner heartbeat is stale. The Python process is still running.',
+        );
       }
     }, 10000);
   }
@@ -1145,7 +1339,13 @@ export class TheseusSessionManager implements vscode.Disposable {
 
   private emitDiagnostic(code: TheseusDiagnosticCode, message: string): void {
     this.output.appendLine(`[Theseus] diagnostic ${code}: ${message}`);
-    const diagnostic = { type: 'RunnerDiagnostic', code, message, state: this.state, sessionId: this.sessionId };
+    const diagnostic = {
+      type: 'RunnerDiagnostic',
+      code,
+      message,
+      state: this.state,
+      sessionId: this.sessionId,
+    };
     this.lastDiagnostic = diagnostic;
     this.emit(diagnostic);
     if (
@@ -1180,7 +1380,9 @@ export class TheseusSessionManager implements vscode.Disposable {
     };
     this.lifecycleHistory.push(event);
     while (this.lifecycleHistory.length > LIFECYCLE_HISTORY_LIMIT) this.lifecycleHistory.shift();
-    this.output.appendLine(`[Theseus] lifecycle ${type}: ${JSON.stringify({ state: this.state, ...metadata })}`);
+    this.output.appendLine(
+      `[Theseus] lifecycle ${type}: ${JSON.stringify({ state: this.state, ...metadata })}`,
+    );
   }
 
   private emit(event: RunnerEvent): void {
@@ -1232,7 +1434,11 @@ export class TheseusSessionManager implements vscode.Disposable {
     }
 
     if (event.type !== 'RunnerStatus' && event.type !== 'RunnerLifecycle') {
-      const lifecycleEvent = { ...event, timestamp: nowIso(), sessionId: event.sessionId || this.sessionId };
+      const lifecycleEvent = {
+        ...event,
+        timestamp: nowIso(),
+        sessionId: event.sessionId || this.sessionId,
+      };
       this.lifecycleHistory.push(lifecycleEvent);
       while (this.lifecycleHistory.length > LIFECYCLE_HISTORY_LIMIT) this.lifecycleHistory.shift();
     }

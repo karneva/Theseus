@@ -20,9 +20,7 @@ class BashInput(BaseModel):
     """Arguments for the bash tool."""
 
     command: str = Field(description="Shell command to execute")
-    cwd: str | None = Field(
-        default=None, description="Working directory override"
-    )
+    cwd: str | None = Field(default=None, description="Working directory override")
     timeout_seconds: int = Field(default=120, ge=1, le=600)
 
 
@@ -45,9 +43,7 @@ class BashTool(BaseTool):
     def is_read_only(self, arguments) -> bool:
         return False
 
-    async def execute(
-        self, arguments: BashInput, context: ToolExecutionContext
-    ) -> ToolResult:
+    async def execute(self, arguments: BashInput, context: ToolExecutionContext) -> ToolResult:
         if arguments.cwd:
             cwd = Path(arguments.cwd).expanduser()
             if not cwd.is_absolute():
@@ -74,15 +70,11 @@ class BashTool(BaseTool):
                 stderr=asyncio.subprocess.STDOUT,
             )
         except Exception as exc:
-            return ToolResult(
-                output=f"Command execution failed: {exc}", is_error=True
-            )
+            return ToolResult(output=f"Command execution failed: {exc}", is_error=True)
 
         try:
             try:
-                await asyncio.wait_for(
-                    process.wait(), timeout=arguments.timeout_seconds
-                )
+                await asyncio.wait_for(process.wait(), timeout=arguments.timeout_seconds)
             except asyncio.TimeoutError:
                 buf = await _drain(process.stdout)
                 await _terminate(process, force=True)
@@ -111,9 +103,7 @@ class BashTool(BaseTool):
 # ── helpers ──────────────────────────────────────────────────────
 
 
-async def _terminate(
-    proc: asyncio.subprocess.Process, *, force: bool
-) -> None:
+async def _terminate(proc: asyncio.subprocess.Process, *, force: bool) -> None:
     if proc.returncode is not None:
         return
     if force:
@@ -147,9 +137,7 @@ async def _drain(
         return buf
     while True:
         try:
-            chunk = await asyncio.wait_for(
-                stream.read(65536), timeout=read_timeout
-            )
+            chunk = await asyncio.wait_for(stream.read(65536), timeout=read_timeout)
         except asyncio.TimeoutError:
             return buf
         if not chunk:
@@ -158,11 +146,7 @@ async def _drain(
 
 
 def _fmt_output(buf: bytearray) -> str:
-    text = (
-        buf.decode("utf-8", errors="replace")
-        .replace("\r\n", "\n")
-        .strip()
-    )
+    text = buf.decode("utf-8", errors="replace").replace("\r\n", "\n").strip()
     if not text:
         return "(no output)"
     if len(text) > 12000:
@@ -170,9 +154,7 @@ def _fmt_output(buf: bytearray) -> str:
     return text
 
 
-def _fmt_timeout(
-    buf: bytearray, *, command: str, timeout: int
-) -> str:
+def _fmt_timeout(buf: bytearray, *, command: str, timeout: int) -> str:
     parts = [f"Command timed out after {timeout} seconds."]
     text = _fmt_output(buf)
     if text != "(no output)":
@@ -183,8 +165,12 @@ def _fmt_timeout(
 def _preflight_interactive(command: str) -> str | None:
     low = command.lower()
     background_markers = (
-        "start-process", "start-job", "nohup ", "disown",
-        "setsid ", "start /b",
+        "start-process",
+        "start-job",
+        "nohup ",
+        "disown",
+        "setsid ",
+        "start /b",
     )
     if any(m in low for m in background_markers) or re.search(r"(?<!&)&\s*$", command):
         return (
@@ -194,18 +180,27 @@ def _preflight_interactive(command: str) -> str | None:
         )
 
     scaffold_markers = (
-        "create-next-app", "npm create ", "pnpm create ",
-        "yarn create ", "bun create ", "pnpm dlx ",
-        "npm init ", "pnpm init ", "yarn init ",
-        "bunx create-", "npx create-",
+        "create-next-app",
+        "npm create ",
+        "pnpm create ",
+        "yarn create ",
+        "bun create ",
+        "pnpm dlx ",
+        "npm init ",
+        "pnpm init ",
+        "yarn init ",
+        "bunx create-",
+        "npx create-",
     )
     safe_markers = (
-        "--yes", " -y", "--skip-install",
-        "--defaults", "--non-interactive", "--ci",
+        "--yes",
+        " -y",
+        "--skip-install",
+        "--defaults",
+        "--non-interactive",
+        "--ci",
     )
-    if any(m in low for m in scaffold_markers) and not any(
-        m in low for m in safe_markers
-    ):
+    if any(m in low for m in scaffold_markers) and not any(m in low for m in safe_markers):
         return (
             "This command requires interactive input. "
             "The bash tool is non-interactive — add flags like "

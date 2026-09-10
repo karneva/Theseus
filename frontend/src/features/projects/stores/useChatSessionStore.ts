@@ -1,3 +1,9 @@
+import {
+  parseToolExecutionNotice,
+  toolNoticeExactKey,
+  toolNoticeNameKey,
+  isTerminalToolNotice,
+} from '../utils/toolExecutionMessages';
 import { create } from 'zustand';
 import type {
   ChatMessage,
@@ -6,40 +12,8 @@ import type {
   ProgressInfo,
   StructuredPlan,
   ToolExecutionNotice,
-  ToolPlanMode
+  ToolPlanMode,
 } from '../types/chat';
-
-function parseToolExecutionNotice(content: string): ToolExecutionNotice | null {
-  const trimmed = content.trim();
-  if (!trimmed.startsWith('{')) return null;
-
-  try {
-    const parsed = JSON.parse(trimmed) as Partial<ToolExecutionNotice>;
-    if (
-      typeof parsed.noticeType === 'string'
-      && parsed.noticeType.startsWith('TOOL_EXECUTION_')
-      && typeof parsed.toolName === 'string'
-    ) {
-      return parsed as ToolExecutionNotice;
-    }
-  } catch {
-    return null;
-  }
-
-  return null;
-}
-
-function toolNoticeExactKey(notice: ToolExecutionNotice): string | null {
-  return notice.toolUseId ? `id:${notice.toolUseId}` : null;
-}
-
-function toolNoticeNameKey(notice: ToolExecutionNotice): string | null {
-  return notice.toolName ? `tool:${notice.toolName}` : null;
-}
-
-function isTerminalToolNotice(notice: ToolExecutionNotice): boolean {
-  return notice.noticeType !== 'TOOL_EXECUTION_STARTED' || notice.isError === true;
-}
 
 function isEmptyAssistantPlaceholder(message: ChatMessage | undefined): boolean {
   return message?.senderType === 'ASSISTANT' && !message.content.trim();
@@ -66,9 +40,9 @@ function findToolNoticeUpsertIndex(messages: ChatMessage[], notice: ToolExecutio
     for (let i = messages.length - 1; i >= 0; i -= 1) {
       const existingNotice = parseToolExecutionNotice(messages[i].content);
       if (
-        existingNotice
-        && toolNoticeNameKey(existingNotice) === nameKey
-        && !isTerminalToolNotice(existingNotice)
+        existingNotice &&
+        toolNoticeNameKey(existingNotice) === nameKey &&
+        !isTerminalToolNotice(existingNotice)
       ) {
         return i;
       }
@@ -189,129 +163,135 @@ export const useChatSessionStore = create<ChatSessionState>((set, get) => ({
     title,
     isClosed,
     planVersion,
-    draftVersion
-  }) => set({
-    messages,
-    currentPlan: plan,
-    draftPhase: phase,
-    planStatus: planStatus || phase,
-    currentRunId: runId || null,
-    currentToolId: toolId,
-    currentToolPlanGroupId: toolPlanGroupId || null,
-    currentToolPlanId: toolPlanId || null,
-    createdTool: createdTool || null,
-    toolResult: toolResult || null,
-    activeTab: createdTool || toolResult ? 'result' : 'plan',
-    isBuilding: phase === 'BUILDING',
-    draftVersion: draftVersion || 0,
-    planVersion: planVersion || 0,
-    title,
-    isClosed,
-    isGenerating: false,
-    progressInfo: null,
-    commentMode: false,
-    draftComments: {},
-    abortController: null,
-  }),
+    draftVersion,
+  }) =>
+    set({
+      messages,
+      currentPlan: plan,
+      draftPhase: phase,
+      planStatus: planStatus || phase,
+      currentRunId: runId || null,
+      currentToolId: toolId,
+      currentToolPlanGroupId: toolPlanGroupId || null,
+      currentToolPlanId: toolPlanId || null,
+      createdTool: createdTool || null,
+      toolResult: toolResult || null,
+      activeTab: createdTool || toolResult ? 'result' : 'plan',
+      isBuilding: phase === 'BUILDING',
+      draftVersion: draftVersion || 0,
+      planVersion: planVersion || 0,
+      title,
+      isClosed,
+      isGenerating: false,
+      progressInfo: null,
+      commentMode: false,
+      draftComments: {},
+      abortController: null,
+    }),
 
   setMode: (mode) => set({ mode }),
 
   addMessage: (msg) => set((state) => ({ messages: [...state.messages, msg] })),
 
-  upsertToolExecutionNotice: (notice) => set((state) => {
-    const content = JSON.stringify(notice);
-    const messages = [...state.messages];
-    const existingIndex = findToolNoticeUpsertIndex(messages, notice);
+  upsertToolExecutionNotice: (notice) =>
+    set((state) => {
+      const content = JSON.stringify(notice);
+      const messages = [...state.messages];
+      const existingIndex = findToolNoticeUpsertIndex(messages, notice);
 
-    if (existingIndex >= 0) {
-      messages[existingIndex] = {
-        ...messages[existingIndex],
+      if (existingIndex >= 0) {
+        messages[existingIndex] = {
+          ...messages[existingIndex],
+          senderType: 'SYSTEM_NOTICE',
+          messageType: 'SYSTEM_NOTICE',
+          contentType: 'JSON',
+          content,
+        };
+        return { messages };
+      }
+
+      const message: ChatMessage = {
+        messageId: crypto.randomUUID(),
         senderType: 'SYSTEM_NOTICE',
         messageType: 'SYSTEM_NOTICE',
         contentType: 'JSON',
         content,
+        createdAt: new Date().toISOString(),
       };
+      const insertIndex =
+        isEmptyAssistantPlaceholder(messages[messages.length - 1]) ||
+        (state.isGenerating && isAssistantMessage(messages[messages.length - 1]))
+          ? messages.length - 1
+          : messages.length;
+      messages.splice(insertIndex, 0, message);
+
       return { messages };
-    }
+    }),
 
-    const message: ChatMessage = {
-      messageId: crypto.randomUUID(),
-      senderType: 'SYSTEM_NOTICE',
-      messageType: 'SYSTEM_NOTICE',
-      contentType: 'JSON',
-      content,
-      createdAt: new Date().toISOString(),
-    };
-    const insertIndex = isEmptyAssistantPlaceholder(messages[messages.length - 1])
-      || (state.isGenerating && isAssistantMessage(messages[messages.length - 1]))
-      ? messages.length - 1
-      : messages.length;
-    messages.splice(insertIndex, 0, message);
-
-    return { messages };
-  }),
-
-  completeAssistantPlaceholder: (msg) => set((state) => {
-    const messages = [...state.messages];
-    const lastMessage = messages[messages.length - 1];
-    if (
-      lastMessage?.senderType === 'ASSISTANT'
-      && lastMessage.messageType === 'TOOL_PLAN_RESPONSE'
-      && !lastMessage.content
-    ) {
-      messages[messages.length - 1] = {
-        ...lastMessage,
-        ...msg,
-        messageId: lastMessage.messageId,
-      };
-      return { messages };
-    }
-
-    return { messages: [...messages, msg] };
-  }),
-
-  updateLastMessageContent: (chunk) => set((state) => {
-    const messages = [...state.messages];
-    if (messages.length > 0) {
-      const last = messages[messages.length - 1];
-      if (last.senderType === 'ASSISTANT') {
-        messages[messages.length - 1] = { ...last, content: last.content + chunk };
+  completeAssistantPlaceholder: (msg) =>
+    set((state) => {
+      const messages = [...state.messages];
+      const lastMessage = messages[messages.length - 1];
+      if (
+        lastMessage?.senderType === 'ASSISTANT' &&
+        lastMessage.messageType === 'TOOL_PLAN_RESPONSE' &&
+        !lastMessage.content
+      ) {
+        messages[messages.length - 1] = {
+          ...lastMessage,
+          ...msg,
+          messageId: lastMessage.messageId,
+        };
         return { messages };
       }
-    }
 
-    // 어시스턴트 메시지가 없거나 마지막 메시지가 유저/시스템인 경우 새로 생성
-    const newMsg: ChatMessage = {
-      messageId: crypto.randomUUID(),
-      senderType: 'ASSISTANT',
-      messageType: 'TOOL_PLAN_RESPONSE',
-      contentType: 'MARKDOWN',
-      content: chunk,
-      createdAt: new Date().toISOString()
-    };
-    return { messages: [...messages, newMsg] };
-  }),
+      return { messages: [...messages, msg] };
+    }),
 
-  replaceLastMessageContent: (content) => set((state) => {
-    const messages = [...state.messages];
-    if (messages.length > 0) {
-      const last = messages[messages.length - 1];
-      if (last.senderType === 'ASSISTANT') {
-        messages[messages.length - 1] = { ...last, content };
-        return { messages };
+  updateLastMessageContent: (chunk) =>
+    set((state) => {
+      const messages = [...state.messages];
+      if (messages.length > 0) {
+        const last = messages[messages.length - 1];
+        if (last.senderType === 'ASSISTANT') {
+          messages[messages.length - 1] = { ...last, content: last.content + chunk };
+          return { messages };
+        }
       }
-    }
 
-    const newMsg: ChatMessage = {
-      messageId: crypto.randomUUID(),
-      senderType: 'ASSISTANT',
-      messageType: 'TOOL_PLAN_RESPONSE',
-      contentType: 'MARKDOWN',
-      content,
-      createdAt: new Date().toISOString()
-    };
-    return { messages: [...messages, newMsg] };
-  }),
+      // 어시스턴트 메시지가 없거나 마지막 메시지가 유저/시스템인 경우 새로 생성
+      const newMsg: ChatMessage = {
+        messageId: crypto.randomUUID(),
+        senderType: 'ASSISTANT',
+        messageType: 'TOOL_PLAN_RESPONSE',
+        contentType: 'MARKDOWN',
+        content: chunk,
+        createdAt: new Date().toISOString(),
+      };
+      return { messages: [...messages, newMsg] };
+    }),
+
+  replaceLastMessageContent: (content) =>
+    set((state) => {
+      const messages = [...state.messages];
+      if (messages.length > 0) {
+        const last = messages[messages.length - 1];
+        if (last.senderType === 'ASSISTANT') {
+          messages[messages.length - 1] = { ...last, content };
+          return { messages };
+        }
+      }
+
+      const newMsg: ChatMessage = {
+        messageId: crypto.randomUUID(),
+        senderType: 'ASSISTANT',
+        messageType: 'TOOL_PLAN_RESPONSE',
+        contentType: 'MARKDOWN',
+        content,
+        createdAt: new Date().toISOString(),
+      };
+      return { messages: [...messages, newMsg] };
+    }),
 
   setCurrentPlan: (plan) => set({ currentPlan: plan }),
   setDraftPhase: (phase) => set({ draftPhase: phase }),
@@ -336,7 +316,8 @@ export const useChatSessionStore = create<ChatSessionState>((set, get) => ({
   setActiveTab: (tab) => set({ activeTab: tab }),
   setIsBuilding: (isBuilding) => set({ isBuilding }),
   setAbortController: (ctrl) => set({ abortController: ctrl }),
-  setSelectedRemoteWorkspaceId: (remoteWorkspaceId) => set({ selectedRemoteWorkspaceId: remoteWorkspaceId }),
+  setSelectedRemoteWorkspaceId: (remoteWorkspaceId) =>
+    set({ selectedRemoteWorkspaceId: remoteWorkspaceId }),
   abortGeneration: () => {
     const ctrl = get().abortController;
     if (ctrl) {

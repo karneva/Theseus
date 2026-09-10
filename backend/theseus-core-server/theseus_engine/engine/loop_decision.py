@@ -169,18 +169,36 @@ def classify_loop_continuation(context: LoopDecisionContext) -> LoopContinuation
     phase = _phase_key(context.plan_phase)
 
     if context.tool_call_count > 0:
-        return LoopContinuationDecision("stop", "tool_calls_present", 1.0, trigger_signals=("tool_call",))
+        return LoopContinuationDecision(
+            "stop", "tool_calls_present", 1.0, trigger_signals=("tool_call",)
+        )
     if context.auto_continue_count >= context.max_auto_continue:
-        return LoopContinuationDecision("stop", "auto_continue_limit_reached", 1.0, trigger_signals=("budget",))
+        return LoopContinuationDecision(
+            "stop", "auto_continue_limit_reached", 1.0, trigger_signals=("budget",)
+        )
     if not context.available_tools:
-        return LoopContinuationDecision("stop", "no_available_tools", 1.0, trigger_signals=("tool_registry_empty",))
+        return LoopContinuationDecision(
+            "stop", "no_available_tools", 1.0, trigger_signals=("tool_registry_empty",)
+        )
     if mode == "ASK":
-        return LoopContinuationDecision("stop", "ask_mode_never_auto_continues", 1.0, trigger_signals=("ask_mode",))
+        return LoopContinuationDecision(
+            "stop", "ask_mode_never_auto_continues", 1.0, trigger_signals=("ask_mode",)
+        )
 
     if _matches_any(text, _USER_DECISION_PATTERNS):
-        return LoopContinuationDecision("ask_user", "assistant_requested_user_decision", 0.95, trigger_signals=("user_decision",))
+        return LoopContinuationDecision(
+            "ask_user",
+            "assistant_requested_user_decision",
+            0.95,
+            trigger_signals=("user_decision",),
+        )
     if _matches_any(text, _BLOCKED_OR_WAITING_PATTERNS):
-        return LoopContinuationDecision("ask_user", "assistant_reported_blocked_or_approval_needed", 0.9, trigger_signals=("blocked_or_approval",))
+        return LoopContinuationDecision(
+            "ask_user",
+            "assistant_reported_blocked_or_approval_needed",
+            0.9,
+            trigger_signals=("blocked_or_approval",),
+        )
 
     if mode == "PLAN" and phase == "EXECUTING" and contains_execution_complete(text):
         return LoopContinuationDecision(
@@ -191,7 +209,12 @@ def classify_loop_continuation(context: LoopDecisionContext) -> LoopContinuation
             trigger_signals=("plan_execution_complete",),
         )
     if mode == "PLAN" and phase == "VERIFYING" and contains_verification_complete(text):
-        return LoopContinuationDecision("stop", "plan_verification_complete", 0.96, trigger_signals=("plan_verification_complete",))
+        return LoopContinuationDecision(
+            "stop",
+            "plan_verification_complete",
+            0.96,
+            trigger_signals=("plan_verification_complete",),
+        )
 
     if context.tool_error and mode in {"AGENT", "PLAN"}:
         return LoopContinuationDecision(
@@ -212,7 +235,9 @@ def classify_loop_continuation(context: LoopDecisionContext) -> LoopContinuation
         )
 
     if _matches_any(text, _FINAL_ANSWER_PATTERNS):
-        return LoopContinuationDecision("stop", "assistant_text_looks_final", 0.78, trigger_signals=("final_answer",))
+        return LoopContinuationDecision(
+            "stop", "assistant_text_looks_final", 0.78, trigger_signals=("final_answer",)
+        )
 
     if _matches_any(text, _PENDING_ACTION_PATTERNS):
         return LoopContinuationDecision(
@@ -223,7 +248,9 @@ def classify_loop_continuation(context: LoopDecisionContext) -> LoopContinuation
             trigger_signals=("pending_action_text",),
         )
 
-    return LoopContinuationDecision("stop", "no_continuation_signal", 0.74, trigger_signals=("no_signal",))
+    return LoopContinuationDecision(
+        "stop", "no_continuation_signal", 0.74, trigger_signals=("no_signal",)
+    )
 
 
 def _is_hard_decision(decision: LoopContinuationDecision) -> bool:
@@ -279,7 +306,10 @@ async def decide_loop_continuation(
 
     if refined is None:
         return heuristic
-    if refined.action in {"continue", "verify", "retry_tool_error"} and refined.confidence < SEMANTIC_CONTINUE_CONFIDENCE:
+    if (
+        refined.action in {"continue", "verify", "retry_tool_error"}
+        and refined.confidence < SEMANTIC_CONTINUE_CONFIDENCE
+    ):
         return LoopContinuationDecision(
             "stop",
             "semantic_low_confidence",
@@ -315,7 +345,11 @@ def parse_semantic_decision_payload(
     confidence = max(0.0, min(1.0, confidence))
     reason = str(data.get("reason") or f"semantic_{action}").strip()[:200]
     next_prompt = data.get("next_prompt")
-    resume_prompt = str(next_prompt).strip() if isinstance(next_prompt, str) and next_prompt.strip() else fallback.resume_prompt
+    resume_prompt = (
+        str(next_prompt).strip()
+        if isinstance(next_prompt, str) and next_prompt.strip()
+        else fallback.resume_prompt
+    )
     return LoopContinuationDecision(
         action=action,  # type: ignore[arg-type]
         reason=reason,

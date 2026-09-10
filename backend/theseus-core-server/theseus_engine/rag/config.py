@@ -26,24 +26,44 @@ class PostgresConfig:
         schema: 사용할 스키마 이름.
     """
 
-    host: str = field(default_factory=lambda: os.getenv(
-        "POSTGRES_HOST", "localhost",
-    ))
-    port: int = field(default_factory=lambda: int(os.getenv(
-        "POSTGRES_PORT", "15432",
-    )))
-    database: str = field(default_factory=lambda: os.getenv(
-        "POSTGRES_DB", "theseus_core",
-    ))
-    user: str = field(default_factory=lambda: os.getenv(
-        "POSTGRES_USER", "root",
-    ))
-    password: str = field(default_factory=lambda: os.getenv(
-        "POSTGRES_PASSWORD", "",
-    ))
-    schema: str = field(default_factory=lambda: os.getenv(
-        "POSTGRES_SCHEMA", "public",
-    ))
+    host: str = field(
+        default_factory=lambda: os.getenv(
+            "POSTGRES_HOST",
+            "localhost",
+        )
+    )
+    port: int = field(
+        default_factory=lambda: int(
+            os.getenv(
+                "POSTGRES_PORT",
+                "15432",
+            )
+        )
+    )
+    database: str = field(
+        default_factory=lambda: os.getenv(
+            "POSTGRES_DB",
+            "theseus_core",
+        )
+    )
+    user: str = field(
+        default_factory=lambda: os.getenv(
+            "POSTGRES_USER",
+            "root",
+        )
+    )
+    password: str = field(
+        default_factory=lambda: os.getenv(
+            "POSTGRES_PASSWORD",
+            "",
+        )
+    )
+    schema: str = field(
+        default_factory=lambda: os.getenv(
+            "POSTGRES_SCHEMA",
+            "public",
+        )
+    )
 
     @property
     def dsn(self) -> str:
@@ -58,8 +78,7 @@ class PostgresConfig:
     def async_url(self) -> str:
         """asyncpg 호환 URL 문자열을 반환합니다."""
         return (
-            f"postgresql://{self.user}:{self.password}"
-            f"@{self.host}:{self.port}/{self.database}"
+            f"postgresql://{self.user}:{self.password}" f"@{self.host}:{self.port}/{self.database}"
         )
 
 
@@ -74,15 +93,26 @@ class EmbeddingConfig:
         dimension: 벡터 차원 수.
     """
 
-    provider: str = field(default_factory=lambda: os.getenv(
-        "EMBEDDING_PROVIDER", "local",
-    ))
-    model: str = field(default_factory=lambda: os.getenv(
-        "EMBEDDING_MODEL", "all-MiniLM-L6-v2",
-    ))
-    dimension: int = field(default_factory=lambda: int(os.getenv(
-        "VECTOR_DIMENSION", "384",
-    )))
+    provider: str = field(
+        default_factory=lambda: os.getenv(
+            "EMBEDDING_PROVIDER",
+            "local",
+        )
+    )
+    model: str = field(
+        default_factory=lambda: os.getenv(
+            "EMBEDDING_MODEL",
+            "all-MiniLM-L6-v2",
+        )
+    )
+    dimension: int = field(
+        default_factory=lambda: int(
+            os.getenv(
+                "VECTOR_DIMENSION",
+                "384",
+            )
+        )
+    )
 
 
 @dataclass(frozen=True)
@@ -94,17 +124,22 @@ class RAGConfig:
         min_score: 유사도 하한 임계값 (0~1).
     """
 
-    top_k: int = field(default_factory=lambda: int(os.getenv(
-        "RAG_TOP_K", "5",
-    )))
-    min_score: float = field(default_factory=lambda: float(
-        os.getenv("RAG_MIN_SCORE", "0.5"),
-    ))
+    top_k: int = field(
+        default_factory=lambda: int(
+            os.getenv(
+                "RAG_TOP_K",
+                "5",
+            )
+        )
+    )
+    min_score: float = field(
+        default_factory=lambda: float(
+            os.getenv("RAG_MIN_SCORE", "0.5"),
+        )
+    )
 
 
-def load_rag_configs() -> tuple[
-    PostgresConfig, EmbeddingConfig, RAGConfig
-]:
+def load_rag_configs() -> tuple[PostgresConfig, EmbeddingConfig, RAGConfig]:
     """모든 RAG 관련 설정을 한번에 로드합니다.
 
     Returns:

@@ -26,7 +26,9 @@ class WebFetchInput(BaseModel):
 
     url: str = Field(description="HTTP or HTTPS URL to fetch")
     max_chars: int = Field(
-        default=12000, ge=500, le=50000,
+        default=12000,
+        ge=500,
+        le=50000,
         description="Maximum characters to return from the page body",
     )
 
@@ -42,9 +44,7 @@ class WebFetchTool(BaseTool):
     input_model = WebFetchInput
     permission_level = 1
 
-    async def execute(
-        self, arguments: WebFetchInput, context: ToolExecutionContext
-    ) -> ToolResult:
+    async def execute(self, arguments: WebFetchInput, context: ToolExecutionContext) -> ToolResult:
         url = arguments.url.strip()
         if not url.startswith(("http://", "https://")):
             return ToolResult(
@@ -58,9 +58,7 @@ class WebFetchTool(BaseTool):
                 max_redirects=MAX_REDIRECTS,
                 timeout=15.0,
             ) as client:
-                response = await client.get(
-                    url, headers={"User-Agent": USER_AGENT}
-                )
+                response = await client.get(url, headers={"User-Agent": USER_AGENT})
                 response.raise_for_status()
         except httpx.HTTPStatusError as exc:
             return ToolResult(
@@ -103,10 +101,7 @@ def _html_to_text(html_str: str) -> str:
     parser.close()
     text = " ".join(parser.parts)
     text = (
-        text.replace("&nbsp;", " ")
-        .replace("&amp;", "&")
-        .replace("&lt;", "<")
-        .replace("&gt;", ">")
+        text.replace("&nbsp;", " ").replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">")
     )
     return re.sub(r"[ \t\r\f\v]+", " ", text).replace(" \n", "\n").strip()
 

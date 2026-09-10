@@ -6,7 +6,6 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 
-
 _git_branch_cache: dict[str, str] = {}  # cwd → branch 캐시 (프로세스 수명 동안 유효)
 
 
@@ -21,7 +20,10 @@ def _get_git_branch(cwd: str) -> str:
     try:
         result = subprocess.run(
             ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-            capture_output=True, text=True, cwd=cwd, timeout=5,
+            capture_output=True,
+            text=True,
+            cwd=cwd,
+            timeout=5,
             stdin=subprocess.DEVNULL,
         )
         branch = f"yes (branch: {result.stdout.strip()})" if result.returncode == 0 else "no"

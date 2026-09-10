@@ -25,9 +25,7 @@ class TaskGetTool(BaseTool):
     input_model = TaskGetInput
     permission_level = 1
 
-    async def execute(
-        self, arguments: TaskGetInput, context: ToolExecutionContext
-    ) -> ToolResult:
+    async def execute(self, arguments: TaskGetInput, context: ToolExecutionContext) -> ToolResult:
         task = get_task_manager().get_task(arguments.task_id, cwd=context.cwd)
         if task is None:
             return ToolResult(

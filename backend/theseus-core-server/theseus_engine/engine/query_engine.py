@@ -95,6 +95,7 @@ class ExecutedToolCall:
     result: ToolResultBlock
     metadata: dict[str, object]
 
+
 PermissionPrompt = Callable[[str, str], Awaitable[bool]]
 AskUserPrompt = Callable[[str], Awaitable[str]]
 
@@ -112,6 +113,7 @@ DEFAULT_KEEP_RECENT = 10
 
 class MaxTurnsExceeded(RuntimeError):
     """에이전트 턴 한도 초과."""
+
     def __init__(self, max_turns: int) -> None:
         super().__init__(f"Exceeded maximum turn limit ({max_turns})")
         self.max_turns = max_turns
@@ -119,25 +121,35 @@ class MaxTurnsExceeded(RuntimeError):
 
 # ── 내부 유틸 ─────────────────────────────────────────────────
 
+
 def _is_prompt_too_long_error(exc: Exception) -> bool:
     text = str(exc).lower()
     return any(
-        needle in text for needle in (
-            "prompt too long", "context_length_exceeded", "context length",
-            "maximum context", "context window", "input tokens exceed",
-            "messages resulted in", "reduce the length of the messages",
-            "configured limit", "too many tokens", "too large for the model",
-            "maximum context length", "exceed_context",
-            "exceeds the available context size", "available context size",
+        needle in text
+        for needle in (
+            "prompt too long",
+            "context_length_exceeded",
+            "context length",
+            "maximum context",
+            "context window",
+            "input tokens exceed",
+            "messages resulted in",
+            "reduce the length of the messages",
+            "configured limit",
+            "too many tokens",
+            "too large for the model",
+            "maximum context length",
+            "exceed_context",
+            "exceeds the available context size",
+            "available context size",
         )
     )
 
 
 def _is_completion_token_limit_error(exc: Exception) -> bool:
     text = str(exc).lower()
-    return (
-        ("max_tokens" in text or "max_completion_tokens" in text)
-        and ("too large" in text or "at most" in text or "completion tokens" in text)
+    return ("max_tokens" in text or "max_completion_tokens" in text) and (
+        "too large" in text or "at most" in text or "completion tokens" in text
     )
 
 
@@ -300,18 +312,32 @@ def _tool_metadata_bucket(meta: dict | None, key: str) -> list:
 def _task_focus_state(meta: dict | None) -> dict:
     if meta is None:
         return {}
-    value = meta.setdefault("task_focus_state", {
-        "goal": "", "recent_goals": [],
-        "active_artifacts": [], "verified_state": [], "next_step": "",
-    })
+    value = meta.setdefault(
+        "task_focus_state",
+        {
+            "goal": "",
+            "recent_goals": [],
+            "active_artifacts": [],
+            "verified_state": [],
+            "next_step": "",
+        },
+    )
     if not isinstance(value, dict):
         meta["task_focus_state"] = {
-            "goal": "", "recent_goals": [],
-            "active_artifacts": [], "verified_state": [], "next_step": "",
+            "goal": "",
+            "recent_goals": [],
+            "active_artifacts": [],
+            "verified_state": [],
+            "next_step": "",
         }
         return meta["task_focus_state"]
-    for k, v in [("goal", ""), ("recent_goals", []), ("active_artifacts", []),
-                 ("verified_state", []), ("next_step", "")]:
+    for k, v in [
+        ("goal", ""),
+        ("recent_goals", []),
+        ("active_artifacts", []),
+        ("verified_state", []),
+        ("next_step", ""),
+    ]:
         value.setdefault(k, v)
     return value
 
@@ -360,7 +386,12 @@ def _remember_work_log(meta: dict | None, *, entry: str) -> None:
 
 
 def _remember_read_file(
-    meta: dict | None, *, path: str, offset: int, limit: int, output: str,
+    meta: dict | None,
+    *,
+    path: str,
+    offset: int,
+    limit: int,
+    output: str,
 ) -> None:
     bucket = _tool_metadata_bucket(meta, "read_file_state")
     preview = " | ".join(l.strip() for l in output.splitlines()[:6] if l.strip())[:320]
@@ -406,28 +437,35 @@ def _record_tool_carryover(
     elif tool_name == "remote_run_command":
         command = str(tool_input.get("command") or "").strip()
         command_name = command.split(maxsplit=1)[0] if command else "unknown"
-        summary = (tool_output.splitlines()[0].strip() if tool_output.strip() else "no output")
+        summary = tool_output.splitlines()[0].strip() if tool_output.strip() else "no output"
         _remember_verified_work(meta, f"Ran remote command {command_name} [{summary[:120]}]")
         _remember_work_log(meta, entry=f"Ran remote command: {command_name} [{summary[:120]}]")
     elif tool_name.startswith("remote_check_"):
-        summary = (tool_output.splitlines()[0].strip() if tool_output.strip() else "no output")
-        _remember_verified_work(meta, f"Checked remote resource state with {tool_name} [{summary[:120]}]")
+        summary = tool_output.splitlines()[0].strip() if tool_output.strip() else "no output"
+        _remember_verified_work(
+            meta, f"Checked remote resource state with {tool_name} [{summary[:120]}]"
+        )
         _remember_work_log(meta, entry=f"Checked remote resource: {tool_name}")
     elif tool_name == "read_file" and resolved_file_path:
         offset = int(tool_input.get("offset") or 0)
         limit = int(tool_input.get("limit") or 200)
-        _remember_read_file(meta, path=resolved_file_path,
-                            offset=offset, limit=limit, output=tool_output)
-        _remember_verified_work(meta, f"Inspected file {resolved_file_path} (lines {offset+1}-{offset+limit})")
+        _remember_read_file(
+            meta, path=resolved_file_path, offset=offset, limit=limit, output=tool_output
+        )
+        _remember_verified_work(
+            meta, f"Inspected file {resolved_file_path} (lines {offset+1}-{offset+limit})"
+        )
         _remember_work_log(meta, entry=f"Read file {resolved_file_path}")
     elif tool_name == "bash":
         command = str(tool_input.get("command") or "").strip()
-        summary = (tool_output.splitlines()[0].strip() if tool_output.strip() else "no output")
+        summary = tool_output.splitlines()[0].strip() if tool_output.strip() else "no output"
         _remember_verified_work(meta, f"Ran bash command {command[:160]} [{summary[:120]}]")
         _remember_work_log(meta, entry=f"Ran bash: {command[:160]} [{summary[:120]}]")
     elif tool_name == "grep":
         pattern = str(tool_input.get("pattern") or "").strip()
-        _remember_verified_work(meta, f"Checked repository matches for grep pattern {pattern[:180]}")
+        _remember_verified_work(
+            meta, f"Checked repository matches for grep pattern {pattern[:180]}"
+        )
         _remember_work_log(meta, entry=f"Searched with grep pattern={pattern[:160]}")
     elif tool_name == "glob":
         pattern = str(tool_input.get("pattern") or "").strip()
@@ -456,6 +494,8 @@ _LLM_DEBUG_CONTEXT_KEYS = {
     "plan_phase",
     "remote_workspace_id",
 }
+
+
 def _llm_debug_context(tool_metadata: dict[str, object] | None) -> dict[str, object]:
     if not isinstance(tool_metadata, dict):
         return {}
@@ -470,12 +510,14 @@ def _llm_debug_context(tool_metadata: dict[str, object] | None) -> dict[str, obj
 
 # ── QueryContext ──────────────────────────────────────────────
 
+
 @dataclass
 class QueryContext:
     """단일 쿼리 실행에 공유되는 컨텍스트."""
+
     api_client: SupportsStreamingMessages
     tool_registry: ToolRegistry
-    permission_checker: Any          # TheseusPermissionChecker (duck-typing)
+    permission_checker: Any  # TheseusPermissionChecker (duck-typing)
     cwd: Path
     model: str
     system_prompt: str
@@ -493,13 +535,16 @@ class QueryContext:
 
 # ── Tool 실행 ─────────────────────────────────────────────────
 
+
 async def _execute_tool_call(
     context: QueryContext,
     tool_name: str,
     tool_use_id: str,
     tool_input: dict[str, object],
 ) -> ExecutedToolCall:
-    def _result(content: str, is_error: bool = False, metadata: dict[str, object] | None = None) -> ExecutedToolCall:
+    def _result(
+        content: str, is_error: bool = False, metadata: dict[str, object] | None = None
+    ) -> ExecutedToolCall:
         return ExecutedToolCall(
             result=ToolResultBlock(
                 tool_use_id=tool_use_id,
@@ -516,9 +561,7 @@ async def _execute_tool_call(
 
     tool_metadata = dict(context.tool_metadata or {})
     call_stack = tuple(
-        str(item)
-        for item in tool_metadata.get("nested_tool_call_stack", ())
-        if item is not None
+        str(item) for item in tool_metadata.get("nested_tool_call_stack", ()) if item is not None
     )
     if tool_name in call_stack:
         return _result(
@@ -589,9 +632,12 @@ async def _execute_tool_call(
             if context.hook_executor is not None:
                 await context.hook_executor.execute(
                     HookEvent.NOTIFICATION,
-                    {"event": HookEvent.NOTIFICATION.value,
-                     "notification_type": "permission_prompt",
-                     "tool_name": tool_name, "reason": decision.reason},
+                    {
+                        "event": HookEvent.NOTIFICATION.value,
+                        "notification_type": "permission_prompt",
+                        "tool_name": tool_name,
+                        "reason": decision.reason,
+                    },
                 )
             confirmed = await context.permission_prompt(tool_name, decision.reason)
             if not confirmed:
@@ -603,8 +649,11 @@ async def _execute_tool_call(
     if context.hook_executor is not None:
         pre = await context.hook_executor.execute(
             HookEvent.PRE_TOOL_USE,
-            {"tool_name": tool_name, "tool_input": tool_input,
-             "event": HookEvent.PRE_TOOL_USE.value},
+            {
+                "tool_name": tool_name,
+                "tool_input": tool_input,
+                "event": HookEvent.PRE_TOOL_USE.value,
+            },
         )
         if pre.blocked:
             return _result(pre.reason or f"pre_tool_use hook blocked {tool_name}", True)
@@ -621,16 +670,12 @@ async def _execute_tool_call(
     )
     t0 = time.monotonic()
     nested_seen_signatures = set(
-        str(item)
-        for item in tool_metadata.get("nested_tool_seen", ())
-        if item is not None
+        str(item) for item in tool_metadata.get("nested_tool_seen", ()) if item is not None
     )
     nested_parent_call_count = 0
     nested_total_counter = tool_metadata.get("_nested_tool_total_counter")
     if not isinstance(nested_total_counter, dict):
-        nested_total_counter = {
-            "count": _metadata_int(tool_metadata, "nested_tool_total_count", 0)
-        }
+        nested_total_counter = {"count": _metadata_int(tool_metadata, "nested_tool_total_count", 0)}
     max_calls_per_parent = _metadata_int(
         tool_metadata,
         "nested_tool_max_calls_per_parent",
@@ -650,6 +695,7 @@ async def _execute_tool_call(
     nested_tool_events: list[dict[str, object]] = []
     tool_context_metadata["_nested_tool_events"] = nested_tool_events
     try:
+
         async def _nested_tool_invoker(
             nested_tool_name: str,
             nested_tool_input: dict[str, object] | None = None,
@@ -774,19 +820,23 @@ async def _execute_tool_call(
             exc,
         )
         result = ToolResult(
-            output=(
-                f"도구 실행 실패: {tool_name}: "
-                f"{type(exc).__name__}: {exc}"
-            ),
+            output=(f"도구 실행 실패: {tool_name}: " f"{type(exc).__name__}: {exc}"),
             is_error=True,
         )
     elapsed = time.monotonic() - t0
     output_text = stringify_tool_output(result.output)
-    log.debug("executed %s in %.2fs err=%s output_len=%d",
-              tool_name, elapsed, result.is_error, len(output_text))
+    log.debug(
+        "executed %s in %.2fs err=%s output_len=%d",
+        tool_name,
+        elapsed,
+        result.is_error,
+        len(output_text),
+    )
 
     inline_output, artifact_path = _offload_tool_output_if_needed(
-        tool_name=tool_name, tool_use_id=tool_use_id, output=output_text,
+        tool_name=tool_name,
+        tool_use_id=tool_use_id,
+        output=output_text,
     )
     if artifact_path:
         _remember_active_artifact(context.tool_metadata, str(artifact_path))
@@ -899,7 +949,8 @@ def _relative_to_cwd(cwd: Path, path: Path) -> str:
 
 def _assistant_text(message: ConversationMessage) -> str:
     return "".join(
-        block.text for block in message.content
+        block.text
+        for block in message.content
         if isinstance(block, TextBlock) and isinstance(block.text, str)
     )
 
@@ -1005,6 +1056,7 @@ async def _decide_auto_continue_after_assistant(
 
 # ── run_query 루프 ────────────────────────────────────────────
 
+
 async def run_query(
     context: QueryContext,
     messages: list[ConversationMessage],
@@ -1020,7 +1072,8 @@ async def run_query(
     )
 
     effective_max_tokens = _bounded_completion_tokens(
-        context.max_tokens, context.context_window_tokens,
+        context.max_tokens,
+        context.context_window_tokens,
     )
     reactive_compact_attempted = False
     reported_token_clamp = False
@@ -1046,8 +1099,7 @@ async def run_query(
             ), None
 
         max_compact_messages = (
-            context.auto_compact_threshold_tokens
-            or DEFAULT_AUTO_COMPACT_MESSAGES
+            context.auto_compact_threshold_tokens or DEFAULT_AUTO_COMPACT_MESSAGES
         )
         max_compact_messages = max(1, int(max_compact_messages))
 
@@ -1155,9 +1207,7 @@ async def run_query(
         yield AgentLoopStatus(
             phase="model_complete",
             turn=turn_count,
-            message=(
-                f"Model turn {turn_count} completed with {len(tool_calls)} tool call(s)."
-            ),
+            message=(f"Model turn {turn_count} completed with {len(tool_calls)} tool call(s)."),
             tool_count=len(tool_calls),
         ), usage
         yield AssistantTurnComplete(message=final_message, usage=usage), usage
@@ -1165,7 +1215,8 @@ async def run_query(
         # PLAN DRAFTING 단계에서 JSON 블록 감지 → PlanDraftedEvent 발행
         if context.is_plan_drafting:
             full_text = "".join(
-                b.text for b in final_message.content
+                b.text
+                for b in final_message.content
                 if hasattr(b, "text") and isinstance(b.text, str)
             )
             plan_json = extract_plan_json(full_text)
@@ -1281,8 +1332,7 @@ async def run_query(
                 ), None
 
             raw_results = await asyncio.gather(
-                *[_execute_tool_call(context, tc.name, tc.id, tc.input)
-                  for tc in tool_calls],
+                *[_execute_tool_call(context, tc.name, tc.id, tc.input) for tc in tool_calls],
                 return_exceptions=True,
             )
             tool_results = []
@@ -1334,6 +1384,7 @@ async def run_query(
 
 
 # ── QueryEngine ───────────────────────────────────────────────
+
 
 class QueryEngine:
     """Theseus-native 대화 엔진.
@@ -1507,9 +1558,7 @@ class QueryEngine:
             self._tool_metadata["active_skills"] = []
             return self._system_prompt
 
-        self._tool_metadata["active_skills"] = [
-            item.to_metadata() for item in selected
-        ]
+        self._tool_metadata["active_skills"] = [item.to_metadata() for item in selected]
         return effective_prompt
 
     def _record_usage(self, usage: UsageSnapshot | None) -> None:
@@ -1534,8 +1583,7 @@ class QueryEngine:
         if self._hook_executor is not None:
             await self._hook_executor.execute(
                 HookEvent.USER_PROMPT_SUBMIT,
-                {"event": HookEvent.USER_PROMPT_SUBMIT.value,
-                 "prompt": user_message.text},
+                {"event": HookEvent.USER_PROMPT_SUBMIT.value, "prompt": user_message.text},
             )
 
         effective_system_prompt = self._build_effective_system_prompt(user_message.text)
@@ -1571,9 +1619,7 @@ class QueryEngine:
                 error_type="max_turns_exceeded",
             )
 
-    async def continue_pending(
-        self, *, max_turns: int | None = None
-    ) -> AsyncIterator[StreamEvent]:
+    async def continue_pending(self, *, max_turns: int | None = None) -> AsyncIterator[StreamEvent]:
         context = self._make_context()
         if max_turns is not None:
             context.max_turns = max_turns

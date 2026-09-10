@@ -32,8 +32,9 @@ public class UserService {
 	 * Super Admin을 제외한 사용자 목록을 페이지 단위로 조회합니다.
 	 */
 	public Page<UserResponse> getUsers(Pageable pageable) {
-		return userRepository.findBySystemRoleNot(SystemRole.SUPER_ADMIN, pageable)
-				.map(UserResponse::createFrom);
+		return userRepository
+			.findBySystemRoleNot(SystemRole.SUPER_ADMIN, pageable)
+			.map(UserResponse::createFrom);
 	}
 
 	/**
@@ -49,8 +50,9 @@ public class UserService {
 	 * 사번으로 사용자 정보를 조회합니다.
 	 */
 	public UserResponse getUserByEmployeeNumber(String employeeNumber) {
-		User user = userRepository.findByEmployeeNumber(employeeNumber)
-				.orElseThrow(() -> BusinessException.of(ErrorCode.USER_NOT_FOUND));
+		User user = userRepository
+			.findByEmployeeNumber(employeeNumber)
+			.orElseThrow(() -> BusinessException.of(ErrorCode.USER_NOT_FOUND));
 		return UserResponse.createFrom(user);
 	}
 
@@ -75,11 +77,7 @@ public class UserService {
 		User user = getUserEntity(userId);
 		validateEmailDuplication(userId, request.getEmail());
 
-		user.update(
-				request.getName(),
-				request.getEmail(),
-				null,
-				request.getSystemRole());
+		user.update(request.getName(), request.getEmail(), null, request.getSystemRole());
 
 		return UserResponse.createFrom(user);
 	}
@@ -101,8 +99,9 @@ public class UserService {
 	}
 
 	private User getUserEntity(Long userId) {
-		return userRepository.findById(userId)
-				.orElseThrow(() -> BusinessException.of(ErrorCode.USER_NOT_FOUND));
+		return userRepository
+			.findById(userId)
+			.orElseThrow(() -> BusinessException.of(ErrorCode.USER_NOT_FOUND));
 	}
 
 	private void validateCreateRequest(UserCreateRequest request) {

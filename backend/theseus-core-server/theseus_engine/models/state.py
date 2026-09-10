@@ -16,7 +16,6 @@ from theseus_engine.models.modes import (
 from theseus_engine.prompts.builder import build_system_prompt
 from theseus_engine.prompts.capabilities import PromptCapabilities
 
-
 # ---------------------------------------------------------------------------
 # Theseus State Machine
 # ---------------------------------------------------------------------------
@@ -93,34 +92,22 @@ class TheseusStateMachine:
     @property
     def is_plan_reviewing(self) -> bool:
         """현재 플랜 리뷰 대기 중인지 여부."""
-        return (
-            self.mode == AgentMode.PLAN
-            and self.plan_phase == PlanPhase.WAIT_FOR_REVIEW
-        )
+        return self.mode == AgentMode.PLAN and self.plan_phase == PlanPhase.WAIT_FOR_REVIEW
 
     @property
     def is_plan_drafting(self) -> bool:
         """현재 플랜 작성 중인지 여부."""
-        return (
-            self.mode == AgentMode.PLAN
-            and self.plan_phase == PlanPhase.DRAFTING
-        )
+        return self.mode == AgentMode.PLAN and self.plan_phase == PlanPhase.DRAFTING
 
     @property
     def is_plan_executing(self) -> bool:
         """현재 플랜 실행 단계인지 여부."""
-        return (
-            self.mode == AgentMode.PLAN
-            and self.plan_phase == PlanPhase.EXECUTING
-        )
+        return self.mode == AgentMode.PLAN and self.plan_phase == PlanPhase.EXECUTING
 
     @property
     def is_plan_verifying(self) -> bool:
         """현재 플랜 검증 단계인지 여부."""
-        return (
-            self.mode == AgentMode.PLAN
-            and self.plan_phase == PlanPhase.VERIFYING
-        )
+        return self.mode == AgentMode.PLAN and self.plan_phase == PlanPhase.VERIFYING
 
     @property
     def display_mode(self) -> str:

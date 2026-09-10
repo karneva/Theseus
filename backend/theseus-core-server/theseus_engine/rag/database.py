@@ -69,22 +69,22 @@ class DatabaseManager:
         try:
             self._conn = psycopg2.connect(self._config.dsn)
             self._conn.autocommit = True
-            
+
             # vector 확장이 없으면 register_vector가 실패하므로 먼저 생성합니다.
             with self._conn.cursor() as cur:
                 cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
-                
+
             register_vector(self._conn)
             log.info(
-                "[RAG DB] Connected to PostgreSQL at "
-                "%s:%d/%s",
+                "[RAG DB] Connected to PostgreSQL at " "%s:%d/%s",
                 self._config.host,
                 self._config.port,
                 self._config.database,
             )
         except psycopg2.Error as e:
             log.error(
-                "[RAG DB] Failed to connect: %s", e,
+                "[RAG DB] Failed to connect: %s",
+                e,
             )
             raise
 
@@ -107,10 +107,7 @@ class DatabaseManager:
             RuntimeError: 연결이 초기화되지 않은 경우.
         """
         if not self._conn or self._conn.closed:
-            raise RuntimeError(
-                "DB 연결이 초기화되지 않았습니다. "
-                "connect()를 먼저 호출하세요."
-            )
+            raise RuntimeError("DB 연결이 초기화되지 않았습니다. " "connect()를 먼저 호출하세요.")
         return self._conn
 
     # ------------------------------------------------------------------
@@ -126,7 +123,8 @@ class DatabaseManager:
             cur.execute(_CREATE_EXTENSION_SQL)
             cur.execute(
                 _CREATE_TABLE_SQL.format(
-                    schema=schema, dimension=dim,
+                    schema=schema,
+                    dimension=dim,
                 ),
             )
             # IVFFlat 인덱스는 데이터가 충분할 때 생성
@@ -136,14 +134,13 @@ class DatabaseManager:
                 )
             except psycopg2.Error:
                 log.debug(
-                    "[RAG DB] IVFFlat index creation "
-                    "skipped (not enough rows yet).",
+                    "[RAG DB] IVFFlat index creation " "skipped (not enough rows yet).",
                 )
 
         log.info(
-            "[RAG DB] Schema initialized: "
-            "%s.knowledge_documents (dim=%d)",
-            schema, dim,
+            "[RAG DB] Schema initialized: " "%s.knowledge_documents (dim=%d)",
+            schema,
+            dim,
         )
 
     # ------------------------------------------------------------------
@@ -191,17 +188,15 @@ class DatabaseManager:
             doc_id: int = cur.fetchone()[0]
 
         log.debug(
-            "[RAG DB] Inserted document id=%d "
-            "(len=%d chars)",
-            doc_id, len(content),
+            "[RAG DB] Inserted document id=%d " "(len=%d chars)",
+            doc_id,
+            len(content),
         )
         return doc_id
 
     def insert_documents_batch(
         self,
-        documents: List[
-            Tuple[str, List[float], Dict[str, Any]]
-        ],
+        documents: List[Tuple[str, List[float], Dict[str, Any]]],
     ) -> List[int]:
         """다수의 문서를 배치로 삽입합니다.
 
@@ -215,7 +210,9 @@ class DatabaseManager:
         ids: List[int] = []
         for content, embedding, meta in documents:
             doc_id = self.insert_document(
-                content, embedding, meta,
+                content,
+                embedding,
+                meta,
             )
             ids.append(doc_id)
         return ids
@@ -258,23 +255,27 @@ class DatabaseManager:
             cursor_factory=psycopg2.extras.RealDictCursor,
         ) as cur:
             cur.execute(
-                sql, (vec, vec, min_score, vec, top_k),
+                sql,
+                (vec, vec, min_score, vec, top_k),
             )
             rows = cur.fetchall()
 
         results: List[Dict[str, Any]] = []
         for row in rows:
-            results.append({
-                "id": row["id"],
-                "content": row["content"],
-                "metadata": row["metadata"],
-                "score": float(row["score"]),
-            })
+            results.append(
+                {
+                    "id": row["id"],
+                    "content": row["content"],
+                    "metadata": row["metadata"],
+                    "score": float(row["score"]),
+                }
+            )
 
         log.debug(
-            "[RAG DB] Search returned %d results "
-            "(top_k=%d, min_score=%.2f)",
-            len(results), top_k, min_score,
+            "[RAG DB] Search returned %d results " "(top_k=%d, min_score=%.2f)",
+            len(results),
+            top_k,
+            min_score,
         )
         return results
 
@@ -285,10 +286,7 @@ class DatabaseManager:
             문서 수.
         """
         schema = self._config.schema
-        sql = (
-            f"SELECT COUNT(*) FROM "
-            f"{schema}.knowledge_documents;"
-        )
+        sql = f"SELECT COUNT(*) FROM " f"{schema}.knowledge_documents;"
         with self.connection.cursor() as cur:
             cur.execute(sql)
             count: int = cur.fetchone()[0]
@@ -304,10 +302,7 @@ class DatabaseManager:
             삭제 성공 여부.
         """
         schema = self._config.schema
-        sql = (
-            f"DELETE FROM {schema}.knowledge_documents "
-            f"WHERE id = %s;"
-        )
+        sql = f"DELETE FROM {schema}.knowledge_documents " f"WHERE id = %s;"
         with self.connection.cursor() as cur:
             cur.execute(sql, (doc_id,))
             deleted = cur.rowcount > 0

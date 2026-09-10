@@ -27,21 +27,32 @@ function firstWorkspaceFolderPath(): string | undefined {
 function workspaceFolderPath(name?: string): string | undefined {
   const folders = vscode.workspace.workspaceFolders ?? [];
   if (!name) return folders[0]?.uri.fsPath;
-  return folders.find(folder => folder.name === name)?.uri.fsPath;
+  return folders.find((folder) => folder.name === name)?.uri.fsPath;
 }
 
 export function expandTheseusPath(value: string | undefined): string {
   const raw = value?.trim() || '';
   if (!raw) return '';
 
-  let expanded = raw.replace(/\$\{workspaceFolder(?::([^}]+))?\}/g, (_match, name: string | undefined) => {
-    return workspaceFolderPath(name) || '';
-  });
+  let expanded = raw.replace(
+    /\$\{workspaceFolder(?::([^}]+))?\}/g,
+    (_match, name: string | undefined) => {
+      return workspaceFolderPath(name) || '';
+    },
+  );
 
   expanded = expanded.replace(/\$\{userHome\}/g, os.homedir());
-  expanded = expanded.replace(/\$\{env:([^}]+)\}/g, (_match, name: string) => process.env[name] || '');
+  expanded = expanded.replace(
+    /\$\{env:([^}]+)\}/g,
+    (_match, name: string) => process.env[name] || '',
+  );
 
-  if (expanded === '~' || expanded.startsWith(`~${path.sep}`) || expanded.startsWith('~/') || expanded.startsWith('~\\')) {
+  if (
+    expanded === '~' ||
+    expanded.startsWith(`~${path.sep}`) ||
+    expanded.startsWith('~/') ||
+    expanded.startsWith('~\\')
+  ) {
     expanded = path.join(os.homedir(), expanded.slice(1));
   }
 
@@ -67,10 +78,8 @@ export function getConfiguredPythonPath(): string {
 
 export function getExplicitPythonPath(): string {
   const inspected = vscode.workspace.getConfiguration('theseus').inspect<string>('pythonPath');
-  const raw = inspected?.workspaceFolderValue
-    ?? inspected?.workspaceValue
-    ?? inspected?.globalValue
-    ?? '';
+  const raw =
+    inspected?.workspaceFolderValue ?? inspected?.workspaceValue ?? inspected?.globalValue ?? '';
   return expandTheseusPath(typeof raw === 'string' ? raw : '');
 }
 
@@ -143,10 +152,10 @@ export function getActiveCursorContext(): ActiveCursorContext | undefined {
 export function injectCursorContext(text: string): string {
   const cursor = getActiveCursorContext();
   if (
-    !cursor
-    || text.trimStart().startsWith('/')
-    || userMentionedAnyFile(text)
-    || !shouldAttachActiveCursorContext(text)
+    !cursor ||
+    text.trimStart().startsWith('/') ||
+    userMentionedAnyFile(text) ||
+    !shouldAttachActiveCursorContext(text)
   ) {
     return text;
   }
@@ -173,7 +182,7 @@ export async function findMentionFiles(query: string): Promise<string[]> {
   );
 
   if (normalizedQuery.includes('_')) {
-    const filtered = uris.filter(uri =>
+    const filtered = uris.filter((uri) =>
       normalizeMentionPath(relativeToRoot(root, uri)).includes(normalizedQuery),
     );
     if (!filtered.length) {
@@ -186,23 +195,23 @@ export async function findMentionFiles(query: string): Promise<string[]> {
   }
 
   const fileResults = uris
-    .map(uri => relativeToRoot(root, uri))
-    .filter(file => !normalizedQuery || normalizeMentionPath(file).includes(normalizedQuery))
+    .map((uri) => relativeToRoot(root, uri))
+    .filter((file) => !normalizedQuery || normalizeMentionPath(file).includes(normalizedQuery))
     .sort((a, b) => {
       const an = normalizeMentionPath(a);
       const bn = normalizeMentionPath(b);
       const aBase = path.posix.basename(an);
       const bBase = path.posix.basename(bn);
-      const aScore = (an.startsWith(normalizedQuery) ? 0 : 2) +
-        (aBase.startsWith(normalizedQuery) ? 0 : 1);
-      const bScore = (bn.startsWith(normalizedQuery) ? 0 : 2) +
-        (bBase.startsWith(normalizedQuery) ? 0 : 1);
+      const aScore =
+        (an.startsWith(normalizedQuery) ? 0 : 2) + (aBase.startsWith(normalizedQuery) ? 0 : 1);
+      const bScore =
+        (bn.startsWith(normalizedQuery) ? 0 : 2) + (bBase.startsWith(normalizedQuery) ? 0 : 1);
       return aScore - bScore || a.length - b.length || a.localeCompare(b);
     })
     .slice(0, FILE_SUGGESTION_LIMIT);
 
-  const specialMentions = ['terminal', 'folder', 'problems'].filter(m =>
-    !normalizedQuery || m.includes(normalizedQuery)
+  const specialMentions = ['terminal', 'folder', 'problems'].filter(
+    (m) => !normalizedQuery || m.includes(normalizedQuery),
   );
 
   return [...specialMentions, ...fileResults];
@@ -232,7 +241,12 @@ export async function findMetaFiles(pattern: string, root: string): Promise<vsco
 }
 
 function normalizeMentionPath(value: string): string {
-  return value.replace(/^"/, '').replace(/"$/, '').replace(/\\/g, '/').replace(/^\/+/, '').toLowerCase();
+  return value
+    .replace(/^"/, '')
+    .replace(/"$/, '')
+    .replace(/\\/g, '/')
+    .replace(/^\/+/, '')
+    .toLowerCase();
 }
 
 function userMentionedAnyFile(text: string): boolean {
@@ -249,7 +263,7 @@ function shouldAttachActiveCursorContext(text: string): boolean {
     /(여기|이거|이 부분)\s*(봐|분석|수정|고쳐|설명|리뷰|확인)?/,
     /\b(this|current|active|opened)\s+(file|document|code|editor|tab)\b/,
     /\b(here|this)\s+(code|file|section)\b/,
-  ].some(pattern => pattern.test(normalized));
+  ].some((pattern) => pattern.test(normalized));
 }
 
 function escapeGlobSegment(value: string): string {
@@ -270,11 +284,22 @@ export async function resolveContextMentions(text: string): Promise<string> {
 
   if (resolvedText.includes('@problems')) {
     const diagnostics = vscode.languages.getDiagnostics();
-    const problems = diagnostics.flatMap(([uri, diags]) =>
-      diags.map(d => `${vscode.workspace.asRelativePath(uri)}:${d.range.start.line + 1} - ${d.message} [${d.source || 'unknown'}]`)
-    ).slice(0, 50).join('\n');
+    const problems = diagnostics
+      .flatMap(([uri, diags]) =>
+        diags.map(
+          (d) =>
+            `${vscode.workspace.asRelativePath(uri)}:${d.range.start.line + 1} - ${d.message} [${d.source || 'unknown'}]`,
+        ),
+      )
+      .slice(0, 50)
+      .join('\n');
 
-    resolvedText = resolvedText.replace(/@problems/g, problems ? `\n--- VSCode Problems ---\n${problems}\n-----------------------\n` : '\n--- No Problems found ---\n');
+    resolvedText = resolvedText.replace(
+      /@problems/g,
+      problems
+        ? `\n--- VSCode Problems ---\n${problems}\n-----------------------\n`
+        : '\n--- No Problems found ---\n',
+    );
   }
 
   if (resolvedText.includes('@folder')) {
@@ -283,17 +308,30 @@ export async function resolveContextMentions(text: string): Promise<string> {
     if (root) {
       try {
         // Very simple flat list of top-level files for brevity
-        const files = await vscode.workspace.findFiles(new vscode.RelativePattern(root, '**/*'), FILE_SEARCH_EXCLUDE, 100);
-        tree = files.map(f => relativeToRoot(root, f)).sort().join('\n');
+        const files = await vscode.workspace.findFiles(
+          new vscode.RelativePattern(root, '**/*'),
+          FILE_SEARCH_EXCLUDE,
+          100,
+        );
+        tree = files
+          .map((f) => relativeToRoot(root, f))
+          .sort()
+          .join('\n');
       } catch (err) {
         tree = 'Error reading folder structure.';
       }
     }
-    resolvedText = resolvedText.replace(/@folder/g, `\n--- Folder Structure ---\n${tree}\n------------------------\n`);
+    resolvedText = resolvedText.replace(
+      /@folder/g,
+      `\n--- Folder Structure ---\n${tree}\n------------------------\n`,
+    );
   }
 
   if (resolvedText.includes('@terminal')) {
-    resolvedText = resolvedText.replace(/@terminal/g, `\n--- Terminal ---\n(Terminal reading is not directly supported by VSCode API. Please copy-paste the logs manually.)\n----------------\n`);
+    resolvedText = resolvedText.replace(
+      /@terminal/g,
+      `\n--- Terminal ---\n(Terminal reading is not directly supported by VSCode API. Please copy-paste the logs manually.)\n----------------\n`,
+    );
   }
 
   return resolvedText;

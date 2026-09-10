@@ -8,5 +8,4 @@ public record ToolPlanHistoryMessagePayload(
 	ChatMessageType messageType,
 	ChatMessageContentType contentType,
 	String content
-) {
-}
+) {}

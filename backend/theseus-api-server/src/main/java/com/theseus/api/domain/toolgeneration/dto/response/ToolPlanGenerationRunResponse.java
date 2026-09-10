@@ -26,10 +26,13 @@ public class ToolPlanGenerationRunResponse {
 			.sessionId(sessionId)
 			.status(toolPlanRun.getStatus())
 			.sseUrl(
-				"/api/v1/projects/" + projectId
-					+ "/sessions/" + sessionId
-					+ "/tool-plan-runs/" + runId
-					+ "/events"
+				"/api/v1/projects/" +
+					projectId +
+					"/sessions/" +
+					sessionId +
+					"/tool-plan-runs/" +
+					runId +
+					"/events"
 			)
 			.build();
 	}

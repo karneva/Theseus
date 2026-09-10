@@ -68,7 +68,4 @@ class SuggestionValidator:
         #     system_prompt=_REVIEW_SYSTEM_PROMPT,
         #     max_tokens=1024,
         # )
-        return True, (
-            "코드 품질 리뷰 기능은 현재 준비 중입니다. "
-            "(향후 LLM 연동 시 자동 활성화)"
-        )
+        return True, ("코드 품질 리뷰 기능은 현재 준비 중입니다. " "(향후 LLM 연동 시 자동 활성화)")

@@ -33,9 +33,11 @@ _CONNECT_TIMEOUT = float(os.getenv("THESEUS_CLIENT_TIMEOUT", "10"))
 # 설정 데이터 구조
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class CustomToolSpec:
     """서버에서 받은 커스텀 툴 명세."""
+
     name: str
     filename: str
     code: str
@@ -49,6 +51,7 @@ class ProjectConfig:
 
     standalone 모드에서는 기본값이 사용된다.
     """
+
     project_id: str
     actor_role: str = "MEMBER"
     user_level: int = 1
@@ -62,6 +65,7 @@ class ProjectConfig:
 # ---------------------------------------------------------------------------
 # 프로젝트 클라이언트
 # ---------------------------------------------------------------------------
+
 
 class TheseusProjectClient:
     """백엔드 서버와 통신하는 클라이언트.
@@ -104,6 +108,7 @@ class TheseusProjectClient:
 
         try:
             import httpx
+
             async with httpx.AsyncClient(timeout=_CONNECT_TIMEOUT) as client:
                 resp = await client.get(
                     f"{self._url}/api/agent/project-config",
@@ -161,6 +166,7 @@ class TheseusProjectClient:
             return Path("custom_tools") / config.project_id
 
         from theseus_engine.tools.core.tool_factory import CUSTOM_TOOLS_DIR
+
         target = (base_dir or Path(CUSTOM_TOOLS_DIR)) / config.project_id
         target.mkdir(parents=True, exist_ok=True)
 
@@ -188,10 +194,8 @@ class TheseusProjectClient:
 
         try:
             import httpx
-            serialized = [
-                m.model_dump() if hasattr(m, "model_dump") else str(m)
-                for m in messages
-            ]
+
+            serialized = [m.model_dump() if hasattr(m, "model_dump") else str(m) for m in messages]
             async with httpx.AsyncClient(timeout=_CONNECT_TIMEOUT) as client:
                 await client.post(
                     f"{self._url}/api/agent/sessions/{session_id}/history",
@@ -216,6 +220,7 @@ class TheseusProjectClient:
 
         try:
             import httpx
+
             async with httpx.AsyncClient(timeout=_CONNECT_TIMEOUT) as client:
                 await client.post(
                     f"{self._url}/internal/billing/usage",

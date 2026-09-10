@@ -135,7 +135,7 @@ export function RemoteWorkspaceManagement({ projectId }: RemoteWorkspaceManageme
               등록된 Remote Workspace가 없습니다.
             </div>
           ) : (
-            remoteWorkspaces.map(workspace => (
+            remoteWorkspaces.map((workspace) => (
               <div
                 key={workspace.remoteWorkspaceId}
                 className="flex flex-col gap-3 rounded border border-slate-800 bg-slate-950/40 p-4 md:flex-row md:items-center md:justify-between"
@@ -146,10 +146,13 @@ export function RemoteWorkspaceManagement({ projectId }: RemoteWorkspaceManageme
                     {workspace.host} · {workspace.basePath}
                   </div>
                   <div className="mt-2 text-xs">
-                    <span className={`rounded border px-2 py-1 ${workspace.allowWriteExecution
-                      ? 'border-amber-400/40 bg-amber-400/10 text-amber-200'
-                      : 'border-blue-400/30 bg-blue-400/10 text-blue-200'
-                      }`}>
+                    <span
+                      className={`rounded border px-2 py-1 ${
+                        workspace.allowWriteExecution
+                          ? 'border-amber-400/40 bg-amber-400/10 text-amber-200'
+                          : 'border-blue-400/30 bg-blue-400/10 text-blue-200'
+                      }`}
+                    >
                       {workspace.allowWriteExecution ? '쓰기/명령 허용' : '읽기 전용'}
                     </span>
                   </div>
@@ -257,7 +260,8 @@ export function RemoteWorkspaceManagement({ projectId }: RemoteWorkspaceManageme
             <span>
               <span className="block font-semibold text-slate-100">쓰기 및 명령 실행 허용</span>
               <span className="block text-xs text-slate-400">
-                ASK/PLAN 모드는 읽기 전용으로 유지됩니다. AGENT 및 승인된 도구 실행 시 파일 쓰기 또는 명령을 실행할 수 있습니다.
+                ASK/PLAN 모드는 읽기 전용으로 유지됩니다. AGENT 및 승인된 도구 실행 시 파일 쓰기
+                또는 명령을 실행할 수 있습니다.
               </span>
             </span>
           </label>

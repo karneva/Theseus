@@ -1,20 +1,21 @@
 from pathlib import Path
 
+
 class AutocompleteHelper:
     def __init__(self, bundle):
         self.bundle = bundle
         self.suggestion_mode = None
 
     def get_command_suggestions(self, filter_text: str):
-        if not self.bundle: 
+        if not self.bundle:
             return [], None
-        
+
         commands = self.bundle.commands.list_commands()
         filtered = [cmd for cmd in commands if cmd.name.startswith(filter_text)]
         theseus_priority = {"plan", "agent", "ask", "session", "clear"}
-        
+
         filtered.sort(key=lambda cmd: (0 if cmd.name in theseus_priority else 1, cmd.name))
-        
+
         options = []
         if filtered:
             for cmd in filtered:
@@ -55,7 +56,7 @@ class AutocompleteHelper:
             entries.sort(key=lambda x: (not x.endswith("/"), x))
         except Exception:
             entries = []
-            
+
         if entries:
             self.suggestion_mode = "file"
             return entries[:30], "file"

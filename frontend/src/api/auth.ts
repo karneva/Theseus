@@ -1,4 +1,7 @@
+import { http } from '@/api/http';
 import { apiClient } from './client';
+import type { ApiResponse } from './types';
+export type { ApiResponse } from './types';
 
 export interface LoginRequest {
   loginId: string;
@@ -13,21 +16,13 @@ export interface LoginResponse {
   systemRole: 'SUPER_ADMIN' | 'USER'; // Adjust based on actual roles
 }
 
-export interface ApiResponse<T> {
-  isSuccess: boolean;
-  code: string;
-  message: string;
-  result: T;
-}
-
 export const authApi = {
   /**
    * 로그인 API
    * @param data { loginId, password }
    */
   login: async (data: LoginRequest) => {
-    const response = await apiClient.post<ApiResponse<LoginResponse>>('/api/v1/auth/login', data);
-    return response.data.result;
+    return http.post<LoginResponse>('/api/v1/auth/login', data);
   },
 
   /**

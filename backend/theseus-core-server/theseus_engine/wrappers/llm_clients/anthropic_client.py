@@ -53,6 +53,7 @@ def _is_retryable(exc: Exception) -> bool:
 
 def _get_retry_delay(attempt: int, exc: Exception | None = None) -> float:
     import random
+
     if isinstance(exc, APIStatusError):
         headers = getattr(exc, "headers", {})
         if hasattr(headers, "get"):
@@ -62,7 +63,7 @@ def _get_retry_delay(attempt: int, exc: Exception | None = None) -> float:
                     return min(float(val), MAX_DELAY)
                 except (ValueError, TypeError):
                     pass
-    delay = min(BASE_DELAY * (2 ** attempt), MAX_DELAY)
+    delay = min(BASE_DELAY * (2**attempt), MAX_DELAY)
     return delay + random.uniform(0, delay * 0.25)
 
 
@@ -94,9 +95,7 @@ class TheseusAnthropicClient:
             kwargs["base_url"] = base_url
         self._client = AsyncAnthropic(**kwargs)
 
-    async def stream_message(
-        self, request: ApiMessageRequest
-    ) -> AsyncIterator[ApiStreamEvent]:
+    async def stream_message(self, request: ApiMessageRequest) -> AsyncIterator[ApiStreamEvent]:
         """Yield text deltas and the final assistant message with retry."""
         last_error: Exception | None = None
 
@@ -117,9 +116,12 @@ class TheseusAnthropicClient:
                 delay = _get_retry_delay(attempt, exc)
                 status = getattr(exc, "status_code", "?")
                 log.warning(
-                    "Anthropic API failed (attempt %d/%d, status=%s), "
-                    "retrying in %.1fs: %s",
-                    attempt + 1, MAX_RETRIES + 1, status, delay, exc,
+                    "Anthropic API failed (attempt %d/%d, status=%s), " "retrying in %.1fs: %s",
+                    attempt + 1,
+                    MAX_RETRIES + 1,
+                    status,
+                    delay,
+                    exc,
                 )
                 yield ApiRetryEvent(
                     message=str(exc),
@@ -136,9 +138,7 @@ class TheseusAnthropicClient:
         # 이론상 도달 불가 — 루프가 return 없이 완료된 경우 방어
         raise RequestFailure("Exhausted retries without result or error.")
 
-    async def _stream_once(
-        self, request: ApiMessageRequest
-    ) -> AsyncIterator[ApiStreamEvent]:
+    async def _stream_once(self, request: ApiMessageRequest) -> AsyncIterator[ApiStreamEvent]:
         params: dict[str, Any] = {
             "model": request.model,
             "messages": [msg.to_api_param() for msg in request.messages],

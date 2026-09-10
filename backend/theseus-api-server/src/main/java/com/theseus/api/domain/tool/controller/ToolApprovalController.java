@@ -33,9 +33,14 @@ public class ToolApprovalController {
 
 	private final ToolApprovalService toolApprovalService;
 
-	@Operation(summary = "ToolApproval list", description = "Returns project ToolPlan approval requests.")
+	@Operation(
+		summary = "ToolApproval list",
+		description = "Returns project ToolPlan approval requests."
+	)
 	@GetMapping("/tool-approvals")
-	public ResponseEntity<ApiResponse<ToolApprovalPageResponse<ToolApprovalResponse>>> getToolApprovals(
+	public ResponseEntity<
+		ApiResponse<ToolApprovalPageResponse<ToolApprovalResponse>>
+	> getToolApprovals(
 		@AuthenticationPrincipal AuthenticatedUser currentUser,
 		@PathVariable Long projectId,
 		@RequestParam(required = false) ToolApprovalStatus approvalStatus,
@@ -49,7 +54,10 @@ public class ToolApprovalController {
 			page,
 			size
 		);
-		return ApiResponse.onSuccess(SuccessCode.OK, ToolApprovalPageResponse.createFrom(toolApprovals));
+		return ApiResponse.onSuccess(
+			SuccessCode.OK,
+			ToolApprovalPageResponse.createFrom(toolApprovals)
+		);
 	}
 
 	@Operation(summary = "ToolApproval detail", description = "Returns a ToolPlan approval request.")
@@ -59,22 +67,36 @@ public class ToolApprovalController {
 		@PathVariable Long projectId,
 		@PathVariable Long toolApprovalId
 	) {
-		ToolApprovalResponse response = toolApprovalService.getToolApproval(currentUser, projectId, toolApprovalId);
+		ToolApprovalResponse response = toolApprovalService.getToolApproval(
+			currentUser,
+			projectId,
+			toolApprovalId
+		);
 		return ApiResponse.onSuccess(SuccessCode.OK, response);
 	}
 
-	@Operation(summary = "ToolPlan approval request", description = "Requests approval for a REVIEW ToolPlan.")
+	@Operation(
+		summary = "ToolPlan approval request",
+		description = "Requests approval for a REVIEW ToolPlan."
+	)
 	@PostMapping("/tool-plans/{toolPlanId}/approval-requests")
 	public ResponseEntity<ApiResponse<ToolApprovalResponse>> requestToolPlanApproval(
 		@AuthenticationPrincipal AuthenticatedUser currentUser,
 		@PathVariable Long projectId,
 		@PathVariable Long toolPlanId
 	) {
-		ToolApprovalResponse response = toolApprovalService.requestToolPlanApproval(currentUser, projectId, toolPlanId);
+		ToolApprovalResponse response = toolApprovalService.requestToolPlanApproval(
+			currentUser,
+			projectId,
+			toolPlanId
+		);
 		return ApiResponse.onSuccess(SuccessCode.CREATED, response);
 	}
 
-	@Operation(summary = "ToolApproval approve", description = "Approves a pending ToolPlan approval request.")
+	@Operation(
+		summary = "ToolApproval approve",
+		description = "Approves a pending ToolPlan approval request."
+	)
 	@PatchMapping("/tool-approvals/{toolApprovalId}/approve")
 	public ResponseEntity<ApiResponse<ToolApprovalResponse>> approveToolApproval(
 		@AuthenticationPrincipal AuthenticatedUser currentUser,
@@ -91,7 +113,10 @@ public class ToolApprovalController {
 		return ApiResponse.onSuccess(SuccessCode.OK, response);
 	}
 
-	@Operation(summary = "ToolApproval reject", description = "Rejects a pending ToolPlan approval request.")
+	@Operation(
+		summary = "ToolApproval reject",
+		description = "Rejects a pending ToolPlan approval request."
+	)
 	@PatchMapping("/tool-approvals/{toolApprovalId}/reject")
 	public ResponseEntity<ApiResponse<ToolApprovalResponse>> rejectToolApproval(
 		@AuthenticationPrincipal AuthenticatedUser currentUser,

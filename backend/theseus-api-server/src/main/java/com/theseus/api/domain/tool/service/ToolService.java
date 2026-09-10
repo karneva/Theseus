@@ -5,11 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.theseus.api.common.exception.BusinessException;
 import com.theseus.api.common.exception.ErrorCode;
+import com.theseus.api.common.pagination.PageRequests;
 import com.theseus.api.domain.auth.token.AuthenticatedUser;
+import com.theseus.api.domain.chat.config.CoreStreamProperties;
 import com.theseus.api.domain.project.entity.Project;
 import com.theseus.api.domain.project.entity.ProjectMember;
-import com.theseus.api.domain.project.entity.ProjectMemberStatus;
-import com.theseus.api.domain.project.entity.ProjectRole;
 import com.theseus.api.domain.project.repository.ProjectMemberRepository;
 import com.theseus.api.domain.project.repository.ProjectRepository;
 import com.theseus.api.domain.tool.dto.response.ToolDetailResponse;
@@ -19,12 +19,10 @@ import com.theseus.api.domain.tool.entity.ToolStatus;
 import com.theseus.api.domain.tool.repository.ToolRepository;
 import com.theseus.api.domain.user.entity.User;
 import com.theseus.api.domain.user.repository.UserRepository;
-import com.theseus.api.domain.chat.config.CoreStreamProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,8 +68,9 @@ public class ToolService {
 		validateApprovedStatus(status);
 		validateToolUsePermission(projectMember);
 
-		Pageable pageable = createPageable(page, size);
-		return toolRepository.findAccessibleByProjectAndStatus(
+		Pageable pageable = PageRequests.create(page, size);
+		return toolRepository
+			.findAccessibleByProjectAndStatus(
 				project,
 				ToolStatus.APPROVED,
 				projectMember.getAccessLevel(),
@@ -83,11 +82,7 @@ public class ToolService {
 	/**
 	 * 접근 권한과 등급 조건을 검증하고 Tool 상세 정보를 조회합니다.
 	 */
-	public ToolDetailResponse getTool(
-		AuthenticatedUser currentUser,
-		Long projectId,
-		Long toolId
-	) {
+	public ToolDetailResponse getTool(AuthenticatedUser currentUser, Long projectId, Long toolId) {
 		User user = getCurrentUserEntity(currentUser);
 		Project project = getProjectEntity(projectId);
 		ProjectMember projectMember = getActiveProjectMember(project, user);
@@ -113,14 +108,18 @@ public class ToolService {
 		validateProjectAdmin(projectMember);
 		validateToolAccessLevel(accessLevel);
 
-		Tool tool = toolRepository.findByIdAndProjectForUpdate(toolId, project)
+		Tool tool = toolRepository
+			.findByIdAndProjectForUpdate(toolId, project)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.TOOL_NOT_FOUND));
 		if (tool.isDeleted()) {
 			throw BusinessException.of(ErrorCode.TOOL_NOT_FOUND);
 		}
 
 		requestCoreToolPermissionLevelUpdate(project.getId(), tool.getFileName(), accessLevel);
-		tool.updateAccessLevel(accessLevel, updatePermissionLevelMetadata(tool.getMetadataJson(), accessLevel));
+		tool.updateAccessLevel(
+			accessLevel,
+			updatePermissionLevelMetadata(tool.getMetadataJson(), accessLevel)
+		);
 		return ToolSummaryResponse.createFrom(tool);
 	}
 
@@ -152,20 +151,42 @@ public class ToolService {
 				.DELETE()
 				.build();
 
-			java.net.http.HttpResponse<String> response = httpClient.send(coreRequest, java.net.http.HttpResponse.BodyHandlers.ofString());
+			java.net.http.HttpResponse<String> response = httpClient.send(
+				coreRequest,
+				java.net.http.HttpResponse.BodyHandlers.ofString()
+			);
 			if (response.statusCode() < 200 || response.statusCode() >= 300) {
-				log.warn(">>>> Core Tool deletion failed. status={}, body={}", response.statusCode(), response.body());
+				log.warn(
+					">>>> Core Tool deletion failed. status={}, body={}",
+					response.statusCode(),
+					response.body()
+				);
 			} else {
-				log.info(">>>> Successfully requested Core Tool deletion to trash. status={}", response.statusCode());
+				log.info(
+					">>>> Successfully requested Core Tool deletion to trash. status={}",
+					response.statusCode()
+				);
 			}
 		} catch (Exception exception) {
-			log.warn(">>>> Failed to send Tool deletion request to Core server. project={}, file={}", projectId, fileName, exception);
+			log.warn(
+				">>>> Failed to send Tool deletion request to Core server. project={}, file={}",
+				projectId,
+				fileName,
+				exception
+			);
 		}
 	}
 
-	private void requestCoreToolPermissionLevelUpdate(Long projectId, String fileName, Integer accessLevel) {
+	private void requestCoreToolPermissionLevelUpdate(
+		Long projectId,
+		String fileName,
+		Integer accessLevel
+	) {
 		try {
-			java.net.URI updateUri = coreStreamProperties.updateToolPermissionLevelUri(projectId, fileName);
+			java.net.URI updateUri = coreStreamProperties.updateToolPermissionLevelUri(
+				projectId,
+				fileName
+			);
 			String requestBody = "{\"permissionLevel\":%d}".formatted(accessLevel);
 			java.net.http.HttpRequest coreRequest = java.net.http.HttpRequest.newBuilder(updateUri)
 				.timeout(java.time.Duration.ofSeconds(10))
@@ -175,12 +196,24 @@ public class ToolService {
 				.method("PATCH", java.net.http.HttpRequest.BodyPublishers.ofString(requestBody))
 				.build();
 
-			java.net.http.HttpResponse<String> response = httpClient.send(coreRequest, java.net.http.HttpResponse.BodyHandlers.ofString());
+			java.net.http.HttpResponse<String> response = httpClient.send(
+				coreRequest,
+				java.net.http.HttpResponse.BodyHandlers.ofString()
+			);
 			if (response.statusCode() < 200 || response.statusCode() >= 300) {
-				log.warn(">>>> Core Tool permissionLevel update failed. status={}, body={}", response.statusCode(), response.body());
+				log.warn(
+					">>>> Core Tool permissionLevel update failed. status={}, body={}",
+					response.statusCode(),
+					response.body()
+				);
 			}
 		} catch (Exception exception) {
-			log.warn(">>>> Failed to send Tool permissionLevel update request to Core server. project={}, file={}", projectId, fileName, exception);
+			log.warn(
+				">>>> Failed to send Tool permissionLevel update request to Core server. project={}, file={}",
+				projectId,
+				fileName,
+				exception
+			);
 		}
 	}
 
@@ -189,20 +222,23 @@ public class ToolService {
 			throw BusinessException.of(ErrorCode.UNAUTHORIZED);
 		}
 
-		return userRepository.findById(currentUser.userId())
+		return userRepository
+			.findById(currentUser.userId())
 			.orElseThrow(() -> BusinessException.of(ErrorCode.USER_NOT_FOUND));
 	}
 
 	private Project getProjectEntity(Long projectId) {
-		return projectRepository.findById(projectId)
+		return projectRepository
+			.findById(projectId)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_NOT_FOUND));
 	}
 
 	private ProjectMember getActiveProjectMember(Project project, User user) {
-		ProjectMember projectMember = projectMemberRepository.findByProjectAndUser(project, user)
+		ProjectMember projectMember = projectMemberRepository
+			.findByProjectAndUser(project, user)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_MEMBER_PERMISSION_REQUIRED));
 
-		if (!ProjectMemberStatus.IN_PROGRESS.equals(projectMember.getStatus())) {
+		if (!projectMember.isActive()) {
 			throw BusinessException.of(ErrorCode.ACTIVE_PROJECT_MEMBER_REQUIRED);
 		}
 
@@ -210,7 +246,8 @@ public class ToolService {
 	}
 
 	private Tool getToolEntity(Project project, Long toolId) {
-		return toolRepository.findByIdAndProjectAndStatusNot(toolId, project, ToolStatus.DELETED)
+		return toolRepository
+			.findByIdAndProjectAndStatusNot(toolId, project, ToolStatus.DELETED)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.TOOL_NOT_FOUND));
 	}
 
@@ -239,7 +276,7 @@ public class ToolService {
 	}
 
 	private void validateProjectAdmin(ProjectMember projectMember) {
-		if (!ProjectRole.ADMIN.equals(projectMember.getProjectRole())) {
+		if (!projectMember.isAdmin()) {
 			throw BusinessException.of(ErrorCode.PROJECT_ADMIN_PERMISSION_REQUIRED);
 		}
 	}
@@ -268,9 +305,5 @@ public class ToolService {
 		} catch (JsonProcessingException exception) {
 			throw BusinessException.of(ErrorCode.TOOL_ACCESS_LEVEL_INVALID, exception);
 		}
-	}
-
-	private Pageable createPageable(int page, int size) {
-		return PageRequest.of(Math.max(page, 0), Math.max(size, 1));
 	}
 }

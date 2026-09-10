@@ -6,8 +6,7 @@ public final class ProjectAccessLevelPolicy {
 	public static final int MAX_MEMBER_ACCESS_LEVEL = 5;
 	public static final int ADMIN_ACCESS_LEVEL = 5;
 
-	private ProjectAccessLevelPolicy() {
-	}
+	private ProjectAccessLevelPolicy() {}
 
 	public static int resolveAccessLevel(ProjectRole projectRole, Integer accessLevel) {
 		if (ProjectRole.ADMIN.equals(projectRole)) {
@@ -20,8 +19,10 @@ public final class ProjectAccessLevelPolicy {
 	}
 
 	public static boolean isMemberAccessLevel(Integer accessLevel) {
-		return accessLevel != null
-			&& accessLevel >= DEFAULT_MEMBER_ACCESS_LEVEL
-			&& accessLevel <= MAX_MEMBER_ACCESS_LEVEL;
+		return (
+			accessLevel != null &&
+			accessLevel >= DEFAULT_MEMBER_ACCESS_LEVEL &&
+			accessLevel <= MAX_MEMBER_ACCESS_LEVEL
+		);
 	}
 }

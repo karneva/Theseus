@@ -17,7 +17,6 @@ from theseus_engine.tools.core.edit_safety import (
 )
 from theseus_engine.tools.core.file_utils import _check_path_security, _strip_markdown_links
 
-
 _ALLOWED_REPORT_SUFFIXES = {".md", ".json", ".txt"}
 _DEFAULT_REPORT_ROOT = "reports"
 _SECONDARY_REPORT_ROOT = ".theseus/reports"
@@ -190,7 +189,9 @@ class LocalWriteReportTool(BaseTool):
                 output=render_success_message(
                     report=report,
                     action=f"로컬 보고서 파일을 저장했습니다: {_relative_to_cwd(path, cwd)}",
-                    detail="Existing report overwritten." if existed_before else "New report created.",
+                    detail=(
+                        "Existing report overwritten." if existed_before else "New report created."
+                    ),
                 ),
                 metadata={
                     "reportPath": str(path),

@@ -5,7 +5,6 @@ import com.theseus.api.common.exception.ErrorCode;
 import com.theseus.api.domain.project.dto.request.InternalProjectPermissionRequest;
 import com.theseus.api.domain.project.entity.Project;
 import com.theseus.api.domain.project.entity.ProjectMember;
-import com.theseus.api.domain.project.entity.ProjectMemberStatus;
 import com.theseus.api.domain.project.repository.ProjectMemberRepository;
 import com.theseus.api.domain.project.repository.ProjectRepository;
 import com.theseus.api.domain.user.entity.User;
@@ -45,7 +44,10 @@ public class InternalProjectPermissionService {
 	 * 내부 서버가 사용할 프로젝트 멤버의 Tool 권한 정보를 조회합니다.
 	 */
 	public Map<String, Integer> getToolPermissions(InternalProjectPermissionRequest request) {
-		ProjectMember projectMember = getActiveProjectMember(request.getProjectId(), request.getUserId());
+		ProjectMember projectMember = getActiveProjectMember(
+			request.getProjectId(),
+			request.getUserId()
+		);
 
 		if (!Boolean.TRUE.equals(projectMember.getCanUseTool())) {
 			throw BusinessException.of(ErrorCode.TOOL_USE_PERMISSION_REQUIRED);
@@ -61,19 +63,22 @@ public class InternalProjectPermissionService {
 	}
 
 	private ProjectMember getActiveProjectMember(Long projectId, Long userId) {
-		Project project = projectRepository.findById(projectId)
+		Project project = projectRepository
+			.findById(projectId)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_NOT_FOUND));
-		User user = userRepository.findById(userId)
+		User user = userRepository
+			.findById(userId)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.USER_NOT_FOUND));
 
 		if (!UserStatus.ACTIVE.equals(user.getStatus())) {
 			throw BusinessException.of(ErrorCode.PROJECT_MEMBER_ACTIVE_USER_REQUIRED);
 		}
 
-		ProjectMember projectMember = projectMemberRepository.findByProjectAndUser(project, user)
+		ProjectMember projectMember = projectMemberRepository
+			.findByProjectAndUser(project, user)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_MEMBER_PERMISSION_REQUIRED));
 
-		if (!ProjectMemberStatus.IN_PROGRESS.equals(projectMember.getStatus())) {
+		if (!projectMember.isActive()) {
 			throw BusinessException.of(ErrorCode.ACTIVE_PROJECT_MEMBER_REQUIRED);
 		}
 

@@ -25,7 +25,6 @@ from theseus_engine.tools.core.file_edit_tool import EditFileInput
 from theseus_engine.tools.core.file_utils import _strip_markdown_links
 from theseus_engine.tools.core.file_write_tool import WriteFileInput
 
-
 REMOTE_WRITE_EXECUTION_TOOL_NAMES = frozenset(
     {"remote_write_file", "remote_edit_file", "remote_run_command"}
 )
@@ -47,7 +46,9 @@ class RemoteWritableToolMixin(RemoteWorkspaceToolMixin):
             timeout_seconds=DEFAULT_REMOTE_COMMAND_TIMEOUT_SECONDS,
         )
         if mkdir_result.exit_code != 0:
-            raise RemoteWorkspaceError(mkdir_result.stderr.strip() or "Remote directory creation failed.")
+            raise RemoteWorkspaceError(
+                mkdir_result.stderr.strip() or "Remote directory creation failed."
+            )
 
         client = connector.connect()
         try:
@@ -199,7 +200,10 @@ class RemoteWriteFileTool(RemoteWritableToolMixin, BaseTool):
                     return ToolResult(
                         output=render_blocked_message(post_report),
                         is_error=True,
-                        metadata={"remote_path": remote_path, "safetyReport": post_report.to_metadata()},
+                        metadata={
+                            "remote_path": remote_path,
+                            "safetyReport": post_report.to_metadata(),
+                        },
                     )
                 report = post_report
             except Exception as verify_error:
@@ -230,7 +234,11 @@ class RemoteWriteFileTool(RemoteWritableToolMixin, BaseTool):
                 output=render_success_message(
                     report=report,
                     action=f"Successfully wrote {len(content.encode('utf-8'))} bytes to remote:{arguments.path}",
-                    detail="Existing remote file overwritten." if existed_before else "New remote file created.",
+                    detail=(
+                        "Existing remote file overwritten."
+                        if existed_before
+                        else "New remote file created."
+                    ),
                 ),
                 metadata={"remote_path": remote_path, "safetyReport": report.to_metadata()},
             )
@@ -333,7 +341,10 @@ class RemoteEditFileTool(RemoteWritableToolMixin, BaseTool):
                     return ToolResult(
                         output=render_blocked_message(post_report),
                         is_error=True,
-                        metadata={"remote_path": remote_path, "safetyReport": post_report.to_metadata()},
+                        metadata={
+                            "remote_path": remote_path,
+                            "safetyReport": post_report.to_metadata(),
+                        },
                     )
                 report = post_report
             except Exception as verify_error:
@@ -434,7 +445,9 @@ class RemoteRunCommandTool(RemoteWorkspaceToolMixin, BaseTool):
                 connector.run_command,
                 arguments.command,
                 working_directory=arguments.cwd or ".",
-                timeout_seconds=min(arguments.timeout_seconds, DEFAULT_REMOTE_COMMAND_TIMEOUT_SECONDS),
+                timeout_seconds=min(
+                    arguments.timeout_seconds, DEFAULT_REMOTE_COMMAND_TIMEOUT_SECONDS
+                ),
             )
             output = result.stdout.strip()
             if result.stderr.strip():

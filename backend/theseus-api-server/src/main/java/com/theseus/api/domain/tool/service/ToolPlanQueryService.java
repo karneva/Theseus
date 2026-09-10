@@ -7,7 +7,6 @@ import com.theseus.api.domain.chat.entity.ChatSession;
 import com.theseus.api.domain.chat.repository.ChatSessionRepository;
 import com.theseus.api.domain.project.entity.Project;
 import com.theseus.api.domain.project.entity.ProjectMember;
-import com.theseus.api.domain.project.entity.ProjectMemberStatus;
 import com.theseus.api.domain.project.repository.ProjectMemberRepository;
 import com.theseus.api.domain.project.repository.ProjectRepository;
 import com.theseus.api.domain.tool.dto.response.ToolPlanDetailResponse;
@@ -41,15 +40,19 @@ public class ToolPlanQueryService {
 	) {
 		validateAuthenticatedUser(currentUser);
 
-		User user = userRepository.findById(currentUser.userId())
+		User user = userRepository
+			.findById(currentUser.userId())
 			.orElseThrow(() -> BusinessException.of(ErrorCode.USER_NOT_FOUND));
-		Project project = projectRepository.findById(projectId)
+		Project project = projectRepository
+			.findById(projectId)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_NOT_FOUND));
 		validateActiveProjectMember(project, user);
 
-		ChatSession chatSession = chatSessionRepository.findByIdAndProject(chatSessionId, project)
+		ChatSession chatSession = chatSessionRepository
+			.findByIdAndProject(chatSessionId, project)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.CHAT_SESSION_NOT_FOUND));
-		ToolPlan toolPlan = toolPlanRepository.findByIdAndProjectAndChatSession(toolPlanId, project, chatSession)
+		ToolPlan toolPlan = toolPlanRepository
+			.findByIdAndProjectAndChatSession(toolPlanId, project, chatSession)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.TOOL_PLAN_NOT_FOUND));
 
 		return ToolPlanDetailResponse.createFrom(toolPlan);
@@ -62,9 +65,10 @@ public class ToolPlanQueryService {
 	}
 
 	private void validateActiveProjectMember(Project project, User user) {
-		ProjectMember projectMember = projectMemberRepository.findByProjectAndUser(project, user)
+		ProjectMember projectMember = projectMemberRepository
+			.findByProjectAndUser(project, user)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_MEMBER_PERMISSION_REQUIRED));
-		if (!ProjectMemberStatus.IN_PROGRESS.equals(projectMember.getStatus())) {
+		if (!projectMember.isActive()) {
 			throw BusinessException.of(ErrorCode.ACTIVE_PROJECT_MEMBER_REQUIRED);
 		}
 	}

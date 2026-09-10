@@ -15,18 +15,19 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field, field_validator
 
-
 # ── Content Blocks ────────────────────────────────────────────
 
 
 class TextBlock(BaseModel):
     """Plain text content."""
+
     type: Literal["text"] = "text"
     text: str
 
 
 class ImageBlock(BaseModel):
     """Image content encoded inline for multimodal providers."""
+
     type: Literal["image"] = "image"
     media_type: str
     data: str
@@ -44,6 +45,7 @@ class ImageBlock(BaseModel):
 
 class ToolUseBlock(BaseModel):
     """A request from the model to execute a named tool."""
+
     type: Literal["tool_use"] = "tool_use"
     id: str = Field(default_factory=lambda: f"toolu_{uuid4().hex}")
     name: str
@@ -52,6 +54,7 @@ class ToolUseBlock(BaseModel):
 
 class ToolResultBlock(BaseModel):
     """Tool result content sent back to the model."""
+
     type: Literal["tool_result"] = "tool_result"
     tool_use_id: str
     content: str
@@ -110,9 +113,7 @@ class ConversationMessage(BaseModel):
 
     @property
     def text(self) -> str:
-        return "".join(
-            block.text for block in self.content if isinstance(block, TextBlock)
-        )
+        return "".join(block.text for block in self.content if isinstance(block, TextBlock))
 
     @property
     def tool_uses(self) -> list[ToolUseBlock]:
@@ -173,11 +174,13 @@ def assistant_message_from_api(raw_message: Any) -> ConversationMessage:
         if block_type == "text":
             content.append(TextBlock(text=getattr(raw_block, "text", "")))
         elif block_type == "tool_use":
-            content.append(ToolUseBlock(
-                id=getattr(raw_block, "id", f"toolu_{uuid4().hex}"),
-                name=getattr(raw_block, "name", ""),
-                input=dict(getattr(raw_block, "input", {}) or {}),
-            ))
+            content.append(
+                ToolUseBlock(
+                    id=getattr(raw_block, "id", f"toolu_{uuid4().hex}"),
+                    name=getattr(raw_block, "name", ""),
+                    input=dict(getattr(raw_block, "input", {}) or {}),
+                )
+            )
     return ConversationMessage(role="assistant", content=content)
 
 
@@ -208,10 +211,7 @@ def sanitize_conversation_messages(
         if pending_tool_use_ids:
             result_ids = {b.tool_use_id for b in tool_results}
             if message.role != "user" or not pending_tool_use_ids.issubset(result_ids):
-                if (
-                    pending_tool_use_index is not None
-                    and pending_tool_use_index < len(sanitized)
-                ):
+                if pending_tool_use_index is not None and pending_tool_use_index < len(sanitized):
                     sanitized.pop(pending_tool_use_index)
                 pending_tool_use_ids = set()
                 pending_tool_use_index = None

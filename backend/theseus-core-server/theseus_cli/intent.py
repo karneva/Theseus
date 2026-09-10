@@ -33,10 +33,12 @@ async def llm_is_approval(text: str, client: "TheseusLLMClient") -> bool:
     try:
         request = ApiMessageRequest(
             model=client.model_name,
-            messages=[ConversationMessage(
-                role="user",
-                content=[TextBlock(text=f"Message: '{t}'")],
-            )],
+            messages=[
+                ConversationMessage(
+                    role="user",
+                    content=[TextBlock(text=f"Message: '{t}'")],
+                )
+            ],
             system_prompt=_CLASSIFIER_PROMPT,
             max_tokens=5,
         )

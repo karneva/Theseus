@@ -14,9 +14,9 @@ export function renderSessionMenu({
 }) {
   if (!menuEl) return;
   menuEl.innerHTML = '';
-  const sessionNames = new Set((sessions || []).map(session => session.name));
+  const sessionNames = new Set((sessions || []).map((session) => session.name));
   const createSessionName = () => {
-    const pad = value => String(value).padStart(2, '0');
+    const pad = (value) => String(value).padStart(2, '0');
     const now = new Date();
     const base = [
       'session',
@@ -36,7 +36,7 @@ export function renderSessionMenu({
     }
     return candidate;
   };
-  const sessionTitle = session => {
+  const sessionTitle = (session) => {
     const title = String(session.title || '').trim();
     return title || 'Untitled session';
   };
@@ -46,7 +46,7 @@ export function renderSessionMenu({
   const headerLabel = document.createElement('span');
   headerLabel.textContent = 'Current';
   const headerValue = document.createElement('strong');
-  const current = (sessions || []).find(session => session.name === currentSession);
+  const current = (sessions || []).find((session) => session.name === currentSession);
   headerValue.textContent = current ? sessionTitle(current) : currentSession || 'default';
   header.append(headerLabel, headerValue);
 
@@ -75,7 +75,7 @@ export function renderSessionMenu({
 
   const list = document.createElement('div');
   list.className = 'session-list';
-  (sessions || []).forEach(session => {
+  (sessions || []).forEach((session) => {
     const row = document.createElement('div');
     row.className = 'session-row';
     const btn = document.createElement('button');

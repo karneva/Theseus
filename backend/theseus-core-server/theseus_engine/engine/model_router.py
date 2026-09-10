@@ -15,19 +15,41 @@ import threading
 log = logging.getLogger(__name__)
 
 # 단순 작업용 도구 패턴 (빠르고 저렴한 모델로 라우팅)
-FAST_TOOLS: frozenset[str] = frozenset({
-    "read_file", "glob", "grep", "web_search", "web_fetch",
-    "memory_read", "memory_list", "skill_read", "skill_list",
-    "task_list", "task_get", "task_output", "tool_search",
-    "list_mcp_resources", "read_mcp_resource",
-    "search_knowledge_base", "brief",
-})
+FAST_TOOLS: frozenset[str] = frozenset(
+    {
+        "read_file",
+        "glob",
+        "grep",
+        "web_search",
+        "web_fetch",
+        "memory_read",
+        "memory_list",
+        "skill_read",
+        "skill_list",
+        "task_list",
+        "task_get",
+        "task_output",
+        "tool_search",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "search_knowledge_base",
+        "brief",
+    }
+)
 
 # 추론 집약적 도구 패턴 (고성능 모델로 라우팅)
-REASONING_TOOLS: frozenset[str] = frozenset({
-    "write_file", "edit_file", "local_write_report", "bash", "create_tool",
-    "deep_research", "agent", "ingest_document",
-})
+REASONING_TOOLS: frozenset[str] = frozenset(
+    {
+        "write_file",
+        "edit_file",
+        "local_write_report",
+        "bash",
+        "create_tool",
+        "deep_research",
+        "agent",
+        "ingest_document",
+    }
+)
 
 
 class ModelRouter:
@@ -41,17 +63,10 @@ class ModelRouter:
     """
 
     def __init__(self) -> None:
-        self.enabled = (
-            os.getenv("THESEUS_MODEL_ROUTING", "false").lower()
-            == "true"
-        )
+        self.enabled = os.getenv("THESEUS_MODEL_ROUTING", "false").lower() == "true"
         self.default_model = os.getenv("THESEUS_MODEL", "gpt-4o")
-        self.fast_model = os.getenv(
-            "THESEUS_MODEL_FAST", self.default_model
-        )
-        self.reasoning_model = os.getenv(
-            "THESEUS_MODEL_REASONING", self.default_model
-        )
+        self.fast_model = os.getenv("THESEUS_MODEL_FAST", self.default_model)
+        self.reasoning_model = os.getenv("THESEUS_MODEL_REASONING", self.default_model)
 
         if self.enabled:
             log.info(
@@ -83,15 +98,11 @@ class ModelRouter:
 
         # 직전 턴에서 호출된 도구 기반 분류
         if recent_tool_calls:
-            has_reasoning = any(
-                t in REASONING_TOOLS for t in recent_tool_calls
-            )
+            has_reasoning = any(t in REASONING_TOOLS for t in recent_tool_calls)
             if has_reasoning:
                 return self.reasoning_model
 
-            all_fast = all(
-                t in FAST_TOOLS for t in recent_tool_calls
-            )
+            all_fast = all(t in FAST_TOOLS for t in recent_tool_calls)
             if all_fast:
                 return self.fast_model
 
@@ -100,10 +111,7 @@ class ModelRouter:
     def get_status(self) -> str:
         """현재 라우팅 설정 상태를 문자열로 반환합니다."""
         if not self.enabled:
-            return (
-                f"[ModelRouter] 비활성 | "
-                f"기본 모델: {self.default_model}"
-            )
+            return f"[ModelRouter] 비활성 | " f"기본 모델: {self.default_model}"
         return (
             f"[ModelRouter] 활성 | "
             f"fast={self.fast_model} | "

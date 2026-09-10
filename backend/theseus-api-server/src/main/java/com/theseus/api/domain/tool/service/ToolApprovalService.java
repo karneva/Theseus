@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.theseus.api.common.exception.BusinessException;
 import com.theseus.api.common.exception.ErrorCode;
+import com.theseus.api.common.pagination.PageRequests;
 import com.theseus.api.domain.auth.token.AuthenticatedUser;
 import com.theseus.api.domain.chat.entity.ChatMessageContentType;
 import com.theseus.api.domain.chat.entity.ChatMessageType;
@@ -12,7 +13,6 @@ import com.theseus.api.domain.chat.service.ChatMessageService;
 import com.theseus.api.domain.project.entity.Project;
 import com.theseus.api.domain.project.entity.ProjectAccessLevelPolicy;
 import com.theseus.api.domain.project.entity.ProjectMember;
-import com.theseus.api.domain.project.entity.ProjectMemberStatus;
 import com.theseus.api.domain.project.entity.ProjectRole;
 import com.theseus.api.domain.project.repository.ProjectMemberRepository;
 import com.theseus.api.domain.project.repository.ProjectRepository;
@@ -46,7 +46,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -85,13 +84,13 @@ public class ToolApprovalService {
 		ProjectMember reviewer = getActiveProjectMember(project, user);
 		validateToolReviewer(reviewer);
 
-		Pageable pageable = createPageable(page, size);
-		Page<ToolApproval> toolApprovals = approvalStatus == null
-			? toolApprovalRepository.findByProject(project, pageable)
-			: toolApprovalRepository.findByProjectAndApprovalStatus(project, approvalStatus, pageable);
+		Pageable pageable = PageRequests.create(page, size);
+		Page<ToolApproval> toolApprovals =
+			approvalStatus == null
+				? toolApprovalRepository.findByProject(project, pageable)
+				: toolApprovalRepository.findByProjectAndApprovalStatus(project, approvalStatus, pageable);
 
-		return toolApprovals
-			.map(ToolApprovalResponse::createFrom);
+		return toolApprovals.map(ToolApprovalResponse::createFrom);
 	}
 
 	/**
@@ -107,7 +106,8 @@ public class ToolApprovalService {
 		ProjectMember reviewer = getActiveProjectMember(project, user);
 		validateToolReviewer(reviewer);
 
-		ToolApproval toolApproval = toolApprovalRepository.findByIdAndToolProject(toolApprovalId, project)
+		ToolApproval toolApproval = toolApprovalRepository
+			.findByIdAndToolProject(toolApprovalId, project)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.TOOL_APPROVAL_NOT_FOUND));
 
 		return ToolApprovalResponse.createFrom(toolApproval);
@@ -134,11 +134,13 @@ public class ToolApprovalService {
 		validateToolPlanCreator(toolPlan, projectMember);
 		validateRequestableToolPlan(toolPlan);
 
-		ToolApproval toolApproval = toolApprovalRepository.save(ToolApproval.builder()
-			.toolPlan(toolPlan)
-			.requestNumber(getNextRequestNumber(toolPlan))
-			.requestedByProjectMember(projectMember)
-			.build());
+		ToolApproval toolApproval = toolApprovalRepository.save(
+			ToolApproval.builder()
+				.toolPlan(toolPlan)
+				.requestNumber(getNextRequestNumber(toolPlan))
+				.requestedByProjectMember(projectMember)
+				.build()
+		);
 		toolPlan.requestApproval();
 		toolPlan.getPlanGroup().markPending(toolPlan);
 		chatMessageService.saveUserToolPlanMessage(
@@ -234,14 +236,20 @@ public class ToolApprovalService {
 					LocalDateTime.now()
 				);
 			},
-			() -> log.warn(">>>> ToolPlanRun을 찾을 수 없어 Tool build 발행 실패를 기록하지 못했습니다. runId={}", runId)
+			() ->
+				log.warn(
+					">>>> ToolPlanRun을 찾을 수 없어 Tool build 발행 실패를 기록하지 못했습니다. runId={}",
+					runId
+				)
 		);
 	}
 
 	private Integer getNextRequestNumber(ToolPlan toolPlan) {
-		List<ToolApproval> toolApprovals = toolApprovalRepository.findByToolPlanOrderByRequestNumberDescForUpdate(toolPlan);
+		List<ToolApproval> toolApprovals =
+			toolApprovalRepository.findByToolPlanOrderByRequestNumberDescForUpdate(toolPlan);
 
-		return toolApprovals.stream()
+		return toolApprovals
+			.stream()
 			.findFirst()
 			.map(toolApproval -> toolApproval.getRequestNumber() + 1)
 			.orElse(1);
@@ -284,18 +292,20 @@ public class ToolApprovalService {
 	}
 
 	private ToolPlanRun createBuildToolPlanRun(ToolPlan toolPlan, ProjectMember reviewer) {
-		return toolPlanRunRepository.save(ToolPlanRun.builder()
-			.runId(createRunId())
-			.project(toolPlan.getProject())
-			.chatSession(toolPlan.getChatSession())
-			.requestType(ToolPlanRunRequestType.BUILD_TOOL)
-			.mode(ToolPlanMode.PLAN)
-			.status(ToolPlanRunStatus.REQUESTED)
-			.requestedByProjectMember(reviewer)
-			.baseToolPlan(toolPlan)
-			.planGroup(toolPlan.getPlanGroup())
-			.requestedAt(LocalDateTime.now())
-			.build());
+		return toolPlanRunRepository.save(
+			ToolPlanRun.builder()
+				.runId(createRunId())
+				.project(toolPlan.getProject())
+				.chatSession(toolPlan.getChatSession())
+				.requestType(ToolPlanRunRequestType.BUILD_TOOL)
+				.mode(ToolPlanMode.PLAN)
+				.status(ToolPlanRunStatus.REQUESTED)
+				.requestedByProjectMember(reviewer)
+				.baseToolPlan(toolPlan)
+				.planGroup(toolPlan.getPlanGroup())
+				.requestedAt(LocalDateTime.now())
+				.build()
+		);
 	}
 
 	private ToolBuildRequestEvent createBuildRequestEvent(
@@ -326,25 +336,29 @@ public class ToolApprovalService {
 
 	private String createToolPlanApprovalRequestMessageContent(ToolApproval toolApproval) {
 		return """
-			{"toolApprovalId":%d,"toolPlanId":%d,"planGroupId":%d,"planVersion":%d,"requestNumber":%d,"approvalStatus":"%s"}
-			""".formatted(
-			toolApproval.getId(),
-			toolApproval.getToolPlan().getId(),
-			toolApproval.getToolPlan().getPlanGroup().getId(),
-			toolApproval.getToolPlan().getPlanVersion(),
-			toolApproval.getRequestNumber(),
-			toolApproval.getApprovalStatus()
-		).trim();
+		{"toolApprovalId":%d,"toolPlanId":%d,"planGroupId":%d,"planVersion":%d,"requestNumber":%d,"approvalStatus":"%s"}
+		"""
+			.formatted(
+				toolApproval.getId(),
+				toolApproval.getToolPlan().getId(),
+				toolApproval.getToolPlan().getPlanGroup().getId(),
+				toolApproval.getToolPlan().getPlanVersion(),
+				toolApproval.getRequestNumber(),
+				toolApproval.getApprovalStatus()
+			)
+			.trim();
 	}
 
 	private String createToolPlanRejectionNotice(ToolApproval toolApproval) {
 		return """
-			ToolPlan approval rejected. toolApprovalId=%d, toolPlanId=%d, requestNumber=%d
-			""".formatted(
-			toolApproval.getId(),
-			toolApproval.getToolPlan().getId(),
-			toolApproval.getRequestNumber()
-		).trim();
+		ToolPlan approval rejected. toolApprovalId=%d, toolPlanId=%d, requestNumber=%d
+		"""
+			.formatted(
+				toolApproval.getId(),
+				toolApproval.getToolPlan().getId(),
+				toolApproval.getRequestNumber()
+			)
+			.trim();
 	}
 
 	private User getCurrentUserEntity(AuthenticatedUser currentUser) {
@@ -352,20 +366,23 @@ public class ToolApprovalService {
 			throw BusinessException.of(ErrorCode.UNAUTHORIZED);
 		}
 
-		return userRepository.findById(currentUser.userId())
+		return userRepository
+			.findById(currentUser.userId())
 			.orElseThrow(() -> BusinessException.of(ErrorCode.USER_NOT_FOUND));
 	}
 
 	private Project getProjectEntity(Long projectId) {
-		return projectRepository.findById(projectId)
+		return projectRepository
+			.findById(projectId)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_NOT_FOUND));
 	}
 
 	private ProjectMember getActiveProjectMember(Project project, User user) {
-		ProjectMember projectMember = projectMemberRepository.findByProjectAndUser(project, user)
+		ProjectMember projectMember = projectMemberRepository
+			.findByProjectAndUser(project, user)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_MEMBER_PERMISSION_REQUIRED));
 
-		if (!ProjectMemberStatus.IN_PROGRESS.equals(projectMember.getStatus())) {
+		if (!projectMember.isActive()) {
 			throw BusinessException.of(ErrorCode.ACTIVE_PROJECT_MEMBER_REQUIRED);
 		}
 
@@ -373,12 +390,14 @@ public class ToolApprovalService {
 	}
 
 	private ToolPlan getToolPlanForUpdate(Project project, Long toolPlanId) {
-		return toolPlanRepository.findByIdAndProjectForUpdate(toolPlanId, project)
+		return toolPlanRepository
+			.findByIdAndProjectForUpdate(toolPlanId, project)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.TOOL_PLAN_NOT_FOUND));
 	}
 
 	private ToolApproval getToolApprovalForUpdate(Project project, Long toolApprovalId) {
-		return toolApprovalRepository.findByIdAndToolProjectForUpdate(toolApprovalId, project)
+		return toolApprovalRepository
+			.findByIdAndToolProjectForUpdate(toolApprovalId, project)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.TOOL_APPROVAL_NOT_FOUND));
 	}
 
@@ -390,15 +409,16 @@ public class ToolApprovalService {
 
 	private void validateRequestableToolPlan(ToolPlan toolPlan) {
 		ToolPlanGroup planGroup = toolPlan.getPlanGroup();
-		if (!ToolPlanStatus.REVIEW.equals(toolPlan.getStatus())
-			|| !ToolPlanGroupStatus.REVIEW.equals(planGroup.getStatus())) {
+		if (
+			!ToolPlanStatus.REVIEW.equals(toolPlan.getStatus()) ||
+			!ToolPlanGroupStatus.REVIEW.equals(planGroup.getStatus())
+		) {
 			throw BusinessException.of(ErrorCode.TOOL_PLAN_APPROVAL_REVIEW_STATUS_REQUIRED);
 		}
 	}
 
 	private void validateToolReviewer(ProjectMember projectMember) {
-		if (!ProjectRole.ADMIN.equals(projectMember.getProjectRole())
-			&& !ProjectRole.MANAGER.equals(projectMember.getProjectRole())) {
+		if (!projectMember.isAdmin() && !ProjectRole.MANAGER.equals(projectMember.getProjectRole())) {
 			throw BusinessException.of(ErrorCode.TOOL_APPROVAL_REVIEWER_REQUIRED);
 		}
 	}
@@ -422,8 +442,10 @@ public class ToolApprovalService {
 	}
 
 	private void validatePendingToolPlan(ToolPlan toolPlan) {
-		if (!ToolPlanStatus.PENDING.equals(toolPlan.getStatus())
-			|| !ToolPlanGroupStatus.PENDING.equals(toolPlan.getPlanGroup().getStatus())) {
+		if (
+			!ToolPlanStatus.PENDING.equals(toolPlan.getStatus()) ||
+			!ToolPlanGroupStatus.PENDING.equals(toolPlan.getPlanGroup().getStatus())
+		) {
 			throw BusinessException.of(ErrorCode.TOOL_APPROVAL_PENDING_TOOL_REQUIRED);
 		}
 	}
@@ -458,9 +480,5 @@ public class ToolApprovalService {
 
 	private String createRunId() {
 		return UUID.randomUUID().toString();
-	}
-
-	private Pageable createPageable(int page, int size) {
-		return PageRequest.of(Math.max(page, 0), Math.max(size, 1));
 	}
 }

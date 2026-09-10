@@ -16,7 +16,10 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 public class ToolBuildKafkaConsumerConfig {
 
 	@Bean
-	public ConcurrentKafkaListenerContainerFactory<String, ToolBuildEvent> toolBuildKafkaListenerContainerFactory(
+	public ConcurrentKafkaListenerContainerFactory<
+		String,
+		ToolBuildEvent
+	> toolBuildKafkaListenerContainerFactory(
 		@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers,
 		@Value("${spring.kafka.consumer.group-id}") String groupId,
 		@Value("${spring.kafka.consumer.auto-offset-reset:earliest}") String autoOffsetReset,

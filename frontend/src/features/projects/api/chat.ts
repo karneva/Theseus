@@ -1,6 +1,5 @@
-import { apiClient } from '@/api/client';
-import type { ApiResponse } from '@/api/auth';
-import type { PageResponse } from '@/features/admin/api';
+import { http } from '@/api/http';
+import type { PageResponse } from '@/api/types';
 import { ToolPlanMode } from '@/features/projects/types/chat';
 import type {
   ChatMessage,
@@ -10,79 +9,70 @@ import type {
   ToolPlanGenerationRequest,
   ToolPlanGenerationResponse,
   ToolPlanRegenerationRequest,
-  ToolPlanRunStateResponse
+  ToolPlanRunStateResponse,
 } from '@/features/projects/types/chat';
 
 export const chatApi = {
   createSession: async (projectId: string) => {
-    const response = await apiClient.post<ApiResponse<ChatSession>>(
-      `/api/v1/projects/${projectId}/sessions`,
-      { title: '새로운 대화 세션' }
-    );
-    return response.data.result;
+    return http.post<ChatSession>(`/api/v1/projects/${projectId}/sessions`, {
+      title: '새로운 대화 세션',
+    });
   },
 
   getSessions: async (projectId: string | undefined, page = 0, size = 20) => {
     if (!projectId) return { content: [], totalElements: 0, totalPages: 0, size: 20 };
-    const response = await apiClient.get<ApiResponse<PageResponse<ChatSession>>>(
-      `/api/v1/projects/${projectId}/sessions`,
-      { params: { page, size } }
-    );
-    return response.data.result;
+    return http.get<PageResponse<ChatSession>>(`/api/v1/projects/${projectId}/sessions`, {
+      params: { page, size },
+    });
   },
 
-  getSessionDetails: async (projectId: string, sessionId: string): Promise<ChatSessionDetailResponse> => {
-    const response = await apiClient.get<ApiResponse<ChatSessionDetailResponse>>(
-      `/api/v1/projects/${projectId}/sessions/${sessionId}`
+  getSessionDetails: async (
+    projectId: string,
+    sessionId: string,
+  ): Promise<ChatSessionDetailResponse> => {
+    return http.get<ChatSessionDetailResponse>(
+      `/api/v1/projects/${projectId}/sessions/${sessionId}`,
     );
-    return response.data.result;
   },
 
   updateSessionTitle: async (projectId: string, sessionId: string, title: string) => {
-    const response = await apiClient.patch<ApiResponse<ChatSession>>(
-      `/api/v1/projects/${projectId}/sessions/${sessionId}`,
-      { title }
-    );
-    return response.data.result;
+    return http.patch<ChatSession>(`/api/v1/projects/${projectId}/sessions/${sessionId}`, {
+      title,
+    });
   },
 
   closeSession: async (projectId: string, sessionId: string) => {
-    const response = await apiClient.patch<ApiResponse<ChatSession>>(
-      `/api/v1/projects/${projectId}/sessions/${sessionId}/close`
-    );
-    return response.data.result;
+    return http.patch<ChatSession>(`/api/v1/projects/${projectId}/sessions/${sessionId}/close`);
   },
 
   createMessage: async (projectId: string, sessionId: string, content: string) => {
-    const response = await apiClient.post<ApiResponse<ChatMessage>>(
-      `/api/v1/projects/${projectId}/sessions/${sessionId}/messages`,
-      { content, messageType: 'CHAT', contentType: 'TEXT' }
-    );
-    return response.data.result;
+    return http.post<ChatMessage>(`/api/v1/projects/${projectId}/sessions/${sessionId}/messages`, {
+      content,
+      messageType: 'CHAT',
+      contentType: 'TEXT',
+    });
   },
 
   requestToolPlanApproval: async (projectId: string, toolPlanId: string) => {
-    const response = await apiClient.post<ApiResponse<unknown>>(
-      `/api/v1/projects/${projectId}/tool-plans/${toolPlanId}/approval-requests`
+    return http.post<unknown>(
+      `/api/v1/projects/${projectId}/tool-plans/${toolPlanId}/approval-requests`,
     );
-    return response.data.result;
   },
 
   generateToolPlan: async (
     projectId: string,
     sessionId: string,
-    payload: { userMessage: string; mode?: ToolPlanMode; remoteWorkspaceId?: number }
+    payload: { userMessage: string; mode?: ToolPlanMode; remoteWorkspaceId?: number },
   ): Promise<ToolPlanGenerationResponse> => {
     const apiPayload: ToolPlanGenerationRequest = {
       mode: payload.mode || ToolPlanMode.PLAN,
       prompt: payload.userMessage,
-      remoteWorkspaceId: payload.remoteWorkspaceId
+      remoteWorkspaceId: payload.remoteWorkspaceId,
     };
-    const response = await apiClient.post<ApiResponse<ToolPlanGenerationResponse>>(
+    return http.post<ToolPlanGenerationResponse>(
       `/api/v1/projects/${projectId}/sessions/${sessionId}/tool-plans/generate`,
-      apiPayload
+      apiPayload,
     );
-    return response.data.result;
   },
 
   regenerateToolPlan: async (
@@ -94,40 +84,37 @@ export const chatApi = {
       feedbackItems: Array<{ blockId: string; comment: string }>;
       mode?: ToolPlanMode;
       remoteWorkspaceId?: number;
-    }
+    },
   ): Promise<ToolPlanGenerationResponse> => {
     const apiPayload: ToolPlanRegenerationRequest = {
       mode: payload.mode || ToolPlanMode.PLAN,
       basePlanVersion: payload.basePlanVersion,
       feedbackItems: payload.feedbackItems,
-      remoteWorkspaceId: payload.remoteWorkspaceId
+      remoteWorkspaceId: payload.remoteWorkspaceId,
     };
-    const response = await apiClient.patch<ApiResponse<ToolPlanGenerationResponse>>(
+    return http.patch<ToolPlanGenerationResponse>(
       `/api/v1/projects/${projectId}/sessions/${sessionId}/tool-plans/${toolPlanId}/regenerate`,
-      apiPayload
+      apiPayload,
     );
-    return response.data.result;
   },
 
   getToolPlanDetail: async (
     projectId: string,
     sessionId: string,
-    toolPlanId: string
+    toolPlanId: string,
   ): Promise<ToolPlanDetailResponse> => {
-    const response = await apiClient.get<ApiResponse<ToolPlanDetailResponse>>(
-      `/api/v1/projects/${projectId}/sessions/${sessionId}/tool-plans/${toolPlanId}`
+    return http.get<ToolPlanDetailResponse>(
+      `/api/v1/projects/${projectId}/sessions/${sessionId}/tool-plans/${toolPlanId}`,
     );
-    return response.data.result;
   },
 
   getToolPlanRunState: async (
     projectId: string,
     sessionId: string,
-    runId: string
+    runId: string,
   ): Promise<ToolPlanRunStateResponse> => {
-    const response = await apiClient.get<ApiResponse<ToolPlanRunStateResponse>>(
-      `/api/v1/projects/${projectId}/sessions/${sessionId}/tool-plan-runs/${runId}/state`
+    return http.get<ToolPlanRunStateResponse>(
+      `/api/v1/projects/${projectId}/sessions/${sessionId}/tool-plan-runs/${runId}/state`,
     );
-    return response.data.result;
   },
 };

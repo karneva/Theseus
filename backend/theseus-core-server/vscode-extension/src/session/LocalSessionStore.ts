@@ -35,7 +35,9 @@ function readEnvelope(filePath: string): Record<string, unknown> {
   if (!fs.existsSync(filePath)) return {};
   try {
     const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as Record<string, unknown> : {};
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? (parsed as Record<string, unknown>)
+      : {};
   } catch {
     return {};
   }
@@ -66,22 +68,30 @@ export function listLocalSessionSummaries(
       }
     }
   }
-  return Array.from(names).sort().map(name => ({
-    name,
-    title: readLocalSessionTitle(sessionDir, name),
-    current: name === currentName,
-    source: 'local',
-  }));
+  return Array.from(names)
+    .sort()
+    .map((name) => ({
+      name,
+      title: readLocalSessionTitle(sessionDir, name),
+      current: name === currentName,
+      source: 'local',
+    }));
 }
 
-export function createLocalSession(workspaceCwd: string | undefined, name: string): LocalSessionActionResult {
+export function createLocalSession(
+  workspaceCwd: string | undefined,
+  name: string,
+): LocalSessionActionResult {
   const sessionDir = ensureSessionDir(workspaceCwd);
   const current = validateSessionName(name);
   ensureSessionFile(sessionDir, current);
   return localSessionSnapshot(workspaceCwd, current);
 }
 
-export function switchLocalSession(workspaceCwd: string | undefined, name: string): LocalSessionActionResult {
+export function switchLocalSession(
+  workspaceCwd: string | undefined,
+  name: string,
+): LocalSessionActionResult {
   const sessionDir = ensureSessionDir(workspaceCwd);
   const current = validateSessionName(name);
   ensureSessionFile(sessionDir, current);
@@ -98,12 +108,13 @@ export function deleteLocalSession(
   const targetPath = sessionPath(sessionDir, target);
   if (fs.existsSync(targetPath)) fs.unlinkSync(targetPath);
 
-  const remaining = fs.readdirSync(sessionDir, { withFileTypes: true })
-    .filter(entry => entry.isFile() && entry.name.toLowerCase().endsWith('.json'))
-    .map(entry => path.basename(entry.name, '.json'))
-    .filter(item => item !== target)
+  const remaining = fs
+    .readdirSync(sessionDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith('.json'))
+    .map((entry) => path.basename(entry.name, '.json'))
+    .filter((item) => item !== target)
     .sort();
-  const nextCurrent = target === current ? (remaining[0] || 'default') : current;
+  const nextCurrent = target === current ? remaining[0] || 'default' : current;
   ensureSessionFile(sessionDir, nextCurrent);
   return localSessionSnapshot(workspaceCwd, nextCurrent);
 }
@@ -135,7 +146,12 @@ export function exportLocalSession(
   const envelope = readEnvelope(sessionPath(sessionDir, sessionName));
   const normalizedFormat = format === 'json' ? 'json' : 'markdown';
   if (normalizedFormat === 'json') {
-    return { name: sessionName, format: 'json', content: JSON.stringify(envelope || {}, null, 2), source: 'local' };
+    return {
+      name: sessionName,
+      format: 'json',
+      content: JSON.stringify(envelope || {}, null, 2),
+      source: 'local',
+    };
   }
   const lines = [`# Theseus session: ${sessionName}`, ''];
   for (const item of historyForUi(envelope)) {
@@ -153,9 +169,12 @@ export function localSessionSnapshot(
   const sessionDir = sessionDirectory(workspaceCwd);
   const currentName = current || 'default';
   const envelope = sessionDir ? readEnvelope(sessionPath(sessionDir, currentName)) : {};
-  const planState = envelope.plan_state && typeof envelope.plan_state === 'object' && !Array.isArray(envelope.plan_state)
-    ? envelope.plan_state as Record<string, unknown>
-    : null;
+  const planState =
+    envelope.plan_state &&
+    typeof envelope.plan_state === 'object' &&
+    !Array.isArray(envelope.plan_state)
+      ? (envelope.plan_state as Record<string, unknown>)
+      : null;
   return {
     current: currentName,
     sessions: listLocalSessionSummaries(workspaceCwd, currentName),

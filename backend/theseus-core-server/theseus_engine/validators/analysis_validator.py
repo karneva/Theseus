@@ -42,25 +42,50 @@ class AnalysisValidator:
     # ------------------------------------------------------------------
 
     BANNED_MODULES: Set[str] = {
-        "subprocess", "shutil", "socket", "ctypes",
-        "multiprocessing", "signal", "pty", "resource",
-        "pickle", "shelve", "tempfile", "webbrowser",
+        "subprocess",
+        "shutil",
+        "socket",
+        "ctypes",
+        "multiprocessing",
+        "signal",
+        "pty",
+        "resource",
+        "pickle",
+        "shelve",
+        "tempfile",
+        "webbrowser",
     }
 
     BANNED_FUNCTIONS: Set[str] = {
         # 프로세스 / 쉘 실행
-        "system", "popen", "exec", "eval", "compile",
-        "execfile", "__import__",
+        "system",
+        "popen",
+        "exec",
+        "eval",
+        "compile",
+        "execfile",
+        "__import__",
         # 파일 시스템 파괴
-        "remove", "rmdir", "unlink", "rmtree",
-        "makedirs", "rename", "replace",
+        "remove",
+        "rmdir",
+        "unlink",
+        "rmtree",
+        "makedirs",
+        "rename",
+        "replace",
         # 시스템 제어
-        "chown", "chmod", "kill", "fork",
+        "chown",
+        "chmod",
+        "kill",
+        "fork",
     }
 
     BANNED_DUNDERS: Set[str] = {
-        "__subclasses__", "__bases__", "__globals__",
-        "__builtins__", "__code__",
+        "__subclasses__",
+        "__bases__",
+        "__globals__",
+        "__builtins__",
+        "__code__",
     }
 
     # ------------------------------------------------------------------
@@ -98,11 +123,11 @@ class AnalysisValidator:
             detail = "\n".join(f"  - {e}" for e in errors)
             log.warning(
                 "Security static analysis failed (%d violations):\n%s",
-                len(errors), detail,
+                len(errors),
+                detail,
             )
             return False, (
-                f"Security static analysis failed ({len(errors)} violations):\n"
-                + detail
+                f"Security static analysis failed ({len(errors)} violations):\n" + detail
             )
 
         return True, "Security static analysis passed."
@@ -113,7 +138,9 @@ class AnalysisValidator:
 
     @classmethod
     def _check_banned_imports(
-        cls, tree: ast.Module, errors: List[str],
+        cls,
+        tree: ast.Module,
+        errors: List[str],
     ) -> None:
         """금지된 모듈의 import / from ... import 패턴을 검사."""
         for node in ast.walk(tree):
@@ -138,7 +165,9 @@ class AnalysisValidator:
 
     @classmethod
     def _check_banned_calls(
-        cls, tree: ast.Module, errors: List[str],
+        cls,
+        tree: ast.Module,
+        errors: List[str],
     ) -> None:
         """금지된 함수 호출(os.system, eval 등)을 검사."""
         for node in ast.walk(tree):
@@ -158,14 +187,13 @@ class AnalysisValidator:
 
     @classmethod
     def _check_banned_dunders(
-        cls, tree: ast.Module, errors: List[str],
+        cls,
+        tree: ast.Module,
+        errors: List[str],
     ) -> None:
         """위험 던더 속성 접근(__subclasses__ 등)을 검사."""
         for node in ast.walk(tree):
-            if (
-                isinstance(node, ast.Attribute)
-                and node.attr in cls.BANNED_DUNDERS
-            ):
+            if isinstance(node, ast.Attribute) and node.attr in cls.BANNED_DUNDERS:
                 errors.append(
                     f"Security policy violation: Access to '{node.attr}' "
                     f"attribute is not permitted. "

@@ -17,7 +17,7 @@ export function ToolApprovalDetailModal({
   projectId,
   approvalItem,
   onClose,
-  onActionClick
+  onActionClick,
 }: ToolApprovalDetailModalProps) {
   const canLoadPlanDetail = Boolean(approvalItem.toolPlanId && approvalItem.chatSessionId);
   const [toolDetail, setToolDetail] = useState<ToolDetailResponse | null>(null);
@@ -42,7 +42,7 @@ export function ToolApprovalDetailModal({
           const data = await chatApi.getToolPlanDetail(
             projectId,
             String(approvalItem.chatSessionId),
-            String(approvalItem.toolPlanId)
+            String(approvalItem.toolPlanId),
           );
           if (isMounted) {
             setToolPlanDetail(data);
@@ -78,14 +78,18 @@ export function ToolApprovalDetailModal({
       }
     };
     fetchDetail();
-    
-    return () => { isMounted = false; };
+
+    return () => {
+      isMounted = false;
+    };
   }, [projectId, approvalItem.chatSessionId, approvalItem.toolId, approvalItem.toolPlanId]);
 
-  const approvalTitle = approvalItem.displayName
-    || approvalItem.fileName
-    || `ToolPlan #${approvalItem.toolPlanId ?? '-'}`;
-  const planStatus = toolPlanDetail?.status || approvalItem.toolPlanStatus || approvalItem.toolStatus || '-';
+  const approvalTitle =
+    approvalItem.displayName ||
+    approvalItem.fileName ||
+    `ToolPlan #${approvalItem.toolPlanId ?? '-'}`;
+  const planStatus =
+    toolPlanDetail?.status || approvalItem.toolPlanStatus || approvalItem.toolStatus || '-';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
@@ -130,7 +134,9 @@ export function ToolApprovalDetailModal({
                     <User className="w-4 h-4" />
                     <span className="text-xs uppercase tracking-wider">Requested By</span>
                   </div>
-                  <p className="text-sm text-slate-300 truncate">{approvalItem.requestedByUserName}</p>
+                  <p className="text-sm text-slate-300 truncate">
+                    {approvalItem.requestedByUserName}
+                  </p>
                 </div>
                 <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-800/50">
                   <div className="flex items-center gap-2 text-slate-500 mb-1">
@@ -146,7 +152,9 @@ export function ToolApprovalDetailModal({
                     <GitBranch className="w-4 h-4" />
                     <span className="text-xs uppercase tracking-wider">Version</span>
                   </div>
-                  <p className="text-sm text-slate-300 truncate">v{approvalItem.planVersion ?? '-'}</p>
+                  <p className="text-sm text-slate-300 truncate">
+                    v{approvalItem.planVersion ?? '-'}
+                  </p>
                 </div>
               </div>
 
@@ -155,26 +163,38 @@ export function ToolApprovalDetailModal({
                 <div>
                   <div className="flex items-center gap-2 mb-3">
                     <FileText className="w-5 h-5 text-blue-400" />
-                    <h3 className="text-sm font-medium text-slate-300 uppercase tracking-wider">Tool Plan</h3>
+                    <h3 className="text-sm font-medium text-slate-300 uppercase tracking-wider">
+                      Tool Plan
+                    </h3>
                   </div>
                   {toolPlanDetail ? (
                     <div className="space-y-4">
                       {toolPlanDetail.requestedPrompt && (
                         <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-800/50">
-                          <div className="text-xs uppercase tracking-wider text-slate-500 mb-2">Request</div>
-                          <p className="text-sm text-slate-300 whitespace-pre-wrap">{toolPlanDetail.requestedPrompt}</p>
+                          <div className="text-xs uppercase tracking-wider text-slate-500 mb-2">
+                            Request
+                          </div>
+                          <p className="text-sm text-slate-300 whitespace-pre-wrap">
+                            {toolPlanDetail.requestedPrompt}
+                          </p>
                         </div>
                       )}
                       <div className="bg-[#1e1e1e] rounded-lg border border-slate-800 overflow-hidden">
                         <pre className="p-4 max-h-[50vh] overflow-auto text-sm font-mono text-slate-300 whitespace-pre-wrap scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
-                          <code>{toolPlanDetail.rawMarkdown || 'ToolPlan 원문이 비어 있습니다.'}</code>
+                          <code>
+                            {toolPlanDetail.rawMarkdown || 'ToolPlan 원문이 비어 있습니다.'}
+                          </code>
                         </pre>
                       </div>
                     </div>
                   ) : (
                     <div className="bg-[#1e1e1e] p-6 rounded-lg border border-slate-800 text-center">
-                      <p className="text-slate-400 text-sm mb-2">ToolPlan 상세 정보를 불러올 수 없습니다.</p>
-                      <p className="text-slate-500 text-xs">승인 요청 응답의 chatSessionId와 toolPlanId를 확인해 주세요.</p>
+                      <p className="text-slate-400 text-sm mb-2">
+                        ToolPlan 상세 정보를 불러올 수 없습니다.
+                      </p>
+                      <p className="text-slate-500 text-xs">
+                        승인 요청 응답의 chatSessionId와 toolPlanId를 확인해 주세요.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -182,11 +202,17 @@ export function ToolApprovalDetailModal({
                 <div>
                   <div className="flex items-center gap-2 mb-3">
                     <Code className="w-5 h-5 text-blue-400" />
-                    <h3 className="text-sm font-medium text-slate-300 uppercase tracking-wider">Python Code</h3>
+                    <h3 className="text-sm font-medium text-slate-300 uppercase tracking-wider">
+                      Python Code
+                    </h3>
                   </div>
                   <div className="bg-[#1e1e1e] rounded-lg border border-slate-800 overflow-hidden">
                     <pre className="p-4 max-h-[50vh] overflow-auto text-sm font-mono text-slate-300 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
-                      <code>{toolDetail ? (toolDetail.codeSnapshot || '# 파이썬 코드 정보를 불러올 수 없습니다.') : '# 파이썬 코드 정보를 불러올 수 없습니다.'}</code>
+                      <code>
+                        {toolDetail
+                          ? toolDetail.codeSnapshot || '# 파이썬 코드 정보를 불러올 수 없습니다.'
+                          : '# 파이썬 코드 정보를 불러올 수 없습니다.'}
+                      </code>
                     </pre>
                   </div>
                 </div>

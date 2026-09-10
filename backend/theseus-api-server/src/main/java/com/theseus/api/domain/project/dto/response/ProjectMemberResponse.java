@@ -33,7 +33,10 @@ public class ProjectMemberResponse {
 		return createOf(projectMember, false);
 	}
 
-	public static ProjectMemberResponse createOf(ProjectMember projectMember, boolean isProjectAdminUser) {
+	public static ProjectMemberResponse createOf(
+		ProjectMember projectMember,
+		boolean isProjectAdminUser
+	) {
 		return ProjectMemberResponse.builder()
 			.projectMemberId(projectMember.getId())
 			.projectId(projectMember.getProject().getId())
@@ -49,7 +52,9 @@ public class ProjectMemberResponse {
 			.canDeleteTool(projectMember.getCanDeleteTool())
 			.status(projectMember.getStatus())
 			.isProjectAdminUser(isProjectAdminUser)
-			.createdByUserId(projectMember.getCreatedByUser() == null ? null : projectMember.getCreatedByUser().getId())
+			.createdByUserId(
+				projectMember.getCreatedByUser() == null ? null : projectMember.getCreatedByUser().getId()
+			)
 			.createdAt(projectMember.getCreatedAt())
 			.updatedAt(projectMember.getUpdatedAt())
 			.build();

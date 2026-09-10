@@ -14,14 +14,17 @@ from typing import Dict
 
 class PermissionMode(str, Enum):
     """Theseus permission modes."""
+
     DEFAULT = "default"
     PLAN = "plan"
     FULL_AUTO = "full_auto"
+
 
 # QueryEngine이 기대하는 반환 타입 — Theseus 자체 정의
 @dataclass(frozen=True)
 class PermissionDecision:
     """Result of checking whether a tool invocation may run."""
+
     allowed: bool
     requires_confirmation: bool = False
     reason: str = ""
@@ -30,6 +33,7 @@ class PermissionDecision:
 # Theseus permission settings
 class TheseusPermissionSettings:
     """Theseus 자체 권한 설정."""
+
     def __init__(self) -> None:
         self.allowed_tools: list[str] = []
         self.denied_tools: list[str] = []
@@ -143,4 +147,3 @@ class TheseusPermissionChecker:
             allowed=True,
             reason=f"[RBAC Approved] Level {self.user_level} >= {required_level}",
         )
-

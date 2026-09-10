@@ -34,7 +34,9 @@ class MemoryWriteTool(BaseTool):
     def is_read_only(self, arguments) -> bool:
         return False
 
-    async def execute(self, arguments: MemoryWriteInput, context: ToolExecutionContext) -> ToolResult:
+    async def execute(
+        self, arguments: MemoryWriteInput, context: ToolExecutionContext
+    ) -> ToolResult:
         try:
             scope = MemoryScope(arguments.scope.lower())
         except ValueError:
@@ -54,10 +56,7 @@ class MemoryReadInput(BaseModel):
 
 class MemoryReadTool(BaseTool):
     name = "memory_read"
-    description = (
-        "Read a saved agent memory file. "
-        "scope: 'user', 'project', 'local'."
-    )
+    description = "Read a saved agent memory file. " "scope: 'user', 'project', 'local'."
     input_model = MemoryReadInput
     is_destructive = False
     permission_level = 1
@@ -65,7 +64,9 @@ class MemoryReadTool(BaseTool):
     def is_read_only(self, arguments) -> bool:
         return True
 
-    async def execute(self, arguments: MemoryReadInput, context: ToolExecutionContext) -> ToolResult:
+    async def execute(
+        self, arguments: MemoryReadInput, context: ToolExecutionContext
+    ) -> ToolResult:
         try:
             scope = MemoryScope(arguments.scope.lower())
         except ValueError:
@@ -100,7 +101,9 @@ class MemoryListTool(BaseTool):
     def is_read_only(self, arguments) -> bool:
         return True
 
-    async def execute(self, arguments: MemoryListInput, context: ToolExecutionContext) -> ToolResult:
+    async def execute(
+        self, arguments: MemoryListInput, context: ToolExecutionContext
+    ) -> ToolResult:
         scope_str = arguments.scope.lower()
         mem = ScopedMemory(cwd=context.cwd)
 

@@ -93,10 +93,12 @@ def _convert_user_content_to_openai(
         if isinstance(block, TextBlock) and block.text:
             content.append({"type": "text", "text": block.text})
         elif isinstance(block, ImageBlock):
-            content.append({
-                "type": "image_url",
-                "image_url": {"url": f"data:{block.media_type};base64,{block.data}"},
-            })
+            content.append(
+                {
+                    "type": "image_url",
+                    "image_url": {"url": f"data:{block.media_type};base64,{block.data}"},
+                }
+            )
     return content
 
 
@@ -147,11 +149,13 @@ def _convert_messages_to_openai(
 
             if tool_results:
                 for tr in tool_results:
-                    openai_messages.append({
-                        "role": "tool",
-                        "tool_call_id": tr.tool_use_id,
-                        "content": tr.content,
-                    })
+                    openai_messages.append(
+                        {
+                            "role": "tool",
+                            "tool_call_id": tr.tool_use_id,
+                            "content": tr.content,
+                        }
+                    )
             if user_blocks:
                 content = _convert_user_content_to_openai(user_blocks)
                 if isinstance(content, str):
@@ -211,11 +215,7 @@ def _extract_model_ids(model_list_response: Any) -> list[str]:
         return []
     ids: list[str] = []
     for item in data:
-        model_id = (
-            item.get("id")
-            if isinstance(item, dict)
-            else getattr(item, "id", None)
-        )
+        model_id = item.get("id") if isinstance(item, dict) else getattr(item, "id", None)
         if isinstance(model_id, str) and model_id.strip():
             ids.append(model_id.strip())
     return ids
@@ -281,9 +281,7 @@ class TheseusOpenAICompatClient:
         self._preferred_model = preferred_model
         self._discovered_model: str | None = None
 
-    async def stream_message(
-        self, request: ApiMessageRequest
-    ) -> AsyncIterator[ApiStreamEvent]:
+    async def stream_message(self, request: ApiMessageRequest) -> AsyncIterator[ApiStreamEvent]:
         """Yield text deltas and the final message with retry."""
         last_error: Exception | None = None
 
@@ -299,11 +297,13 @@ class TheseusOpenAICompatClient:
                 if attempt >= MAX_RETRIES or not self._is_retryable(exc):
                     raise self._translate_error(exc) from exc
 
-                delay = min(BASE_DELAY * (2 ** attempt), MAX_DELAY)
+                delay = min(BASE_DELAY * (2**attempt), MAX_DELAY)
                 log.warning(
-                    "OpenAI-compat API failed (attempt %d/%d), "
-                    "retrying in %.1fs: %s",
-                    attempt + 1, MAX_RETRIES + 1, delay, exc,
+                    "OpenAI-compat API failed (attempt %d/%d), " "retrying in %.1fs: %s",
+                    attempt + 1,
+                    MAX_RETRIES + 1,
+                    delay,
+                    exc,
                 )
                 yield ApiRetryEvent(
                     message=str(exc),
@@ -316,12 +316,8 @@ class TheseusOpenAICompatClient:
         if last_error is not None:
             raise self._translate_error(last_error) from last_error
 
-    async def _stream_once(
-        self, request: ApiMessageRequest
-    ) -> AsyncIterator[ApiStreamEvent]:
-        openai_messages = _convert_messages_to_openai(
-            request.messages, request.system_prompt
-        )
+    async def _stream_once(self, request: ApiMessageRequest) -> AsyncIterator[ApiStreamEvent]:
+        openai_messages = _convert_messages_to_openai(request.messages, request.system_prompt)
         openai_tools = _convert_tools_to_openai(request.tools) if request.tools else None
         resolved_model = await self._resolve_served_model(request.model)
 
@@ -493,9 +489,7 @@ class TheseusOpenAICompatClient:
             return False
         message = str(exc).lower()
         return "model" in message and (
-            "not found" in message
-            or "does not exist" in message
-            or "not served" in message
+            "not found" in message or "does not exist" in message or "not served" in message
         )
 
     @staticmethod

@@ -8,6 +8,7 @@ router = APIRouter()
 class ToolPermissionLevelUpdateRequest(BaseModel):
     permissionLevel: int = Field(ge=1, le=5)
 
+
 @router.delete("/tools/{project_id}/{tool_name}")
 async def delete_tool_endpoint(project_id: str, tool_name: str):
     try:
@@ -18,7 +19,7 @@ async def delete_tool_endpoint(project_id: str, tool_name: str):
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete tool: {str(e)}"
+            detail=f"Failed to delete tool: {str(e)}",
         )
 
 

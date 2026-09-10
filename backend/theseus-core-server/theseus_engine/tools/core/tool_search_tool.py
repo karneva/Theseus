@@ -75,9 +75,8 @@ class ToolSearchTool(BaseTool):
     async def execute(
         self, arguments: ToolSearchInput, context: ToolExecutionContext
     ) -> ToolResult:
-        search_registry = (
-            context.metadata.get("tool_search_registry")
-            or context.metadata.get("tool_registry")
+        search_registry = context.metadata.get("tool_search_registry") or context.metadata.get(
+            "tool_registry"
         )
         active_registry = context.metadata.get("active_registry")
         project_id = context.metadata.get("project_id")
@@ -156,8 +155,7 @@ class ToolSearchTool(BaseTool):
                     if reason is not None:
                         not_injectable[tool.name] = reason
                         log.info(
-                            "[ToolSearchTool] Tool '%s' was found but not "
-                            "injected: %s",
+                            "[ToolSearchTool] Tool '%s' was found but not " "injected: %s",
                             tool.name,
                             reason,
                         )
@@ -181,8 +179,7 @@ class ToolSearchTool(BaseTool):
                 schema = tool.input_model.model_json_schema()
                 props = schema.get("properties", {})
                 param_summary = ", ".join(
-                    f"{k}: {v.get('description', v.get('type', '?'))}"
-                    for k, v in props.items()
+                    f"{k}: {v.get('description', v.get('type', '?'))}" for k, v in props.items()
                 )
             except Exception:
                 param_summary = "(no schema)"
@@ -190,10 +187,7 @@ class ToolSearchTool(BaseTool):
             if tool.name in injected:
                 status = "✅ Newly added"
             elif tool.name in not_injectable:
-                status = (
-                    "🚫 Not injectable: "
-                    f"{not_injectable[tool.name]}"
-                )
+                status = "🚫 Not injectable: " f"{not_injectable[tool.name]}"
             else:
                 status = "ℹ️ Already available"
             tool_details.append(
@@ -284,7 +278,11 @@ class ToolSearchTool(BaseTool):
             haystack_tokens = _tokenize_tool_search_text(haystack)
             overlap = len(query_tokens & haystack_tokens)
             substring_bonus = 2 if query.strip().lower() in haystack.lower() else 0
-            name_bonus = 3 if any(token in str(getattr(tool, "name", "")).lower() for token in query_tokens) else 0
+            name_bonus = (
+                3
+                if any(token in str(getattr(tool, "name", "")).lower() for token in query_tokens)
+                else 0
+            )
             score = overlap + substring_bonus + name_bonus
             if score > 0:
                 scored.append((score, getattr(tool, "name", ""), tool))
@@ -320,7 +318,9 @@ class ToolSearchTool(BaseTool):
             substring_bonus = 2 if query.strip().lower() in haystack.lower() else 0
             score = overlap + substring_bonus
             if score > 0:
-                scored.append((score, str(item.get("toolName") or item.get("fileName") or ""), item))
+                scored.append(
+                    (score, str(item.get("toolName") or item.get("fileName") or ""), item)
+                )
         scored.sort(key=lambda value: (-value[0], value[1]))
         return [item for _, _, item in scored[:top_k]]
 
@@ -334,11 +334,7 @@ class ToolSearchTool(BaseTool):
         if not isinstance(inventory, list):
             return []
         if _is_custom_tool_inventory_query(query):
-            return [
-                item
-                for item in inventory[:top_k]
-                if isinstance(item, dict)
-            ]
+            return [item for item in inventory[:top_k] if isinstance(item, dict)]
 
         query_tokens = _tokenize_tool_search_text(query)
         scored: list[tuple[int, str, dict[str, Any]]] = []
@@ -365,7 +361,9 @@ class ToolSearchTool(BaseTool):
             substring_bonus = 2 if query.strip().lower() in haystack.lower() else 0
             score = overlap + substring_bonus
             if score > 0:
-                scored.append((score, str(item.get("toolName") or item.get("fileName") or ""), item))
+                scored.append(
+                    (score, str(item.get("toolName") or item.get("fileName") or ""), item)
+                )
         scored.sort(key=lambda value: (-value[0], value[1]))
         return [item for _, _, item in scored[:top_k]]
 
@@ -389,11 +387,7 @@ def _tokenize_tool_search_text(text: str) -> set[str]:
         "수정": {"edit", "update", "repair", "maintenance"},
         "복구": {"repair", "recover", "maintenance"},
     }
-    tokens = {
-        token.lower()
-        for token in re.findall(r"[a-zA-Z0-9_가-힣]+", text)
-        if len(token) >= 2
-    }
+    tokens = {token.lower() for token in re.findall(r"[a-zA-Z0-9_가-힣]+", text) if len(token) >= 2}
     expanded = set(tokens)
     for token in tokens:
         expanded.update(part for part in token.split("_") if len(part) >= 2)

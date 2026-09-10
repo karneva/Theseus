@@ -19,19 +19,21 @@ export default function ProjectIndexPage() {
         if (cancelled) return;
 
         // 2. 활성화된(isClosed: false) 세션 중 가장 최근 것 찾기
-        const latestActiveSession = sessionsData.content.find(s => !s.isClosed);
+        const latestActiveSession = sessionsData.content.find((s) => !s.isClosed);
 
         if (latestActiveSession) {
           // 활성 세션이 있으면 해당 세션으로 이동
-          navigate(`/projects/${projectId}/sessions/${latestActiveSession.sessionId}`, { replace: true });
+          navigate(`/projects/${projectId}/sessions/${latestActiveSession.sessionId}`, {
+            replace: true,
+          });
         } else {
           // 3. 활성 세션이 하나도 없으면 새 세션 생성 후 이동
           const newSession = await chatApi.createSession(projectId);
           if (cancelled) return;
-          
+
           // 사이드바 세션 목록 갱신 트리거
           refreshSessions();
-          
+
           navigate(`/projects/${projectId}/sessions/${newSession.sessionId}`, { replace: true });
         }
       } catch (error) {
@@ -42,7 +44,9 @@ export default function ProjectIndexPage() {
     };
 
     redirectLogic();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [projectId, navigate, refreshSessions]);
 
   return (

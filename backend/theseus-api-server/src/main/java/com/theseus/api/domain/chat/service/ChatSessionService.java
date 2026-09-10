@@ -2,6 +2,7 @@ package com.theseus.api.domain.chat.service;
 
 import com.theseus.api.common.exception.BusinessException;
 import com.theseus.api.common.exception.ErrorCode;
+import com.theseus.api.common.pagination.PageRequests;
 import com.theseus.api.domain.auth.token.AuthenticatedUser;
 import com.theseus.api.domain.chat.dto.request.ChatSessionCreateRequest;
 import com.theseus.api.domain.chat.dto.request.ChatSessionUpdateRequest;
@@ -13,23 +14,24 @@ import com.theseus.api.domain.chat.repository.ChatMessageRepository;
 import com.theseus.api.domain.chat.repository.ChatSessionRepository;
 import com.theseus.api.domain.project.entity.Project;
 import com.theseus.api.domain.project.entity.ProjectMember;
-import com.theseus.api.domain.project.entity.ProjectMemberStatus;
 import com.theseus.api.domain.project.repository.ProjectMemberRepository;
 import com.theseus.api.domain.project.repository.ProjectRepository;
+import com.theseus.api.domain.tool.entity.Tool;
 import com.theseus.api.domain.tool.entity.ToolPlanGroup;
 import com.theseus.api.domain.tool.entity.ToolPlanGroupStatus;
 import com.theseus.api.domain.tool.entity.ToolPlanRunStatus;
 import com.theseus.api.domain.tool.entity.ToolPlanStatus;
+import com.theseus.api.domain.tool.entity.ToolStatus;
 import com.theseus.api.domain.tool.repository.ToolPlanGroupRepository;
 import com.theseus.api.domain.tool.repository.ToolPlanRepository;
 import com.theseus.api.domain.tool.repository.ToolPlanRunRepository;
+import com.theseus.api.domain.tool.repository.ToolRepository;
 import com.theseus.api.domain.user.entity.User;
 import com.theseus.api.domain.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +56,7 @@ public class ChatSessionService {
 	private final ToolPlanRunRepository toolPlanRunRepository;
 	private final ToolPlanRepository toolPlanRepository;
 	private final ToolPlanGroupRepository toolPlanGroupRepository;
-	private final com.theseus.api.domain.tool.repository.ToolRepository toolRepository;
+	private final ToolRepository toolRepository;
 
 	/**
 	 * 로그인 사용자의 프로젝트 멤버 권한으로 새 채팅 세션을 생성합니다.
@@ -86,9 +88,10 @@ public class ChatSessionService {
 		User user = getCurrentUserEntity(currentUser);
 		Project project = getProjectEntity(projectId);
 		ProjectMember projectMember = getActiveProjectMember(project, user);
-		Pageable pageable = createPageable(page, size);
+		Pageable pageable = PageRequests.create(page, size);
 
-		return chatSessionRepository.findByProjectAndProjectMemberOrderByUpdatedAtDesc(project, projectMember, pageable)
+		return chatSessionRepository
+			.findByProjectAndProjectMemberOrderByUpdatedAtDesc(project, projectMember, pageable)
 			.map(ChatSessionResponse::createFrom);
 	}
 
@@ -101,11 +104,12 @@ public class ChatSessionService {
 		Long sessionId
 	) {
 		ChatSession chatSession = getAccessibleChatSession(currentUser, projectId, sessionId);
-		List<ChatMessage> messages = chatMessageRepository.findByChatSessionOrderByMessageOrderAsc(chatSession);
+		List<ChatMessage> messages = chatMessageRepository.findByChatSessionOrderByMessageOrderAsc(
+			chatSession
+		);
 		ChatSessionDetailResponse.CurrentPlanResponse currentPlan = resolveCurrentPlan(chatSession);
-		ChatSessionDetailResponse.CreatedToolResponse createdTool = currentPlan == null
-			? resolveCreatedTool(chatSession)
-			: null;
+		ChatSessionDetailResponse.CreatedToolResponse createdTool =
+			currentPlan == null ? resolveCreatedTool(chatSession) : null;
 
 		return ChatSessionDetailResponse.createOf(chatSession, messages, currentPlan, createdTool);
 	}
@@ -145,12 +149,17 @@ public class ChatSessionService {
 		return ChatSessionResponse.createFrom(chatSession);
 	}
 
-	private ChatSession getAccessibleChatSession(AuthenticatedUser currentUser, Long projectId, Long sessionId) {
+	private ChatSession getAccessibleChatSession(
+		AuthenticatedUser currentUser,
+		Long projectId,
+		Long sessionId
+	) {
 		User user = getCurrentUserEntity(currentUser);
 		Project project = getProjectEntity(projectId);
 		ProjectMember projectMember = getActiveProjectMember(project, user);
 
-		return chatSessionRepository.findByIdAndProjectAndProjectMember(sessionId, project, projectMember)
+		return chatSessionRepository
+			.findByIdAndProjectAndProjectMember(sessionId, project, projectMember)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.CHAT_SESSION_NOT_FOUND));
 	}
 
@@ -159,36 +168,38 @@ public class ChatSessionService {
 			throw BusinessException.of(ErrorCode.UNAUTHORIZED);
 		}
 
-		return userRepository.findById(currentUser.userId())
+		return userRepository
+			.findById(currentUser.userId())
 			.orElseThrow(() -> BusinessException.of(ErrorCode.USER_NOT_FOUND));
 	}
 
 	private Project getProjectEntity(Long projectId) {
-		return projectRepository.findById(projectId)
+		return projectRepository
+			.findById(projectId)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_NOT_FOUND));
 	}
 
 	private ProjectMember getActiveProjectMember(Project project, User user) {
-		ProjectMember projectMember = projectMemberRepository.findByProjectAndUser(project, user)
+		ProjectMember projectMember = projectMemberRepository
+			.findByProjectAndUser(project, user)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_MEMBER_PERMISSION_REQUIRED));
 
-		if (!ProjectMemberStatus.IN_PROGRESS.equals(projectMember.getStatus())) {
+		if (!projectMember.isActive()) {
 			throw BusinessException.of(ErrorCode.ACTIVE_PROJECT_MEMBER_REQUIRED);
 		}
 
 		return projectMember;
 	}
 
-	private Pageable createPageable(int page, int size) {
-		return PageRequest.of(Math.max(page, 0), Math.max(size, 1));
-	}
-
 	/**
 	 * 채팅방 재진입 시 복구할 최신 ToolPlan 진행 또는 검토 상태를 선택합니다.
 	 */
-	private ChatSessionDetailResponse.CurrentPlanResponse resolveCurrentPlan(ChatSession chatSession) {
+	private ChatSessionDetailResponse.CurrentPlanResponse resolveCurrentPlan(
+		ChatSession chatSession
+	) {
 		Project project = chatSession.getProject();
-		return toolPlanRunRepository.findFirstByProjectAndChatSessionAndStatusInOrderByUpdatedAtDesc(
+		return toolPlanRunRepository
+			.findFirstByProjectAndChatSessionAndStatusInOrderByUpdatedAtDesc(
 				project,
 				chatSession,
 				List.of(ToolPlanRunStatus.REQUESTED, ToolPlanRunStatus.GENERATING)
@@ -200,8 +211,12 @@ public class ChatSessionService {
 	/**
 	 * 진행 중인 run이 없을 때 패널에 표시할 수 있는 최신 PLAN을 복구 대상으로 선택합니다.
 	 */
-	private ChatSessionDetailResponse.CurrentPlanResponse resolveDisplayablePlan(Project project, ChatSession chatSession) {
-		return toolPlanRepository.findFirstByProjectAndChatSessionAndStatusInOrderByUpdatedAtDesc(
+	private ChatSessionDetailResponse.CurrentPlanResponse resolveDisplayablePlan(
+		Project project,
+		ChatSession chatSession
+	) {
+		return toolPlanRepository
+			.findFirstByProjectAndChatSessionAndStatusInOrderByUpdatedAtDesc(
 				project,
 				chatSession,
 				DISPLAYABLE_TOOL_PLAN_STATUSES
@@ -213,8 +228,11 @@ public class ChatSessionService {
 	/**
 	 * 생성이 완료된 최신 Tool 산출물을 채팅방 복구 응답에 포함합니다.
 	 */
-	private ChatSessionDetailResponse.CreatedToolResponse resolveCreatedTool(ChatSession chatSession) {
-		ChatSessionDetailResponse.CreatedToolResponse responseFromGroup = toolPlanGroupRepository.findFirstByProjectAndChatSessionAndStatusOrderByUpdatedAtDesc(
+	private ChatSessionDetailResponse.CreatedToolResponse resolveCreatedTool(
+		ChatSession chatSession
+	) {
+		ChatSessionDetailResponse.CreatedToolResponse responseFromGroup = toolPlanGroupRepository
+			.findFirstByProjectAndChatSessionAndStatusOrderByUpdatedAtDesc(
 				chatSession.getProject(),
 				chatSession,
 				ToolPlanGroupStatus.BUILT
@@ -227,9 +245,9 @@ public class ChatSessionService {
 			return responseFromGroup;
 		}
 
-		List<com.theseus.api.domain.tool.entity.Tool> activeTools = toolRepository.findByChatSessionAndStatusNotOrderByUpdatedAtDesc(
+		List<Tool> activeTools = toolRepository.findByChatSessionAndStatusNotOrderByUpdatedAtDesc(
 			chatSession,
-			com.theseus.api.domain.tool.entity.ToolStatus.DELETED
+			ToolStatus.DELETED
 		);
 		if (!activeTools.isEmpty()) {
 			return ChatSessionDetailResponse.CreatedToolResponse.createFrom(activeTools.get(0));

@@ -16,10 +16,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ToolRepository extends JpaRepository<Tool, Long> {
-
 	List<Tool> findByChatSessionOrderByUpdatedAtDesc(ChatSession chatSession);
 
-	List<Tool> findByChatSessionAndStatusNotOrderByUpdatedAtDesc(ChatSession chatSession, ToolStatus status);
+	List<Tool> findByChatSessionAndStatusNotOrderByUpdatedAtDesc(
+		ChatSession chatSession,
+		ToolStatus status
+	);
 
 	List<Tool> findByProjectAndStatusOrderByUpdatedAtDesc(Project project, ToolStatus status);
 
@@ -57,12 +59,14 @@ public interface ToolRepository extends JpaRepository<Tool, Long> {
 	Optional<Tool> findByIdAndProject(Long id, Project project);
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	@Query("""
+	@Query(
+		"""
 		select tool
 		from Tool tool
 		where tool.id = :id
 			and tool.project = :project
-		""")
+		"""
+	)
 	Optional<Tool> findByIdAndProjectForUpdate(
 		@Param("id") Long id,
 		@Param("project") Project project
@@ -72,19 +76,25 @@ public interface ToolRepository extends JpaRepository<Tool, Long> {
 
 	Optional<Tool> findByIdAndStatusNot(Long id, ToolStatus status);
 
-	Optional<Tool> findByIdAndProjectAndChatSession(Long id, Project project, ChatSession chatSession);
+	Optional<Tool> findByIdAndProjectAndChatSession(
+		Long id,
+		Project project,
+		ChatSession chatSession
+	);
 
 	Optional<Tool> findBySourceToolPlan(ToolPlan sourceToolPlan);
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	@Query("""
-		select tool
-		from Tool tool
-		join fetch tool.chatSession
-		where tool.id = :id
-			and tool.project.id = :projectId
-			and tool.chatSession.id = :chatSessionId
-	""")
+	@Query(
+		"""
+			select tool
+			from Tool tool
+			join fetch tool.chatSession
+			where tool.id = :id
+				and tool.project.id = :projectId
+				and tool.chatSession.id = :chatSessionId
+		"""
+	)
 	Optional<Tool> findByIdAndProjectIdAndChatSessionIdForUpdate(
 		@Param("id") Long id,
 		@Param("projectId") Long projectId,
@@ -92,13 +102,15 @@ public interface ToolRepository extends JpaRepository<Tool, Long> {
 	);
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	@Query("""
+	@Query(
+		"""
 		select tool
 		from Tool tool
 		where tool.id = :id
 			and tool.project = :project
 			and tool.chatSession = :chatSession
-		""")
+		"""
+	)
 	Optional<Tool> findByIdAndProjectAndChatSessionForUpdate(
 		@Param("id") Long id,
 		@Param("project") Project project,
@@ -109,19 +121,25 @@ public interface ToolRepository extends JpaRepository<Tool, Long> {
 
 	boolean existsByProjectAndFileName(Project project, String fileName);
 
-	@Query("""
-		select case when count(tool) > 0 then true else false end
-		from Tool tool
-		where tool.project = :project
-			and tool.fileName = :fileName
-			and tool.status <> com.theseus.api.domain.tool.entity.ToolStatus.DELETED
-	""")
+	@Query(
+		"""
+			select case when count(tool) > 0 then true else false end
+			from Tool tool
+			where tool.project = :project
+				and tool.fileName = :fileName
+				and tool.status <> com.theseus.api.domain.tool.entity.ToolStatus.DELETED
+		"""
+	)
 	boolean existsActiveByProjectAndFileName(
 		@Param("project") Project project,
 		@Param("fileName") String fileName
 	);
 
-	boolean existsByProjectAndFileNameAndStatusNot(Project project, String fileName, ToolStatus status);
+	boolean existsByProjectAndFileNameAndStatusNot(
+		Project project,
+		String fileName,
+		ToolStatus status
+	);
 
 	boolean existsByProjectAndFileNameAndIdNot(Project project, String fileName, Long id);
 

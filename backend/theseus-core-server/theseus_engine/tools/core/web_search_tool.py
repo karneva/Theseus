@@ -20,7 +20,9 @@ class WebSearchInput(BaseModel):
 
     query: str = Field(description="Search query")
     max_results: int = Field(
-        default=5, ge=1, le=10,
+        default=5,
+        ge=1,
+        le=10,
         description="Maximum number of results to return",
     )
 
@@ -36,14 +38,10 @@ class WebSearchTool(BaseTool):
     input_model = WebSearchInput
     permission_level = 1
 
-    async def execute(
-        self, arguments: WebSearchInput, context: ToolExecutionContext
-    ) -> ToolResult:
+    async def execute(self, arguments: WebSearchInput, context: ToolExecutionContext) -> ToolResult:
         endpoint = "https://html.duckduckgo.com/html/"
         try:
-            async with httpx.AsyncClient(
-                follow_redirects=True, timeout=20.0
-            ) as client:
+            async with httpx.AsyncClient(follow_redirects=True, timeout=20.0) as client:
                 response = await client.post(
                     endpoint,
                     data={"q": arguments.query},
@@ -51,17 +49,11 @@ class WebSearchTool(BaseTool):
                 )
                 response.raise_for_status()
         except httpx.HTTPError as exc:
-            return ToolResult(
-                output=f"web_search failed: {exc}", is_error=True
-            )
+            return ToolResult(output=f"web_search failed: {exc}", is_error=True)
 
-        results = _parse_search_results(
-            response.text, limit=arguments.max_results
-        )
+        results = _parse_search_results(response.text, limit=arguments.max_results)
         if not results:
-            return ToolResult(
-                output="No search results found.", is_error=True
-            )
+            return ToolResult(output="No search results found.", is_error=True)
 
         lines = [f"Search results for: {arguments.query}"]
         for idx, r in enumerate(results, 1):
@@ -75,9 +67,7 @@ class WebSearchTool(BaseTool):
 # ── DuckDuckGo HTML parser helpers ──────────────────────────────
 
 
-def _parse_search_results(
-    body: str, *, limit: int
-) -> list[dict[str, str]]:
+def _parse_search_results(body: str, *, limit: int) -> list[dict[str, str]]:
     snippets = [
         _clean_html(m.group("snippet"))
         for m in re.finditer(
@@ -97,26 +87,20 @@ def _parse_search_results(
     )
     for index, match in enumerate(anchor_matches):
         attrs = match.group("attrs")
-        class_m = re.search(
-            r'class="(?P<cls>[^"]+)"', attrs, flags=re.IGNORECASE
-        )
+        class_m = re.search(r'class="(?P<cls>[^"]+)"', attrs, flags=re.IGNORECASE)
         if class_m is None:
             continue
         cls = class_m.group("cls")
         if "result__a" not in cls and "result-link" not in cls:
             continue
-        href_m = re.search(
-            r'href="(?P<href>[^"]+)"', attrs, flags=re.IGNORECASE
-        )
+        href_m = re.search(r'href="(?P<href>[^"]+)"', attrs, flags=re.IGNORECASE)
         if href_m is None:
             continue
         title = _clean_html(match.group("title"))
         url = _normalize_ddg_url(href_m.group("href"))
         snippet = snippets[index] if index < len(snippets) else ""
         if title and url:
-            results.append(
-                {"title": title, "url": url, "snippet": snippet}
-            )
+            results.append({"title": title, "url": url, "snippet": snippet})
         if len(results) >= limit:
             break
     return results
@@ -124,9 +108,7 @@ def _parse_search_results(
 
 def _normalize_ddg_url(raw_url: str) -> str:
     parsed = urlparse(raw_url)
-    if parsed.netloc.endswith("duckduckgo.com") and parsed.path.startswith(
-        "/l/"
-    ):
+    if parsed.netloc.endswith("duckduckgo.com") and parsed.path.startswith("/l/"):
         target = parse_qs(parsed.query).get("uddg", [""])[0]
         return unquote(target) if target else raw_url
     return raw_url

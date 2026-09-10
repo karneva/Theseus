@@ -16,14 +16,13 @@ import com.theseus.api.domain.chat.repository.ChatSessionRepository;
 import com.theseus.api.domain.chat.service.ChatMessageService;
 import com.theseus.api.domain.project.entity.Project;
 import com.theseus.api.domain.project.entity.ProjectMember;
-import com.theseus.api.domain.project.entity.ProjectMemberStatus;
 import com.theseus.api.domain.project.repository.ProjectMemberRepository;
 import com.theseus.api.domain.project.repository.ProjectRepository;
 import com.theseus.api.domain.remoteworkspace.entity.RemoteWorkspace;
 import com.theseus.api.domain.remoteworkspace.entity.RemoteWorkspaceStatus;
 import com.theseus.api.domain.remoteworkspace.repository.RemoteWorkspaceRepository;
-import com.theseus.api.domain.tool.entity.ToolPlanMode;
 import com.theseus.api.domain.tool.entity.ToolPlan;
+import com.theseus.api.domain.tool.entity.ToolPlanMode;
 import com.theseus.api.domain.tool.entity.ToolPlanRun;
 import com.theseus.api.domain.tool.entity.ToolPlanRunRequestType;
 import com.theseus.api.domain.tool.entity.ToolPlanRunStatus;
@@ -31,8 +30,8 @@ import com.theseus.api.domain.tool.repository.ToolPlanRepository;
 import com.theseus.api.domain.tool.repository.ToolPlanRunRepository;
 import com.theseus.api.domain.toolgeneration.dto.request.ToolPlanGenerationRequest;
 import com.theseus.api.domain.toolgeneration.dto.request.ToolPlanRegenerationRequest;
-import com.theseus.api.domain.toolgeneration.event.ToolPlanBasePlanPayload;
 import com.theseus.api.domain.toolgeneration.dto.response.ToolPlanGenerationRunResponse;
+import com.theseus.api.domain.toolgeneration.event.ToolPlanBasePlanPayload;
 import com.theseus.api.domain.toolgeneration.event.ToolPlanGenerationRequestEvent;
 import com.theseus.api.domain.toolgeneration.event.ToolPlanHistoryMessagePayload;
 import com.theseus.api.domain.toolgeneration.event.ToolPlanKafkaPublishEvent;
@@ -99,7 +98,10 @@ public class ToolPlanGenerationService {
 
 		ChatSession chatSession = getAccessibleChatSessionForUpdate(sessionId, project, projectMember);
 		validateOpenChatSession(chatSession);
-		RemoteWorkspace remoteWorkspace = getRemoteWorkspaceIfRequested(project, request.getRemoteWorkspaceId());
+		RemoteWorkspace remoteWorkspace = getRemoteWorkspaceIfRequested(
+			project,
+			request.getRemoteWorkspaceId()
+		);
 
 		List<ToolPlanHistoryMessagePayload> history = createHistorySnapshot(chatSession);
 		String runId = createRunId();
@@ -115,19 +117,21 @@ public class ToolPlanGenerationService {
 			requestedAt
 		);
 
-		ToolPlanRun toolPlanRun = toolPlanRunRepository.save(ToolPlanRun.builder()
-			.runId(runId)
-			.project(project)
-			.chatSession(chatSession)
-			.requestType(ToolPlanRunRequestType.GENERATE_PLAN)
-			.mode(ToolPlanMode.PLAN)
-			.status(ToolPlanRunStatus.REQUESTED)
-			.requestedByProjectMember(projectMember)
-			.remoteWorkspace(remoteWorkspace)
-			.requestPayloadJson(writeAsJson(requestEvent))
-			.historySnapshotJson(writeAsJson(history))
-			.requestedAt(requestedAt)
-			.build());
+		ToolPlanRun toolPlanRun = toolPlanRunRepository.save(
+			ToolPlanRun.builder()
+				.runId(runId)
+				.project(project)
+				.chatSession(chatSession)
+				.requestType(ToolPlanRunRequestType.GENERATE_PLAN)
+				.mode(ToolPlanMode.PLAN)
+				.status(ToolPlanRunStatus.REQUESTED)
+				.requestedByProjectMember(projectMember)
+				.remoteWorkspace(remoteWorkspace)
+				.requestPayloadJson(writeAsJson(requestEvent))
+				.historySnapshotJson(writeAsJson(history))
+				.requestedAt(requestedAt)
+				.build()
+		);
 
 		ChatMessage userMessage = chatMessageService.saveUserToolPlanRunMessage(
 			chatSession,
@@ -167,23 +171,28 @@ public class ToolPlanGenerationService {
 		validateRegenerationPermission(projectMember, baseToolPlan);
 		validateRegeneratableToolPlan(baseToolPlan);
 		validateBasePlanVersion(baseToolPlan, request.getBasePlanVersion());
-		RemoteWorkspace remoteWorkspace = getRemoteWorkspaceIfRequested(project, request.getRemoteWorkspaceId());
+		RemoteWorkspace remoteWorkspace = getRemoteWorkspaceIfRequested(
+			project,
+			request.getRemoteWorkspaceId()
+		);
 
 		String runId = createRunId();
 		LocalDateTime requestedAt = LocalDateTime.now();
-		ToolPlanRun toolPlanRun = toolPlanRunRepository.save(ToolPlanRun.builder()
-			.runId(runId)
-			.project(project)
-			.chatSession(chatSession)
-			.requestType(ToolPlanRunRequestType.REGENERATE_PLAN)
-			.mode(ToolPlanMode.PLAN)
-			.status(ToolPlanRunStatus.REQUESTED)
-			.requestedByProjectMember(projectMember)
-			.remoteWorkspace(remoteWorkspace)
-			.baseToolPlan(baseToolPlan)
-			.planGroup(baseToolPlan.getPlanGroup())
-			.requestedAt(requestedAt)
-			.build());
+		ToolPlanRun toolPlanRun = toolPlanRunRepository.save(
+			ToolPlanRun.builder()
+				.runId(runId)
+				.project(project)
+				.chatSession(chatSession)
+				.requestType(ToolPlanRunRequestType.REGENERATE_PLAN)
+				.mode(ToolPlanMode.PLAN)
+				.status(ToolPlanRunStatus.REQUESTED)
+				.requestedByProjectMember(projectMember)
+				.remoteWorkspace(remoteWorkspace)
+				.baseToolPlan(baseToolPlan)
+				.planGroup(baseToolPlan.getPlanGroup())
+				.requestedAt(requestedAt)
+				.build()
+		);
 
 		ChatMessage userMessage = chatMessageService.saveUserToolPlanMessage(
 			chatSession,
@@ -229,7 +238,11 @@ public class ToolPlanGenerationService {
 					LocalDateTime.now()
 				);
 			},
-			() -> log.warn(">>>> ToolPlanRun을 찾을 수 없어 Kafka 발행 실패를 기록하지 못했습니다. runId={}", runId)
+			() ->
+				log.warn(
+					">>>> ToolPlanRun을 찾을 수 없어 Kafka 발행 실패를 기록하지 못했습니다. runId={}",
+					runId
+				)
 		);
 	}
 
@@ -294,10 +307,14 @@ public class ToolPlanGenerationService {
 	}
 
 	private List<ToolPlanHistoryMessagePayload> createHistorySnapshot(ChatSession chatSession) {
-		List<ChatMessage> messages = chatMessageRepository.findByChatSessionOrderByMessageOrderAsc(chatSession);
+		List<ChatMessage> messages = chatMessageRepository.findByChatSessionOrderByMessageOrderAsc(
+			chatSession
+		);
 		int fromIndex = Math.max(messages.size() - HISTORY_LIMIT, 0);
 
-		return messages.subList(fromIndex, messages.size()).stream()
+		return messages
+			.subList(fromIndex, messages.size())
+			.stream()
 			.map(this::createHistoryMessageFrom)
 			.toList();
 	}
@@ -322,9 +339,11 @@ public class ToolPlanGenerationService {
 	}
 
 	private String projectFailureNotice(ChatMessage chatMessage) {
-		if (!ChatMessageSenderType.SYSTEM.equals(chatMessage.getSenderType())
-			|| !ChatMessageType.SYSTEM_NOTICE.equals(chatMessage.getMessageType())
-			|| !ChatMessageContentType.TEXT.equals(chatMessage.getContentType())) {
+		if (
+			!ChatMessageSenderType.SYSTEM.equals(chatMessage.getSenderType()) ||
+			!ChatMessageType.SYSTEM_NOTICE.equals(chatMessage.getMessageType()) ||
+			!ChatMessageContentType.TEXT.equals(chatMessage.getContentType())
+		) {
 			return null;
 		}
 
@@ -352,9 +371,7 @@ public class ToolPlanGenerationService {
 			reason = content;
 		}
 
-		StringBuilder summary = new StringBuilder("이전 ")
-			.append(failureKind)
-			.append(" 실패:");
+		StringBuilder summary = new StringBuilder("이전 ").append(failureKind).append(" 실패:");
 		if (!code.isBlank()) {
 			summary.append(" code=").append(code);
 		}
@@ -419,20 +436,23 @@ public class ToolPlanGenerationService {
 			throw BusinessException.of(ErrorCode.UNAUTHORIZED);
 		}
 
-		return userRepository.findById(currentUser.userId())
+		return userRepository
+			.findById(currentUser.userId())
 			.orElseThrow(() -> BusinessException.of(ErrorCode.USER_NOT_FOUND));
 	}
 
 	private Project getProjectEntity(Long projectId) {
-		return projectRepository.findById(projectId)
+		return projectRepository
+			.findById(projectId)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_NOT_FOUND));
 	}
 
 	private ProjectMember getActiveProjectMember(Project project, User user) {
-		ProjectMember projectMember = projectMemberRepository.findByProjectAndUser(project, user)
+		ProjectMember projectMember = projectMemberRepository
+			.findByProjectAndUser(project, user)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.PROJECT_MEMBER_PERMISSION_REQUIRED));
 
-		if (!ProjectMemberStatus.IN_PROGRESS.equals(projectMember.getStatus())) {
+		if (!projectMember.isActive()) {
 			throw BusinessException.of(ErrorCode.ACTIVE_PROJECT_MEMBER_REQUIRED);
 		}
 
@@ -444,12 +464,14 @@ public class ToolPlanGenerationService {
 		Project project,
 		ProjectMember projectMember
 	) {
-		return chatSessionRepository.findByIdAndProjectAndProjectMemberForUpdate(sessionId, project, projectMember)
+		return chatSessionRepository
+			.findByIdAndProjectAndProjectMemberForUpdate(sessionId, project, projectMember)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.CHAT_SESSION_NOT_FOUND));
 	}
 
 	private ToolPlan getToolPlanForUpdate(Long toolPlanId, Project project, ChatSession chatSession) {
-		return toolPlanRepository.findByIdAndProjectAndChatSessionForUpdate(toolPlanId, project, chatSession)
+		return toolPlanRepository
+			.findByIdAndProjectAndChatSessionForUpdate(toolPlanId, project, chatSession)
 			.orElseThrow(() -> BusinessException.of(ErrorCode.TOOL_PLAN_NOT_FOUND));
 	}
 
@@ -458,11 +480,9 @@ public class ToolPlanGenerationService {
 			return null;
 		}
 
-		return remoteWorkspaceRepository.findByIdAndProjectAndStatusNot(
-			remoteWorkspaceId,
-			project,
-			RemoteWorkspaceStatus.DELETED
-		).orElseThrow(() -> BusinessException.of(ErrorCode.REMOTE_WORKSPACE_NOT_FOUND));
+		return remoteWorkspaceRepository
+			.findByIdAndProjectAndStatusNot(remoteWorkspaceId, project, RemoteWorkspaceStatus.DELETED)
+			.orElseThrow(() -> BusinessException.of(ErrorCode.REMOTE_WORKSPACE_NOT_FOUND));
 	}
 
 	private void validatePlanMode(ToolPlanMode mode) {
@@ -478,7 +498,10 @@ public class ToolPlanGenerationService {
 	}
 
 	private void validateRegenerationPermission(ProjectMember projectMember, ToolPlan baseToolPlan) {
-		boolean isCreator = Objects.equals(baseToolPlan.getCreatedByProjectMember().getId(), projectMember.getId());
+		boolean isCreator = Objects.equals(
+			baseToolPlan.getCreatedByProjectMember().getId(),
+			projectMember.getId()
+		);
 		if (!isCreator && !Boolean.TRUE.equals(projectMember.getCanUpdateTool())) {
 			throw BusinessException.of(ErrorCode.TOOL_UPDATE_PERMISSION_REQUIRED);
 		}

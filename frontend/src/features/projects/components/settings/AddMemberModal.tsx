@@ -1,19 +1,32 @@
+import {
+  DEFAULT_MEMBER_ACCESS_LEVEL,
+  MAX_MEMBER_ACCESS_LEVEL,
+  ADMIN_ACCESS_LEVEL,
+  clampMemberAccessLevel,
+} from '../../utils/memberPolicy';
+import { getApiErrorMessage } from '@/api/errors';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 import { memberApi } from '@/features/projects/api/member';
 import type { ProjectMemberCreateRequest } from '@/features/projects/types/member';
-
-const DEFAULT_MEMBER_ACCESS_LEVEL = 1;
-const MAX_MEMBER_ACCESS_LEVEL = 5;
-const ADMIN_ACCESS_LEVEL = 5;
-
-const clampMemberAccessLevel = (value: number) =>
-  Math.min(MAX_MEMBER_ACCESS_LEVEL, Math.max(DEFAULT_MEMBER_ACCESS_LEVEL, value));
 
 interface AddMemberModalProps {
   projectId: string;
@@ -22,7 +35,12 @@ interface AddMemberModalProps {
   onSuccess: () => void;
 }
 
-export function AddMemberModal({ projectId, isOpen, onOpenChange, onSuccess }: AddMemberModalProps) {
+export function AddMemberModal({
+  projectId,
+  isOpen,
+  onOpenChange,
+  onSuccess,
+}: AddMemberModalProps) {
   const [newEmployeeNumber, setNewEmployeeNumber] = useState('');
   const [newRole, setNewRole] = useState<'ADMIN' | 'MANAGER' | 'MEMBER'>('MEMBER');
   const [newAccessLevel, setNewAccessLevel] = useState(DEFAULT_MEMBER_ACCESS_LEVEL);
@@ -34,7 +52,8 @@ export function AddMemberModal({ projectId, isOpen, onOpenChange, onSuccess }: A
       const data: ProjectMemberCreateRequest = {
         employeeNumber: newEmployeeNumber,
         projectRole: newRole,
-        accessLevel: newRole === 'ADMIN' ? ADMIN_ACCESS_LEVEL : clampMemberAccessLevel(newAccessLevel),
+        accessLevel:
+          newRole === 'ADMIN' ? ADMIN_ACCESS_LEVEL : clampMemberAccessLevel(newAccessLevel),
         canCreateTool: newRole === 'ADMIN' || newRole === 'MANAGER',
         canUseTool: true,
         canUpdateTool: newRole === 'ADMIN' || newRole === 'MANAGER',
@@ -48,8 +67,7 @@ export function AddMemberModal({ projectId, isOpen, onOpenChange, onSuccess }: A
       onSuccess();
     } catch (err: unknown) {
       console.error('Add member failed', err);
-      const axiosErr = err as { response?: { data?: { message?: string } } };
-      alert(axiosErr.response?.data?.message || '멤버 추가에 실패했습니다. 사번을 확인해주세요.');
+      alert(getApiErrorMessage(err, '멤버 추가에 실패했습니다. 사번을 확인해주세요.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -66,7 +84,12 @@ export function AddMemberModal({ projectId, isOpen, onOpenChange, onSuccess }: A
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="employeeNumber" className="text-slate-300 uppercase text-[10px] tracking-wider">사번 (Employee Number)</Label>
+            <Label
+              htmlFor="employeeNumber"
+              className="text-slate-300 uppercase text-[10px] tracking-wider"
+            >
+              사번 (Employee Number)
+            </Label>
             <Input
               id="employeeNumber"
               placeholder="예: 082XXXX"
@@ -77,7 +100,10 @@ export function AddMemberModal({ projectId, isOpen, onOpenChange, onSuccess }: A
           </div>
           <div className="space-y-2">
             <Label className="text-slate-300 uppercase text-[10px] tracking-wider">역할 할당</Label>
-            <Select value={newRole} onValueChange={(v: 'MEMBER' | 'MANAGER' | 'ADMIN') => setNewRole(v)}>
+            <Select
+              value={newRole}
+              onValueChange={(v: 'MEMBER' | 'MANAGER' | 'ADMIN') => setNewRole(v)}
+            >
               <SelectTrigger className="bg-slate-950 border-slate-800 text-white">
                 <SelectValue placeholder="역할 선택" />
               </SelectTrigger>
@@ -88,7 +114,12 @@ export function AddMemberModal({ projectId, isOpen, onOpenChange, onSuccess }: A
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="accessLevel" className="text-slate-300 uppercase text-[10px] tracking-wider">Access Level</Label>
+            <Label
+              htmlFor="accessLevel"
+              className="text-slate-300 uppercase text-[10px] tracking-wider"
+            >
+              Access Level
+            </Label>
             <Input
               id="accessLevel"
               type="number"
@@ -103,8 +134,18 @@ export function AddMemberModal({ projectId, isOpen, onOpenChange, onSuccess }: A
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-slate-700 text-slate-300 hover:bg-slate-800">취소</Button>
-          <Button onClick={handleAddMember} disabled={!newEmployeeNumber || isSubmitting} className="bg-blue-400 hover:bg-blue-500 text-[#003a6b] font-bold">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="border-slate-700 text-slate-300 hover:bg-slate-800"
+          >
+            취소
+          </Button>
+          <Button
+            onClick={handleAddMember}
+            disabled={!newEmployeeNumber || isSubmitting}
+            className="bg-blue-400 hover:bg-blue-500 text-[#003a6b] font-bold"
+          >
             {isSubmitting ? '추가 중...' : '추가하기'}
           </Button>
         </DialogFooter>

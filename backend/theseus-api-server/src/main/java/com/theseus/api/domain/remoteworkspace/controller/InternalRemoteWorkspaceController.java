@@ -24,7 +24,9 @@ public class InternalRemoteWorkspaceController {
 	public ResponseEntity<ApiResponse<RemoteWorkspaceConnectionConfigResponse>> getConnectionConfig(
 		@Valid @RequestBody RemoteWorkspaceConnectionConfigRequest request
 	) {
-		RemoteWorkspaceConnectionConfigResponse response = remoteWorkspaceService.getConnectionConfig(request);
+		RemoteWorkspaceConnectionConfigResponse response = remoteWorkspaceService.getConnectionConfig(
+			request
+		);
 		return ApiResponse.onSuccess(SuccessCode.OK, response);
 	}
 }

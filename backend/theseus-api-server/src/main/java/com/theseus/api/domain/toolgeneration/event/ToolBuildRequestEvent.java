@@ -12,5 +12,4 @@ public record ToolBuildRequestEvent(
 	Long approvedByProjectMemberId,
 	ToolBuildApprovedPlanPayload approvedPlan,
 	LocalDateTime requestedAt
-) {
-}
+) {}

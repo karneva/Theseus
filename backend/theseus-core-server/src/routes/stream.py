@@ -1,4 +1,3 @@
-import asyncio
 import json
 import logging
 
@@ -87,7 +86,9 @@ async def stream_agent_response(
     db: Session,
 ):
     """Request-agnostic SSE handler for a single Theseus engine run."""
-    usage_data = UsageMetrics(model_name="unknown", prompt_tokens=0, completion_tokens=0, total_tokens=0)
+    usage_data = UsageMetrics(
+        model_name="unknown", prompt_tokens=0, completion_tokens=0, total_tokens=0
+    )
     assistant_chunks: list[str] = []
 
     yield sse_event(
@@ -337,70 +338,16 @@ async def stream_endpoint(
     """
     인증된 사용자에게 SSE 스트림을 반환하며, 종료 시 과금을 수행합니다.
     """
-    if not prompt.strip():
-        raise HTTPException(status_code=422, detail="Prompt must not be blank")
-
-    stream_mode = _resolve_stream_mode(mode, plan_id=plan_id)
-    resolved_remote_workspace_id = (
-        remote_workspace_id
-        if remote_workspace_id is not None
-        else remote_workspace_id_camel
-    )
-    project_tool_permissions = await get_project_tool_permissions(
-        project_id=session.project_id,
-        user_id=session.user_id,
-    )
-
-    history_messages = await load_history_messages(session, chat_session_id)
-    bound_plan = None
-    remote_workspace = await _resolve_remote_workspace_for_stream(
-        project_id=session.project_id,
-        remote_workspace_id=resolved_remote_workspace_id,
-    )
-    logger.info(
-        "Fetched project tool permissions: user=%s project=%s chat_session=%s mode=%s tool_count=%d tools=%s",
-        session.user_id,
-        session.project_id,
-        chat_session_id,
-        stream_mode.name,
-        len(project_tool_permissions),
-        ",".join(sorted(project_tool_permissions.keys())),
-    )
-    if plan_id:
-        bound_plan = validate_executing_plan_binding(
-            db,
-            plan_id=plan_id,
-            project_id=str(session.project_id),
-            chat_session_id=chat_session_id,
-        )
-
-    engine_context = EngineBuildContext(
-        user_level=session.permission_level,
-        project_tool_permissions=project_tool_permissions,
-        mode=stream_mode,
-        approval_policy="reject",
-        user_query=prompt,
-        history_messages=history_messages,
-        session_id=str(chat_session_id),
-        project_id=str(session.project_id),
-        actor_user_id=str(session.user_id),
+    return await create_streaming_response(
+        prompt=prompt,
         chat_session_id=chat_session_id,
+        mode=mode,
         plan_id=plan_id,
-        plan_content=bound_plan.content if bound_plan is not None else None,
-        remote_workspace_id=resolved_remote_workspace_id,
-        remote_workspace=remote_workspace,
-    )
-
-    await persist_user_message(session, chat_session_id, prompt)
-
-    return StreamingResponse(
-        stream_agent_response(session, chat_session_id, prompt, engine_context, db),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no",  # Nginx 스트리밍 최적화
-        },
+        remote_workspace_id=(
+            remote_workspace_id if remote_workspace_id is not None else remote_workspace_id_camel
+        ),
+        session=session,
+        db=db,
     )
 
 

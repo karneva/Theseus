@@ -24,7 +24,10 @@ export default function UserLayout() {
       <header className="h-16 border-b border-white/10 bg-[rgba(5,20,36,0.8)] backdrop-blur-md flex items-center justify-between px-6 shrink-0 relative z-10">
         <div className="flex items-center gap-2">
           {/* Logo or Title */}
-          <h1 className="text-xl font-semibold text-white tracking-wide cursor-pointer" onClick={() => navigate('/')}>
+          <h1
+            className="text-xl font-semibold text-white tracking-wide cursor-pointer"
+            onClick={() => navigate('/')}
+          >
             Theseus
           </h1>
         </div>

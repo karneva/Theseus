@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 	name = "users",
 	uniqueConstraints = {
 		@UniqueConstraint(name = "uk_users_employee_number", columnNames = "employee_number"),
-		@UniqueConstraint(name = "uk_users_email", columnNames = "email")
+		@UniqueConstraint(name = "uk_users_email", columnNames = "email"),
 	}
 )
 @Entity
@@ -51,7 +51,6 @@ public class User extends BaseEntity {
 	@Column(nullable = false, length = 30)
 	private UserStatus status;
 
-
 	@Builder
 	private User(
 		String employeeNumber,
@@ -69,12 +68,7 @@ public class User extends BaseEntity {
 		this.status = status == null ? UserStatus.ACTIVE : status;
 	}
 
-	public void update(
-		String name,
-		String email,
-		String password,
-		SystemRole systemRole
-	) {
+	public void update(String name, String email, String password, SystemRole systemRole) {
 		if (name != null) {
 			this.name = name;
 		}
@@ -96,6 +90,4 @@ public class User extends BaseEntity {
 	public boolean isSuperAdmin() {
 		return SystemRole.SUPER_ADMIN.equals(systemRole);
 	}
-
-
 }

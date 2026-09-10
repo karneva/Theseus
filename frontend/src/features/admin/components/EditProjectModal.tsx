@@ -1,3 +1,4 @@
+import { getApiErrorMessage } from '@/api/errors';
 import { useState } from 'react';
 import { adminApi } from '../api';
 import type { UserResponse, ProjectSummaryResponse } from '../api';
@@ -18,19 +19,26 @@ interface EditProjectModalProps {
   project: ProjectSummaryResponse | null;
 }
 
-export default function EditProjectModal({ isOpen, onClose, onSuccess, project }: EditProjectModalProps) {
+export default function EditProjectModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  project,
+}: EditProjectModalProps) {
   const [formState, setFormState] = useState({
     projectName: project?.name || '',
     description: project?.description || '',
     employeeNumber: project?.projectAdminEmployeeNumber || '',
-    searchedUser: project ? ({
-      id: project.projectAdminUserId,
-      employeeNumber: project.projectAdminEmployeeNumber,
-      name: project.projectAdminName,
-      email: '',
-      systemRole: 'USER',
-      status: 'ACTIVE',
-    } as UserResponse) : null,
+    searchedUser: project
+      ? ({
+          id: project.projectAdminUserId,
+          employeeNumber: project.projectAdminEmployeeNumber,
+          name: project.projectAdminName,
+          email: '',
+          systemRole: 'USER',
+          status: 'ACTIVE',
+        } as UserResponse)
+      : null,
   });
   const [isSearching, setIsSearching] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -45,17 +53,16 @@ export default function EditProjectModal({ isOpen, onClose, onSuccess, project }
     try {
       const user = await adminApi.searchUserByEmployeeNumber(trimmedId);
       if (user && user.systemRole !== 'SUPER_ADMIN') {
-        setFormState(prev => ({ ...prev, searchedUser: user }));
+        setFormState((prev) => ({ ...prev, searchedUser: user }));
       } else {
         alert('사용자를 찾을 수 없습니다.');
-        setFormState(prev => ({ ...prev, searchedUser: null }));
+        setFormState((prev) => ({ ...prev, searchedUser: null }));
       }
     } catch (error: unknown) {
       console.error('Search failed:', error);
-      const axiosErr = error as { response?: { data?: { message?: string } } };
-      const message = axiosErr.response?.data?.message || '사용자를 찾을 수 없습니다.';
+      const message = getApiErrorMessage(error, '사용자를 찾을 수 없습니다.');
       alert(message);
-      setFormState(prev => ({ ...prev, searchedUser: null }));
+      setFormState((prev) => ({ ...prev, searchedUser: null }));
     } finally {
       setIsSearching(false);
     }
@@ -85,37 +92,49 @@ export default function EditProjectModal({ isOpen, onClose, onSuccess, project }
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-[#1c2b3c] border-[#1f2937] text-white sm:max-w-[448px] p-0 overflow-hidden shadow-[0px_20px_50px_0px_rgba(0,0,0,0.5)] rounded-[8px]">
         <DialogHeader className="px-8 pt-8 pb-6 border-b border-[rgba(65,71,81,0.3)]">
-          <DialogTitle className="font-['WenQuanYi_Zen_Hei:Medium',sans-serif] text-[20px] text-white tracking-[-0.5px]">프로젝트 수정</DialogTitle>
+          <DialogTitle className="font-['WenQuanYi_Zen_Hei:Medium',sans-serif] text-[20px] text-white tracking-[-0.5px]">
+            프로젝트 수정
+          </DialogTitle>
         </DialogHeader>
 
         <div className="px-8 py-6 flex flex-col gap-6">
           <div className="flex flex-col gap-2">
-            <Label className="font-['WenQuanYi_Zen_Hei:Medium',sans-serif] text-[#c1c7d3] text-[12px] tracking-[0.6px] uppercase">프로젝트 명</Label>
+            <Label className="font-['WenQuanYi_Zen_Hei:Medium',sans-serif] text-[#c1c7d3] text-[12px] tracking-[0.6px] uppercase">
+              프로젝트 명
+            </Label>
             <Input
               value={projectName}
-              onChange={(e) => setFormState(prev => ({ ...prev, projectName: e.target.value }))}
+              onChange={(e) => setFormState((prev) => ({ ...prev, projectName: e.target.value }))}
               placeholder="프로젝트 명 입력"
               className="bg-[#010f1f] border-[#414751] text-[#d4e4fa] h-[48px] px-[17px] text-[14px]"
             />
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label className="font-['WenQuanYi_Zen_Hei:Medium',sans-serif] text-[#c1c7d3] text-[12px] tracking-[0.6px] uppercase">프로젝트 설명</Label>
+            <Label className="font-['WenQuanYi_Zen_Hei:Medium',sans-serif] text-[#c1c7d3] text-[12px] tracking-[0.6px] uppercase">
+              프로젝트 설명
+            </Label>
             <Input
               value={description}
-              onChange={(e) => setFormState(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) => setFormState((prev) => ({ ...prev, description: e.target.value }))}
               placeholder="프로젝트 설명 입력"
               className="bg-[#010f1f] border-[#414751] text-[#d4e4fa] h-[48px] px-[17px] text-[14px]"
             />
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label className="font-['WenQuanYi_Zen_Hei:Medium',sans-serif] text-[#c1c7d3] text-[12px] tracking-[0.6px] uppercase">담당자 사번</Label>
+            <Label className="font-['WenQuanYi_Zen_Hei:Medium',sans-serif] text-[#c1c7d3] text-[12px] tracking-[0.6px] uppercase">
+              담당자 사번
+            </Label>
             <div className="relative flex items-center">
               <Input
                 value={employeeNumber}
                 onChange={(e) => {
-                  setFormState(prev => ({ ...prev, employeeNumber: e.target.value, searchedUser: null }));
+                  setFormState((prev) => ({
+                    ...prev,
+                    employeeNumber: e.target.value,
+                    searchedUser: null,
+                  }));
                 }}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 placeholder="담당자 사번 입력"
@@ -139,12 +158,18 @@ export default function EditProjectModal({ isOpen, onClose, onSuccess, project }
           {searchedUser && (
             <div className="bg-[#0d1c2d] border border-[rgba(96,165,250,0.2)] rounded-[4px] p-[17px] flex flex-col gap-1">
               <div className="flex items-center gap-2">
-                <span className="font-['WenQuanYi_Zen_Hei:Medium',sans-serif] text-[14px] text-white">{searchedUser.name}</span>
+                <span className="font-['WenQuanYi_Zen_Hei:Medium',sans-serif] text-[14px] text-white">
+                  {searchedUser.name}
+                </span>
                 <div className="bg-[rgba(96,165,250,0.1)] px-1.5 py-0.5 rounded-[2px]">
-                  <span className="text-[#60a5fa] text-[10px] font-['Inter:Regular',sans-serif]">ID: {searchedUser.employeeNumber}</span>
+                  <span className="text-[#60a5fa] text-[10px] font-['Inter:Regular',sans-serif]">
+                    ID: {searchedUser.employeeNumber}
+                  </span>
                 </div>
               </div>
-              <span className="text-[#c1c7d3] text-[12px] font-['Inter:Regular',sans-serif]">{searchedUser.email || 'Email not available in summary'}</span>
+              <span className="text-[#c1c7d3] text-[12px] font-['Inter:Regular',sans-serif]">
+                {searchedUser.email || 'Email not available in summary'}
+              </span>
             </div>
           )}
         </div>

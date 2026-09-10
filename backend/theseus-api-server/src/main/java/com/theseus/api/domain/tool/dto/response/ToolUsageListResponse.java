@@ -20,7 +20,7 @@ public class ToolUsageListResponse {
 		int size,
 		long totalElements
 	) {
-		int totalPages = size <= 0 ? 0 : (int)Math.ceil((double)totalElements / size);
+		int totalPages = size <= 0 ? 0 : (int) Math.ceil((double) totalElements / size);
 
 		return ToolUsageListResponse.builder()
 			.items(items)

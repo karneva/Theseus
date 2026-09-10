@@ -25,16 +25,12 @@ class TaskStopTool(BaseTool):
     input_model = TaskStopInput
     permission_level = 2
 
-    async def execute(
-        self, arguments: TaskStopInput, context: ToolExecutionContext
-    ) -> ToolResult:
+    async def execute(self, arguments: TaskStopInput, context: ToolExecutionContext) -> ToolResult:
         try:
             task = await get_task_manager().stop_task(
                 arguments.task_id,
                 cwd=context.cwd,
             )
-            return ToolResult(
-                output=f"✅ Task stopped: {task.id} ({task.description})"
-            )
+            return ToolResult(output=f"✅ Task stopped: {task.id} ({task.description})")
         except ValueError as exc:
             return ToolResult(output=str(exc), is_error=True)

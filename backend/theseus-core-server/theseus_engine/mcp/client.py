@@ -47,6 +47,7 @@ class McpClientManager:
 
     async def connect_all(self) -> None:
         """Connect all configured MCP servers (병렬 연결)."""
+
         async def _connect_one(name: str, config) -> None:
             if isinstance(config, McpStdioServerConfig):
                 await self._connect_stdio(name, config)
@@ -107,14 +108,14 @@ class McpClientManager:
             raise McpServerNotConnectedError(
                 f"MCP server '{server_name}' call failed: {exc}"
             ) from exc
-        
+
         parts: List[str] = []
         for item in result.content:
             if getattr(item, "type", None) == "text":
                 parts.append(getattr(item, "text", ""))
             else:
                 parts.append(str(item))
-        
+
         if not parts:
             parts.append("(no output)")
         return "\n".join(parts).strip()
@@ -124,14 +125,14 @@ class McpClientManager:
         session = self._sessions.get(server_name)
         if session is None:
             raise McpServerNotConnectedError(f"MCP server '{server_name}' is not connected.")
-        
+
         try:
             result: ReadResourceResult = await session.read_resource(uri)
         except Exception as exc:
             raise McpServerNotConnectedError(
                 f"MCP server '{server_name}' resource read failed: {exc}"
             ) from exc
-        
+
         parts: List[str] = []
         for item in result.contents:
             text = getattr(item, "text", None)
@@ -209,7 +210,7 @@ class McpClientManager:
     ) -> None:
         session = await stack.enter_async_context(ClientSession(read_stream, write_stream))
         await session.initialize()
-        
+
         tool_result = await session.list_tools()
         resource_result = None
         try:
@@ -235,7 +236,7 @@ class McpClientManager:
             )
             for resource in (resource_result.resources if resource_result is not None else [])
         ]
-        
+
         self._sessions[name] = session
         self._stacks[name] = stack
         self._statuses[name] = McpConnectionStatus(
@@ -250,6 +251,7 @@ class McpClientManager:
 
 # --- Singleton for Theseus ---
 _mcp_manager: Optional[McpClientManager] = None
+
 
 def get_mcp_manager() -> McpClientManager:
     """Get the global MCP manager singleton."""

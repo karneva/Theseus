@@ -38,8 +38,7 @@ def _initial_consumer_status() -> dict[str, dict]:
         },
         "toolPlan": {
             "enabled": (
-                settings.CORE_KAFKA_CONSUMER_ENABLED
-                and settings.CORE_TOOL_PLAN_CONSUMER_ENABLED
+                settings.CORE_KAFKA_CONSUMER_ENABLED and settings.CORE_TOOL_PLAN_CONSUMER_ENABLED
             ),
             "started": False,
             "topic": settings.KAFKA_TOPIC_TOOL_PLAN_REQUEST,
@@ -56,7 +55,9 @@ def _initial_consumer_status() -> dict[str, dict]:
     }
 
 
-def _mark_consumer_status(app: FastAPI, key: str, *, started: bool, error: Exception | None = None) -> None:
+def _mark_consumer_status(
+    app: FastAPI, key: str, *, started: bool, error: Exception | None = None
+) -> None:
     status = app.state.core_consumer_status[key]
     status["started"] = started
     status["error"] = str(error) if error is not None else None
@@ -82,8 +83,12 @@ async def lifespan(app: FastAPI):
             app.state.sandbox_startup_status.update(
                 {"checked": True, "ok": True, "error": None, "details": sandbox_info}
             )
-            logger.info("Sandbox connectivity verified. image=%s status=%s host=%s",
-                        sandbox_info["image"], sandbox_info["imageStatus"], sandbox_info["dockerHost"])
+            logger.info(
+                "Sandbox connectivity verified. image=%s status=%s host=%s",
+                sandbox_info["image"],
+                sandbox_info["imageStatus"],
+                sandbox_info["dockerHost"],
+            )
         except (SandboxStartupCheckError, SandboxUnavailableError) as exc:
             app.state.sandbox_startup_status.update(
                 {"checked": True, "ok": False, "error": str(exc)}
@@ -155,6 +160,7 @@ async def lifespan(app: FastAPI):
             scheduler.shutdown(wait=False)
             logger.info("Billing outbox scheduler stopped.")
 
+
 app = FastAPI(
     title=settings.APP_NAME,
     version="0.1.0",
@@ -179,19 +185,23 @@ app.include_router(sandbox.router, prefix="/api/v1", tags=["Sandbox"])
 app.include_router(remote_workspace.router, prefix="/api/v1", tags=["RemoteWorkspace"])
 app.include_router(tool.router, prefix="/api/v1", tags=["Tool"])
 
+
 # 글로벌 예외 처리
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Unhandled exception: {exc}", exc_info=True)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"detail": "Internal server error occurred."}
+        content={"detail": "Internal server error occurred."},
     )
+
 
 @app.get("/")
 async def root():
     return {"message": f"Welcome to {settings.APP_NAME}", "docs": "/docs"}
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=True)

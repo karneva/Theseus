@@ -31,8 +31,8 @@ export function ToolCard({
       {/* 백그라운드 그라데이션 (Hover 시 더 진해짐) */}
       <div
         className={cn(
-          "absolute inset-0 bg-gradient-to-br opacity-50 transition-opacity duration-300 group-hover:opacity-100",
-          colors.gradient
+          'absolute inset-0 bg-gradient-to-br opacity-50 transition-opacity duration-300 group-hover:opacity-100',
+          colors.gradient,
         )}
       />
 

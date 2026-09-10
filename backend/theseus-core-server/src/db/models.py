@@ -8,12 +8,13 @@ from pgvector.sqlalchemy import Vector
 from src.db.postgres import Base
 from src.config import settings
 
+
 class KnowledgeDocument(Base):
     __tablename__ = "knowledge_documents"
 
     id = Column(String(36), primary_key=True)
     project_id = Column(String(36), index=True, nullable=False)
-    source_type = Column(String(50), nullable=False) # e.g., "pdf", "notion", "web"
+    source_type = Column(String(50), nullable=False)  # e.g., "pdf", "notion", "web"
     source_uri = Column(String(512), nullable=False)
     title = Column(String(255), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -26,15 +27,17 @@ class KnowledgeChunk(Base):
     __tablename__ = "knowledge_chunks"
 
     id = Column(String(36), primary_key=True)
-    document_id = Column(String(36), ForeignKey("knowledge_documents.id"), index=True, nullable=False)
+    document_id = Column(
+        String(36), ForeignKey("knowledge_documents.id"), index=True, nullable=False
+    )
     project_id = Column(String(36), index=True, nullable=False)
     chunk_index = Column(Integer, nullable=False)
     content = Column(Text, nullable=False)
-    metadata_json = Column(JSONB, nullable=True) # 추가 메타데이터
-    
+    metadata_json = Column(JSONB, nullable=True)  # 추가 메타데이터
+
     # pgvector 임베딩 컬럼 (차원 수는 config에서 주입)
     embedding = Column(Vector(settings.VECTOR_DIMENSION))
-    
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # 관계 설정
@@ -108,7 +111,9 @@ class CoreRunCheckpoint(Base):
     lease_owner = Column(String(100), nullable=True)
     lease_expires_at = Column(DateTime(timezone=True), nullable=True)
     requested_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    updated_at = Column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
     completed_at = Column(DateTime(timezone=True), nullable=True)
 
     events = relationship("CoreRunEvent", back_populates="checkpoint", cascade="all, delete-orphan")
@@ -121,7 +126,9 @@ class CoreRunEvent(Base):
     )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    run_id = Column(String(64), ForeignKey("core_run_checkpoints.run_id"), index=True, nullable=False)
+    run_id = Column(
+        String(64), ForeignKey("core_run_checkpoints.run_id"), index=True, nullable=False
+    )
     event_sequence = Column(Integer, nullable=False)
     event_type = Column(String(80), nullable=False)
     publish_channel = Column(String(80), nullable=True, index=True)

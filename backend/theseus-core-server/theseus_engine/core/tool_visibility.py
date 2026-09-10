@@ -13,7 +13,6 @@ from typing import Any, Mapping
 from theseus_engine.models.modes import AgentMode, PlanPhase
 from theseus_engine.tools.core.base_tools import ToolRegistry
 
-
 PLAN_DRAFTING_ALLOWED_TOOLS = frozenset(
     {
         "read_file",

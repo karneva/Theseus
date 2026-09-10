@@ -34,9 +34,7 @@ class McpWebSocketServerConfig(BaseModel):
     headers: Dict[str, str] = Field(default_factory=dict)
 
 
-McpServerConfig = Union[
-    McpStdioServerConfig, McpHttpServerConfig, McpWebSocketServerConfig
-]
+McpServerConfig = Union[McpStdioServerConfig, McpHttpServerConfig, McpWebSocketServerConfig]
 
 
 class McpJsonConfig(BaseModel):

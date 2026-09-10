@@ -21,7 +21,10 @@ public class ToolPlanRunEventStreamController {
 
 	private final ToolPlanRunEventStreamService toolPlanRunEventStreamService;
 
-	@Operation(summary = "ToolPlanRun 진행 이벤트 구독", description = "ToolPlanRun runId 기준 진행 상태를 Server-Sent Events로 구독합니다.")
+	@Operation(
+		summary = "ToolPlanRun 진행 이벤트 구독",
+		description = "ToolPlanRun runId 기준 진행 상태를 Server-Sent Events로 구독합니다."
+	)
 	@GetMapping(value = "/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public SseEmitter subscribeToolPlanRunEvents(
 		@AuthenticationPrincipal AuthenticatedUser currentUser,

@@ -28,7 +28,10 @@ public class MyProjectResponse {
 
 	public static MyProjectResponse createFrom(ProjectMember projectMember) {
 		Project project = projectMember.getProject();
-		boolean isProjectAdminUser = project.getProjectAdminUser().getId().equals(projectMember.getUser().getId());
+		boolean isProjectAdminUser = project
+			.getProjectAdminUser()
+			.getId()
+			.equals(projectMember.getUser().getId());
 
 		return MyProjectResponse.builder()
 			.projectId(project.getId())

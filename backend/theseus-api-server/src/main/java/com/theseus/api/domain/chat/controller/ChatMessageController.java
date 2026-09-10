@@ -21,8 +21,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -36,7 +36,10 @@ public class ChatMessageController {
 	private final ChatMessageService chatMessageService;
 	private final ChatStreamService chatStreamService;
 
-	@Operation(summary = "채팅 메시지 등록", description = "로그인한 프로젝트 멤버가 본인이 생성한 채팅 세션에 USER 메시지를 등록합니다.")
+	@Operation(
+		summary = "채팅 메시지 등록",
+		description = "로그인한 프로젝트 멤버가 본인이 생성한 채팅 세션에 USER 메시지를 등록합니다."
+	)
 	@PostMapping
 	public ResponseEntity<ApiResponse<ChatMessageResponse>> createMessage(
 		@AuthenticationPrincipal AuthenticatedUser currentUser,
@@ -44,11 +47,19 @@ public class ChatMessageController {
 		@PathVariable Long sessionId,
 		@Valid @RequestBody ChatMessageCreateRequest request
 	) {
-		ChatMessageResponse response = chatMessageService.createUserMessage(currentUser, projectId, sessionId, request);
+		ChatMessageResponse response = chatMessageService.createUserMessage(
+			currentUser,
+			projectId,
+			sessionId,
+			request
+		);
 		return ApiResponse.onSuccess(SuccessCode.CREATED, response);
 	}
 
-	@Operation(summary = "ASK/AGENT 채팅 스트림", description = "ASK/AGENT 모드를 Core 스트림에 명시하고 SSE 응답을 중계합니다.")
+	@Operation(
+		summary = "ASK/AGENT 채팅 스트림",
+		description = "ASK/AGENT 모드를 Core 스트림에 명시하고 SSE 응답을 중계합니다."
+	)
 	@PostMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public ResponseEntity<StreamingResponseBody> streamChat(
 		@AuthenticationPrincipal AuthenticatedUser currentUser,
@@ -72,14 +83,21 @@ public class ChatMessageController {
 			.body(responseBody);
 	}
 
-	@Operation(summary = "채팅 메시지 목록 조회", description = "채팅 세션의 메시지를 messageOrder 오름차순으로 조회합니다.")
+	@Operation(
+		summary = "채팅 메시지 목록 조회",
+		description = "채팅 세션의 메시지를 messageOrder 오름차순으로 조회합니다."
+	)
 	@GetMapping
 	public ResponseEntity<ApiResponse<List<ChatMessageResponse>>> getMessages(
 		@AuthenticationPrincipal AuthenticatedUser currentUser,
 		@PathVariable Long projectId,
 		@PathVariable Long sessionId
 	) {
-		List<ChatMessageResponse> responses = chatMessageService.getMessages(currentUser, projectId, sessionId);
+		List<ChatMessageResponse> responses = chatMessageService.getMessages(
+			currentUser,
+			projectId,
+			sessionId
+		);
 		return ApiResponse.onSuccess(SuccessCode.OK, responses);
 	}
 }

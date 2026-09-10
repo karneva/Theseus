@@ -122,7 +122,9 @@
   }
 
   function optionalStringArray(value) {
-    return isMissing(value) || (Array.isArray(value) && value.every(item => typeof item === 'string'));
+    return (
+      isMissing(value) || (Array.isArray(value) && value.every((item) => typeof item === 'string'))
+    );
   }
 
   function isMissing(value) {
@@ -134,9 +136,17 @@
       case 'AssistantTextDelta':
         return optionalString(event.text);
       case 'AgentLoopStatus':
-        return optionalString(event.phase) && optionalNumber(event.turn) && optionalNumber(event.tool_count);
+        return (
+          optionalString(event.phase) &&
+          optionalNumber(event.turn) &&
+          optionalNumber(event.tool_count)
+        );
       case 'CompactProgressEvent':
-        return optionalString(event.phase) && optionalString(event.trigger) && optionalString(event.message);
+        return (
+          optionalString(event.phase) &&
+          optionalString(event.trigger) &&
+          optionalString(event.message)
+        );
       case 'ToolExecutionStarted':
         return optionalString(event.tool_name);
       case 'ToolExecutionCompleted':
@@ -144,16 +154,18 @@
       case 'RunnerReady':
         return optionalString(event.model) && optionalString(event.cwd);
       case 'RunnerStatus':
-        return optionalBoolean(event.running)
-          && optionalBoolean(event.processRunning)
-          && optionalString(event.lifecycle)
-          && optionalString(event.state)
-          && optionalNumber(event.daemonPort)
-          && optionalNumber(event.lastEventAt)
-          && optionalNumber(event.lastHeartbeatAt)
-          && optionalString(event.activeRunId)
-          && optionalString(event.activeRunStatus)
-          && optionalString(event.stalledReason);
+        return (
+          optionalBoolean(event.running) &&
+          optionalBoolean(event.processRunning) &&
+          optionalString(event.lifecycle) &&
+          optionalString(event.state) &&
+          optionalNumber(event.daemonPort) &&
+          optionalNumber(event.lastEventAt) &&
+          optionalNumber(event.lastHeartbeatAt) &&
+          optionalString(event.activeRunId) &&
+          optionalString(event.activeRunStatus) &&
+          optionalString(event.stalledReason)
+        );
       case 'RunnerDiagnostic':
       case 'RunnerError':
       case 'ErrorEvent':
@@ -163,19 +175,27 @@
       case 'filesResult':
         return optionalStringArray(event.files);
       case 'PlanPhaseTransitionRequested':
-        return optionalString(event.from_phase)
-          && optionalString(event.to_phase)
-          && optionalString(event.reason)
-          && optionalString(event.source)
-          && optionalString(event.trigger);
+        return (
+          optionalString(event.from_phase) &&
+          optionalString(event.to_phase) &&
+          optionalString(event.reason) &&
+          optionalString(event.source) &&
+          optionalString(event.trigger)
+        );
       case 'SessionListEvent':
         return isMissing(event.sessions) || Array.isArray(event.sessions);
       case 'SessionChangedEvent':
-        return optionalString(event.current)
-          && (isMissing(event.history) || Array.isArray(event.history))
-          && (isMissing(event.planState) || event.planState === null || isObject(event.planState));
+        return (
+          optionalString(event.current) &&
+          (isMissing(event.history) || Array.isArray(event.history)) &&
+          (isMissing(event.planState) || event.planState === null || isObject(event.planState))
+        );
       case 'SessionExportedEvent':
-        return optionalString(event.name) && optionalString(event.format) && optionalString(event.content);
+        return (
+          optionalString(event.name) &&
+          optionalString(event.format) &&
+          optionalString(event.content)
+        );
       case 'workspaceInfo':
         return optionalString(event.name) && optionalString(event.path);
       case 'activeFileChanged':
@@ -184,16 +204,25 @@
       case 'customToolInventoryUpdated':
         return event.tools === undefined || Array.isArray(event.tools);
       case 'customToolInstallProgress':
-        return optionalBoolean(event.success) && (event.packages === undefined || Array.isArray(event.packages));
+        return (
+          optionalBoolean(event.success) &&
+          (event.packages === undefined || Array.isArray(event.packages))
+        );
       case 'toolRegistryUpdated':
-        return (event.availableTools === undefined || Array.isArray(event.availableTools))
-          && optionalNumber(event.unavailableCount);
+        return (
+          (event.availableTools === undefined || Array.isArray(event.availableTools)) &&
+          optionalNumber(event.unavailableCount)
+        );
       case 'customToolValidation':
         return optionalBoolean(event.success) && optionalString(event.message);
       case 'healthStatus':
         return true;
       case 'changeReviewUpdated':
-        return optionalString(event.id) && optionalBoolean(event.success) && optionalString(event.message);
+        return (
+          optionalString(event.id) &&
+          optionalBoolean(event.success) &&
+          optionalString(event.message)
+        );
       case 'assetSaved':
         return optionalString(event.path);
       case 'assetSaveFailed':
@@ -228,8 +257,10 @@
       return state ? { ...message, state } : null;
     }
     if (message.type === 'historySnapshot') return Array.isArray(message.history) ? message : null;
-    if (message.type === 'transientNotice') return typeof message.message === 'string' ? message : null;
-    if (message.type === 'visibilityChanged') return typeof message.visible === 'boolean' ? message : null;
+    if (message.type === 'transientNotice')
+      return typeof message.message === 'string' ? message : null;
+    if (message.type === 'visibilityChanged')
+      return typeof message.visible === 'boolean' ? message : null;
     if (message.type === 'fullState') return isObject(message.state) ? message : null;
     return null;
   }
@@ -237,8 +268,8 @@
   function createVsCodeApi(api) {
     return {
       getState: () => api.getState(),
-      setState: state => api.setState(state),
-      postMessage: message => {
+      setState: (state) => api.setState(state),
+      postMessage: (message) => {
         if (!isWebviewToHostMessage(message)) {
           console.warn('[Theseus] Unknown WebView message', message);
         }
@@ -253,4 +284,4 @@
     normalizeHostMessage,
     normalizeRunnerEvent,
   };
-}());
+})();

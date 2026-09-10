@@ -42,6 +42,7 @@ log = logging.getLogger(__name__)
 
 class HookEvent(str, Enum):
     """Theseus-native hook event types."""
+
     SESSION_START = "session_start"
     SESSION_END = "session_end"
     PRE_COMPACT = "pre_compact"
@@ -57,6 +58,7 @@ class HookEvent(str, Enum):
 @dataclass(frozen=True)
 class HookResult:
     """Result from a single hook execution."""
+
     hook_type: str
     success: bool
     output: str = ""
@@ -68,6 +70,7 @@ class HookResult:
 @dataclass(frozen=True)
 class AggregatedHookResult:
     """Aggregated result for a hook event."""
+
     results: list[HookResult] = field(default_factory=list)
 
     @property
@@ -94,7 +97,7 @@ class TheseusHookExecutor:
     _AUDIT_PROMPT = (
         "You are a security auditor. Does this file modification look safe, "
         "non-destructive, and not malicious? "
-        "Return strict JSON: {{\"ok\": true}} or {{\"ok\": false, \"reason\": \"...\"}}. "
+        'Return strict JSON: {{"ok": true}} or {{"ok": false, "reason": "..."}}. '
         "IMPORTANT: DO NOT use markdown backticks or any other formatting. "
         "Output raw JSON only. Arguments: {arguments}"
     )
@@ -120,9 +123,7 @@ class TheseusHookExecutor:
             "local_write_report",
         }
         self._retriever = (
-            ToolRetriever(full_registry)
-            if full_registry and enable_dynamic_tools
-            else None
+            ToolRetriever(full_registry) if full_registry and enable_dynamic_tools else None
         )
         self._always_allow: set[str] = set()
         self._last_failed_call: tuple[str, str] | None = None
@@ -169,7 +170,7 @@ class TheseusHookExecutor:
                                 f"({tool_name}) that previously failed. Stop repeating yourself! "
                                 f"Change your arguments, write a Python script file instead of running inline commands, "
                                 f"or explicitly ask the user for help."
-                            )
+                            ),
                         )
                     ]
                 )
@@ -188,7 +189,8 @@ class TheseusHookExecutor:
 
             # Execution 검증기
             exec_ok, exec_msg = ExecutionValidator.validate(
-                tool_name, tool_input,
+                tool_name,
+                tool_input,
             )
             if not exec_ok:
                 log.warning(
@@ -206,7 +208,8 @@ class TheseusHookExecutor:
 
             # Query 검증기
             query_ok, query_msg = QueryValidator.validate(
-                tool_name, tool_input,
+                tool_name,
+                tool_input,
             )
             if not query_ok:
                 log.warning(
@@ -251,13 +254,12 @@ class TheseusHookExecutor:
                 result_is_error = True
             elif tool_result and getattr(tool_result, "is_error", False):
                 result_is_error = True
-                
+
             if result_is_error:
                 tool_input_str = str(payload.get("tool_input", {}))
                 self._last_failed_call = (post_tool_name, tool_input_str)
             else:
                 self._last_failed_call = None
-
 
             if self._enable_dynamic_tools:
                 await self._discover_and_inject_tools(payload)
@@ -269,6 +271,7 @@ class TheseusHookExecutor:
             if isinstance(raw_output, (dict, list)):
                 try:
                     import json
+
                     payload["tool_output"] = json.dumps(raw_output, ensure_ascii=False, indent=2)
                 except Exception:
                     payload["tool_output"] = str(raw_output)
@@ -278,9 +281,7 @@ class TheseusHookExecutor:
                 tool_input = payload.get("tool_input", {})
                 file_path = tool_input.get("path") or tool_input.get("file_path") or ""
                 if file_path.endswith(".py"):
-                    self._validate_python_syntax(
-                        file_path, payload
-                    )
+                    self._validate_python_syntax(file_path, payload)
 
         return result
 
@@ -309,7 +310,8 @@ class TheseusHookExecutor:
 
             # Markdown 펜스 제거
             import re as _re
-            raw = _re.sub(r'```(?:json)?\n?|\n?```', '', raw).strip()
+
+            raw = _re.sub(r"```(?:json)?\n?|\n?```", "", raw).strip()
 
             parsed = _json.loads(raw)
             if isinstance(parsed, list) and parsed and isinstance(parsed[0], dict):
@@ -330,9 +332,7 @@ class TheseusHookExecutor:
             )
 
         except Exception as e:
-            log.warning(
-                "[AuditLLM] 감사 LLM 호출 실패 — fail-closed 정책으로 차단 처리: %s", e
-            )
+            log.warning("[AuditLLM] 감사 LLM 호출 실패 — fail-closed 정책으로 차단 처리: %s", e)
             return HookResult(
                 hook_type="theseus_audit_llm",
                 success=False,
@@ -440,13 +440,16 @@ class TheseusHookExecutor:
                     old_lines = []
                     title = f"✨ 신규 파일 생성: {file_path}"
 
-                diff_lines = list(difflib.unified_diff(
-                    old_lines, new_lines,
-                    fromfile=f"a/{file_path.name}",
-                    tofile=f"b/{file_path.name}",
-                    n=3,
-                    lineterm="",
-                ))
+                diff_lines = list(
+                    difflib.unified_diff(
+                        old_lines,
+                        new_lines,
+                        fromfile=f"a/{file_path.name}",
+                        tofile=f"b/{file_path.name}",
+                        n=3,
+                        lineterm="",
+                    )
+                )
 
             elif tool_name == "edit_file":
                 file_path = tool_input.get("path", "(알 수 없음)")
@@ -454,14 +457,16 @@ class TheseusHookExecutor:
                 new_str = tool_input.get("new_str", "")
                 title = f"✏️  파일 편집 미리보기: {file_path}"
 
-                diff_lines = list(difflib.unified_diff(
-                    old_str.splitlines(keepends=True),
-                    new_str.splitlines(keepends=True),
-                    fromfile="before",
-                    tofile="after",
-                    n=3,
-                    lineterm="",
-                ))
+                diff_lines = list(
+                    difflib.unified_diff(
+                        old_str.splitlines(keepends=True),
+                        new_str.splitlines(keepends=True),
+                        fromfile="before",
+                        tofile="after",
+                        n=3,
+                        lineterm="",
+                    )
+                )
             else:
                 return
 
@@ -518,7 +523,7 @@ class TheseusHookExecutor:
 
         # permission_prompt 콜백 획득 (payload 또는 context에서)
         permission_prompt = payload.get("permission_prompt") or self._permission_prompt
-        
+
         # 콜백이 없거나 호출 가능하지 않으면(예: bool 타입) HITL 스킵하고 허용
         if permission_prompt is None or not callable(permission_prompt):
             return None
@@ -541,7 +546,7 @@ class TheseusHookExecutor:
             # permission prompt callback은 (tool_name, reason) 형식으로 호출
             # 'ask_permission'이 bool을 반환할 수도 있고, 'input'처럼 문자열을 반환할 수도 있음
             result = await permission_prompt(tool_name, prompt_msg)
-            
+
             if isinstance(result, bool):
                 if result:
                     # '항상 허용'은 bool 인터페이스에서는 지원하지 않음 (단일 세션 허용)
@@ -554,7 +559,7 @@ class TheseusHookExecutor:
                         blocked=True,
                         reason="User denied tool execution via boolean prompt.",
                     )
-            
+
             # 문자열 반환 처리 (TUI/CLI input 등)
             response = str(result).strip().lower()
         except Exception as e:
@@ -585,9 +590,7 @@ class TheseusHookExecutor:
             reason=f"사용자가 '{tool_name}' 실행을 거부했습니다.",
         )
 
-    def _validate_python_syntax(
-        self, file_path: str, payload: dict[str, Any]
-    ) -> None:
+    def _validate_python_syntax(self, file_path: str, payload: dict[str, Any]) -> None:
         """수정된 Python 파일의 구문을 즉시 검증합니다 (Two-Tier).
 
         Tier 1: ``ast.parse()`` — 치명적 구문 에러 감지 (필수).
@@ -604,9 +607,7 @@ class TheseusHookExecutor:
             with open(file_path, "r", encoding="utf-8") as f:
                 source = f.read()
             ast.parse(source, filename=file_path)
-            log.info(
-                "[SelfReflection] %s: 구문 검증 통과 (ast)", file_path
-            )
+            log.info("[SelfReflection] %s: 구문 검증 통과 (ast)", file_path)
         except SyntaxError as e:
             warnings.append(
                 f"[SelfReflection] SYNTAX ERROR in {file_path}:\n"
@@ -614,9 +615,7 @@ class TheseusHookExecutor:
                 f"  이 에러를 반드시 수정하세요."
             )
         except Exception as e:
-            log.debug(
-                "[SelfReflection] 파일 읽기 실패: %s", e
-            )
+            log.debug("[SelfReflection] 파일 읽기 실패: %s", e)
             return
 
         # --- Tier 2: ruff check (선택적) ---
@@ -654,9 +653,7 @@ class TheseusHookExecutor:
         if warnings:
             combined = "\n".join(warnings)
             original = payload.get("tool_output", "")
-            payload["tool_output"] = (
-                f"{original}\n\n{combined}"
-            )
+            payload["tool_output"] = f"{original}\n\n{combined}"
             log.warning(combined)
 
     async def _discover_and_inject_tools(self, payload: dict[str, Any]) -> None:
@@ -681,17 +678,15 @@ class TheseusHookExecutor:
             )
 
             # 순회 중 레지스트리 변경(RuntimeError) 방지: 주입 대상을 먼저 확정한 뒤 일괄 등록
-            to_inject = [
-                tool for tool in new_tools
-                if self._active_registry.get(tool.name) is None
-            ]
+            to_inject = [tool for tool in new_tools if self._active_registry.get(tool.name) is None]
             injected_count = 0
             for tool in to_inject:
                 self._active_registry.register(tool)
                 injected_count += 1
                 log.info(
                     "[DynamicDiscovery] 새로운 도구 '%s'를 주입했습니다. (쿼리: '%s')",
-                    tool.name, search_query,
+                    tool.name,
+                    search_query,
                 )
 
             if injected_count > 0:
@@ -723,7 +718,7 @@ class TheseusHookExecutor:
 
         # 출력에서 파일 확장자 신호 추출
         extensions = _re.findall(
-            r'\.(py|ts|js|tsx|jsx|json|yaml|yml|toml|md|sh|sql)\b',
+            r"\.(py|ts|js|tsx|jsx|json|yaml|yml|toml|md|sh|sql)\b",
             tool_output,
         )
         if extensions:
@@ -743,4 +738,3 @@ class TheseusHookExecutor:
         query = " ".join(parts)
         log.debug("[DynamicDiscovery] 생성된 주입 쿼리: '%s'", query)
         return query
-

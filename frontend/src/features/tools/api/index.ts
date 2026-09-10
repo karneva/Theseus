@@ -1,6 +1,6 @@
+import { http } from '@/api/http';
 import { apiClient } from '@/api/client';
-import type { ApiResponse } from '@/api/auth';
-import type { PageResponse } from '@/features/admin/api';
+import type { PageResponse } from '@/api/types';
 import type { ToolDetailResponse, ToolItem } from '../types';
 
 export const toolApi = {
@@ -9,8 +9,10 @@ export const toolApi = {
    */
   getTools: async (projectId: string | number): Promise<ToolItem[]> => {
     try {
-      const response = await apiClient.get<ApiResponse<PageResponse<ToolItem>>>(`/api/v1/projects/${projectId}/tools`);
-      return response.data.result?.content || [];
+      const response = await http.get<PageResponse<ToolItem>>(
+        `/api/v1/projects/${projectId}/tools`,
+      );
+      return response?.content || [];
     } catch (error) {
       console.error('Failed to fetch tools:', error);
       throw error;
@@ -20,12 +22,12 @@ export const toolApi = {
   /**
    * 실제 생성된 Tool 산출물의 상세 정보를 조회합니다.
    */
-  getTool: async (projectId: string | number, toolId: string | number): Promise<ToolDetailResponse | null> => {
+  getTool: async (
+    projectId: string | number,
+    toolId: string | number,
+  ): Promise<ToolDetailResponse | null> => {
     try {
-      const response = await apiClient.get<ApiResponse<ToolDetailResponse>>(
-        `/api/v1/projects/${projectId}/tools/${toolId}`
-      );
-      return response.data.result;
+      return await http.get<ToolDetailResponse>(`/api/v1/projects/${projectId}/tools/${toolId}`);
     } catch (error) {
       console.error(`Failed to fetch tool ${toolId}:`, error);
       throw error;
@@ -38,7 +40,7 @@ export const toolApi = {
   updateToolStatus: async (
     projectId: string | number,
     toolId: string | number,
-    status: 'APPROVED' | 'REJECTED'
+    status: 'APPROVED' | 'REJECTED',
   ): Promise<boolean> => {
     try {
       await apiClient.patch(`/api/v1/projects/${projectId}/tools/${toolId}/status`, { status });
@@ -52,14 +54,13 @@ export const toolApi = {
   updateToolAccessLevel: async (
     projectId: string | number,
     toolId: string | number,
-    accessLevel: number
+    accessLevel: number,
   ): Promise<ToolItem> => {
     try {
-      const response = await apiClient.patch<ApiResponse<ToolItem>>(
+      return await http.patch<ToolItem>(
         `/api/v1/projects/${projectId}/tools/${toolId}/access-level`,
-        { accessLevel }
+        { accessLevel },
       );
-      return response.data.result;
     } catch (error) {
       console.error(`Failed to update tool ${toolId} access level:`, error);
       throw error;
@@ -77,5 +78,5 @@ export const toolApi = {
       console.error(`Failed to delete tool ${toolId}:`, error);
       throw error;
     }
-  }
+  },
 };

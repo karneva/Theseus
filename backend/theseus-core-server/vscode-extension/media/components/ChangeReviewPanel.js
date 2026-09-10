@@ -34,7 +34,7 @@ export function renderChangeReviewPanel({
 }) {
   if (!panelEl) return;
   panelEl.innerHTML = '';
-  const pending = Array.isArray(items) ? items.filter(item => item.status !== 'dismissed') : [];
+  const pending = Array.isArray(items) ? items.filter((item) => item.status !== 'dismissed') : [];
   panelEl.hidden = pending.length === 0;
   if (!pending.length) return;
 
@@ -50,7 +50,7 @@ export function renderChangeReviewPanel({
 
   const list = document.createElement('div');
   list.className = 'change-review-list';
-  pending.forEach(item => {
+  pending.forEach((item) => {
     const row = document.createElement('div');
     row.className = `change-review-item ${item.status || 'pending'}`;
     const info = document.createElement('div');
