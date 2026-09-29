@@ -859,11 +859,11 @@ VITE_API_BASE_URL=http://localhost:8080
 ## 👥 팀
 
 | 이름 | 역할 |
-| --- | --- | --- |
-| 손석우 | 팀장/Infra 아키텍처 및 CI/CD |
+| :---: | --- |
+| 손석우 | 팀장 / Infra 아키텍처 및 CI/CD |
 | 권대일 | LLM 모델 최적화 |
 | 김대연 | Full Stack |
-| 김선교 | AI/BE |
+| 김선교 | AI / BE |
 | 조원혁 | FE |
 
 ---
