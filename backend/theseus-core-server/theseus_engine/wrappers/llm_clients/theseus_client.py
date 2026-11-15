@@ -48,6 +48,16 @@ from theseus_engine.wrappers.llm_clients.debug_dump import (
     summarize_openai_params,
 )
 from theseus_engine.engine.model_router import get_model_router
+from theseus_engine.config import (
+    PROVIDER_ANTHROPIC,
+    PROVIDER_DEEPSEEK,
+    PROVIDER_GEMINI,
+    PROVIDER_OLLAMA,
+    PROVIDER_VLLM,
+    get_llm_settings,
+    llm_max_output_tokens,
+    resolve_provider,
+)
 
 
 def _required_api_key(provider: str, *env_names: str) -> str:
@@ -265,50 +275,50 @@ class TheseusLLMClient(SupportsStreamingMessages):
         self._current_mode: str = "Agent"
 
     def _initialize_backend(self, model_name: str) -> SupportsStreamingMessages:
-        model_lower = model_name.lower()
+        """모델 문자열의 provider에 맞는 백엔드 클라이언트를 만듭니다.
 
-        # 1. Anthropic (Claude)
-        if model_lower.startswith("anthropic/") or "claude" in model_lower:
+        provider 판정은 `resolve_provider`가 담당합니다(명시 접두사 우선, 없을 때만 추정).
+        base URL, timeout, 재시도 횟수는 `get_llm_settings()` 한 곳에서 읽습니다.
+        """
+        route = resolve_provider(model_name)
+        llm = get_llm_settings()
+
+        if route.provider == PROVIDER_ANTHROPIC:
             api_key = _required_api_key("Anthropic", "ANTHROPIC_API_KEY")
-            return TheseusAnthropicClient(api_key=api_key)
+            return TheseusAnthropicClient(api_key=api_key, max_retries=llm.max_retries)
 
-        # 2. Google (Gemini)
-        elif model_lower.startswith("google/") or "gemini" in model_lower:
+        if route.provider == PROVIDER_GEMINI:
             api_key = _required_api_key("Gemini", "GEMINI_API_KEY", "GOOGLE_API_KEY")
-            base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
             return TheseusGeminiClient(
                 api_key=api_key,
-                base_url=base_url,
-                timeout=120.0,
+                base_url=llm.gemini_base_url,
+                timeout=llm.timeout_seconds,
+                max_retries=llm.max_retries,
             )
 
-        # 3. DeepSeek
-        elif model_lower.startswith("deepseek/") or "deepseek" in model_lower:
+        if route.provider == PROVIDER_DEEPSEEK:
             api_key = _required_api_key("DeepSeek", "DEEPSEEK_API_KEY")
-            base_url = "https://api.deepseek.com/v1"
             return TheseusOpenAICompatClient(
                 api_key=api_key,
-                base_url=base_url,
-                timeout=120.0,
+                base_url=llm.deepseek_base_url,
+                timeout=llm.timeout_seconds,
+                max_retries=llm.max_retries,
             )
 
-        # 4. Ollama
-        elif model_lower.startswith("ollama/"):
-            base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1")
+        if route.provider == PROVIDER_OLLAMA:
             return TheseusOpenAICompatClient(
                 api_key="ollama",
-                base_url=base_url,
-                timeout=120.0,
+                base_url=llm.ollama_base_url,
+                timeout=llm.timeout_seconds,
+                max_retries=llm.max_retries,
             )
 
-        # 5. vLLM / Custom OpenAI Compatible
-        elif model_lower == "vllm" or model_lower.startswith("vllm/"):
-            base_url = os.getenv("OPENAI_BASE_URL", "http://localhost:8000/v1")
-            api_key = os.getenv("OPENAI_API_KEY", "vllm")
+        if route.provider == PROVIDER_VLLM:
             return TheseusOpenAICompatClient(
-                api_key=api_key,
-                base_url=base_url,
-                timeout=120.0,
+                api_key=os.getenv("OPENAI_API_KEY") or "vllm",
+                base_url=llm.vllm_base_url,
+                timeout=llm.timeout_seconds,
+                max_retries=llm.max_retries,
                 auto_discover_model=_env_flag(
                     "THESEUS_VLLM_AUTO_DISCOVER_MODEL",
                     True,
@@ -316,15 +326,14 @@ class TheseusLLMClient(SupportsStreamingMessages):
                 preferred_model=(os.getenv("THESEUS_VLLM_MODEL") or os.getenv("VLLM_MODEL")),
             )
 
-        # 6. Default (OpenAI: gpt-4o, o1, etc.)
-        else:
-            api_key = _required_api_key("OpenAI", "OPENAI_API_KEY")
-            base_url = os.getenv("OPENAI_BASE_URL", None)
-            return TheseusOpenAICompatClient(
-                api_key=api_key,
-                base_url=base_url,
-                timeout=120.0,
-            )
+        # OpenAI (gpt-*, o1 등과 접두사 없는 미확인 모델)
+        api_key = _required_api_key("OpenAI", "OPENAI_API_KEY")
+        return TheseusOpenAICompatClient(
+            api_key=api_key,
+            base_url=llm.openai_base_url,
+            timeout=llm.timeout_seconds,
+            max_retries=llm.max_retries,
+        )
 
     async def stream_message(
         self,
@@ -379,15 +388,12 @@ class TheseusLLMClient(SupportsStreamingMessages):
             mode=self._current_mode,
         )
         # 라우팅된 모델이 기본과 다르면 백엔드 재초기화
+        # provider 접두사(ollama/, vllm/ 등)만 떼고 실제 모델 id를 백엔드에 넘깁니다.
         if self._model_router.enabled and routed_model != self.model_name:
             self._backend = self._initialize_backend(routed_model)
-            actual_model = routed_model
-            if "/" in actual_model:
-                actual_model = actual_model.split("/", 1)[1]
+            actual_model = resolve_provider(routed_model).model_id
         else:
-            actual_model = request.model
-            if "/" in actual_model:
-                actual_model = actual_model.split("/", 1)[1]
+            actual_model = resolve_provider(request.model).model_id
 
         modified_request = ApiMessageRequest(
             model=actual_model,
@@ -435,7 +441,7 @@ class TheseusLLMClient(SupportsStreamingMessages):
         self,
         messages: list[dict[str, str]] | list[ConversationMessage],
         system_prompt: str = "",
-        max_tokens: int = 32768,
+        max_tokens: int | None = None,
         tools: list[Any] | None = None,
         model: str | None = None,
     ) -> ConversationMessage:
@@ -457,7 +463,7 @@ class TheseusLLMClient(SupportsStreamingMessages):
             model=model or self.model_name,
             messages=converted_messages,
             system_prompt=system_prompt,
-            max_tokens=max_tokens,
+            max_tokens=max_tokens if max_tokens is not None else llm_max_output_tokens(),
             tools=tools,
         )
 

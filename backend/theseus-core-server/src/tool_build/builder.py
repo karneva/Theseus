@@ -259,7 +259,7 @@ class ToolBuilder:
                     model=self.model_name,
                     messages=[ConversationMessage.from_user_text(prompt)],
                     system_prompt=_TOOL_BUILD_FAILURE_FEEDBACK_SYSTEM_PROMPT,
-                    max_tokens=32768,
+                    max_tokens=settings.LLM_MAX_OUTPUT_TOKENS,
                     tools=[],
                     debug_context={
                         **self._debug_context_for_event(event),
@@ -381,7 +381,7 @@ class ToolBuilder:
             model=self.model_name,
             messages=[ConversationMessage.from_user_text(prompt)],
             system_prompt=system_prompt,
-            max_tokens=32768,
+            max_tokens=settings.LLM_MAX_OUTPUT_TOKENS,
             tools=[],
             debug_context=debug_context or {},
         )

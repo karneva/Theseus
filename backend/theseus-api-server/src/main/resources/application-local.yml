@@ -1,23 +1,19 @@
-server:
-  port: ${SERVER_PORT:8080}
-
+# 로컬 개발(IDE 실행 또는 local compose) 전용 덮어쓰기입니다. 공통값은 application.yaml에 있습니다.
 spring:
   config:
     import:
       - optional:file:./.env.local[.properties]
       - optional:file:../../infra/docker/local/.env.local[.properties]
-  application:
-    name: theseus-api-server
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:13306/theseus}
-    username: ${SPRING_DATASOURCE_USERNAME:root}
+    username: ${SPRING_DATASOURCE_USERNAME:theseus}
     password: ${SPRING_DATASOURCE_PASSWORD}
   data:
     redis:
-      host: ${SPRING_DATA_REDIS_HOST:localhost}
       port: ${SPRING_DATA_REDIS_PORT:16379}
   jpa:
     hibernate:
+      # 로컬은 엔티티 변경을 바로 반영하도록 update를 유지합니다. 새 DB는 Flyway V1이 먼저 스키마를 만듭니다.
       ddl-auto: update
     show-sql: true
     properties:
@@ -26,52 +22,10 @@ spring:
         highlight_sql: true
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      acks: all
-      retries: 3
-    consumer:
-      group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID:theseus-api-tool-generation}
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      auto-offset-reset: earliest
-      properties:
-        spring.json.trusted.packages: com.theseus.api.domain.toolgeneration.event,java.util,java.lang,com.fasterxml.jackson.databind
-        spring.json.use.type.headers: false
 
 theseus:
   core:
     base-url: ${THESEUS_CORE_BASE_URL:http://localhost:8086}
-  kafka:
-    topics:
-      tool-plan-request: ${KAFKA_TOPIC_TOOL_PLAN_REQUEST:theseus.tool-plan.request}
-      tool-plan-event: ${KAFKA_TOPIC_TOOL_PLAN_EVENT:theseus.tool-plan.event}
-      tool-build-request: ${KAFKA_TOPIC_TOOL_BUILD_REQUEST:theseus.tool-build.request}
-      tool-build-event: ${KAFKA_TOPIC_TOOL_BUILD_EVENT:theseus.tool-build.event}
-  tool-generation:
-    state-ttl-minutes: ${THESEUS_TOOL_GENERATION_STATE_TTL_MINUTES:30}
-    sse-timeout-millis: ${THESEUS_TOOL_GENERATION_SSE_TIMEOUT_MILLIS:1800000}
-    run-timeout-minutes: ${THESEUS_TOOL_PLAN_RUN_TIMEOUT_MINUTES:30}
-    run-timeout-check-delay-millis: ${THESEUS_TOOL_PLAN_RUN_TIMEOUT_CHECK_DELAY_MILLIS:60000}
-    run-timeout-scheduler-enabled: ${THESEUS_TOOL_PLAN_RUN_TIMEOUT_SCHEDULER_ENABLED:false}
-    run-timeout-batch-size: ${THESEUS_TOOL_PLAN_RUN_TIMEOUT_BATCH_SIZE:20}
-
-springdoc:
-  api-docs:
-    enabled: ${SPRINGDOC_ENABLED:true}
-  swagger-ui:
-    enabled: ${SPRINGDOC_ENABLED:true}
-    path: /swagger-ui.html
-
-jwt:
-  secret: ${JWT_SECRET}
-  access-token-expiration-millis: ${JWT_ACCESS_TOKEN_EXPIRATION_MILLIS:3600000}
-  refresh-token-expiration-millis: ${JWT_REFRESH_TOKEN_EXPIRATION_MILLIS:1209600000}
-  refresh-token-cookie-name: ${JWT_REFRESH_TOKEN_COOKIE_NAME:refresh_token}
-  refresh-token-cookie-path: ${JWT_REFRESH_TOKEN_COOKIE_PATH:/api/v1/auth}
-  refresh-token-cookie-secure: ${JWT_REFRESH_TOKEN_COOKIE_SECURE:false}
-  refresh-token-cookie-same-site: ${JWT_REFRESH_TOKEN_COOKIE_SAME_SITE:Lax}
-
-internal:
-  api-key: ${INTERNAL_API_KEY}
+  cors:
+    # 로컬 Vite 개발 서버에서 API를 직접 호출할 수 있도록 기본 origin을 둡니다.
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}

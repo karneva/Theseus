@@ -374,7 +374,8 @@ def get_query_engine(
         cwd=Path.cwd(),
         model=model_name,
         system_prompt=system_prompt,
-        max_turns=30,
+        max_tokens=settings.LLM_MAX_OUTPUT_TOKENS,
+        max_turns=settings.CORE_STREAM_MAX_AGENT_TURNS,
         permission_prompt=_deny_permission_prompt,
         tool_metadata={
             "tool_registry": full_registry,

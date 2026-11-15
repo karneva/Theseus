@@ -4,16 +4,15 @@ import httpx
 from fastapi import HTTPException, status
 from pydantic import TypeAdapter
 from pydantic import ValidationError
-from src.auth.schemas import UserSession, BillingUsageReport, AgentToolPlanPayload
+from src.auth.schemas import UserSession, BillingUsageReport
+from src.auth.guards import INTERNAL_API_KEY_HEADER
 from src.config import settings
 
 logger = logging.getLogger(__name__)
 
-INTERNAL_API_KEY_HEADER = "X-Internal-Api-Key"
-
 
 def internal_api_headers() -> dict[str, str]:
-    return {INTERNAL_API_KEY_HEADER: settings.SPRING_BOOT_INTERNAL_API_KEY}
+    return {INTERNAL_API_KEY_HEADER: settings.INTERNAL_API_KEY}
 
 
 def unwrap_api_response(payload: object) -> object:
@@ -41,7 +40,7 @@ class PermissionBackendUnavailableError(PermissionClientError):
 
 class AuthClient:
     def __init__(self):
-        self.verify_url = settings.SPRING_BOOT_AUTH_VERIFY_URL
+        self.verify_url = settings.spring_auth_verify_url
         self.timeout = settings.AUTH_TIMEOUT_SECONDS
 
     async def verify_token(
@@ -98,7 +97,7 @@ class AuthClient:
 
 class PermissionClient:
     def __init__(self):
-        self.permissions_url = settings.SPRING_BOOT_PROJECT_PERMISSIONS_URL
+        self.permissions_url = settings.spring_project_permissions_url
         self.timeout = settings.INTERNAL_API_TIMEOUT_SECONDS
         self._response_adapter = TypeAdapter(dict[str, int])
 
@@ -139,7 +138,7 @@ class PermissionClient:
 
 class BillingClient:
     def __init__(self):
-        self.usage_url = settings.SPRING_BOOT_BILLING_USAGE_URL
+        self.usage_url = settings.spring_billing_usage_url
         self.timeout = settings.INTERNAL_API_TIMEOUT_SECONDS
 
     async def report_usage(
@@ -178,43 +177,6 @@ class BillingClient:
                 return False
 
 
-class AgentClient:
-    """
-    AI 에이전트의 PLAN draft 결과물을 Backend(Spring)에 전송하는 클라이언트
-    """
-
-    def __init__(self):
-        self.save_plan_url = settings.SPRING_BOOT_TOOL_PLAN_URL
-        self.timeout = settings.INTERNAL_API_TIMEOUT_SECONDS
-
-    async def save_tool_plan(self, payload: AgentToolPlanPayload) -> bool:
-        """
-        생성된 PLAN draft를 Spring 서버에 저장하도록 요청합니다.
-        """
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.post(
-                    self.save_plan_url,
-                    headers=internal_api_headers(),
-                    json=payload.model_dump(mode="json"),
-                    timeout=self.timeout,
-                )
-
-                if response.status_code in [200, 201]:
-                    logger.info(f"Successfully saved tool plan: {payload.toolName}")
-                    return True
-                else:
-                    logger.error(
-                        f"Failed to save tool plan: {response.status_code} - {response.text}"
-                    )
-                    return False
-
-            except httpx.RequestError as exc:
-                logger.error(f"Failed to connect to backend server for plan storage: {exc}")
-                return False
-
-
 auth_client = AuthClient()
 permission_client = PermissionClient()
 billing_client = BillingClient()
-agent_client = AgentClient()

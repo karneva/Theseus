@@ -75,7 +75,7 @@ class BillingUsageReport(BaseModel):
         return _coerce_int(value)
 
 
-# --- PLAN Draft Storage Schemas ---
+# --- PLAN 본문 스키마 (src/plan에서 사용) ---
 
 
 class PlanStep(BaseModel):
@@ -96,15 +96,3 @@ class StructuredPlan(BaseModel):
     steps: list[PlanStep]
     risks: list[str]
     successCriteria: list[str]
-
-
-class AgentToolPlanPayload(BaseModel):
-    """
-    AI 서버가 PLAN draft 생성을 완료한 후 Backend(Spring)에 저장을 요청할 때 사용하는 페이로드
-    """
-
-    projectMemberId: int
-    chatSessionId: int
-    toolName: str
-    rawMarkdown: str
-    structuredPlan: StructuredPlan

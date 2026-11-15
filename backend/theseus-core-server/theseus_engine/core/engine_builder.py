@@ -23,6 +23,7 @@ from theseus_engine.core.tool_visibility import (
     build_visible_registry,
     can_create_tool_for_state,
 )
+from theseus_engine.config import stream_max_agent_turns
 from theseus_engine.models.rbac import TheseusPermissionChecker
 from theseus_engine.wrappers.hooks.theseus_hook_executor import (
     TheseusHookExecutor,
@@ -265,7 +266,7 @@ async def setup_engine(
             )
             + ("\n\n" + memory_context if memory_context else "")
         ),
-        max_turns=30,
+        max_turns=stream_max_agent_turns(),
         permission_prompt=permission_prompt_func if callable(permission_prompt_func) else None,
         skill_injection_config=SkillInjectionConfig(
             enabled=_resolve_skill_injection_enabled(enable_skill_injection),

@@ -3,8 +3,8 @@
 에이전트가 실행하는 도구(Tool)의 인자에 포함된 API 호출이나
 파일 변경 작업이 안전한지 검증합니다.
 
-기본 모드: Regex (패턴 매칭, 비용 0)
-고급 모드: LLM (에이전트 판단, THESEUS_USE_LLM_VALIDATOR=true)
+Regex 패턴 매칭으로 검사합니다(비용 0). LLM 기반 검증 스텁은 실제 호출 없이
+regex로 폴백만 했기 때문에 제거했습니다.
 
 Theseus hook executor가 PRE_TOOL_USE 단계에서 호출할 수 있습니다.
 """
@@ -12,7 +12,6 @@ Theseus hook executor가 PRE_TOOL_USE 단계에서 호출할 수 있습니다.
 from __future__ import annotations
 
 import logging
-import os
 import re
 from typing import Any, Dict, List, Tuple
 
@@ -99,9 +98,7 @@ _BASH_PATH_TRAVERSAL_PATTERN = re.compile(
 class ExecutionValidator:
     """도구 실행 인자에서 상태 변경(Mutating) 작업을 탐지합니다.
 
-    기본(Default)은 Regex 패턴 매칭 방식이며,
-    `THESEUS_USE_LLM_VALIDATOR=true` 환경변수가 설정되면
-    LLM 기반 심층 분석 모드로 전환됩니다.
+    Regex 패턴 매칭 방식으로 동작합니다.
     """
 
     @theseus_traceable(
@@ -124,13 +121,6 @@ class ExecutionValidator:
         Returns:
             (안전 여부, 메시지) 튜플.
         """
-        use_llm = os.getenv("THESEUS_USE_LLM_VALIDATOR", "false").lower() == "true"
-
-        if use_llm:
-            return cls._validate_with_llm(
-                tool_name,
-                tool_input,
-            )
         return cls._validate_with_regex(
             tool_name,
             tool_input,
@@ -198,36 +188,3 @@ class ExecutionValidator:
             return False, (f"Execution validation warning " f"({len(warnings)} items):\n" + detail)
 
         return True, "Execution validation passed."
-
-    # ------------------------------------------------------------------
-    # LLM-based validation (Toggle)
-    # ------------------------------------------------------------------
-
-    @classmethod
-    def _validate_with_llm(
-        cls,
-        tool_name: str,
-        tool_input: Dict[str, Any],
-    ) -> Tuple[bool, str]:
-        """LLM을 활용한 심층 안전성 분석.
-
-        Note:
-            이 메서드는 현재 미구현(Stub) 상태입니다.
-            THESEUS_USE_LLM_VALIDATOR=true 로 활성화해도
-            실제 LLM 호출 없이 Regex 검증으로 폴백합니다.
-            이 사실을 시작 로그에 명시적으로 경고합니다.
-        """
-        log.warning(
-            "[LLM Validator] THESEUS_USE_LLM_VALIDATOR=true 이지만 "
-            "LLM 검증기가 아직 구현되지 않았습니다. "
-            "도구 '%s'에 대해 Regex 검증으로 폴백합니다. "
-            "실제 LLM 기반 검증이 필요하면 _validate_with_llm을 구현하세요.",
-            tool_name,
-        )
-        # TODO: TheseusLLMClient를 통해 실제 LLM 호출 구현
-        # Prompt: "Is this tool execution safe and non-destructive?
-        #          Tool: {tool_name}, Arguments: {tool_input}"
-        return cls._validate_with_regex(
-            tool_name,
-            tool_input,
-        )

@@ -256,7 +256,7 @@ class ToolPlanPlanner:
                         model=self.model_name,
                         messages=messages,
                         system_prompt=PLAN_STRUCTURED_OUTPUT_SYSTEM_PROMPT,
-                        max_tokens=32768,
+                        max_tokens=settings.LLM_MAX_OUTPUT_TOKENS,
                         tools=[],
                         debug_context={
                             "run_id": event.run_id,
@@ -515,7 +515,7 @@ class ToolPlanPlanner:
                     model=self.model_name,
                     messages=messages,
                     system_prompt=PLAN_VALIDATION_FEEDBACK_SYSTEM_PROMPT,
-                    max_tokens=32768,
+                    max_tokens=settings.LLM_MAX_OUTPUT_TOKENS,
                     tools=[],
                     debug_context={
                         "run_id": event.run_id,
@@ -652,7 +652,7 @@ class ToolPlanPlanner:
                     model=self.model_name,
                     messages=[ConversationMessage.from_user_text(prompt)],
                     system_prompt=PLAN_FAILURE_FEEDBACK_SYSTEM_PROMPT,
-                    max_tokens=32768,
+                    max_tokens=settings.LLM_MAX_OUTPUT_TOKENS,
                     tools=[],
                     debug_context={
                         "run_id": event.run_id,

@@ -1,0 +1,19 @@
+# 운영(셀프호스팅) 프로필입니다. SPRING_PROFILES_ACTIVE=prod로 활성화합니다.
+# 접속 정보와 비밀값은 기본값 없이 환경변수로만 받습니다(SPRING_DATASOURCE_*, SPRING_DATA_REDIS_*,
+# SPRING_KAFKA_BOOTSTRAP_SERVERS, THESEUS_CORE_BASE_URL, JWT_SECRET, INTERNAL_API_KEY).
+spring:
+  jpa:
+    hibernate:
+      # 스키마 변경은 Flyway 마이그레이션으로만 합니다.
+      ddl-auto: validate
+    show-sql: false
+
+springdoc:
+  api-docs:
+    enabled: ${SPRINGDOC_ENABLED:false}
+  swagger-ui:
+    enabled: ${SPRINGDOC_ENABLED:false}
+
+jwt:
+  # HTTPS 뒤에서 운영하므로 refresh 쿠키는 기본으로 Secure 플래그를 붙입니다.
+  refresh-token-cookie-secure: ${JWT_REFRESH_TOKEN_COOKIE_SECURE:true}

@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.dao.DataAccessException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -34,39 +33,37 @@ public class InitialSuperAdminInitializer implements ApplicationRunner {
 	@Value("${INITIAL_ADMIN_PASSWORD:}")
 	private String initialAdminPassword;
 
+	/**
+	 * SUPER_ADMIN이 한 명도 없을 때만 INITIAL_ADMIN_* 값으로 최초 관리자를 만듭니다.
+	 * 스키마는 Flyway가 먼저 준비하므로 DB 오류를 삼키지 않고 그대로 던져 기동을 실패시킵니다.
+	 */
 	@Override
 	public void run(ApplicationArguments args) {
-		try {
-			if (userRepository.existsBySystemRole(SystemRole.SUPER_ADMIN)) {
-				return;
-			}
-
-			if (!hasInitialAdminRequiredValues()) {
-				log.info(
-					">>>> Initial SUPER_ADMIN was not created because required environment values are missing."
-				);
-				return;
-			}
-
-			User initialSuperAdmin = User.builder()
-				.employeeNumber(initialAdminEmployeeNumber)
-				.name(initialAdminName)
-				.email(hasText(initialAdminEmail) ? initialAdminEmail : null)
-				.password(passwordEncoder.encode(initialAdminPassword))
-				.systemRole(SystemRole.SUPER_ADMIN)
-				.status(UserStatus.ACTIVE)
-				.build();
-
-			userRepository.save(initialSuperAdmin);
-			log.info(
-				">>>> Initial SUPER_ADMIN has been created. employeeNumber={}",
-				initialAdminEmployeeNumber
-			);
-		} catch (DataAccessException dataAccessException) {
-			log.warn(
-				">>>> Initial SUPER_ADMIN creation was skipped because the users table is not ready."
-			);
+		if (userRepository.existsBySystemRole(SystemRole.SUPER_ADMIN)) {
+			return;
 		}
+
+		if (!hasInitialAdminRequiredValues()) {
+			log.info(
+				">>>> Initial SUPER_ADMIN was not created because required environment values are missing."
+			);
+			return;
+		}
+
+		User initialSuperAdmin = User.builder()
+			.employeeNumber(initialAdminEmployeeNumber)
+			.name(initialAdminName)
+			.email(hasText(initialAdminEmail) ? initialAdminEmail : null)
+			.password(passwordEncoder.encode(initialAdminPassword))
+			.systemRole(SystemRole.SUPER_ADMIN)
+			.status(UserStatus.ACTIVE)
+			.build();
+
+		userRepository.save(initialSuperAdmin);
+		log.info(
+			">>>> Initial SUPER_ADMIN has been created. employeeNumber={}",
+			initialAdminEmployeeNumber
+		);
 	}
 
 	private boolean hasInitialAdminRequiredValues() {

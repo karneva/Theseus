@@ -87,7 +87,10 @@ class TheseusAnthropicClient:
         api_key: str | None = None,
         *,
         base_url: str | None = None,
+        max_retries: int | None = None,
     ) -> None:
+        # max_retries는 SDK 내부 재시도가 아니라 이 래퍼의 재시도 루프 횟수입니다.
+        self._max_retries = MAX_RETRIES if max_retries is None else max(0, max_retries)
         kwargs: dict[str, Any] = {}
         if api_key:
             kwargs["api_key"] = api_key
@@ -99,7 +102,8 @@ class TheseusAnthropicClient:
         """Yield text deltas and the final assistant message with retry."""
         last_error: Exception | None = None
 
-        for attempt in range(MAX_RETRIES + 1):
+        max_retries = self._max_retries
+        for attempt in range(max_retries + 1):
             try:
                 async for event in self._stream_once(request):
                     yield event
@@ -108,7 +112,7 @@ class TheseusAnthropicClient:
                 raise
             except Exception as exc:
                 last_error = exc
-                if attempt >= MAX_RETRIES or not _is_retryable(exc):
+                if attempt >= max_retries or not _is_retryable(exc):
                     if isinstance(exc, APIError):
                         raise _translate_api_error(exc) from exc
                     raise RequestFailure(str(exc)) from exc
@@ -118,7 +122,7 @@ class TheseusAnthropicClient:
                 log.warning(
                     "Anthropic API failed (attempt %d/%d, status=%s), " "retrying in %.1fs: %s",
                     attempt + 1,
-                    MAX_RETRIES + 1,
+                    max_retries + 1,
                     status,
                     delay,
                     exc,
@@ -126,7 +130,7 @@ class TheseusAnthropicClient:
                 yield ApiRetryEvent(
                     message=str(exc),
                     attempt=attempt + 1,
-                    max_attempts=MAX_RETRIES + 1,
+                    max_attempts=max_retries + 1,
                     delay_seconds=delay,
                 )
                 await asyncio.sleep(delay)

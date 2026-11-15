@@ -25,7 +25,7 @@ class RemoteWorkspaceResolver:
         config_url: str | None = None,
         timeout_seconds: int | None = None,
     ) -> None:
-        self.config_url = config_url or settings.SPRING_BOOT_REMOTE_WORKSPACE_CONFIG_URL
+        self.config_url = config_url or settings.spring_remote_workspace_config_url
         self.timeout_seconds = timeout_seconds or settings.INTERNAL_API_TIMEOUT_SECONDS
 
     async def resolve(

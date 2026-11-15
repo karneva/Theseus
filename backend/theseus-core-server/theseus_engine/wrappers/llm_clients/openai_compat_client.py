@@ -269,7 +269,10 @@ class TheseusOpenAICompatClient:
         timeout: float | None = None,
         auto_discover_model: bool = False,
         preferred_model: str | None = None,
+        max_retries: int | None = None,
     ) -> None:
+        # max_retries는 SDK 내부 재시도가 아니라 이 래퍼의 재시도 루프 횟수입니다.
+        self._max_retries = MAX_RETRIES if max_retries is None else max(0, max_retries)
         kwargs: dict[str, Any] = {"api_key": api_key}
         normalized = _normalize_openai_base_url(base_url)
         if normalized:
@@ -285,7 +288,8 @@ class TheseusOpenAICompatClient:
         """Yield text deltas and the final message with retry."""
         last_error: Exception | None = None
 
-        for attempt in range(MAX_RETRIES + 1):
+        max_retries = self._max_retries
+        for attempt in range(max_retries + 1):
             try:
                 async for event in self._stream_once(request):
                     yield event
@@ -294,21 +298,21 @@ class TheseusOpenAICompatClient:
                 raise
             except Exception as exc:
                 last_error = exc
-                if attempt >= MAX_RETRIES or not self._is_retryable(exc):
+                if attempt >= max_retries or not self._is_retryable(exc):
                     raise self._translate_error(exc) from exc
 
                 delay = min(BASE_DELAY * (2**attempt), MAX_DELAY)
                 log.warning(
                     "OpenAI-compat API failed (attempt %d/%d), " "retrying in %.1fs: %s",
                     attempt + 1,
-                    MAX_RETRIES + 1,
+                    max_retries + 1,
                     delay,
                     exc,
                 )
                 yield ApiRetryEvent(
                     message=str(exc),
                     attempt=attempt + 1,
-                    max_attempts=MAX_RETRIES + 1,
+                    max_attempts=max_retries + 1,
                     delay_seconds=delay,
                 )
                 await asyncio.sleep(delay)

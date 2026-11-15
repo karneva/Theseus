@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from theseus_engine.config import llm_max_output_tokens
 from theseus_engine.validators.execution_validator import (
     ExecutionValidator,
 )
@@ -346,7 +347,7 @@ class TheseusHookExecutor:
         if callable(generate):
             return await generate(
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=32768,
+                max_tokens=llm_max_output_tokens(),
             )
 
         stream_message = getattr(self._llm_client, "stream_message", None)
@@ -369,7 +370,7 @@ class TheseusHookExecutor:
                     content=[TextBlock(text=prompt)],
                 )
             ],
-            max_tokens=32768,
+            max_tokens=llm_max_output_tokens(),
             tools=[],
         )
         chunks: list[str] = []

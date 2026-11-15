@@ -11,7 +11,6 @@ from src.routes import health, plan, remote_workspace, sandbox, stream, tool
 from src.sandbox.base import SandboxUnavailableError
 from src.sandbox.docker_executor import DockerExecutor, SandboxStartupCheckError
 from src.tool_build.consumer import start_tool_build_consumer
-from src.tool_generation.consumer import start_tool_generation_consumer
 from src.tool_plan.consumer import start_tool_plan_consumer
 import logging
 
@@ -23,19 +22,6 @@ _sandbox_executor = DockerExecutor()
 
 def _initial_consumer_status() -> dict[str, dict]:
     return {
-        "toolGeneration": {
-            "enabled": (
-                settings.CORE_KAFKA_CONSUMER_ENABLED
-                and settings.CORE_LEGACY_TOOL_GENERATION_CONSUMER_ENABLED
-            ),
-            "started": False,
-            "topics": [
-                settings.KAFKA_TOPIC_TOOL_GENERATION_REQUEST,
-                settings.KAFKA_TOPIC_TOOL_REGENERATION_REQUEST,
-            ],
-            "groupId": settings.CORE_KAFKA_CONSUMER_GROUP_ID,
-            "error": None,
-        },
         "toolPlan": {
             "enabled": (
                 settings.CORE_KAFKA_CONSUMER_ENABLED and settings.CORE_TOOL_PLAN_CONSUMER_ENABLED
@@ -46,7 +32,9 @@ def _initial_consumer_status() -> dict[str, dict]:
             "error": None,
         },
         "toolBuild": {
-            "enabled": settings.CORE_KAFKA_CONSUMER_ENABLED,
+            "enabled": (
+                settings.CORE_KAFKA_CONSUMER_ENABLED and settings.CORE_TOOL_BUILD_CONSUMER_ENABLED
+            ),
             "started": False,
             "topic": settings.KAFKA_TOPIC_TOOL_BUILD_REQUEST,
             "groupId": settings.CORE_KAFKA_TOOL_BUILD_CONSUMER_GROUP_ID,
@@ -99,7 +87,6 @@ async def lifespan(app: FastAPI):
 
     scheduler = setup_scheduler()
     app.state.billing_scheduler = scheduler
-    app.state.tool_generation_consumer = None
     app.state.tool_plan_consumer = None
     app.state.tool_build_consumer = None
     app.state.core_consumer_status = _initial_consumer_status()
@@ -113,17 +100,6 @@ async def lifespan(app: FastAPI):
         )
     else:
         logger.warning("Billing outbox scheduler is unavailable in this environment.")
-
-    try:
-        app.state.tool_generation_consumer = await start_tool_generation_consumer()
-        _mark_consumer_status(
-            app,
-            "toolGeneration",
-            started=app.state.tool_generation_consumer is not None,
-        )
-    except Exception as exc:
-        _mark_consumer_status(app, "toolGeneration", started=False, error=exc)
-        logger.error("Legacy ToolGeneration Kafka consumer startup failed: %s", exc, exc_info=True)
 
     try:
         app.state.tool_plan_consumer = await start_tool_plan_consumer()
@@ -154,8 +130,6 @@ async def lifespan(app: FastAPI):
             await app.state.tool_build_consumer.stop()
         if app.state.tool_plan_consumer is not None:
             await app.state.tool_plan_consumer.stop()
-        if app.state.tool_generation_consumer is not None:
-            await app.state.tool_generation_consumer.stop()
         if scheduler is not None and scheduler.running:
             scheduler.shutdown(wait=False)
             logger.info("Billing outbox scheduler stopped.")
@@ -166,6 +140,10 @@ app = FastAPI(
     version="0.1.0",
     description="Theseus B2B AI Agent Platform Core Server",
     lifespan=lifespan,
+    # prod에서는 OpenAPI 스키마와 Swagger UI를 노출하지 않습니다(내부 엔드포인트 목록 은닉).
+    docs_url=None if settings.is_production else "/docs",
+    redoc_url=None if settings.is_production else "/redoc",
+    openapi_url=None if settings.is_production else "/openapi.json",
 )
 
 # CORS 설정
@@ -179,6 +157,7 @@ app.add_middleware(
 
 # 라우터 등록
 app.include_router(health.router, tags=["System"])
+app.include_router(health.details_router, tags=["System"])
 app.include_router(stream.router, prefix="/api/v1", tags=["Streaming"])
 app.include_router(plan.router, prefix="/api/v1", tags=["Plan"])
 app.include_router(sandbox.router, prefix="/api/v1", tags=["Sandbox"])
@@ -198,10 +177,11 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 @app.get("/")
 async def root():
-    return {"message": f"Welcome to {settings.APP_NAME}", "docs": "/docs"}
+    return {"message": f"Welcome to {settings.APP_NAME}"}
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=True)
+    # Dockerfile, compose, API Server 기본값과 같은 포트(settings.PORT, 기본 8086)를 씁니다.
+    uvicorn.run("src.main:app", host="0.0.0.0", port=settings.PORT, reload=not settings.is_production)

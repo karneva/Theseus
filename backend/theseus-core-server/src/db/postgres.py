@@ -7,8 +7,9 @@ engine = create_engine(
     settings.database_url,
     echo=False,  # 쿼리 로깅이 필요하면 True로 변경
     pool_pre_ping=True,  # 끊어진 연결 자동 재연결
-    pool_size=5,
-    max_overflow=10,
+    pool_size=settings.CORE_POSTGRES_POOL_SIZE,
+    max_overflow=settings.CORE_POSTGRES_MAX_OVERFLOW,
+    connect_args=settings.database_connect_args,
 )
 
 # 세션 팩토리 생성

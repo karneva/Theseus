@@ -12,6 +12,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Awaitable, Callable, Generic, TypeVar
 
+from theseus_engine.config import llm_max_output_tokens
 from theseus_engine.models.messages import ConversationMessage
 from theseus_engine.wrappers.llm_clients.api_types import (
     ApiMessageCompleteEvent,
@@ -310,7 +311,7 @@ class ToolRepairLoop(Generic[T, S]):
                 "You repair Theseus generated custom tool artifacts. "
                 "Return strict JSON only. Do not include markdown fences."
             ),
-            max_tokens=32768,
+            max_tokens=llm_max_output_tokens(),
             tools=[],
             debug_context=self.debug_context,
         )

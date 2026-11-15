@@ -89,7 +89,7 @@ class ToolBuildKafkaConsumer:
 
 
 async def start_tool_build_consumer() -> ToolBuildKafkaConsumer | None:
-    if not settings.CORE_KAFKA_CONSUMER_ENABLED:
+    if not settings.CORE_KAFKA_CONSUMER_ENABLED or not settings.CORE_TOOL_BUILD_CONSUMER_ENABLED:
         logger.info("Tool build Kafka consumer is disabled.")
         return None
 

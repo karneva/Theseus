@@ -14,7 +14,7 @@ class HistoryClientError(Exception):
 class HistoryClient:
     def __init__(self) -> None:
         self.base_url = settings.SPRING_BOOT_INTERNAL_URL.rstrip("/")
-        self.history_save_url = settings.SPRING_BOOT_INTERNAL_HISTORY_MESSAGES_URL
+        self.history_save_url = settings.spring_history_messages_url
         self.timeout = settings.INTERNAL_API_TIMEOUT_SECONDS
         self._message_list_adapter = TypeAdapter(list[HistoryMessageRecord])
 
