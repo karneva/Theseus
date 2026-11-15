@@ -13,7 +13,8 @@ RUN npm ci
 
 # 소스 코드 전체 복사 후, Vite 빌드 실행
 COPY . .
-ARG VITE_API_BASE_URL
+# 선택 build arg. 비우면 same-origin(/api)으로 요청하므로 한 이미지를 어느 도메인/IP에도 배포할 수 있다.
+ARG VITE_API_BASE_URL=""
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN npm run build
 
@@ -22,7 +23,8 @@ RUN npm run build
 # 2. Production Stage
 # 가벼운 Nginx 이미지를 사용하여 빌드된 정적 리소스를 제공합니다.
 # ─────────────────────────────────────────────────────────────
-FROM nginx:alpine
+# 태그를 고정해 재빌드마다 런타임이 바뀌지 않게 한다(infra/docker/selfhost/nginx와 같은 태그).
+FROM nginx:1.27.5-alpine
 
 # 프로젝트 루트에서 생성한 사용자 정의 nginx.conf 복사 (SPA 라우팅 지원)
 COPY nginx.conf /etc/nginx/conf.d/default.conf

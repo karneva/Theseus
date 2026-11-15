@@ -1,18 +1,43 @@
-FROM python:3.11-slim
+# syntax=docker/dockerfile:1
+#
+# 생성 Tool 검증(sandbox gate)과 실행에 쓰는 sandbox 이미지.
+# - builder: 컴파일러가 필요한 패키지를 대비해 build-essential을 이 단계에만 둡니다.
+# - runtime: venv만 복사하고 non-root(sandbox) 사용자로 실행합니다.
+# Core는 실행 시 user=65534, cap_drop=ALL, read_only 등을 추가로 강제합니다
+# (src/sandbox/docker_executor.py hardened_container_options).
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-
-WORKDIR /sandbox
+FROM python:3.11-slim AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
+ENV PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+RUN python -m venv /opt/venv
+ENV PATH=/opt/venv/bin:$PATH
+
+COPY requirements-sandbox.txt /sandbox/requirements/
+RUN pip install -r /sandbox/requirements/requirements-sandbox.txt \
+    && pip check
+
+FROM python:3.11-slim AS runtime
+
+ENV PATH=/opt/venv/bin:$PATH \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+RUN groupadd --system --gid 10001 sandbox \
+    && useradd --system --uid 10001 --gid sandbox --no-create-home --home-dir /tmp sandbox
+
+COPY --from=builder /opt/venv /opt/venv
+# Core의 startup check가 이 파일의 존재와 import 가능 여부를 확인합니다.
 COPY requirements-sandbox.txt /sandbox/requirements/
 
-RUN python -m pip install --upgrade pip \
-    && pip install --no-cache-dir \
-        -r /sandbox/requirements/requirements-sandbox.txt \
-    && python -m pip check \
+WORKDIR /sandbox
+
+RUN python -m pip check \
     && python -c "import pydantic, psutil, markdownify, bs4, yaml, requests, httpx, numpy, packaging, dotenv"
+
+USER sandbox

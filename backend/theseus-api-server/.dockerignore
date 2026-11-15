@@ -1,0 +1,14 @@
+# 빌드 컨텍스트에는 Gradle 빌드에 필요한 파일만 보냅니다.
+.gradle/
+.gradle-home/
+build/
+out/
+bin/
+.idea/
+.vscode/
+*.iml
+*.log
+.env
+.env.*
+HELP.md
+README.md
