@@ -1,0 +1,11 @@
+# 컨테이너와 Linux 서버에서 실행되는 파일은 Windows 체크아웃(autocrlf)에서도 LF를 유지합니다.
+*.sh text eol=lf
+*.envsh text eol=lf
+*.conf text eol=lf
+*.cnf text eol=lf
+*.template text eol=lf
+*.sql text eol=lf
+*.yml text eol=lf
+Dockerfile text eol=lf
+# env 템플릿은 서버로 그대로 복사되어 grep/compose가 읽으므로 CR이 섞이면 값이 '\r'로 남습니다.
+.env.example text eol=lf

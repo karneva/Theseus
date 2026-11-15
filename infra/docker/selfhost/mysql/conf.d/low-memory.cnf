@@ -1,0 +1,30 @@
+# 3.8GB 단일 서버용 MySQL 8.4 저메모리 설정입니다(mem_limit 384m).
+# 사용자 수가 적은 팀 서버 기준이라 버퍼와 커넥션을 작게 잡았습니다.
+[mysqld]
+# performance_schema는 그 자체로 수백 MB를 잡습니다.
+performance_schema = OFF
+mysqlx = OFF
+skip-name-resolve
+host_cache_size = 0
+
+innodb_buffer_pool_size = 128M
+innodb_log_buffer_size = 8M
+
+# API Hikari 기본 풀 10개 + Flyway + 운영 접속을 감안한 값입니다.
+max_connections = 40
+thread_cache_size = 4
+table_open_cache = 256
+table_definition_cache = 400
+
+key_buffer_size = 8M
+tmp_table_size = 16M
+max_heap_table_size = 16M
+sort_buffer_size = 256K
+join_buffer_size = 256K
+read_buffer_size = 128K
+read_rnd_buffer_size = 256K
+
+# 복제를 쓰지 않으므로 binlog는 3일만 보관해 디스크를 아낍니다. 백업은 mysqldump(scripts/backup.sh)로 합니다.
+binlog_expire_logs_seconds = 259200
+
+character-set-server = utf8mb4

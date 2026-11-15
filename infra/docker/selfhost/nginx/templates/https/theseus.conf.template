@@ -1,0 +1,50 @@
+# HTTPS 템플릿입니다. /etc/letsencrypt/live/${DOMAIN}/에 인증서가 있으면 자동으로 선택됩니다.
+# - 80: ACME 갱신 경로와 healthcheck만 남기고 나머지는 https로 리다이렉트합니다.
+# - 443: 앱을 서빙합니다. HSTS는 HSTS_MAX_AGE(초)로 조절합니다.
+# ${DOMAIN}, ${HSTS_MAX_AGE}만 envsubst로 치환되고 나머지 $변수는 nginx 변수입니다(NGINX_ENVSUBST_FILTER).
+
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name ${DOMAIN};
+
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        default_type text/plain;
+    }
+
+    location = /healthz {
+        access_log off;
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+
+    # Host 헤더 대신 설정된 도메인으로 보내 임의 호스트로의 리다이렉트를 막습니다.
+    location / {
+        return 301 https://${DOMAIN}$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl default_server;
+    listen [::]:443 ssl default_server;
+    http2 on;
+    server_name ${DOMAIN};
+
+    ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:TheseusSSL:10m;
+    ssl_session_tickets off;
+
+    add_header Strict-Transport-Security "max-age=${HSTS_MAX_AGE}" always;
+    include /etc/nginx/snippets/security-headers.conf;
+
+    set $theseus_api http://api:8080;
+    set $theseus_frontend http://frontend:80;
+
+    include /etc/nginx/snippets/app-locations.conf;
+}

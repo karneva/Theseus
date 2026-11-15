@@ -1,3 +1,8 @@
+# 로컬 Docker 통합 확인용 API Server입니다. 평소에는 IDE에서 API를 띄우고 이 파일은 쓰지 않습니다
+# (둘 다 8080을 쓰므로 동시에 띄우지 않습니다).
+#   docker compose -f docker-compose.infra.yml -f docker-compose.api.yml -f docker-compose.core.yml up -d
+# SPRING_PROFILES_ACTIVE를 주지 않으므로 local 프로필로 동작합니다. 비밀값은 .env.local에서 읽습니다.
+
 services:
   theseus-api-server:
     build:
@@ -7,19 +12,22 @@ services:
     container_name: theseus-local-api-server
     env_file:
       - .env.local
+    # .env.local의 localhost 접속 정보(IDE용)를 컨테이너 네트워크 주소로 덮어씁니다.
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://theseus-local-mysql:3306/theseus
       SPRING_KAFKA_BOOTSTRAP_SERVERS: theseus-local-kafka:29092
       SPRING_DATA_REDIS_HOST: theseus-local-redis
-      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_PORT: "6379"
       THESEUS_CORE_BASE_URL: http://theseus-core-server:8086
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     depends_on:
       theseus-local-mysql:
         condition: service_healthy
       theseus-local-kafka:
         condition: service_healthy
+      theseus-local-kafka-init:
+        condition: service_completed_successfully
       theseus-local-redis:
         condition: service_healthy
     networks:

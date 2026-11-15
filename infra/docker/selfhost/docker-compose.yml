@@ -1,0 +1,531 @@
+# Theseus 단일 서버 셀프호스팅 compose입니다.
+#
+# 대상 서버: Ubuntu 24.04, 2 vCPU, 3.8GB RAM + 4GB swapfile(scripts/server-bootstrap.sh가 만듭니다).
+# 이미지는 개발 노트북에서 빌드해 서버로 옮깁니다(scripts/build-images.sh, scripts/ship-images.sh).
+# 서버에서는 빌드하지 않고 아래처럼 기동만 합니다(scripts/deploy.sh가 같은 일을 합니다).
+#   docker compose -f infra/docker/selfhost/docker-compose.yml --env-file /opt/theseus/theseus.env up -d --no-build
+#
+# 외부 노출: nginx의 80/443만 publish합니다. Docker publish는 ufw를 우회하므로 다른 서비스에는 ports를 두지 않습니다.
+# 네트워크
+#   edge       : nginx, frontend, api, core, certbot. 외부로 나가는 트래픽(LLM API, ACME)이 필요한 서비스
+#   data       : DB, Redis, Kafka와 이를 쓰는 api/core. internal이라 외부와 차단됩니다
+#   docker-api : core <-> docker-proxy 전용. internal
+#
+# 메모리 예산(mem_limit, 상시 실행 서비스). 합계가 RAM 3.8GB 안에 들어오도록 잡았고,
+# 순간적으로 넘치는 부분은 swap이 받습니다(core는 memswap_limit 3g로 swap 사용을 명시).
+#   | 서비스        | mem_limit | 근거                                                   |
+#   |---------------|-----------|--------------------------------------------------------|
+#   | core          | 1536m     | torch(CPU) + sentence-transformers 로드. swap 허용 3g   |
+#   | api           |  640m     | JAVA_TOOL_OPTIONS -Xmx384m, SerialGC, metaspace 160m   |
+#   | kafka         |  448m     | KAFKA_HEAP_OPTS -Xmx256m -Xms256m                      |
+#   | mysql         |  384m     | buffer pool 128M, performance_schema OFF               |
+#   | postgres      |  160m     | shared_buffers 64MB, max_connections 40                |
+#   | redis         |   64m     | maxmemory 48mb                                         |
+#   | nginx         |   64m     |                                                        |
+#   | certbot       |   64m     | 12시간마다 renew                                       |
+#   | frontend      |   32m     | 정적 파일 nginx                                        |
+#   | docker-proxy  |   32m     | haproxy                                                |
+#   | 합계          | 3424m     | 약 3.34GiB                                             |
+#   일회성: kafka-init 256m, core-permissions 32m(기동 시 잠깐). sandbox 컨테이너는 실행마다 SANDBOX_MEMORY_LIMIT(기본 128m).
+#   ops 프로필 kafka-ui(384m)는 필요할 때만 띄웁니다.
+
+name: theseus
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+# 모든 상시 서비스에 공통으로 붙입니다. 일회성 서비스는 restart만 "no"로 덮어씁니다.
+x-common: &common
+  restart: unless-stopped
+  logging: *logging
+
+x-tz: &tz
+  TZ: ${TZ:-Asia/Seoul}
+
+# API와 Core가 같은 이름으로 공유하는 Kafka 토픽입니다. 기본값은 코드 기본값과 같습니다.
+x-kafka-topics: &kafka-topics
+  KAFKA_TOPIC_TOOL_PLAN_REQUEST: ${KAFKA_TOPIC_TOOL_PLAN_REQUEST:-theseus.tool-plan.request}
+  KAFKA_TOPIC_TOOL_PLAN_EVENT: ${KAFKA_TOPIC_TOOL_PLAN_EVENT:-theseus.tool-plan.event}
+  KAFKA_TOPIC_TOOL_BUILD_REQUEST: ${KAFKA_TOPIC_TOOL_BUILD_REQUEST:-theseus.tool-build.request}
+  KAFKA_TOPIC_TOOL_BUILD_EVENT: ${KAFKA_TOPIC_TOOL_BUILD_EVENT:-theseus.tool-build.event}
+
+services:
+  # ── 엣지 ────────────────────────────────────────────────────────────────────
+  nginx:
+    <<: *common
+    image: ${IMAGE_REGISTRY:-}theseus-nginx:${IMAGE_TAG:?IMAGE_TAG must be set}
+    mem_limit: 64m
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      <<: *tz
+      # 템플릿의 server_name과 인증서 경로에 들어갑니다. 인증서 유무로 HTTP/HTTPS 템플릿을 자동 선택합니다.
+      DOMAIN: ${DOMAIN:?DOMAIN must be set}
+      NGINX_TLS_MODE: ${NGINX_TLS_MODE:-auto}
+      HSTS_MAX_AGE: ${HSTS_MAX_AGE:-31536000}
+    volumes:
+      - certbot-conf:/etc/letsencrypt:ro
+      - certbot-www:/var/www/certbot:ro
+    networks:
+      - edge
+    depends_on:
+      frontend:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/healthz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # 12시간마다 갱신을 시도합니다. 최초 발급은 scripts/issue-cert.sh로 합니다.
+  # nginx는 6시간마다 reload해 갱신된 인증서를 반영합니다.
+  certbot:
+    <<: *common
+    image: certbot/certbot:v3.3.0
+    mem_limit: 64m
+    entrypoint:
+      - /bin/sh
+      - -c
+      - "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done"
+    volumes:
+      - certbot-conf:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+    networks:
+      - edge
+
+  frontend:
+    <<: *common
+    image: ${IMAGE_REGISTRY:-}theseus-frontend:${IMAGE_TAG:?IMAGE_TAG must be set}
+    mem_limit: 32m
+    environment:
+      <<: *tz
+    networks:
+      - edge
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ── 애플리케이션 ────────────────────────────────────────────────────────────
+  api:
+    <<: *common
+    image: ${IMAGE_REGISTRY:-}theseus-api:${IMAGE_TAG:?IMAGE_TAG must be set}
+    mem_limit: 640m
+    environment:
+      <<: [*tz, *kafka-topics]
+      SPRING_PROFILES_ACTIVE: prod
+      SERVER_PORT: "8080"
+      # 이미지 기본값(MaxRAMPercentage=75)보다 작은 고정 힙을 줍니다. 2 vCPU라 SerialGC가 메모리와 CPU 모두 유리합니다.
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--Xms192m -Xmx384m -Xss512k -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=64m -XX:MaxDirectMemorySize=64m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError}
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-theseus}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=${TZ:-Asia/Seoul}&characterEncoding=UTF-8"
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-theseus}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD must be set}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: "6379"
+      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      THESEUS_CORE_BASE_URL: http://core:8086
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set (32 bytes or more)}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:?INTERNAL_API_KEY must be set}
+      # 비워 두면 CORS off(nginx same-origin). '*'는 API가 기동을 거부합니다.
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
+      SPRINGDOC_ENABLED: "false"
+      # 도메인 없이 HTTP로만 시험할 때만 false로 둡니다.
+      JWT_REFRESH_TOKEN_COOKIE_SECURE: ${JWT_REFRESH_TOKEN_COOKIE_SECURE:-true}
+      # SUPER_ADMIN이 없을 때 한 번만 쓰입니다. 로그인 확인 후 env 파일에서 비밀번호를 지웁니다.
+      INITIAL_ADMIN_EMPLOYEE_NUMBER: ${INITIAL_ADMIN_EMPLOYEE_NUMBER:-}
+      INITIAL_ADMIN_NAME: ${INITIAL_ADMIN_NAME:-}
+      INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL:-}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:-}
+    networks:
+      - edge
+      - data
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      # DLT 토픽까지 만들어진 뒤에 consumer를 띄웁니다(auto-create off).
+      kafka-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      # 2 vCPU에서 첫 기동(Flyway 포함)은 1~2분 걸립니다.
+      start_period: 180s
+      start_interval: 5s
+
+  core:
+    <<: *common
+    image: ${IMAGE_REGISTRY:-}theseus-core:${IMAGE_TAG:?IMAGE_TAG must be set}
+    mem_limit: 1536m
+    # 임베딩 모델 로드 등으로 순간 사용량이 커져도 OOM kill 대신 swap으로 버티게 합니다.
+    memswap_limit: 3g
+    # 노트북 Ollama가 reverse SSH tunnel로 호스트의 docker0 IP(기본 172.17.0.1):11434에 열립니다.
+    # host-gateway가 그 IP로 해석됩니다. 자세한 내용은 README의 LLM 터널 절을 보세요.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      <<: [*tz, *kafka-topics]
+      ENV: prod
+      PORT: "8086"
+      AUTH_MODE: spring
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:?INTERNAL_API_KEY must be set}
+      # /api/internal/... 경로는 Core가 조합합니다. base URL 하나만 넘깁니다.
+      SPRING_BOOT_INTERNAL_URL: http://api:8080
+      # Core는 외부에 노출하지 않으므로 CORS를 끕니다.
+      ALLOWED_ORIGINS: ""
+      CORE_POSTGRES_HOST: postgres
+      CORE_POSTGRES_PORT: "5432"
+      CORE_POSTGRES_DB: ${POSTGRES_DB:-theseus_core}
+      CORE_POSTGRES_USER: ${POSTGRES_USER:-theseus}
+      CORE_POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      CORE_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      CORE_TOOL_PLAN_CONSUMER_ENABLED: ${CORE_TOOL_PLAN_CONSUMER_ENABLED:-true}
+      CORE_TOOL_BUILD_CONSUMER_ENABLED: ${CORE_TOOL_BUILD_CONSUMER_ENABLED:-true}
+      # LLM. ENV=prod에서 THESEUS_MODEL이 비어 있으면 Core가 기동하지 않습니다.
+      THESEUS_MODEL: ${THESEUS_MODEL:?THESEUS_MODEL must be set (e.g. ollama/<model>)}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434/v1}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      # 터널 너머 노트북 모델은 응답이 느릴 수 있어 Core 기본값(120초)보다 길게 둡니다.
+      THESEUS_LLM_TIMEOUT_SECONDS: ${THESEUS_LLM_TIMEOUT_SECONDS:-300}
+      LLM_MAX_OUTPUT_TOKENS: ${LLM_MAX_OUTPUT_TOKENS:-32768}
+      # sandbox: docker.sock을 직접 마운트하지 않고 권한을 줄인 socket proxy를 거칩니다.
+      DOCKER_HOST: tcp://docker-proxy:2375
+      SANDBOX_IMAGE: ${SANDBOX_IMAGE:-theseus-sandbox:py311-tools}
+      SANDBOX_MEMORY_LIMIT: ${SANDBOX_MEMORY_LIMIT:-128m}
+      # sandbox 이미지가 없으면 기동을 실패시켜 Tool 검증이 조용히 깨지는 것을 막습니다.
+      SANDBOX_STARTUP_STRICT: ${SANDBOX_STARTUP_STRICT:-true}
+      # sandbox 컨테이너는 호스트 Docker가 띄우므로 호스트 경로와 Core 안 경로를 한 쌍으로 알려 줍니다.
+      SANDBOX_HOST_TEMP_ROOT: ${THESEUS_HOST_ROOT:-/opt/theseus}/sandbox-tmp
+      SANDBOX_CONTAINER_TEMP_ROOT: /tmp/theseus-sandbox-shared
+      # 생성 Tool 저장소. 프로젝트별로 /custom-tools/{projectId}에 저장합니다(기존 운영 배치와 동일).
+      THESEUS_CUSTOM_TOOLS_DIR: /custom-tools
+      THESEUS_PROJECT_CUSTOM_TOOLS_DIR: /custom-tools
+      THESEUS_CUSTOM_TOOLS_HOST_DIR: ${THESEUS_HOST_ROOT:-/opt/theseus}/custom-tools
+      THESEUS_DATA_DIR: /home/appuser/.theseus/data
+      HF_HOME: /home/appuser/.cache/huggingface
+    volumes:
+      - ${THESEUS_HOST_ROOT:-/opt/theseus}/sandbox-tmp:/tmp/theseus-sandbox-shared
+      - ${THESEUS_HOST_ROOT:-/opt/theseus}/custom-tools:/custom-tools
+      - ${THESEUS_HOST_ROOT:-/opt/theseus}/core-data:/home/appuser/.theseus/data
+      - hf-cache:/home/appuser/.cache/huggingface
+      # Remote Workspace SSH 키 디렉터리(선택). 기본값은 비어 있는 디렉터리라 키가 없어도 기동합니다.
+      - ${REMOTE_WORKSPACE_KEYS_DIR:-${THESEUS_HOST_ROOT:-/opt/theseus}/ssh-keys}:/home/appuser/.ssh:ro
+    networks:
+      - edge
+      - data
+      - docker-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+      api:
+        condition: service_healthy
+      docker-proxy:
+        condition: service_healthy
+      core-permissions:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8086/health', timeout=4)\" || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 180s
+      start_interval: 5s
+
+  # Core 호스트 bind 디렉터리를 Core 사용자(uid/gid 999)가 쓸 수 있게 맞춥니다. 기동할 때마다 짧게 돌고 끝납니다.
+  core-permissions:
+    <<: *common
+    restart: "no"
+    image: alpine:3.20.6
+    mem_limit: 32m
+    network_mode: none
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -eu
+        chown -R 999:999 /mnt/sandbox-tmp /mnt/custom-tools /mnt/core-data
+        chmod 770 /mnt/sandbox-tmp
+        chmod 750 /mnt/custom-tools /mnt/core-data
+    volumes:
+      - ${THESEUS_HOST_ROOT:-/opt/theseus}/sandbox-tmp:/mnt/sandbox-tmp
+      - ${THESEUS_HOST_ROOT:-/opt/theseus}/custom-tools:/mnt/custom-tools
+      - ${THESEUS_HOST_ROOT:-/opt/theseus}/core-data:/mnt/core-data
+
+  # Core가 sandbox 컨테이너를 만들 때 쓰는 Docker API 프록시입니다.
+  # containers/images API와 쓰기 메서드만 열고 exec, build, networks, volumes, swarm 등은 막습니다.
+  # 컨테이너 생성 옵션 자체는 검사하지 않으므로 완전한 격리가 아니라 노출면 축소입니다(Tool Runner 분리는 후속 과제).
+  docker-proxy:
+    <<: *common
+    image: tecnativa/docker-socket-proxy:0.3.0
+    mem_limit: 32m
+    environment:
+      CONTAINERS: "1"
+      IMAGES: "1"
+      POST: "1"
+      EVENTS: "0"
+      LOG_LEVEL: warning
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - docker-api
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:2375/_ping || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  # ── 데이터 ──────────────────────────────────────────────────────────────────
+  mysql:
+    <<: *common
+    image: mysql:8.4.6
+    mem_limit: 384m
+    # MySQL은 world-writable cnf를 무시합니다. 호스트 파일 권한(Windows bind, umask)에 상관없이 적용되도록
+    # 644로 복사한 뒤 공식 entrypoint로 넘깁니다.
+    command:
+      - /bin/sh
+      - -c
+      - "install -m 0644 /theseus-conf/low-memory.cnf /etc/mysql/conf.d/low-memory.cnf && exec docker-entrypoint.sh mysqld"
+    environment:
+      <<: *tz
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD must be set}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-theseus}
+      MYSQL_USER: ${MYSQL_USER:-theseus}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD must be set}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./mysql/conf.d/low-memory.cnf:/theseus-conf/low-memory.cnf:ro
+    networks:
+      - data
+    healthcheck:
+      # 초기화 중 임시 서버는 TCP를 열지 않으므로 127.0.0.1로 확인해야 진짜 기동만 healthy가 됩니다.
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_ROOT_PASSWORD\" mysqladmin ping -h 127.0.0.1 -uroot --silent"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+      start_interval: 5s
+
+  postgres:
+    <<: *common
+    image: pgvector/pgvector:0.8.1-pg16
+    mem_limit: 160m
+    command:
+      - postgres
+      - -c
+      - shared_buffers=64MB
+      - -c
+      - max_connections=40
+      - -c
+      - work_mem=4MB
+      - -c
+      - maintenance_work_mem=32MB
+      - -c
+      - effective_cache_size=256MB
+    environment:
+      <<: *tz
+      POSTGRES_DB: ${POSTGRES_DB:-theseus_core}
+      POSTGRES_USER: ${POSTGRES_USER:-theseus}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      # 빈 볼륨으로 처음 기동할 때만 실행되어 pgvector 확장을 만듭니다.
+      - ./postgres/initdb:/docker-entrypoint-initdb.d:ro
+    networks:
+      - data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+      start_interval: 5s
+
+  redis:
+    <<: *common
+    image: redis:7.4.5-alpine
+    mem_limit: 64m
+    environment:
+      <<: *tz
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
+    # docker-entrypoint.sh를 거쳐야 redis 사용자로 권한을 내려 실행합니다.
+    # refresh 토큰과 Run 상태는 모두 TTL이 있으므로 메모리가 차면 TTL 키부터 내보냅니다.
+    command:
+      - /bin/sh
+      - -c
+      - 'exec docker-entrypoint.sh redis-server --requirepass "$$REDIS_PASSWORD" --appendonly yes --maxmemory 48mb --maxmemory-policy volatile-lru'
+    volumes:
+      - redis-data:/data
+    networks:
+      - data
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli ping | grep -q PONG"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # KRaft 단일 노드. 컨테이너 네트워크용 INTERNAL 리스너만 둡니다(호스트/외부 리스너 없음).
+  kafka:
+    <<: *common
+    image: confluentinc/cp-kafka:7.6.1
+    mem_limit: 448m
+    environment:
+      <<: *tz
+      CLUSTER_ID: ${KAFKA_CLUSTER_ID:?KAFKA_CLUSTER_ID must be set}
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      # 토픽은 kafka-init만 만듭니다. 오타 난 토픽이 조용히 생기지 않게 합니다.
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_NUM_NETWORK_THREADS: 2
+      KAFKA_NUM_IO_THREADS: 2
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_HEAP_OPTS: ${KAFKA_HEAP_OPTS:--Xmx256m -Xms256m}
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      - data
+    healthcheck:
+      # healthcheck JVM이 브로커 힙 설정(-Xms256m)을 물려받아 컨테이너 메모리를 넘기지 않도록 작은 힙을 줍니다.
+      test: ["CMD-SHELL", "KAFKA_HEAP_OPTS='-Xms32m -Xmx64m' kafka-broker-api-versions --bootstrap-server localhost:29092 >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 20s
+      retries: 10
+      start_period: 60s
+      start_interval: 10s
+
+  # 업무 토픽 4개와 API consumer의 DLT 토픽 2개를 만듭니다. --if-not-exists라 매 배포마다 다시 돌아도 안전합니다.
+  kafka-init:
+    <<: *common
+    restart: "no"
+    image: confluentinc/cp-kafka:7.6.1
+    mem_limit: 256m
+    environment:
+      <<: *kafka-topics
+      KAFKA_HEAP_OPTS: "-Xms64m -Xmx128m"
+      KAFKA_TOPIC_PARTITIONS: ${KAFKA_TOPIC_PARTITIONS:-3}
+    networks:
+      - data
+    depends_on:
+      kafka:
+        condition: service_healthy
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -eu
+        create_topic() {
+          kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists \
+            --topic "$$1" --partitions "$$2" --replication-factor 1
+        }
+        create_topic "$$KAFKA_TOPIC_TOOL_PLAN_REQUEST" "$$KAFKA_TOPIC_PARTITIONS"
+        create_topic "$$KAFKA_TOPIC_TOOL_PLAN_EVENT" "$$KAFKA_TOPIC_PARTITIONS"
+        create_topic "$$KAFKA_TOPIC_TOOL_BUILD_REQUEST" "$$KAFKA_TOPIC_PARTITIONS"
+        create_topic "$$KAFKA_TOPIC_TOOL_BUILD_EVENT" "$$KAFKA_TOPIC_PARTITIONS"
+        # API의 결과 이벤트 consumer가 재시도를 다 쓴 레코드를 '<토픽>.DLT'로 보냅니다.
+        create_topic "$${KAFKA_TOPIC_TOOL_PLAN_EVENT}.DLT" 1
+        create_topic "$${KAFKA_TOPIC_TOOL_BUILD_EVENT}.DLT" 1
+
+  # ── 선택(프로필) ────────────────────────────────────────────────────────────
+  # 운영 점검용 Kafka UI. 서버 루프백에만 열리며 SSH 포트포워딩으로 봅니다.
+  #   docker compose ... --profile ops up -d kafka-ui
+  #   ssh -L 8091:127.0.0.1:8091 <server>
+  kafka-ui:
+    <<: *common
+    profiles:
+      - ops
+    image: kafbat/kafka-ui:v1.2.0
+    mem_limit: 384m
+    ports:
+      - "127.0.0.1:${KAFKA_UI_PORT:-8091}:8080"
+    environment:
+      <<: *tz
+      JAVA_OPTS: "-Xmx192m"
+      DYNAMIC_CONFIG_ENABLED: "false"
+      KAFKA_CLUSTERS_0_NAME: theseus
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_READONLY: "true"
+    networks:
+      - edge
+      - data
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  # sandbox 이미지 빌드 전용입니다. 보통은 노트북에서 scripts/build-images.sh로 빌드해 옮기고,
+  # 서버에서는 이 프로필을 쓰지 않습니다(저장소 전체가 있을 때 비상용).
+  sandbox-image:
+    profiles:
+      - sandbox-build
+    build:
+      context: ../../../backend/theseus-core-server
+      dockerfile: Dockerfile.sandbox
+    image: ${SANDBOX_IMAGE:-theseus-sandbox:py311-tools}
+    restart: "no"
+    network_mode: none
+    command:
+      - python
+      - -c
+      - import pydantic, psutil, markdownify, bs4, yaml, requests, httpx, numpy, packaging, dotenv
+
+networks:
+  edge:
+    name: theseus-edge
+    driver_opts:
+      # 브리지 이름을 고정해 ufw 규칙(LLM 터널 포트 허용)이 인터페이스 이름으로 이 네트워크를 가리킬 수 있게 합니다.
+      com.docker.network.bridge.name: theseus-edge
+  data:
+    name: theseus-data
+    internal: true
+  docker-api:
+    name: theseus-docker-api
+    internal: true
+
+volumes:
+  mysql-data:
+    name: theseus-mysql-data
+  postgres-data:
+    name: theseus-postgres-data
+  redis-data:
+    name: theseus-redis-data
+  kafka-data:
+    name: theseus-kafka-data
+  hf-cache:
+    name: theseus-hf-cache
+  certbot-conf:
+    name: theseus-certbot-conf
+  certbot-www:
+    name: theseus-certbot-www
