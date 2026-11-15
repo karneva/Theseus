@@ -1,43 +1,30 @@
-# Prod Kafka UI
+# Kafka UI
 
-Prod Kafka UI is configured as a read-only monitoring tool for the Docker Kafka broker.
+셀프호스팅 compose의 `ops` 프로필에 읽기 전용 Kafka UI(`kafbat/kafka-ui`)가 있습니다. 평소에는 띄우지 않고, 점검할 때만 켭니다(mem_limit 384m, 메모리 예산 밖).
 
-## Access
+## 실행과 접속
 
-The service binds to localhost on the EC2 host by default:
+```bash
+# 서버
+C="docker compose -f /opt/theseus/app/infra/docker/selfhost/docker-compose.yml --env-file /opt/theseus/theseus.env"
+$C --profile ops up -d kafka-ui
 
-```sh
-KAFKA_UI_HOST_PORT=8091
+# 노트북
+ssh -L 8091:127.0.0.1:8091 <서버별칭>
+# 브라우저에서 http://localhost:8091
 ```
 
-Use an SSH tunnel from your workstation:
+포트는 `KAFKA_UI_PORT`(기본 8091)로 바꿀 수 있습니다. 다 본 뒤에는 `$C --profile ops stop kafka-ui`로 멈춥니다.
 
-```sh
-ssh -L 8091:127.0.0.1:8091 ubuntu@theseus.example.com
-```
+## 확인할 항목
 
-Then open:
+- 클러스터 이름 `theseus`
+- 토픽 6개: `theseus.tool-plan.request`, `theseus.tool-plan.event`, `theseus.tool-build.request`, `theseus.tool-build.event`와 DLT `theseus.tool-plan.event.DLT`, `theseus.tool-build.event.DLT`(이름은 `KAFKA_TOPIC_*`로 바뀔 수 있음)
+- consumer group: Core의 `theseus-core-tool-plan`, `theseus-core-tool-build`와 API의 `theseus-api-tool-generation`
+- DLT에 메시지가 쌓이면 API가 결과 이벤트를 처리하지 못한 것입니다. API 로그에서 원인을 찾습니다.
 
-```text
-http://localhost:8091
-```
+## 보안
 
-## Security
-
-- The compose mapping uses `127.0.0.1:${KAFKA_UI_HOST_PORT:-8091}:8080`, so Kafka UI is not exposed directly to the public internet.
-- `KAFKA_CLUSTERS_0_READONLY=true` is enabled.
-- If direct external access is required later, change the port binding deliberately and restrict EC2 security group inbound rules to approved source IPs only.
-
-## Checks
-
-```sh
-docker compose --env-file .env -f docker-compose.prod.yml up -d theseus-prod-kafka-ui
-docker logs theseus-prod-kafka-ui --tail=100
-curl -I http://127.0.0.1:${KAFKA_UI_HOST_PORT:-8091}
-```
-
-In the UI, confirm:
-
-- cluster name is `theseus-prod`
-- the 7 Theseus topics are visible
-- consumer group status is visible
+- 포트는 서버 루프백(`127.0.0.1:${KAFKA_UI_PORT:-8091}`)에만 열리므로 SSH 터널이 유일한 접근 경로입니다. UI 자체 인증은 없습니다.
+- `KAFKA_CLUSTERS_0_READONLY=true`라 UI에서 토픽이나 메시지를 바꿀 수 없습니다.
+- 공개 인터페이스에 바인딩하려면 먼저 인증을 켜고 방화벽에서 출발지 IP를 제한합니다.

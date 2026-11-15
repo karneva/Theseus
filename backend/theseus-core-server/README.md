@@ -1,12 +1,18 @@
 # 테세우스 (Theseus) Core Server
 
-> 기준 문서: `docs/history/CHANGELOG.md`, `docs/task/remaining_tasks.md`,
+> 현재 동작의 기준은 이 README와 코드, 환경 변수 예시(`.env.example`)입니다.
+>
+> `docs/` 아래 문서(history, roadmap, analysis, architecture, task, prompt)는
+> 2026-11 코드 정리 이전의 작업 기록입니다. 이후 제거된 모듈(`src/tool_generation`,
+> `cli_main`, `command_handler`, `permission_provider`, `runtime_mode`,
+> `suggestion_validator` 등)이나 예전 `/health` 응답 형식, legacy Kafka topic을
+> 언급할 수 있으니 배경 자료로만 참고하세요. 이 문서들은 추후 아카이브할 예정입니다.
+>
+> 참고용 기록: `docs/history/CHANGELOG.md`, `docs/task/remaining_tasks.md`,
 > `docs/roadmap/vscode-extension-plan.md`,
 > `docs/analysis/src-theseus-engine-alignment-review.md`,
 > `docs/analysis/theseus-engine-extension-refactor-gap.md`,
 > `docs/prompt/prompt_architecture_map.md`
->
-> 최종 반영 기준: 2026-05-14, Session 114
 
 ## 1. 개요
 
@@ -59,8 +65,9 @@ stdio fallback으로 실행할 수 있습니다.
   plan 상태를 복구합니다.
 - `remoteWorkspaceId`가 있으면 API Server internal resolver로 SSH 접속 정보를
   조회하고, mode별 remote tool registry를 구성합니다.
-- `/health/details`는 기존 `/health`를 변경하지 않고 sandbox, Kafka consumer,
-  DB target, Remote Workspace resolver 설정을 진단하는 Core 전용 endpoint입니다.
+- `/health`는 인증 없이 `{"status": "healthy"}`만 반환합니다. `/health/details`는
+  sandbox, Kafka consumer, DB target 설정을 진단하는 Core 전용 endpoint이며
+  `X-Internal-Api-Key` 헤더(`INTERNAL_API_KEY`)가 있어야 합니다.
 
 ### 2.2 Theseus Native Engine
 
@@ -116,10 +123,9 @@ local runner/editor runtime은 기존 완료 문자열 감지를 유지하면서
 
 ### 2.4 메타 툴링과 서버 worker
 
-- 서버의 tool 생성 워크플로는 `src/tool_plan`, `src/tool_build`,
-  `src/tool_generation`에 있습니다.
-- `src/tool_generation`은 legacy 이벤트를 신규 plan/build 흐름으로 넘기는
-  호환 adapter 역할을 유지합니다.
+- 서버의 tool 생성 워크플로는 `src/tool_plan`(PLAN draft)과
+  `src/tool_build`(BUILD) Kafka worker에 있습니다. 예전 `tool_generation`
+  legacy adapter는 API Server가 더 이상 해당 topic을 발행하지 않아 제거했습니다.
 - `src/builder/system_prompt.py`는 서버 worker가 별도 프롬프트를 복제하지
   않고 `theseus_engine.prompts`의 canonical prompt builder를 재사용하면서,
   현재 활성 tool schema에 맞는 capability 지침만 조건부로 주입하도록 합니다.
@@ -193,8 +199,8 @@ Remote Workspace는 Core가 외부 서버에 SSH로 접근해 파일/로그/리�
 
 | 경로 | 설명 |
 |---|---|
-| `GET /health` | Core Server health check |
-| `GET /health/details` | sandbox, Kafka consumer, DB, Remote Workspace resolver 상세 진단 |
+| `GET /health` | Core Server liveness(status만 반환, 인증 없음) |
+| `GET /health/details` | sandbox, Kafka consumer, DB 상세 진단(`X-Internal-Api-Key` 필요) |
 | `GET /api/v1/stream` | 인증된 에이전트 SSE 스트림 |
 | `POST /api/v1/stream` | API Server proxy용 JSON body 기반 에이전트 SSE 스트림 |
 | `POST /api/v1/plans` | plan 생성 |
@@ -205,7 +211,9 @@ Remote Workspace는 Core가 외부 서버에 SSH로 접근해 파일/로그/리�
 | `PATCH /api/v1/plans/{plan_id}/reject` | plan 거부 |
 | `PATCH /api/v1/plans/{plan_id}/execute` | plan 실행 상태 전환 |
 | `POST /api/v1/sandbox/execute` | sandbox 기반 tool code 실행 |
-| `POST /api/v1/remote-workspaces/test-connection` | Remote Workspace SSH 연결 테스트 |
+| `POST /api/v1/remote-workspaces/test-connection` | Remote Workspace SSH 연결 테스트(`X-Internal-Api-Key` 필요) |
+| `DELETE /api/v1/tools/{project_id}/{tool_name}` | 생성 Tool을 trash로 이동(`X-Internal-Api-Key` 필요) |
+| `PATCH /api/v1/tools/{project_id}/{tool_name}/permission-level` | 생성 Tool 권한 레벨 변경(`X-Internal-Api-Key` 필요) |
 
 ## 4. 개발 환경
 
@@ -262,19 +270,19 @@ Copy-Item .env.example .env
 
 | 설정 | 설명 |
 |---|---|
-| `THESEUS_MODEL` | 기본 LLM 모델 |
+| `THESEUS_MODEL` | 기본 LLM 모델(`ollama/...`, `vllm/...`, `anthropic/...` 등 provider 접두사 권장). `ENV=prod`에서는 필수 |
 | `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `DEEPSEEK_API_KEY` | 사용하는 provider에 맞는 API key |
 | `AUTH_MODE` | `spring` 또는 로컬 개발용 `mock` |
-| `SPRING_BOOT_*` | Spring Boot 인증, 권한, history, billing 내부 API |
-| `POSTGRES_*` | Core DB와 pgvector 설정 |
-| `CORE_KAFKA_CONSUMER_ENABLED` | Kafka consumer 활성화 여부 |
-| `CORE_LEGACY_TOOL_GENERATION_CONSUMER_ENABLED` | legacy tool generation adapter 활성화 여부. 기본 tool 생성 경로입니다. |
-| `CORE_TOOL_PLAN_CONSUMER_ENABLED` | 신규 `tool-plan` topic consumer 활성화 여부. API Server가 `tool-plan` topic으로 전환된 뒤 opt-in으로 켭니다. |
-| `SPRING_BOOT_REMOTE_WORKSPACE_CONFIG_URL` | Remote Workspace SSH config를 resolve할 API Server internal endpoint |
+| `SPRING_BOOT_INTERNAL_URL` | API Server base URL. 내부 API 경로는 코드에서 조합하며 개별 `SPRING_BOOT_*_URL`은 선택적 override |
+| `INTERNAL_API_KEY` | API Server와 공유하는 서버 간 인증 키(구 이름 `SPRING_BOOT_INTERNAL_API_KEY`도 읽음) |
+| `CORE_POSTGRES_*` | Core DB와 pgvector 설정 |
+| `CORE_KAFKA_CONSUMER_ENABLED` | 모든 Kafka consumer를 끄는 master 스위치(기본 true) |
+| `CORE_TOOL_PLAN_CONSUMER_ENABLED`, `CORE_TOOL_BUILD_CONSUMER_ENABLED` | `tool-plan`, `tool-build` topic consumer 활성화 여부(기본 true) |
+| `LLM_MAX_OUTPUT_TOKENS`, `CORE_STREAM_MAX_AGENT_TURNS` | LLM 출력 토큰 상한(기본 32768), 채팅 스트림 최대 agent turn(기본 30) |
 | `THESEUS_TOOL_REPAIR_MAX_ATTEMPTS` | CLI/TUI/Extension/Server가 공유하는 custom tool repair 최대 시도 횟수 |
 | `SANDBOX_*` | Docker sandbox 이미지, 리소스 제한, startup check, shared workdir |
 | `SANDBOX_HOST_TEMP_ROOT`, `SANDBOX_CONTAINER_TEMP_ROOT` | Docker socket/Core 컨테이너 경로 mismatch 방지를 위한 sandbox shared temp root |
-| `LANGCHAIN_*` | LangSmith tracing |
+| `LANGCHAIN_*`, `THESEUS_TRACING_ENABLED` | LangSmith tracing(기본 비활성, 명시적 opt-in) |
 | `THESEUS_DYNAMIC_TOOL_RETRIEVAL` | 질의별 top-k tool retrieval 활성화 |
 | `THESEUS_ENABLE_ENGINE_RAG_TOOLS` | 서버 registry에서 standalone engine RAG tool을 명시적으로 활성화 |
 | `THESEUS_ENABLE_AGENT_HOOK` | 파일 작업 AuditLLM/hook 활성화 |
@@ -284,10 +292,10 @@ Copy-Item .env.example .env
 ### 5.3 FastAPI 서버 실행
 
 ```powershell
-uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn src.main:app --reload --host 0.0.0.0 --port 8086
 ```
 
-문서 UI는 `/docs`, health check는 `/health`에서 확인합니다.
+문서 UI는 `/docs`(prod에서는 비활성), health check는 `/health`에서 확인합니다.
 
 ### 5.4 로컬 daemon 실행
 
@@ -318,15 +326,15 @@ VSIX는 기본적으로 로그인 사용자 홈의 IDE 확장 저장소에 설�
 VS Code는 `%USERPROFILE%\.vscode\extensions`, Antigravity는
 `%USERPROFILE%\.antigravity\extensions`를 사용합니다.
 
-Windows에서 가장 간단한 방법은 저장소 루트의
-`Install-Theseus-Extension.cmd`를 더블클릭하는 것입니다. 이 파일은
+Windows에서 가장 간단한 방법은 저장소의
+`scripts\vscode-extension\Install-Theseus-Extension.cmd`를 더블클릭하는 것입니다. 이 파일은
 `backend\theseus-core-server\scripts\install-vscode-extension.ps1`을 호출해
 저장소 루트를 workspace path로, `backend\theseus-core-server`를 core path로
 설정합니다. 자동 감지가 맞지 않으면 명령 프롬프트에서 다음처럼 실행합니다.
 
 ```cmd
-Install-Theseus-Extension.cmd -Ide antigravity
-Install-Theseus-Extension.cmd -Ide vscode
+scripts\vscode-extension\Install-Theseus-Extension.cmd -Ide antigravity
+scripts\vscode-extension\Install-Theseus-Extension.cmd -Ide vscode
 ```
 
 `-WorkspacePath`, `-CorePath`를 직접 넘기면 wrapper의 기본값 대신 사용합니다.
@@ -384,7 +392,7 @@ npm.cmd run package:test -- -BuildRunner
 npm.cmd run package:test -- -BuildRunner -InstallPyInstaller
 ```
 
-저장소 루트에서는 `Package-Theseus-TestPackage.cmd`를 더블클릭해 같은 흐름을
+저장소의 `scripts\vscode-extension\Package-Theseus-TestPackage.cmd`를 더블클릭해 같은 흐름을
 실행할 수 있습니다. 결과물은 기본적으로
 `backend\theseus-core-server\dist\test-package\Theseus-TestPackage.zip`에
 생성됩니다.
@@ -392,15 +400,15 @@ npm.cmd run package:test -- -BuildRunner -InstallPyInstaller
 Git Bash에서는 같은 작업을 Bash wrapper로 실행할 수 있습니다.
 
 ```bash
-bash Package-Theseus-TestPackage.sh
-bash Package-Theseus-TestPackage.sh --build-runner --install-pyinstaller
+bash scripts/vscode-extension/Package-Theseus-TestPackage.sh
+bash scripts/vscode-extension/Package-Theseus-TestPackage.sh --build-runner --install-pyinstaller
 ```
 
 서버 orchestration/API, 프론트엔드, 인프라를 제외하고 로컬 extension 설치와
 실행에 필요한 source runtime만 묶으려면 별도 source package를 생성합니다.
 
 ```powershell
-Package-Theseus-LocalExtension.cmd
+scripts\vscode-extension\Package-Theseus-LocalExtension.cmd
 ```
 
 또는 extension 폴더에서 VSIX 재빌드와 압축을 한 번에 실행합니다.
@@ -413,7 +421,7 @@ npm.cmd run package:local-source
 Git Bash에서는 다음 wrapper를 사용할 수 있습니다.
 
 ```bash
-bash Package-Theseus-LocalExtension.sh
+bash scripts/vscode-extension/Package-Theseus-LocalExtension.sh
 ```
 
 결과물은 기본적으로
@@ -486,21 +494,19 @@ Playwright 기반 도구의 브라우저 바이너리까지 준비해야 하면
 
 현재 Core Server는 Alembic migration이 아니라 SQLAlchemy metadata
 `create_all()`로 필요한 테이블을 자동 생성합니다. 서버 시작 시 `init_db()`가
-호출됩니다. 수동 초기화가 필요하면 다음 스크립트를 사용할 수 있습니다.
+호출됩니다. 수동 초기화가 필요하면 다음 명령을 사용할 수 있습니다.
 
 ```powershell
-python scratch\create_db.py
+python -c "from src.db.postgres import init_db; init_db()"
 ```
 
 ## 6. 검증 명령
 
-최근 문서에 기록된 주요 smoke/regression 명령은 다음과 같습니다.
+`pytest.ini`가 수집 대상을 `tests/`로 고정합니다. 기본 검증 명령은 다음과 같습니다.
 
 ```powershell
-python -m unittest tests.test_local_daemon tests.test_query_engine_execution
-python -m unittest tests.test_runner_runtime_plan_flow
-python -m unittest tests.test_lsp_tool tests.test_task_manager
-python -m py_compile theseus_engine\core\plan_flow.py theseus_engine\runner_runtime.py theseus_engine\tui\tui_main.py
+python -c "import src.main"
+pytest -q
 ```
 
 VSCode Extension 변경 검증은 `vscode-extension`에서 실행합니다.
@@ -526,8 +532,7 @@ theseus-core-server/
 │   ├── sandbox/                 # Docker sandbox executor
 │   ├── tooling/                 # 서버 tool artifact/persistence/activation
 │   ├── tool_plan/               # 신규 tool plan Kafka worker
-│   ├── tool_build/              # 신규 tool build Kafka worker
-│   └── tool_generation/         # legacy generation adapter/consumer
+│   └── tool_build/              # 신규 tool build Kafka worker
 ├── theseus_engine/              # 에이전트 실행 코어
 │   ├── core/                    # engine_builder, plan_flow, tool_retriever
 │   ├── engine/                  # QueryEngine, StreamEvent, usage/cost
@@ -545,9 +550,8 @@ theseus-core-server/
 │   └── cli_runner.py            # stdio JSON Lines fallback
 ├── vscode-extension/            # VSCode Extension Host + WebView
 ├── scripts/                     # 로컬 설치/운영 보조 스크립트
-├── docs/                        # history, roadmap, architecture, analysis 문서
+├── docs/                        # 정리 이전 작업 기록(history, roadmap, analysis 등, 참고용)
 ├── tests/                       # unittest 기반 회귀 테스트
-├── scratch/                     # 로컬 스크립트와 디버그 보조 파일
 ├── Dockerfile
 ├── requirements.txt             # Core 기본 의존성
 ├── requirements-browser.txt     # Playwright optional
@@ -592,12 +596,10 @@ theseus-core-server/
 2. `src/knowledge`와 `theseus_engine/rag`의 DB schema/API 충돌 가능성을
    먼저 정리합니다. 서버 기본값은 `src/knowledge` 기준이고, engine RAG tool은
    명시 opt-in입니다.
-3. legacy `tool_generation` consumer와 신규 `tool_plan`/`tool_build`
-   pipeline의 운영 경계를 명확히 하고 중복 소비를 방지합니다.
-4. 서버 history에는 아직 구조화된 tool call/result 장기 복원이 완전하지
+3. 서버 history에는 아직 구조화된 tool call/result 장기 복원이 완전하지
    않습니다. Core-only projection은 들어갔지만, 완전 복원은 API history schema
    확장이 필요합니다.
-5. custom tool dependency와 라이선스 고지는 optional requirements 기준으로
+4. custom tool dependency와 라이선스 고지는 optional requirements 기준으로
    관리하고, VSIX/daemon binary 배포 전에는 `THIRD_PARTY_LICENSES`, `NOTICE`,
    SBOM 생성을 별도 작업으로 진행합니다.
 6. VSCode Extension은 local daemon long-running run, hide/show,

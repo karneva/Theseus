@@ -19,7 +19,7 @@ Tool Build 완료 상태는 다음 세 가지가 함께 확인되어야 한다.
 먼저 Core Server가 생성한 Tool 메타데이터 파일을 확인한다.
 
 ```bash
-cat /opt/theseus/custom_tools/4/cpu_resource_monitor_tool.meta.json
+cat /opt/theseus/custom-tools/4/cpu_resource_monitor_tool.meta.json
 ```
 
 여기서 다음 값을 확인한다.
@@ -35,7 +35,7 @@ cat /opt/theseus/custom_tools/4/cpu_resource_monitor_tool.meta.json
 API Server 로그에서 completed 이벤트 처리 여부를 확인한다.
 
 ```bash
-docker logs --tail 500 theseus-prod-api-server | grep -i -E "ToolBuild|tool build|cpu_resource|completed event|event handling failed|skipped|duplicate"
+docker compose -f /opt/theseus/app/infra/docker/selfhost/docker-compose.yml --env-file /opt/theseus/theseus.env logs --tail 500 api | grep -i -E "ToolBuild|tool build|cpu_resource|completed event|event handling failed|skipped|duplicate"
 ```
 
 확인할 로그:
@@ -51,7 +51,7 @@ docker logs --tail 500 theseus-prod-api-server | grep -i -E "ToolBuild|tool buil
 Core Server 로그에서는 파일 생성 및 Kafka 이벤트 발행 여부를 확인한다.
 
 ```bash
-docker logs --tail 500 theseus-prod-core-server | grep -i -E "cpu_resource|tool build|completed|publish|kafka"
+docker compose -f /opt/theseus/app/infra/docker/selfhost/docker-compose.yml --env-file /opt/theseus/theseus.env logs --tail 500 core | grep -i -E "cpu_resource|tool build|completed|publish|kafka"
 ```
 
 확인할 로그:

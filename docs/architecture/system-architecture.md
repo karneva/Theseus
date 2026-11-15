@@ -1,447 +1,207 @@
-# 테세우스 시스템 아키텍처
+# 시스템 아키텍처
 
-## 1. 문서 목적
+Theseus는 서버 한 대에서 docker compose로 모든 구성 요소(엣지, 애플리케이션, 데이터 저장소)를 함께 실행합니다.
+이 문서는 그 단일 서버 구성의 서비스, 네트워크, 포트, 데이터 저장 책임, 주요 요청 흐름을 설명합니다.
+설치와 운영 절차는 [셀프호스팅 가이드](../operations/self-hosting.md), 기준 구성 파일은 [`infra/docker/selfhost/docker-compose.yml`](../../infra/docker/selfhost/docker-compose.yml)입니다.
 
-이 문서는 테세우스 프로젝트의 현재 시스템 아키텍처 기준을 정의한다.
-
-테세우스는 모든 인프라 컴포넌트를 애플리케이션 EC2 내부 Docker 컨테이너로 실행하는 구조가 아니다. 상태 저장이 필요한 데이터베이스, 캐시, 오브젝트 스토리지는 SSAFY SuperApp에서 제공하는 관리형 인프라를 사용한다.
-
-따라서 서버/운영 환경의 아키텍처는 애플리케이션 실행 계층과 데이터 계층을 분리한다.
-
-```text
-EC2 = 애플리케이션 실행 계층
-SuperApp = 데이터 / 캐시 / 스토리지 계층
-```
-
-현재 이 문서는 `docker-compose.server.yml`이나 운영 환경변수 파일을 새로 정의하지 않는다. 이후 docker-compose, 환경변수, CI/CD, 배포 작업을 진행할 때 따라야 할 아키텍처 방향을 먼저 고정하는 문서이다.
-
-## 2. 인프라 경계
-
-### SuperApp 관리형 인프라
-
-| 리소스 | 테세우스 내 역할 |
-| --- | --- |
-| RDS MySQL | 서비스 메인 데이터베이스 |
-| RDS PostgreSQL | AI Core, RAG, pgvector 전용 데이터베이스 |
-| ElastiCache Redis | 토큰, 캐시, Tool 생성 진행 상태, SSE 복구 상태 |
-| S3 Storage | 업로드 문서, Tool 산출물, 실행 로그, 생성 결과 저장 |
-
-### EC2 애플리케이션 실행 계층
-
-EC2 애플리케이션 실행 계층에는 상태 저장을 최소화한 애플리케이션 컴포넌트를 배포한다.
-
-```text
-Nginx / Reverse Proxy
-Frontend
-Theseus API Server
-Theseus Core Server
-Kafka
-Tool Sandbox / Docker Executor
-Jenkins 또는 배포 자동화 구성
-```
-
-운영 환경에서는 MySQL, PostgreSQL, Redis를 기본적으로 EC2 내부 컨테이너로 실행하지 않는다. 운영 환경에서는 SuperApp에서 제공받은 endpoint를 환경변수 또는 CI/CD credentials로 주입한다.
-
-## 3. 전체 시스템 아키텍처
+## 1. 전체 구성
 
 ```mermaid
 flowchart LR
-    USER[User] --> FE[React Frontend]
+    USER[브라우저] -->|80/443| NGINX[nginx<br/>엣지 프록시·TLS]
 
-    FE --> NGINX[Nginx / Reverse Proxy]
-    NGINX --> API[Theseus API Server<br/>Spring Boot]
+    subgraph edge[edge 네트워크 theseus-edge]
+        NGINX --> FE[frontend<br/>정적 SPA]
+        NGINX -->|/api/| API[api<br/>Spring Boot :8080]
+        CERTBOT[certbot]
+        CORE[core<br/>FastAPI + theseus_engine :8086]
+    end
 
-    API --> MYSQL[(SuperApp RDS MySQL<br/>Service DB)]
-    API --> REDIS[(SuperApp ElastiCache Redis)]
-    API --> S3[(SuperApp S3 Storage)]
+    subgraph data[data 네트워크 theseus-data, internal]
+        MYSQL[(mysql 8.4)]
+        REDIS[(redis 7.4)]
+        KAFKA[[kafka KRaft :29092]]
+        PG[(postgres 16 + pgvector)]
+    end
 
-    API <--> KAFKA[Kafka<br/>Event Pipeline]
-    KAFKA <--> CORE[Theseus Core Server<br/>Python FastAPI]
+    subgraph dockerapi[docker-api 네트워크, internal]
+        PROXY[docker-proxy :2375]
+    end
 
-    CORE --> PG[(SuperApp RDS PostgreSQL<br/>pgvector / RAG DB)]
-    CORE --> REDIS
-    CORE --> S3
-    CORE --> LLM[LLM Provider / Local LLM]
-    CORE --> SANDBOX[Tool Sandbox<br/>Docker Executor]
-
-    BASTION[EC2 Bastion / Private Access] -.-> MYSQL
-    BASTION -.-> PG
-    BASTION -.-> REDIS
+    API --> MYSQL
+    API --> REDIS
+    API <-->|PLAN/BUILD 요청·결과| KAFKA
+    KAFKA <--> CORE
+    API -->|채팅 스트림 프록시| CORE
+    CORE -->|/api/internal/**| API
+    CORE --> PG
+    CORE --> PROXY
+    PROXY -->|docker.sock| SANDBOX[sandbox 컨테이너<br/>네트워크 차단]
+    CORE -->|host.docker.internal:11434| TUNNEL[reverse SSH tunnel]
+    TUNNEL --> OLLAMA[노트북 Ollama]
+    CORE -.->|SSH, 선택| REMOTE[Remote Workspace]
 ```
 
-## 4. 컴포넌트 책임
+| 구분 | 서비스 | 이미지 | 주요 책임 |
+| --- | --- | --- | --- |
+| 엣지 | nginx | `theseus-nginx`(nginx 1.27.5-alpine 기반) | TLS 종료, `/api/` → api, 나머지 → frontend, SSE 무버퍼링, 내부 경로 차단, 로그인 rate limit, 보안 헤더 |
+| | certbot | `certbot/certbot:v3.3.0` | 12시간마다 인증서 갱신(첫 발급은 `scripts/issue-cert.sh`) |
+| | frontend | `theseus-frontend` | 빌드된 React SPA 정적 서빙 |
+| 애플리케이션 | api | `theseus-api` | 인증(JWT), 사용자·프로젝트·멤버 권한, 채팅 세션·메시지, ToolPlan·승인·Tool 메타데이터, Core 스트림 프록시, Kafka 발행·결과 처리, SSE |
+| | core | `theseus-core` | 에이전트 실행(ASK/AGENT 스트림), PLAN 작성, Tool 코드 생성·검증·활성화, Remote Workspace 도구 |
+| | docker-proxy | `tecnativa/docker-socket-proxy:0.3.0` | Core가 sandbox 컨테이너를 만들 때 쓰는 제한된 Docker API |
+| 데이터 | mysql | `mysql:8.4.6` | API 서비스 데이터(Flyway 마이그레이션) |
+| | postgres | `pgvector/pgvector:0.8.1-pg16` | Core 실행 데이터, 지식 검색(pgvector) |
+| | redis | `redis:7.4.5-alpine` | refresh 토큰, Run 진행 상태(TTL) |
+| | kafka | `confluentinc/cp-kafka:7.6.1` | API ↔ Core 비동기 작업(KRaft 단일 노드) |
+| 일회성 | kafka-init | `confluentinc/cp-kafka:7.6.1` | 토픽 4개와 DLT 2개 생성 |
+| | core-permissions | `alpine:3.20.6` | Core bind 디렉터리 소유권(uid/gid 999) 정리 |
+| 선택 | kafka-ui(`ops` 프로필) | `kafbat/kafka-ui:v1.2.0` | 읽기 전용 Kafka 점검(루프백 8091) |
 
-### Frontend
+LLM은 서버에 두지 않습니다. 개발 노트북의 Ollama를 reverse SSH tunnel로 연결하고, 필요하면 외부 provider(OpenAI, Anthropic, Gemini, DeepSeek)로 바꿀 수 있습니다.
 
-Frontend는 React + Vite 기반 사용자 화면이다.
+## 2. 네트워크와 포트
 
-주요 역할:
+| 네트워크 | 이름 | 성격 | 연결 서비스 |
+| --- | --- | --- | --- |
+| edge | `theseus-edge`(브리지 이름 고정) | 외부 통신 가능 | nginx, certbot, frontend, api, core, kafka-ui |
+| data | `theseus-data` | `internal: true`(외부 차단) | api, core, mysql, postgres, redis, kafka, kafka-init, kafka-ui |
+| docker-api | `theseus-docker-api` | `internal: true` | core, docker-proxy |
 
-- 로그인 화면
-- 프로젝트 선택 화면
-- 채팅형 ToolPlan 생성 화면
-- Tool 목록 / 상세 화면
-- Tool 승인 / 반려 화면
-- 관리자 화면
-- SSE 기반 Tool 생성 진행 상태 표시
+core가 edge에도 붙는 이유는 LLM 터널(호스트 docker0 IP), 외부 LLM API, 임베딩 모델 다운로드처럼 밖으로 나가는 트래픽이 필요하기 때문입니다. core-permissions는 `network_mode: none`입니다.
+ufw는 edge 브리지(`theseus-edge`)에서 docker0 IP의 11434 포트로 들어오는 트래픽만 추가로 허용합니다.
 
-경계 규칙:
+| 서비스 | 컨테이너 포트 | 호스트 publish |
+| --- | --- | --- |
+| nginx | 80, 443 | **80, 443**(유일한 외부 노출) |
+| frontend | 80 | 없음 |
+| api | 8080 | 없음 |
+| core | 8086 | 없음 |
+| kafka | 29092(INTERNAL), 29093(CONTROLLER) | 없음 |
+| mysql / postgres / redis | 3306 / 5432 / 6379 | 없음 |
+| docker-proxy | 2375 | 없음 |
+| kafka-ui | 8080 | `127.0.0.1:8091`(`ops` 프로필에서만) |
 
-```text
-Frontend는 Theseus API Server만 호출한다.
-```
+nginx가 막는 경로: `/api/internal/**`, `/swagger-ui`, `/v3/api-docs`, `/actuator`는 모두 404입니다. nginx는 location을 고르기 전에 URI를 정규화하므로 `%69nternal`, `//`, `/../` 우회도 같은 규칙에 걸립니다.
 
-Frontend는 Core Server, Redis, Kafka, RDS MySQL, RDS PostgreSQL, S3에 직접 접근하지 않는다.
+## 3. 데이터 저장 책임
 
-### Theseus API Server
+| 저장소 | 소유 | 저장 내용 |
+| --- | --- | --- |
+| MySQL(`theseus`) | api | `users`, `projects`, `project_members`, `chat_sessions`, `chat_messages`, `tool_plan_groups`, `tool_plans`, `tool_plan_runs`, `tool_approvals`, `tools`, `tool_usage_logs`, `remote_workspaces`, `billing_usages`. 스키마는 Flyway(`db/migration/V1__init.sql`)가 소유하고 Hibernate는 검증만 합니다 |
+| PostgreSQL(`theseus_core`) | core | `tool_plans`(Core 측 계획), `core_run_checkpoints`, `core_run_events`(Run lease·이벤트 재발행), `billing_outbox`, `knowledge_documents`, `knowledge_chunks`(pgvector) |
+| Redis | api | `RT:<userId>`(refresh 토큰), `tool:plan:<runId>:state`(Run 진행 상태, 기본 TTL 30분). 최종 저장소가 아니며 백업하지 않습니다 |
+| Kafka | api, core | 작업 요청·결과 이벤트(보관 168시간). 최종 저장소가 아닙니다 |
+| `/opt/theseus/custom-tools` | core | 승인·빌드된 Tool 코드(`*_tool.py`)와 메타데이터(`*.meta.json`), 프로젝트별 디렉터리 |
+| `/opt/theseus/core-data` | core | 엔진 런타임 데이터(`THESEUS_DATA_DIR`) |
+| `/opt/theseus/sandbox-tmp` | core, sandbox | sandbox 검증용 임시 작업 디렉터리(호스트와 Core가 같은 경로를 공유) |
+| `theseus-hf-cache` 볼륨 | core | 임베딩 모델 캐시(`HF_HOME`) |
 
-API Server는 Spring Boot 기반 메인 백엔드이다.
+최종 상태는 MySQL에 두고, 진행 중 상태는 Redis와 SSE로 전달합니다.
 
-주요 역할:
+## 4. 주요 흐름
 
-- 로그인 및 JWT 인증
-- 사용자 관리
-- 프로젝트 관리
-- 프로젝트 멤버 및 권한 관리
-- ToolPlan, Tool 메타데이터 관리
-- ToolPlan 생성 요청 접수
-- ToolPlan 승인 / 반려 플로우
-- 채팅 세션 및 메시지 저장
-- SSE 연결 관리
-- Core Server 실행 전 권한 검증
-- 최종 결과 MySQL 저장
+### 4.1 인증
 
-연결 대상:
+- 로그인(`POST /api/v1/auth/login`)은 access 토큰을 응답 본문으로, refresh 토큰을 `refresh_token` 쿠키(`Path=/api/v1/auth`, HttpOnly, prod에서 Secure)로 줍니다. Frontend는 access 토큰을 메모리에만 둡니다.
+- 401(`AUTH-*`)을 받으면 Frontend가 refresh를 한 번만(single-flight) 시도합니다. refresh 토큰은 Redis `RT:<userId>`와 대조합니다.
+- Core는 사용자 토큰을 직접 검증하지 않고, API의 `/api/internal/auth/verify`에 `INTERNAL_API_KEY`와 함께 물어봅니다.
 
-- SuperApp RDS MySQL
-- SuperApp ElastiCache Redis
-- SuperApp S3
-- Kafka
-
-API Server는 제품 데이터와 권한 판단의 기준 서버이다.
-
-### Theseus Core Server
-
-Core Server는 Python FastAPI 기반 AI 실행 서버이다.
-
-주요 역할:
-
-- AI Agent 실행
-- ToolPlan 생성 및 재생성
-- RAG 검색
-- 프롬프트 구성
-- 승인된 ToolPlan 기반 코드/파일 생성
-- 생성 결과 검증
-- 샌드박스 실행
-- 실행 로그 생성
-- 진행 이벤트 발행
-
-연결 대상:
-
-- SuperApp RDS PostgreSQL
-- SuperApp ElastiCache Redis
-- SuperApp S3
-- Kafka
-- LLM Provider 또는 Local LLM
-- Docker Sandbox
-
-Core Server는 권한 판단의 기준 서버가 아니다. Core Server는 API Server가 이미 검증한 Kafka payload를 기준으로 AI 작업을 수행한다.
-
-## 5. 데이터 저장 책임
-
-### RDS MySQL
-
-MySQL은 테세우스의 서비스 메인 데이터베이스이다.
-
-저장 대상 예시:
-
-```text
-users
-projects
-project_members
-project_roles
-chat_sessions
-chat_messages
-tool_plan_groups
-tool_plans
-tool_plan_runs
-tool_approvals
-tools
-billing_usage
-audit_logs
-```
-
-MySQL에는 서비스 운영에 필요한 기준 데이터, 사용자에게 직접 노출되는 데이터, 권한 판단 데이터, 승인 이력, 최종 Tool 상태, 장애 후 복구 기준 데이터를 저장한다.
-
-원칙:
-
-```text
-최종 상태는 MySQL에 저장한다.
-Redis와 Kafka는 최종 데이터 저장소로 사용하지 않는다.
-```
-
-### RDS PostgreSQL
-
-PostgreSQL은 Core Server가 사용하는 AI, RAG, pgvector 전용 데이터베이스이다.
-
-저장 대상 예시:
-
-```text
-documents
-document_chunks
-embeddings
-agent_knowledge
-prompt_templates
-rag_indexes
-core_run_checkpoints
-core_run_events
-```
-
-DB 역할 구분:
-
-```text
-MySQL = 서비스 기준 데이터베이스
-PostgreSQL = AI 검색 / 임베딩 / RAG 데이터베이스
-```
-
-### Redis
-
-Redis는 임시 상태와 빠른 조회가 필요한 데이터에 사용한다.
-
-사용 대상 예시:
-
-```text
-Refresh Token 저장
-Access Token 블랙리스트
-SSE 재연결 복구 상태
-ToolPlan 생성 진행 상태
-runId 기준 최신 progress 상태
-재접속 시 마지막 이벤트 복구 상태
-짧은 TTL 캐시
-중복 요청 방지 lock
-```
-
-Redis key 예시:
-
-```text
-tool:plan:{runId}:state
-auth:refresh:{userId}
-lock:tool-plan:{runId}
-```
-
-원칙:
-
-```text
-Redis는 최종 저장소가 아니다.
-Redis는 캐시, TTL 상태, 진행 상태, 재연결 복구용으로 사용한다.
-```
-
-### S3
-
-S3는 파일성 데이터와 생성 산출물을 저장한다.
-
-저장 대상 예시:
-
-```text
-사용자 업로드 문서
-RAG 원본 문서
-Tool 생성 결과 artifact
-생성된 코드 zip 파일
-실행 로그 파일
-샌드박스 실행 결과물
-이미지 및 첨부파일
-대용량 분석 결과
-```
-
-S3 key 예시:
-
-```text
-tools/{toolId}/versions/{versionId}/artifact.zip
-tools/{toolId}/runs/{runId}/execution-log.json
-projects/{projectId}/documents/{documentId}/original.pdf
-projects/{projectId}/documents/{documentId}/chunks.json
-```
-
-DB에는 대용량 파일 본문을 저장하지 않고 S3 key만 저장한다.
-
-## 6. Kafka 책임
-
-Kafka는 API Server와 Core Server 사이의 비동기 이벤트 파이프라인이다.
-
-Kafka 사용 대상:
-
-- ToolPlan 생성 요청
-- ToolPlan 재생성 요청
-- Tool build 요청
-- Tool 실행 요청
-- 진행 상태 이벤트
-- 완료 이벤트
-- 실패 이벤트
-- 실행 로그 이벤트
-
-추천 Topic 구조:
-
-```text
-theseus.tool-plan.request
-theseus.tool-plan.event
-theseus.tool-build.request
-theseus.tool-build.event
-
-tool-execution.request
-tool-execution.progress
-tool-execution.completed
-tool-execution.failed
-```
-
-내부 흐름:
-
-```text
-API Server -> Kafka -> Core Server
-Core Server -> Kafka -> API Server
-API Server -> SSE -> Frontend
-```
-
-Frontend는 Kafka에 직접 접근하지 않는다.
-
-## 7. ToolPlan / Tool 생성 흐름
+### 4.2 채팅 스트림(ASK / AGENT)
 
 ```mermaid
 sequenceDiagram
-    participant FE as Frontend
-    participant API as Spring API Server
-    participant DB as RDS MySQL
-    participant K as Kafka
-    participant CORE as FastAPI Core Server
-    participant PG as RDS PostgreSQL
-    participant R as Redis
-    participant S3 as S3
+    participant B as 브라우저
+    participant N as nginx
+    participant A as api
+    participant C as core
+    participant L as LLM(Ollama)
 
-    FE->>API: PLAN 생성 요청
-    API->>API: JWT 검증
-    API->>API: 프로젝트 권한 검증
-    API->>DB: tool_plan_run 생성
-    API->>DB: USER 메시지 저장
-    API->>K: TOOL_PLAN_REQUESTED 발행
-    API-->>FE: runId 반환
-
-    CORE->>K: request consume
-    CORE->>PG: RAG context 검색
-    CORE->>CORE: LLM 호출, PLAN 생성
-    CORE->>K: progress 이벤트 발행
-
-    API->>K: progress consume
-    API->>R: 최신 progress 저장
-    API-->>FE: SSE progress 전송
-
-    CORE->>K: TOOL_PLAN_COMPLETED 또는 TOOL_PLAN_SKIPPED 발행
-    API->>DB: ToolPlan 생성 또는 skipped 처리
-    API->>R: completed/skipped 상태 저장
-    API-->>FE: SSE completed/skipped 전송
+    B->>N: POST /api/v1/projects/{p}/sessions/{s}/messages/stream
+    N->>A: proxy_buffering off
+    A->>A: 멤버·세션·모드(AGENT 권한)·Remote Workspace 검증
+    A->>C: POST /api/v1/stream?chat_session_id&project_id (Authorization 전달)
+    C->>A: /api/internal/auth/verify, /project/permissions (INTERNAL_API_KEY)
+    C->>L: chat/completions(stream, tools)
+    L-->>C: 토큰·tool_calls
+    C->>C: 도구 실행(권한·모드 검사 후)
+    C->>A: /api/internal/history/messages (메시지 저장)
+    C-->>A: SSE(chunk, tool_result, completed, error)
+    A-->>B: 바이트 그대로 중계
 ```
 
-승인 전에는 `tools` row를 생성하지 않는다. 실제 Tool은 승인된 ToolPlan을 기반으로 Core Server가 code/file artifact 생성을 완료한 뒤 `TOOL_BUILD_COMPLETED` 이벤트를 통해 생성된다.
+- API는 Core SSE 본문을 가공하지 않고 그대로 흘려보냅니다. nginx는 이 경로와 Run 이벤트 경로에 `proxy_buffering off`, `gzip off`, 3600초 타임아웃을 겁니다.
+- AGENT 모드에서 Core는 프로젝트 권한과 모드에 맞는 도구만 노출합니다. 승인된 custom Tool도 Core 서버 레지스트리에 로드되어 같은 방식으로 호출됩니다.
+- 동적 도구 선택(`THESEUS_DYNAMIC_TOOL_RETRIEVAL`, 코드 기본값 켜짐)에서는 `ToolRetriever`가 `intfloat/multilingual-e5-small` 임베딩으로 관련 도구를 고릅니다. 모델은 첫 요청에서 이벤트 루프 밖 스레드로 한 번만 로드합니다.
+
+### 4.3 PLAN → 승인 → BUILD
 
 ```mermaid
 sequenceDiagram
-    participant FE as Frontend
-    participant API as Spring API Server
-    participant DB as RDS MySQL
-    participant K as Kafka
-    participant CORE as FastAPI Core Server
-    participant S3 as S3
+    participant B as 브라우저
+    participant A as api
+    participant R as redis
+    participant K as kafka
+    participant C as core
+    participant D as docker-proxy
 
-    FE->>API: ToolPlan 승인 요청
-    API->>DB: approval, ToolPlan, group 상태 갱신
-    API->>K: TOOL_BUILD_REQUESTED 발행
-
-    CORE->>K: build request consume
-    CORE->>CORE: 코드/파일 생성 및 검증
-    CORE->>S3: artifact 저장
-    CORE->>K: TOOL_BUILD_COMPLETED 발행
-
-    API->>K: build completed consume
-    API->>DB: tools row 생성
-    API->>DB: group.created_tool_id 설정
-    API-->>FE: 상태 조회/SSE로 생성 완료 확인
+    B->>A: POST .../tool-plans/generate
+    A->>A: tool_plan_runs 생성(MySQL)
+    A->>K: theseus.tool-plan.request
+    A-->>B: 202 { runId, sseUrl }
+    B->>A: GET .../tool-plan-runs/{runId}/events (SSE)
+    K->>C: PLAN 요청 소비
+    C->>K: theseus.tool-plan.event (진행·draft·completed)
+    K->>A: 결과 이벤트 소비
+    A->>R: tool:plan:{runId}:state 갱신
+    A-->>B: SSE 진행 상태, 계획 REVIEW
+    B->>A: POST .../tool-plans/{id}/approval-requests (PENDING)
+    B->>A: PATCH .../tool-approvals/{id}/approve { toolGrade 1~5 }
+    A->>K: theseus.tool-build.request
+    K->>C: BUILD 요청 소비
+    C->>C: 코드 생성, 정적 검증, repair
+    C->>D: sandbox 컨테이너 생성·실행·삭제
+    C->>C: /custom-tools/{projectId}에 활성화
+    C->>K: theseus.tool-build.event (BUILT 또는 실패)
+    K->>A: tools 저장(APPROVED, toolGrade)
+    A-->>B: SSE completed
 ```
 
-## 8. Bastion 및 Private Access
+- PLAN 진행 단계는 REQUEST_RECEIVED → PLAN_DRAFTING → PLAN_STRUCTURING → VALIDATING → COMPLETED이고, BUILD는 VALIDATING → (REPAIRING) → SANDBOXING → ACTIVATING → BUILT 순으로 이벤트가 옵니다.
+- SSE가 끊겼다가 다시 붙으면 API가 Redis에 저장한 상태와 draft를 replay합니다.
+- API 결과 consumer가 재시도(지수 백오프 1~10초, 4회)를 다 쓴 레코드는 `<토픽>.DLT`로 보냅니다. 결과 이벤트가 30분 동안 오지 않은 Run은 타임아웃 스케줄러가 실패로 처리합니다.
+- Kafka 토픽 계약은 [Tool 생성 Kafka 계약](../api/tool-generation-kafka-contract.md)을 참고하세요.
 
-운영 환경의 애플리케이션 서버는 DB와 Cache를 직접 컨테이너로 운영하지 않는다. SuperApp RDS와 ElastiCache는 Bastion 서버 또는 허용된 private network 경로를 통해 접근한다.
-
-개념 구조:
+### 4.4 sandbox와 socket proxy
 
 ```text
-Application EC2
-   |
-   | private access / ssh tunnel / allowed security group
-   v
-EC2 Bastion
-   |
-   | private subnet access
-   v
-SuperApp RDS / ElastiCache
+core ── tcp://docker-proxy:2375 ──▶ docker-proxy ── /var/run/docker.sock(ro) ──▶ 호스트 Docker
+                                     CONTAINERS=1, IMAGES=1, POST=1, EVENTS=0
+                                     (exec, build, networks, volumes, swarm 등은 403)
 ```
 
-이를 통해 애플리케이션 실행 계층과 데이터 계층을 분리하고, EC2 인스턴스의 운영 부담을 줄인다.
+- Core는 docker.sock을 직접 마운트하지 않고 docker-api internal 네트워크의 proxy만 씁니다.
+- sandbox 컨테이너는 네트워크 차단, uid 65534, `cap_drop: ALL`, `no-new-privileges`, read-only rootfs + `/tmp` tmpfs, pids·메모리(`SANDBOX_MEMORY_LIMIT`, swap 동일) 제한으로 실행됩니다.
+- sandbox 컨테이너는 호스트 Docker가 띄우므로, Core는 호스트 경로(`SANDBOX_HOST_TEMP_ROOT`)와 자기 컨테이너 안 경로(`SANDBOX_CONTAINER_TEMP_ROOT`)를 한 쌍으로 알고 bind mount를 만듭니다.
+- 현재 sandbox는 **BUILD 검증 게이트에서만** 씁니다. 승인된 Tool의 실제 실행은 Core 프로세스 안에서 이뤄집니다. proxy는 컨테이너 생성 옵션까지 검사하지 않으므로 노출면 축소이지 완전한 격리는 아닙니다. 자세한 내용은 [셀프호스팅 가이드의 보안 메모](../operations/self-hosting.md#14-보안-메모와-알려진-제한)를 참고하세요.
 
-## 9. Docker Compose 정책
+### 4.5 Remote Workspace
 
-### Local 환경
+프로젝트에 등록한 외부 서버에 Core가 Paramiko SSH로 접속합니다. Core는 `remoteWorkspaceId`로 API의 `/api/internal/remote-workspaces/connection-config`에서 접속 정보를 받고, SSH 키는 `REMOTE_WORKSPACE_KEYS_DIR`(Core의 `/home/appuser/.ssh`, 읽기 전용)에서 읽습니다.
+쓰기와 명령 실행 도구는 Workspace의 `allowWriteExecution` 설정에 따라 노출됩니다.
 
-로컬 개발 환경에서는 편의를 위해 인프라 컨테이너를 실행할 수 있다.
+## 5. 신뢰 경계 요약
 
-현재 local compose에는 다음 컴포넌트가 포함될 수 있다.
+| 경계 | 통제 |
+| --- | --- |
+| 인터넷 → 서버 | nginx 80/443만 publish, ufw(22/80/443), 내부 경로 404, `/api/v1/auth/`(로그인) 분당 10회(burst 20), `/api/v1/auth/refresh` 분당 60회(burst 60) |
+| 브라우저 → api | JWT access 토큰, refresh 쿠키, prod CORS off(same-origin) |
+| api ↔ core | `INTERNAL_API_KEY` 고정 시간 비교, Core는 외부 미노출·CORS off |
+| core → Docker | socket proxy(containers/images API만), sandbox 하드닝 |
+| core → LLM | 노트북 Ollama는 docker0 IP에만 바인딩된 reverse tunnel(`PermitListen`) |
+| 데이터 계층 | data·docker-api 네트워크는 internal, DB·Redis·Kafka 포트 미노출, Redis `requirepass` |
 
-```text
-local MySQL
-local PostgreSQL
-local Redis
-local Kafka
-```
+## 6. 로컬 개발 구성
 
-이는 로컬 개발용이다.
-
-### Server 또는 Production 환경
-
-서버/운영 compose에는 MySQL, PostgreSQL, Redis 컨테이너를 기본 포함하지 않는다.
-
-서버 compose는 주로 다음 컴포넌트 실행에 집중한다.
-
-```text
-frontend
-nginx
-theseus-api-server
-theseus-core-server
-kafka
-sandbox executor
-```
-
-데이터베이스, 캐시, 오브젝트 스토리지 endpoint는 환경변수, Jenkins credentials, 서버 secret 등으로 주입한다.
-
-## 10. 환경변수 정책
-
-실제 운영 값은 Git에 커밋하지 않는다.
-
-운영 값은 다음 방식으로 주입한다.
-
-- Jenkins credentials
-- 서버 환경변수
-- 배포 환경에서 제공하는 secret management
-
-향후 `.env.prod.example` 파일을 만들 수는 있지만, 실제 credential 값은 포함하지 않는다.
-
-## 11. 아키텍처 규칙
-
-1. Frontend는 API Server만 호출한다.
-2. Core Server는 Frontend에 직접 노출하지 않는다.
-3. 최종 권한 판단은 API Server가 담당한다.
-4. Core Server는 AI 실행, RAG, Tool 생성, 검증, Sandbox 실행에 집중한다.
-5. MySQL은 서비스 기준 데이터베이스로 사용한다.
-6. PostgreSQL은 Core, RAG, pgvector 전용으로 사용한다.
-7. Redis는 토큰, 캐시, 진행 상태, TTL 기반 복구 데이터에 사용한다.
-8. S3에는 파일 데이터, 생성 산출물, 로그를 저장하고 DB에는 S3 key를 저장한다.
-9. Kafka는 API Server와 Core Server 사이의 내부 비동기 이벤트 파이프라인이다.
-10. Production/server compose에서는 MySQL, PostgreSQL, Redis 컨테이너를 중복 실행하지 않는다.
-11. Local compose에서는 개발 편의를 위해 DB와 Redis 컨테이너를 실행할 수 있다.
-12. 실제 운영 환경 값은 Git에 커밋하지 않는다.
+로컬에서는 [`infra/docker/local/`](../../infra/docker/local/)의 compose로 MySQL(13306), PostgreSQL(15432), Redis(16379), Kafka(19092), Kafka UI(18080)를 `127.0.0.1`에만 열고, API·Core·Frontend는 IDE나 터미널에서 실행합니다.
+Frontend 개발 서버는 `/api`를 API(기본 `http://localhost:8080`)로 프록시하므로 운영과 같은 same-origin 요청 구조를 유지합니다. 절차는 [README의 로컬 개발](../../README.md#getting-started)과 [infra/README.md](../../infra/README.md)를 참고하세요.

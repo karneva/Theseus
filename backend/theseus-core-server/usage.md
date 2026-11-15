@@ -133,8 +133,10 @@ local daemon이며, 실패하면 stdio JSON Lines runner로 fallback합니다.
 
 ### 5.1 Extension 설치: 먼저 여기부터 실행
 
-> **가장 쉬운 방법은 저장소 루트의 `Install-Theseus-Extension.cmd`를
-> 더블클릭하는 것입니다.**
+> **가장 쉬운 방법은 저장소의 `scripts\vscode-extension\Install-Theseus-Extension.cmd`를
+> 더블클릭하는 것입니다.** 로컬 소스 패키지(5.1.7)를 받았다면 패키지 루트의
+> `Install-Theseus-Extension.cmd`를 더블클릭합니다. 아래 예시의 `scripts\vscode-extension\`
+> 접두사는 저장소 기준이며, 패키지에서는 접두사 없이 실행합니다.
 
 이 설치기는 다음 작업을 한 번에 처리합니다.
 
@@ -165,47 +167,47 @@ workspace별로 따로 저장해야 하면 설치 시 `-SettingsDir .vscode` 또
 
 #### 5.1.1 Windows에서 바로 설치
 
-저장소 루트에서 더블클릭합니다.
+저장소의 `scripts\vscode-extension\`에서 더블클릭합니다.
 
 ```text
-Install-Theseus-Extension.cmd
+scripts\vscode-extension\Install-Theseus-Extension.cmd
 ```
 
 명령 프롬프트에서 실행할 수도 있습니다.
 
 ```cmd
-Install-Theseus-Extension.cmd
+scripts\vscode-extension\Install-Theseus-Extension.cmd
 ```
 
 자동 IDE 감지가 맞지 않으면 설치 대상을 명시합니다.
 
 ```cmd
-Install-Theseus-Extension.cmd -Ide vscode
-Install-Theseus-Extension.cmd -Ide antigravity
+scripts\vscode-extension\Install-Theseus-Extension.cmd -Ide vscode
+scripts\vscode-extension\Install-Theseus-Extension.cmd -Ide antigravity
 ```
 
 작업할 프로젝트가 저장소 루트와 다르면 workspace를 지정합니다.
 
 ```cmd
-Install-Theseus-Extension.cmd -WorkspacePath C:\path\to\your\project
+scripts\vscode-extension\Install-Theseus-Extension.cmd -WorkspacePath C:\path\to\your\project
 ```
 
 core 폴더를 직접 지정해야 하면 `-CorePath`를 사용합니다.
 
 ```cmd
-Install-Theseus-Extension.cmd -CorePath C:\path\to\theseus-core-server
+scripts\vscode-extension\Install-Theseus-Extension.cmd -CorePath C:\path\to\theseus-core-server
 ```
 
 IDE CLI를 자동으로 찾지 못하면 `-Code`를 직접 지정합니다.
 
 ```cmd
-Install-Theseus-Extension.cmd -Ide antigravity -Code "C:\path\to\antigravity.cmd"
+scripts\vscode-extension\Install-Theseus-Extension.cmd -Ide antigravity -Code "C:\path\to\antigravity.cmd"
 ```
 
 사용 가능한 옵션은 다음 명령으로 확인합니다.
 
 ```cmd
-Install-Theseus-Extension.cmd -Help
+scripts\vscode-extension\Install-Theseus-Extension.cmd -Help
 ```
 
 #### 5.1.2 PowerShell에서 설치
@@ -316,16 +318,16 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-vscode-ext
 서버 orchestration/API 코드, 프론트엔드, 인프라를 제외하고 로컬 extension
 설치와 실행에 필요한 파일만 묶으려면 source package를 생성합니다.
 
-저장소 루트에서 더블클릭합니다.
+저장소의 `scripts\vscode-extension\`에서 더블클릭합니다.
 
 ```text
-Package-Theseus-LocalExtension.cmd
+scripts\vscode-extension\Package-Theseus-LocalExtension.cmd
 ```
 
-명령으로 실행하려면 다음을 사용합니다.
+명령으로 실행하려면 저장소 루트에서 다음을 사용합니다.
 
 ```powershell
-Package-Theseus-LocalExtension.cmd
+scripts\vscode-extension\Package-Theseus-LocalExtension.cmd
 ```
 
 extension 폴더에서 VSIX 재빌드와 압축을 한 번에 실행할 수도 있습니다.
@@ -338,7 +340,7 @@ npm.cmd run package:local-source
 Git Bash에서는 다음 wrapper를 사용합니다.
 
 ```bash
-bash Package-Theseus-LocalExtension.sh
+bash scripts/vscode-extension/Package-Theseus-LocalExtension.sh
 ```
 
 생성 결과는 기본적으로 다음 위치에 생깁니다.
@@ -414,8 +416,8 @@ npm.cmd run package:test -- -BuildRunner -InstallPyInstaller
 Git Bash에서는 저장소 루트에서 Bash wrapper를 사용할 수 있습니다.
 
 ```bash
-bash Package-Theseus-TestPackage.sh
-bash Package-Theseus-TestPackage.sh --build-runner --install-pyinstaller
+bash scripts/vscode-extension/Package-Theseus-TestPackage.sh
+bash scripts/vscode-extension/Package-Theseus-TestPackage.sh --build-runner --install-pyinstaller
 ```
 
 생성 결과는 기본적으로 다음 위치에 생깁니다.
@@ -476,7 +478,7 @@ Core Server는 API Server와 연결되는 서버 실행 경로입니다. FE/API/
 Docker sandbox, Remote Workspace를 포함한 통합 흐름은 이 경로를 사용합니다.
 
 ```powershell
-uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn src.main:app --reload --host 0.0.0.0 --port 8086
 ```
 
 확인 endpoint:

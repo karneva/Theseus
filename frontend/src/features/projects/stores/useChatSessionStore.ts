@@ -5,6 +5,7 @@ import {
   isTerminalToolNotice,
 } from '../utils/toolExecutionMessages';
 import { create } from 'zustand';
+import { createId } from '@/lib/id';
 import type {
   ChatMessage,
   CreatedToolRecovery,
@@ -23,6 +24,15 @@ function isAssistantMessage(message: ChatMessage | undefined): boolean {
   return message?.senderType === 'ASSISTANT';
 }
 
+/**
+ * 도구 실행 알림을 덮어쓸 기존 메시지 위치를 찾는다.
+ *
+ * 1. toolUseId가 있으면 같은 toolUseId를 가진 가장 최근 알림(정확 매칭)
+ * 2. 없으면 같은 toolName이면서 아직 끝나지 않은(STARTED, 오류 아님) 가장 최근 알림
+ *    - 일부 이벤트는 종료 시 toolUseId를 주지 않으므로 이름으로 짝을 맞춘다.
+ *    - 이미 끝난 알림은 건너뛰어, 같은 도구를 여러 번 호출해도 이전 결과를 덮지 않는다.
+ * 3. 둘 다 없으면 -1(새 알림으로 추가)
+ */
 function findToolNoticeUpsertIndex(messages: ChatMessage[], notice: ToolExecutionNotice): number {
   const exactKey = toolNoticeExactKey(notice);
   const nameKey = toolNoticeNameKey(notice);
@@ -52,6 +62,17 @@ function findToolNoticeUpsertIndex(messages: ChatMessage[], notice: ToolExecutio
   return -1;
 }
 
+/**
+ * 현재 열린 채팅 세션 하나의 화면 상태.
+ *
+ * - messages: 서버에서 읽은 메시지 + 스트리밍 중 로컬에서 추가한 메시지(사용자 입력, ASSISTANT
+ *   placeholder, 도구 실행 알림). 스트림이 끝나면 SSE 훅이 서버 상태로 다시 덮어쓴다(initSession).
+ * - draftPhase: ToolPlan 진행 단계. 일반적인 전이는
+ *   null -> PLAN(생성 요청) -> REVIEW(초안 도착) -> PENDING(승인 요청) -> APPROVED -> BUILDING -> BUILT
+ *   이고, 실패/반려 시 FAILED/REJECTED. ASK/AGENT 대화를 보내면 null로 돌아간다.
+ * - isGenerating / isBuilding: PLAN·채팅 스트림 진행 중 / 승인 후 BUILD 진행 중.
+ * - abortController: 현재 열린 스트림. initSession이 이전 스트림을 끊는 데 쓴다.
+ */
 interface ChatSessionState {
   messages: ChatMessage[];
   mode: ToolPlanMode;
@@ -77,6 +98,7 @@ interface ChatSessionState {
   title: string;
   isClosed: boolean;
 
+  /** 서버에서 읽은 세션 상세로 상태 전체를 교체한다. 진행 중이던 스트림은 끊고 임시 UI 상태는 초기화한다. */
   initSession: (data: {
     messages: ChatMessage[];
     plan: StructuredPlan | null;
@@ -94,13 +116,18 @@ interface ChatSessionState {
     draftVersion?: number;
   }) => void;
   setMode: (mode: ToolPlanMode) => void;
-  setToolResult: (result: Record<string, unknown> | null) => void;
   setActiveTab: (tab: 'plan' | 'result') => void;
   setIsBuilding: (isBuilding: boolean) => void;
+  /**
+   * 도구 실행 알림을 추가하거나 기존 알림을 갱신한다(매칭 규칙은 findToolNoticeUpsertIndex).
+   * 새 알림은 스트리밍 중인 ASSISTANT 메시지 바로 앞에 끼워 넣어, 답변 본문이 항상 마지막에 오게 한다.
+   */
   upsertToolExecutionNotice: (notice: ToolExecutionNotice) => void;
   addMessage: (msg: ChatMessage) => void;
   completeAssistantPlaceholder: (msg: ChatMessage) => void;
+  /** 스트림 chunk를 마지막 ASSISTANT 메시지에 이어 붙인다. 없으면 새 ASSISTANT 메시지를 만든다. */
   updateLastMessageContent: (chunk: string) => void;
+  /** 재접속 replay처럼 전체 본문이 올 때 마지막 ASSISTANT 메시지 내용을 교체한다. */
   replaceLastMessageContent: (content: string) => void;
   setCurrentPlan: (plan: StructuredPlan | null) => void;
   setDraftPhase: (phase: DraftPhase) => void;
@@ -112,14 +139,10 @@ interface ChatSessionState {
   clearDraftComments: () => void;
   setCurrentRunId: (runId: string | null) => void;
   setCurrentToolId: (toolId: string | null) => void;
-  setCurrentToolPlanGroupId: (planGroupId: string | null) => void;
   setCurrentToolPlanId: (planId: string | null) => void;
-  setCreatedTool: (createdTool: CreatedToolRecovery | null) => void;
-  setDraftVersion: (version: number) => void;
   setPlanVersion: (version: number) => void;
   setAbortController: (ctrl: AbortController | null) => void;
   setSelectedRemoteWorkspaceId: (remoteWorkspaceId: number | null) => void;
-  abortGeneration: () => void;
   updateTitle: (title: string) => void;
   setClosed: (isClosed: boolean) => void;
 }
@@ -164,7 +187,10 @@ export const useChatSessionStore = create<ChatSessionState>((set, get) => ({
     isClosed,
     planVersion,
     draftVersion,
-  }) =>
+  }) => {
+    // 세션을 서버 기준으로 다시 채울 때, 이전 상태에서 열려 있던 스트림(SSE)이 남아
+    // 새 세션의 메시지를 오염시키지 않도록 먼저 끊는다.
+    get().abortController?.abort();
     set({
       messages,
       currentPlan: plan,
@@ -187,7 +213,8 @@ export const useChatSessionStore = create<ChatSessionState>((set, get) => ({
       commentMode: false,
       draftComments: {},
       abortController: null,
-    }),
+    });
+  },
 
   setMode: (mode) => set({ mode }),
 
@@ -211,7 +238,7 @@ export const useChatSessionStore = create<ChatSessionState>((set, get) => ({
       }
 
       const message: ChatMessage = {
-        messageId: crypto.randomUUID(),
+        messageId: createId(),
         senderType: 'SYSTEM_NOTICE',
         messageType: 'SYSTEM_NOTICE',
         contentType: 'JSON',
@@ -261,7 +288,7 @@ export const useChatSessionStore = create<ChatSessionState>((set, get) => ({
 
       // 어시스턴트 메시지가 없거나 마지막 메시지가 유저/시스템인 경우 새로 생성
       const newMsg: ChatMessage = {
-        messageId: crypto.randomUUID(),
+        messageId: createId(),
         senderType: 'ASSISTANT',
         messageType: 'TOOL_PLAN_RESPONSE',
         contentType: 'MARKDOWN',
@@ -283,7 +310,7 @@ export const useChatSessionStore = create<ChatSessionState>((set, get) => ({
       }
 
       const newMsg: ChatMessage = {
-        messageId: crypto.randomUUID(),
+        messageId: createId(),
         senderType: 'ASSISTANT',
         messageType: 'TOOL_PLAN_RESPONSE',
         contentType: 'MARKDOWN',
@@ -307,24 +334,13 @@ export const useChatSessionStore = create<ChatSessionState>((set, get) => ({
 
   setCurrentRunId: (runId) => set({ currentRunId: runId }),
   setCurrentToolId: (toolId) => set({ currentToolId: toolId }),
-  setCurrentToolPlanGroupId: (planGroupId) => set({ currentToolPlanGroupId: planGroupId }),
   setCurrentToolPlanId: (planId) => set({ currentToolPlanId: planId }),
-  setCreatedTool: (createdTool) => set({ createdTool }),
-  setDraftVersion: (version) => set({ draftVersion: version }),
   setPlanVersion: (version) => set({ planVersion: version }),
-  setToolResult: (result) => set({ toolResult: result }),
   setActiveTab: (tab) => set({ activeTab: tab }),
   setIsBuilding: (isBuilding) => set({ isBuilding }),
   setAbortController: (ctrl) => set({ abortController: ctrl }),
   setSelectedRemoteWorkspaceId: (remoteWorkspaceId) =>
     set({ selectedRemoteWorkspaceId: remoteWorkspaceId }),
-  abortGeneration: () => {
-    const ctrl = get().abortController;
-    if (ctrl) {
-      ctrl.abort();
-    }
-    set({ isGenerating: false, abortController: null });
-  },
 
   updateTitle: (title) => set({ title }),
   setClosed: (isClosed) => set({ isClosed }),

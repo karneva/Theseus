@@ -76,7 +76,7 @@ Plan 승인은 Tool build 허가이고, Tool 공개는 프로젝트 `ADMIN`이 �
 
 ### 전환 단계 기준
 
-`S14P31A308-237` 단계에서는 신규 ToolPlan 구조를 추가하되 기존 Tool 생성/승인 API 호환을 유지한다.
+ToolPlan 도입 단계에서는 신규 ToolPlan 구조를 추가하되 기존 Tool 생성/승인 API 호환을 유지한다.
 
 ```text
 tools.source_tool_plan_id nullable
