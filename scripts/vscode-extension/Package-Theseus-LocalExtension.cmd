@@ -1,8 +1,8 @@
 @echo off
 setlocal
 
-set "REPO_DIR=%~dp0"
-for %%I in ("%REPO_DIR%.") do set "REPO_DIR=%%~fI"
+rem This wrapper lives in scripts\vscode-extension\, two levels below the repository root.
+for %%I in ("%~dp0..\..") do set "REPO_DIR=%%~fI"
 
 set "PACKAGER=%REPO_DIR%\backend\theseus-core-server\scripts\package-local-extension-source.ps1"
 if not exist "%PACKAGER%" (

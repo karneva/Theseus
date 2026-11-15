@@ -6,7 +6,8 @@ case "$script_path" in
   */*) script_dir="${script_path%/*}" ;;
   *) script_dir="." ;;
 esac
-repo_dir="$(cd -- "$script_dir" && pwd)"
+# 이 wrapper는 scripts/vscode-extension/에 있으므로 저장소 루트는 두 단계 위입니다.
+repo_dir="$(cd -- "$script_dir/../.." && pwd)"
 packager="$repo_dir/backend/theseus-core-server/scripts/package-test-distribution.sh"
 
 if [[ ! -f "$packager" ]]; then

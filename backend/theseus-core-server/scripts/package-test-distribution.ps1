@@ -160,10 +160,27 @@ function Resolve-RepoRoot {
 
     $candidate = Join-Path $CoreRoot "..\.."
     $candidate = (Resolve-Path -LiteralPath $candidate).Path
-    if (Test-Path -LiteralPath (Join-Path $candidate "Install-Theseus-TestPackage.cmd") -PathType Leaf) {
+    if (Find-WrapperFile -Root $candidate -Name "Install-Theseus-TestPackage.cmd") {
         return $candidate
     }
-    throw "Install-Theseus-TestPackage.cmd was not found above CorePath: $CoreRoot"
+    throw "Install-Theseus-TestPackage.cmd was not found in scripts\vscode-extension above CorePath: $CoreRoot"
+}
+
+function Find-WrapperFile {
+    param(
+        [string]$Root,
+        [string]$Name
+    )
+
+    # In the repository the wrappers live in scripts\vscode-extension\.
+    # An extracted package keeps them at its root, so check both layouts.
+    foreach ($dir in @((Join-Path $Root "scripts\vscode-extension"), $Root)) {
+        $candidate = Join-Path $dir $Name
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+            return $candidate
+        }
+    }
+    return $null
 }
 
 function Copy-RunnerPayload {
@@ -260,11 +277,11 @@ if ([string]::IsNullOrWhiteSpace($RunnerPath)) {
     throw "theseus-runner.exe was not found. Run scripts\build-runner-binary.ps1 first, run with -BuildRunner, or pass -RunnerPath."
 }
 
-$installerCmd = Join-Path $repoRoot "Install-Theseus-TestPackage.cmd"
+$installerCmd = Find-WrapperFile -Root $repoRoot -Name "Install-Theseus-TestPackage.cmd"
 $installerScript = Join-Path $CorePath "scripts\install-test-package.ps1"
 $packageReadme = Join-Path $CorePath "scripts\test-package-README.md"
-if (-not (Test-Path -LiteralPath $installerCmd -PathType Leaf)) {
-    throw "Installer wrapper was not found: $installerCmd"
+if (-not $installerCmd) {
+    throw "Installer wrapper Install-Theseus-TestPackage.cmd was not found under: $repoRoot\scripts\vscode-extension"
 }
 if (-not (Test-Path -LiteralPath $installerScript -PathType Leaf)) {
     throw "Installer script was not found: $installerScript"

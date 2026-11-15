@@ -1,0 +1,65 @@
+# 의존성·베이스 이미지·Actions 버전 갱신 PR을 매주 받습니다.
+# minor/patch 갱신은 생태계별로 한 PR에 묶어 리뷰 부담을 줄이고, major 갱신은 개별 PR로 받습니다.
+version: 2
+updates:
+  - package-ecosystem: gradle
+    directory: /backend/theseus-api-server
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      gradle-minor-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  - package-ecosystem: pip
+    directory: /backend/theseus-core-server
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      pip-minor-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      npm-minor-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      github-actions:
+        patterns: ["*"]
+
+  - package-ecosystem: docker
+    directories:
+      - /backend/theseus-api-server
+      - /backend/theseus-core-server
+      - /frontend
+      - /infra/docker/selfhost/nginx
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: build
+      include: scope

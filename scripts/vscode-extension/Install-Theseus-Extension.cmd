@@ -1,8 +1,14 @@
 @echo off
 setlocal EnableExtensions DisableDelayedExpansion
 
+rem Resolve the root that contains backend\theseus-core-server.
+rem - Packaged copy: this wrapper sits at the package root next to backend\.
+rem - Repository copy: this wrapper lives in scripts\vscode-extension\, two levels below the root.
 set "REPO_ROOT=%~dp0"
 for %%I in ("%REPO_ROOT%.") do set "REPO_ROOT=%%~fI"
+if not exist "%REPO_ROOT%\backend\theseus-core-server" (
+    for %%I in ("%REPO_ROOT%\..\..") do set "REPO_ROOT=%%~fI"
+)
 
 set "CORE_PATH=%REPO_ROOT%\backend\theseus-core-server"
 set "INSTALLER=%CORE_PATH%\scripts\install-vscode-extension.ps1"
@@ -28,7 +34,7 @@ if not exist "%INSTALLER%" (
     echo Theseus installer was not found:
     echo   %INSTALLER%
     echo.
-    echo Run this file from the repository root, or check that backend\theseus-core-server exists.
+    echo Keep this file in scripts\vscode-extension\ of the repository, or at the package root next to backend\.
     pause
     exit /b 1
 )

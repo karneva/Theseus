@@ -138,7 +138,13 @@ $scriptPath = $env:THESEUS_UNINSTALL_SCRIPT
 if ([string]::IsNullOrWhiteSpace($scriptPath)) {
     throw "THESEUS_UNINSTALL_SCRIPT is not set."
 }
-$repoRoot = Split-Path -Parent $scriptPath
+# Packaged copy: the wrapper sits at the package root next to backend\theseus-core-server.
+# Repository copy: the wrapper lives in scripts\vscode-extension\, two levels below the repository root.
+$scriptDir = Split-Path -Parent $scriptPath
+$repoRoot = $scriptDir
+if (-not (Test-Path -LiteralPath (Join-Path $scriptDir "backend\theseus-core-server"))) {
+    $repoRoot = (Resolve-Path -LiteralPath (Join-Path $scriptDir "..\..")).Path
+}
 if ([string]::IsNullOrWhiteSpace($WorkspacePath)) {
     $WorkspacePath = $repoRoot
 }

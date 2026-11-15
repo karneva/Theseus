@@ -58,11 +58,27 @@ function Resolve-RepoRoot {
         throw "RepoRoot does not exist: $Value"
     }
     $resolved = (Resolve-Path -LiteralPath $Value).Path
-    $installer = Join-Path $resolved "Install-Theseus-Extension.cmd"
-    if (-not (Test-Path -LiteralPath $installer -PathType Leaf)) {
-        throw "Install-Theseus-Extension.cmd was not found in RepoRoot: $resolved"
+    if (-not (Find-WrapperFile -Root $resolved -Name "Install-Theseus-Extension.cmd")) {
+        throw "Install-Theseus-Extension.cmd was not found in RepoRoot\scripts\vscode-extension or RepoRoot: $resolved"
     }
     return $resolved
+}
+
+function Find-WrapperFile {
+    param(
+        [string]$Root,
+        [string]$Name
+    )
+
+    # In the repository the wrappers live in scripts\vscode-extension\.
+    # An extracted package keeps them at its root, so check both layouts.
+    foreach ($dir in @((Join-Path $Root "scripts\vscode-extension"), $Root)) {
+        $candidate = Join-Path $dir $Name
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+            return $candidate
+        }
+    }
+    return $null
 }
 
 function Resolve-ExistingFile {
@@ -418,13 +434,13 @@ if ([string]::IsNullOrWhiteSpace($VsixPath)) {
     throw "Theseus VSIX was not found. Run with -BuildVsix or pass -VsixPath."
 }
 
-$installCmd = Join-Path $RepoRoot "Install-Theseus-Extension.cmd"
-$uninstallCmd = Join-Path $RepoRoot "Uninstall-Theseus-VSCode.cmd"
-if (-not (Test-Path -LiteralPath $installCmd -PathType Leaf)) {
-    throw "Installer wrapper was not found: $installCmd"
+$installCmd = Find-WrapperFile -Root $RepoRoot -Name "Install-Theseus-Extension.cmd"
+$uninstallCmd = Find-WrapperFile -Root $RepoRoot -Name "Uninstall-Theseus-VSCode.cmd"
+if (-not $installCmd) {
+    throw "Installer wrapper Install-Theseus-Extension.cmd was not found under: $RepoRoot\scripts\vscode-extension"
 }
-if (-not (Test-Path -LiteralPath $uninstallCmd -PathType Leaf)) {
-    throw "Uninstaller wrapper was not found: $uninstallCmd"
+if (-not $uninstallCmd) {
+    throw "Uninstaller wrapper Uninstall-Theseus-VSCode.cmd was not found under: $RepoRoot\scripts\vscode-extension"
 }
 
 $stagingPath = Join-Path $OutputDir $PackageName

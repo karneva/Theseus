@@ -1,0 +1,5 @@
+# 줄바꿈 규칙: Windows 배치 파일은 CRLF가 아니면 label/goto가 깨질 수 있고,
+# 셸 스크립트는 CRLF면 Linux에서 실행되지 않으므로 체크아웃 시 줄바꿈을 고정합니다.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.sh  text eol=lf
