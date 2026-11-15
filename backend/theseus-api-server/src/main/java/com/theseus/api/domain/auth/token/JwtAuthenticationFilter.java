@@ -2,6 +2,7 @@ package com.theseus.api.domain.auth.token;
 
 import com.theseus.api.common.exception.BusinessException;
 import com.theseus.api.domain.user.entity.User;
+import com.theseus.api.domain.user.entity.UserStatus;
 import com.theseus.api.domain.user.repository.UserRepository;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -63,7 +64,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		try {
 			jwtTokenProvider.validateToken(token);
 			Long userId = jwtTokenProvider.getUserId(token);
-			userRepository.findById(userId).ifPresent(this::setAuthentication);
+			// Access Token이 아직 유효해도 비활성화된 계정은 인증하지 않습니다(관리자 비활성화 즉시 반영).
+			userRepository
+				.findById(userId)
+				.filter(user -> UserStatus.ACTIVE.equals(user.getStatus()))
+				.ifPresent(this::setAuthentication);
 		} catch (JwtException | IllegalArgumentException | BusinessException exception) {
 			SecurityContextHolder.clearContext();
 		}

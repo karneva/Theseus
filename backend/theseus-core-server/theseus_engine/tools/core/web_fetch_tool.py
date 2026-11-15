@@ -10,6 +10,11 @@ import httpx
 from pydantic import BaseModel, Field
 
 from theseus_engine.tools.core.base_tools import BaseTool, ToolExecutionContext, ToolResult
+from theseus_engine.tools.core.url_safety import (
+    UnsafeUrlError,
+    create_public_http_client,
+    fetch_public_url,
+)
 
 log = logging.getLogger(__name__)
 
@@ -53,13 +58,17 @@ class WebFetchTool(BaseTool):
             )
 
         try:
-            async with httpx.AsyncClient(
-                follow_redirects=True,
-                max_redirects=MAX_REDIRECTS,
-                timeout=15.0,
-            ) as client:
-                response = await client.get(url, headers={"User-Agent": USER_AGENT})
+            # 내부 주소(docker-proxy, api, DB, 메타데이터, 호스트 터널)는 리다이렉트를 거쳐도 거부합니다.
+            async with create_public_http_client(timeout=15.0) as client:
+                response = await fetch_public_url(
+                    client,
+                    url,
+                    headers={"User-Agent": USER_AGENT},
+                    max_redirects=MAX_REDIRECTS,
+                )
                 response.raise_for_status()
+        except UnsafeUrlError as exc:
+            return ToolResult(output=f"URL not allowed: {exc}", is_error=True)
         except httpx.HTTPStatusError as exc:
             return ToolResult(
                 output=f"HTTP {exc.response.status_code} error: {url}",

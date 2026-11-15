@@ -18,9 +18,7 @@ MOCK_PROJECT_TOOL_PERMISSIONS: dict[str, int] = {
     "grep": 1,
     "web_search": 1,
     "web_fetch": 1,
-    "dummy_echo": 1,
     "create_tool": 2,
-    "system_reboot": 5,
 }
 
 PROJECT_ACCESS_DENIED = "Project access denied"

@@ -2,6 +2,7 @@ package com.theseus.api.domain.user.service;
 
 import com.theseus.api.common.exception.BusinessException;
 import com.theseus.api.common.exception.ErrorCode;
+import com.theseus.api.domain.auth.redis.RefreshTokenStore;
 import com.theseus.api.domain.project.entity.ProjectStatus;
 import com.theseus.api.domain.project.repository.ProjectRepository;
 import com.theseus.api.domain.user.dto.request.UserCreateRequest;
@@ -27,6 +28,7 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final ProjectRepository projectRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final RefreshTokenStore refreshTokenStore;
 
 	/**
 	 * Super Admin을 제외한 사용자 목록을 페이지 단위로 조회합니다.
@@ -84,6 +86,7 @@ public class UserService {
 
 	/**
 	 * 사용자 활성 상태를 변경하고 비활성화 가능 여부를 검증합니다.
+	 * 비활성화할 때는 저장된 Refresh Token을 지워 기존 세션이 재발급으로 연장되지 않게 합니다.
 	 */
 	@Transactional
 	public UserResponse updateUserStatus(Long userId, UserStatusUpdateRequest request) {
@@ -94,6 +97,10 @@ public class UserService {
 		}
 
 		user.updateStatus(request.getStatus());
+
+		if (UserStatus.INACTIVE.equals(request.getStatus())) {
+			refreshTokenStore.deleteByUserId(user.getId());
+		}
 
 		return UserResponse.createFrom(user);
 	}

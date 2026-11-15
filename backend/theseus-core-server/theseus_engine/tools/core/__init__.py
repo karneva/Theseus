@@ -9,9 +9,6 @@ Usage:
         registry.register(tool_cls())
 """
 
-# ── Base / Test Tools ────────────────────────────────────────────
-from theseus_engine.tools.core.base_tools import DummyTool, SystemRebootTool
-
 # ── Meta Tooling (create, validate, load) ────────────────────────
 from theseus_engine.tools.core.tool_factory import (
     ToolCreatorTool,
@@ -94,10 +91,9 @@ from theseus_engine.tools.core.knowledge_tools import (
 from theseus_engine.tools.core.todo_write_tool import TodoWriteTool
 
 # ── 전체 도구 목록 (engine_builder에서 순회 등록용) ────────────
+# 테스트용 데모 도구(dummy_echo, system_reboot)는 운영 LLM에 노출되지 않도록
+# 여기 넣지 않고 tests/fixtures/demo_tools.py에만 둡니다.
 ALL_CORE_TOOLS = [
-    # Base
-    DummyTool,
-    SystemRebootTool,
     # Meta
     ToolCreatorTool,
     CustomToolReadSourceTool,

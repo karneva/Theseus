@@ -72,9 +72,7 @@ async def run_cli():
         "grep": 1,
         "web_search": 1,
         "web_fetch": 1,
-        "dummy_echo": 1,
         "create_tool": 2,
-        "system_reboot": 5,
         "search_knowledge_base": 1,
         "ingest_document": 2,
     }

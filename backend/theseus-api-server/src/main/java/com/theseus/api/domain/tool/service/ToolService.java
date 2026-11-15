@@ -125,15 +125,18 @@ public class ToolService {
 
 	/**
 	 * Tool을 논리 삭제 처리하고 코어서버의 실제 도구 파일을 휴지통으로 이동시킵니다.
+	 * Core 파일까지 지우므로 사용 권한이 아니라 삭제 권한(canDeleteTool 또는 프로젝트 ADMIN)과
+	 * 해당 Tool 등급에 대한 접근 레벨을 함께 요구합니다.
 	 */
 	@Transactional
 	public void deleteTool(AuthenticatedUser currentUser, Long projectId, Long toolId) {
 		User user = getCurrentUserEntity(currentUser);
 		Project project = getProjectEntity(projectId);
 		ProjectMember projectMember = getActiveProjectMember(project, user);
-		validateToolUsePermission(projectMember);
+		validateToolDeletePermission(projectMember);
 
 		Tool tool = getToolEntity(project, toolId);
+		validateAccessibleTool(projectMember, tool);
 
 		// 코어서버의 실제 도구 파일(.py, .meta.json) 휴지통 이동 API 호출
 		requestCoreToolDeletion(project.getId(), tool.getFileName());
@@ -266,6 +269,12 @@ public class ToolService {
 	private void validateToolUsePermission(ProjectMember projectMember) {
 		if (!Boolean.TRUE.equals(projectMember.getCanUseTool())) {
 			throw BusinessException.of(ErrorCode.TOOL_USE_PERMISSION_REQUIRED);
+		}
+	}
+
+	private void validateToolDeletePermission(ProjectMember projectMember) {
+		if (!projectMember.isAdmin() && !Boolean.TRUE.equals(projectMember.getCanDeleteTool())) {
+			throw BusinessException.of(ErrorCode.TOOL_DELETE_PERMISSION_REQUIRED);
 		}
 	}
 

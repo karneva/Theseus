@@ -33,8 +33,41 @@ SANDBOX_REQUIREMENT_IMPORTS = (
 )
 
 
+# sandbox 컨테이너를 실행할 사용자(nobody). 이미지의 USER와 무관하게 root로 돌지 않게 고정합니다.
+SANDBOX_CONTAINER_USER = "65534:65534"
+SANDBOX_PIDS_LIMIT = 128
+SANDBOX_TMPFS_SIZE = "64m"
+
+
 class SandboxStartupCheckError(SandboxUnavailableError):
     """Raised when sandbox prerequisites fail during startup validation."""
+
+
+def hardened_container_options() -> dict[str, Any]:
+    """생성 코드를 실행하는 sandbox 컨테이너에 공통으로 거는 격리 옵션.
+
+    - 네트워크 차단, non-root 사용자, 모든 capability 제거, setuid 등으로 권한 상승 금지
+    - pids 제한으로 fork bomb 차단, 루트 FS 읽기 전용 + /tmp만 tmpfs로 쓰기 허용
+    - memswap을 mem과 같게 둬 swap으로 메모리 제한을 우회하지 못하게 함
+    결과 파일은 bind mount된 /sandbox/output에만 쓸 수 있습니다.
+    """
+    return {
+        "network_disabled": True,
+        "user": SANDBOX_CONTAINER_USER,
+        "cap_drop": ["ALL"],
+        "security_opt": ["no-new-privileges:true"],
+        "pids_limit": SANDBOX_PIDS_LIMIT,
+        "read_only": True,
+        "tmpfs": {"/tmp": f"size={SANDBOX_TMPFS_SIZE}"},
+        "mem_limit": settings.SANDBOX_MEMORY_LIMIT,
+        "memswap_limit": settings.SANDBOX_MEMORY_LIMIT,
+        # non-root 사용자의 HOME은 쓰기 불가 경로일 수 있으므로 tmpfs로 돌립니다.
+        "environment": {
+            "HOME": "/tmp",
+            "PYTHONDONTWRITEBYTECODE": "1",
+            "PIP_NO_CACHE_DIR": "1",
+        },
+    }
 
 
 class DockerExecutor(ToolRunner):
@@ -152,9 +185,9 @@ print(json.dumps(payload, ensure_ascii=False))
             output = client.containers.run(
                 image,
                 command=["python", "-c", script],
-                network_disabled=True,
                 remove=True,
                 working_dir="/sandbox",
+                **hardened_container_options(),
             )
         except Exception as exc:
             raise SandboxStartupCheckError(
@@ -203,6 +236,11 @@ print(json.dumps(payload, ensure_ascii=False))
             host_output_dir = host_root_dir / "output"
             input_dir.mkdir(parents=True, exist_ok=True)
             output_dir.mkdir(parents=True, exist_ok=True)
+            # sandbox는 nobody(65534)로 돌기 때문에 Core가 만든 디렉터리에 접근 권한을 줍니다.
+            # input은 읽기만(ro mount), output은 result.json을 써야 하므로 쓰기까지 허용합니다.
+            root_dir.chmod(0o755)
+            input_dir.chmod(0o755)
+            output_dir.chmod(0o777)
 
             (input_dir / "tool_code.py").write_text(request.tool_code, encoding="utf-8")
             (input_dir / "payload.json").write_text(
@@ -227,25 +265,28 @@ print(json.dumps(payload, ensure_ascii=False))
             timed_out = False
             resource_limited = False
             exit_code = None
+            # metadata는 Tool 산출물과 API 응답으로 흘러가므로 Docker host나 호스트·컨테이너
+            # 경로를 담지 않습니다. 경로 진단이 필요하면 아래 debug 로그를 봅니다.
             diagnostics: dict[str, Any] = {
                 "sandboxImage": settings.SANDBOX_IMAGE,
-                "dockerHost": settings.docker_host or "local-default",
                 "tempRootMode": temp_root_mode,
-                "inputDir": str(input_dir.resolve()),
-                "outputDir": str(output_dir.resolve()),
-                "hostInputDir": str(host_input_dir),
-                "hostOutputDir": str(host_output_dir),
             }
+            logger.debug(
+                "Sandbox workspace prepared. mode=%s input=%s hostInput=%s hostOutput=%s",
+                temp_root_mode,
+                input_dir,
+                host_input_dir,
+                host_output_dir,
+            )
 
             try:
                 container = client.containers.run(
                     settings.SANDBOX_IMAGE,
                     command=command,
                     detach=True,
-                    network_disabled=True,
-                    mem_limit=settings.SANDBOX_MEMORY_LIMIT,
                     cpu_period=settings.SANDBOX_CPU_PERIOD,
                     cpu_quota=settings.SANDBOX_CPU_QUOTA,
+                    **hardened_container_options(),
                     volumes={
                         str(host_input_dir): {"bind": "/sandbox/input", "mode": "ro"},
                         str(host_output_dir): {"bind": "/sandbox/output", "mode": "rw"},

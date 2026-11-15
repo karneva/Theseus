@@ -1,11 +1,18 @@
 import { RouterProvider } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { router } from './routes';
+import { useAuthBootstrap } from './hooks/useAuthBootstrap';
 
 function App() {
+  const authReady = useAuthBootstrap();
+
   return (
     <>
-      <RouterProvider router={router} />
+      {authReady ? (
+        <RouterProvider router={router} />
+      ) : (
+        <div className="min-h-screen bg-[#010f1f]" aria-busy="true" />
+      )}
       <Toaster
         theme="dark"
         position="top-right"

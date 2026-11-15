@@ -59,6 +59,12 @@ REMOTE_WRITE_EXECUTION_TOOL_NAMES = frozenset(
 
 LOCAL_REPORT_WRITE_TOOL_NAMES = frozenset({"local_write_report"})
 
+# Remote Workspace를 고르면 같은 역할의 로컬 도구는 숨깁니다. 서버에서 로컬 도구는
+# 사용자 서버가 아니라 Core 컨테이너의 파일·셸을 건드리므로 모델이 헷갈리면 안 됩니다.
+LOCAL_REMOTE_OVERLAP_TOOL_NAMES = frozenset(
+    {"read_file", "glob", "grep", "bash", "write_file", "edit_file"}
+)
+
 
 @dataclass(frozen=True)
 class ToolVisibilityPolicy:
@@ -122,6 +128,8 @@ def resolve_excluded_tool_names(
     excluded = set(policy.disabled_tools)
     if not policy.has_remote_workspace or not policy.allow_local_report_write:
         excluded.update(LOCAL_REPORT_WRITE_TOOL_NAMES)
+    if policy.has_remote_workspace:
+        excluded.update(LOCAL_REMOTE_OVERLAP_TOOL_NAMES)
 
     if policy.mode == AgentMode.ASK:
         allowed = set(ASK_ALLOWED_TOOLS)

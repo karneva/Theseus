@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any, AsyncGenerator, AsyncIterator, Awaitable, Callable
 from uuid import uuid4
 
+from theseus_engine.config import llm_max_output_tokens
 from theseus_engine.models.messages import (
     ConversationMessage,
     ImageBlock,
@@ -85,7 +86,8 @@ _NESTED_TOOL_BLOCKED_NAMES = frozenset(
         "remote_write_file",
         "remote_edit_file",
         "remote_run_command",
-        "system_reboot",
+        "task_create",
+        "agent",
     }
 )
 
@@ -1401,7 +1403,7 @@ class QueryEngine:
         cwd: str | Path,
         model: str,
         system_prompt: str,
-        max_tokens: int = 32768,
+        max_tokens: int | None = None,
         context_window_tokens: int | None = None,
         auto_compact_threshold_tokens: int | None = None,
         max_turns: int | None = 30,
@@ -1417,7 +1419,8 @@ class QueryEngine:
         self._cwd = Path(cwd).resolve()
         self._model = model
         self._system_prompt = system_prompt
-        self._max_tokens = max_tokens
+        # 명시하지 않으면 LLM_MAX_OUTPUT_TOKENS(기본 32768)를 씁니다.
+        self._max_tokens = max_tokens if max_tokens is not None else llm_max_output_tokens()
         self._context_window_tokens = context_window_tokens
         self._auto_compact_threshold_tokens = auto_compact_threshold_tokens
         self._max_turns = max_turns

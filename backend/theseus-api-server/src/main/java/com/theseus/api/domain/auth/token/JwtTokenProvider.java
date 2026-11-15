@@ -19,6 +19,8 @@ public class JwtTokenProvider {
 	private static final String TOKEN_TYPE_CLAIM = "tokenType";
 	private static final String ACCESS_TOKEN_TYPE = "access";
 	private static final String REFRESH_TOKEN_TYPE = "refresh";
+	// HS256 서명 키의 최소 길이(RFC 7518 3.2)입니다. 짧으면 jjwt가 WeakKeyException을 던집니다.
+	private static final int MIN_SECRET_BYTES = 32;
 
 	private final SecretKey secretKey;
 	private final long accessTokenExpirationMillis;
@@ -29,9 +31,24 @@ public class JwtTokenProvider {
 		@Value("${jwt.access-token-expiration-millis}") long accessTokenExpirationMillis,
 		@Value("${jwt.refresh-token-expiration-millis}") long refreshTokenExpirationMillis
 	) {
-		this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+		this.secretKey = Keys.hmacShaKeyFor(validateSecret(secret));
 		this.accessTokenExpirationMillis = accessTokenExpirationMillis;
 		this.refreshTokenExpirationMillis = refreshTokenExpirationMillis;
+	}
+
+	/**
+	 * JWT_SECRET 길이를 기동 시점에 검사해 jjwt의 일반 예외 대신 원인과 조치를 바로 알 수 있는 메시지를 냅니다.
+	 */
+	private static byte[] validateSecret(String secret) {
+		byte[] secretBytes = secret == null ? new byte[0] : secret.getBytes(StandardCharsets.UTF_8);
+		if (secretBytes.length < MIN_SECRET_BYTES) {
+			throw new IllegalStateException(
+				"JWT_SECRET(jwt.secret)은 HS256 서명을 위해 최소 %d바이트 이상이어야 합니다. 현재 %d바이트입니다. "
+					.formatted(MIN_SECRET_BYTES, secretBytes.length) +
+				"예: openssl rand -base64 48 로 생성한 값을 사용하세요."
+			);
+		}
+		return secretBytes;
 	}
 
 	public String createAccessToken(User user) {

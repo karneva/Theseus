@@ -1,5 +1,6 @@
 import json
 import logging
+import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
@@ -51,6 +52,19 @@ def sse_event(event_type: str, data: dict) -> str:
     SSE 포맷에 맞춰 이벤트를 생성합니다.
     """
     return f"event: {event_type}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+
+def _new_trace_id() -> str:
+    return uuid.uuid4().hex[:12]
+
+
+def _client_error_payload(code: str, message: str, trace_id: str) -> dict:
+    """클라이언트로 보내는 SSE error 이벤트 본문.
+
+    예외 문자열에는 내부 URL, 호스트, 설정값이 섞일 수 있어 그대로 내보내지 않습니다.
+    상세 내용은 같은 traceId로 서버 로그에서 찾습니다.
+    """
+    return {"code": code, "message": message, "traceId": trace_id}
 
 
 def _truncate_tool_output(output: object, max_length: int = 500) -> str:
@@ -231,11 +245,21 @@ async def stream_agent_response(
             },
         )
     except EngineInitializationError as exc:
-        logger.warning("Theseus engine initialization failed: %s", exc)
-        yield sse_event("error", {"message": str(exc)})
+        trace_id = _new_trace_id()
+        logger.warning("Theseus engine initialization failed: traceId=%s error=%s", trace_id, exc)
+        yield sse_event(
+            "error",
+            _client_error_payload(
+                "ENGINE_INIT_FAILED", "AI engine could not be initialized.", trace_id
+            ),
+        )
     except Exception as exc:
-        logger.error("Theseus stream error: %s", exc, exc_info=True)
-        yield sse_event("error", {"message": str(exc)})
+        trace_id = _new_trace_id()
+        logger.error("Theseus stream error: traceId=%s error=%s", trace_id, exc, exc_info=True)
+        yield sse_event(
+            "error",
+            _client_error_payload("STREAM_FAILED", "Streaming response failed.", trace_id),
+        )
     finally:
         if engine_context.plan_id:
             try:
@@ -381,5 +405,11 @@ async def _resolve_remote_workspace_for_stream(
             remote_workspace_id=remote_workspace_id,
         )
     except RemoteWorkspaceResolveError as exc:
-        logger.warning("Remote Workspace resolve failed for stream: %s", exc)
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+        trace_id = _new_trace_id()
+        logger.warning(
+            "Remote Workspace resolve failed for stream: traceId=%s error=%s", trace_id, exc
+        )
+        raise HTTPException(
+            status_code=502,
+            detail=f"Remote Workspace could not be resolved. traceId={trace_id}",
+        ) from exc

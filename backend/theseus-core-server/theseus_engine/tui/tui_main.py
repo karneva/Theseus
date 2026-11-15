@@ -200,9 +200,7 @@ class TheseusTUI(App):
             "grep": 1,
             "web_search": 1,
             "web_fetch": 1,
-            "dummy_echo": 1,
             "create_tool": 2,
-            "system_reboot": 5,
             "search_knowledge_base": 1,
             "ingest_document": 2,
         }
@@ -317,7 +315,6 @@ class TheseusTUI(App):
             "write_file",
             "edit_file",
             "local_write_report",
-            "system_reboot",
             "create_tool",
         }
         if tool_name not in _DESTRUCTIVE:

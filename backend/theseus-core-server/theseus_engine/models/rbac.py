@@ -60,7 +60,16 @@ class TheseusPermissionChecker:
     동일한 메서드 시그니처를 유지합니다.
     """
 
-    SENSITIVE_TOOLS = {"bash", "write_file", "edit_file", "local_write_report"}
+    # 사람 승인이 필요한 도구. task_create(셸 명령을 백그라운드로 실행)와
+    # agent(서브 에이전트 프로세스 실행)도 bash와 같은 임의 실행 경로라서 포함합니다.
+    SENSITIVE_TOOLS = {
+        "bash",
+        "write_file",
+        "edit_file",
+        "local_write_report",
+        "task_create",
+        "agent",
+    }
 
     def __init__(
         self,
@@ -107,7 +116,10 @@ class TheseusPermissionChecker:
                 ),
             )
 
-        # 민감한 도구 — CLI에서만 사용자 확인 요청
+        # 민감한 도구: require_human_confirm=True면 사용자 승인을 요구합니다.
+        # 서버는 기본값(THESEUS_SERVER_SENSITIVE_TOOL_POLICY=reject)에서 True이고 승인 프롬프트가
+        # 항상 거부하므로 실행되지 않습니다. 로컬 CLI/daemon(setup_engine)은 False로 조립되어
+        # 자동 승인되므로, 로컬에서 확인을 받으려면 require_human_confirm=True로 조립해야 합니다.
         if tool_name in self.SENSITIVE_TOOLS:
             if self.require_human_confirm:
                 return PermissionDecision(

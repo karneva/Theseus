@@ -8,6 +8,7 @@ from markdownify import markdownify
 from pydantic import BaseModel, Field
 
 from theseus_engine.tools.core.base_tools import BaseTool, ToolExecutionContext, ToolResult
+from theseus_engine.tools.core.url_safety import create_public_http_client, fetch_public_url
 from theseus_engine.tools.core.web_search_tool import _parse_search_results
 
 log = logging.getLogger(__name__)
@@ -83,8 +84,9 @@ class DeepResearchTool(BaseTool):
         # 3. Parallel Fetching
         async def _fetch_and_parse(url: str, title: str) -> str:
             try:
-                async with httpx.AsyncClient(follow_redirects=True, timeout=15.0) as c:
-                    resp = await c.get(url, headers={"User-Agent": "Mozilla/5.0"})
+                # 검색 결과 URL도 외부 입력이므로 내부 주소로 가는 요청과 리다이렉트를 거부합니다.
+                async with create_public_http_client(timeout=15.0) as c:
+                    resp = await fetch_public_url(c, url, headers={"User-Agent": "Mozilla/5.0"})
                     resp.raise_for_status()
 
                     # 4. Content Extraction (BeautifulSoup + Markdownify)

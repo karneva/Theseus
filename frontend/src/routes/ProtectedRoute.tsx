@@ -1,8 +1,9 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/store/useAuthStore';
+import type { SystemRole } from '@/api/auth';
 
 interface ProtectedRouteProps {
-  allowedRoles?: ('SUPER_ADMIN' | 'USER')[];
+  allowedRoles?: SystemRole[];
 }
 
 const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {

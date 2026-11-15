@@ -1,10 +1,10 @@
 import asyncio
 import logging
 
-from fastapi import APIRouter, Header, HTTPException, status
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict, Field
 
-from src.config import settings
+from src.auth.guards import require_internal_api_key
 from src.remote_workspace.exceptions import RemoteWorkspaceError
 from src.remote_workspace.resolver import (
     RemoteWorkspaceResolveError,
@@ -13,7 +13,8 @@ from src.remote_workspace.resolver import (
 from src.remote_workspace.ssh_connector import SshRemoteWorkspaceConnector
 
 logger = logging.getLogger(__name__)
-router = APIRouter()
+# 연결 테스트는 API Server만 호출하므로 라우터 전체를 내부 API 키로 보호합니다.
+router = APIRouter(dependencies=[Depends(require_internal_api_key)])
 
 
 class RemoteWorkspaceConnectionTestRequest(BaseModel):
@@ -39,18 +40,8 @@ class RemoteWorkspaceConnectionTestResponse(BaseModel):
 )
 async def test_remote_workspace_connection(
     request: RemoteWorkspaceConnectionTestRequest,
-    internal_api_key: str | None = Header(default=None, alias="X-Internal-Api-Key"),
 ) -> RemoteWorkspaceConnectionTestResponse:
     """Verify that Core can reach the Remote Workspace basePath through SSH."""
-
-    if (
-        not settings.SPRING_BOOT_INTERNAL_API_KEY.strip()
-        or internal_api_key != settings.SPRING_BOOT_INTERNAL_API_KEY
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid internal API key.",
-        )
 
     logger.info(
         "Remote Workspace connection test started. project=%s workspace=%s",

@@ -39,24 +39,15 @@ async def get_bearer_token(
 
 
 async def get_sse_token(
-    request: Request,
     auth: Optional[HTTPAuthorizationCredentials] = Depends(security),
 ) -> str:
     """
-    SSE 연결에서는 Header(Bearer) 또는 Query Parameter(token)에서 토큰을 추출합니다.
+    SSE 연결의 토큰도 Authorization Header(Bearer)에서만 받습니다.
+
+    `?token=` query fallback은 사용처가 없고, URL에 실린 JWT가 nginx/uvicorn access log와
+    Referer로 새어 나가므로 제거했습니다. API Server는 항상 Header로 토큰을 전달합니다.
     """
-    if auth:
-        return auth.credentials
-
-    token = request.query_params.get("token")
-    if token:
-        return token
-
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Missing authentication token",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+    return await get_bearer_token(auth)
 
 
 async def get_session_context(token: str = Depends(get_bearer_token)) -> SessionContext:

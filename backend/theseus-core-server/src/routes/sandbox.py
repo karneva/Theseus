@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.auth.dependencies import get_session_context
@@ -9,6 +11,7 @@ from src.sandbox.base import (
 )
 from src.sandbox.docker_executor import DockerExecutor
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 executor = DockerExecutor()
 
@@ -39,7 +42,9 @@ async def execute_in_sandbox(
     try:
         return await executor.execute(sandbox_input)
     except SandboxUnavailableError as exc:
+        # 예외 메시지에 Docker host 같은 내부 정보가 들어 있으므로 로그에만 남깁니다.
+        logger.warning("Sandbox unavailable: %s", exc)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=str(exc),
+            detail="Sandbox is unavailable.",
         ) from exc

@@ -7,10 +7,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,6 +26,8 @@ public class InternalApiAuthenticationFilter extends OncePerRequestFilter {
 	private static final String INTERNAL_API_KEY_HEADER = "X-Internal-Api-Key";
 	private static final String INTERNAL_API_PRINCIPAL = "internal-api";
 	private static final String INTERNAL_ROLE = "ROLE_INTERNAL";
+
+	private final SecurityErrorResponseWriter securityErrorResponseWriter;
 
 	@Value("${internal.api-key:}")
 	private String internalApiKey;
@@ -43,9 +45,9 @@ public class InternalApiAuthenticationFilter extends OncePerRequestFilter {
 	) throws ServletException, IOException {
 		String requestApiKey = request.getHeader(INTERNAL_API_KEY_HEADER);
 
-		if (!StringUtils.hasText(internalApiKey) || !internalApiKey.equals(requestApiKey)) {
+		if (!matchesInternalApiKey(requestApiKey)) {
 			SecurityContextHolder.clearContext();
-			writeUnauthorizedResponse(response);
+			securityErrorResponseWriter.write(response, ErrorCode.INTERNAL_API_UNAUTHORIZED);
 			return;
 		}
 
@@ -59,18 +61,17 @@ public class InternalApiAuthenticationFilter extends OncePerRequestFilter {
 		filterChain.doFilter(request, response);
 	}
 
-	private void writeUnauthorizedResponse(HttpServletResponse response) throws IOException {
-		ErrorCode errorCode = ErrorCode.INTERNAL_API_UNAUTHORIZED;
-
-		response.setStatus(errorCode.getStatus().value());
-		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-		response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-		response.getWriter().write(
-			"""
-			{"code":"%s","message":"%s"}
-			"""
-				.formatted(errorCode.getCode(), errorCode.getMessage())
-				.trim()
+	/**
+	 * 서버 키가 비어 있으면 모든 내부 요청을 거부하고, 비교는 고정 시간(MessageDigest.isEqual)으로 해
+	 * 응답 시간 차이로 키를 한 글자씩 추측하는 타이밍 공격을 막습니다.
+	 */
+	private boolean matchesInternalApiKey(String requestApiKey) {
+		if (!StringUtils.hasText(internalApiKey) || requestApiKey == null) {
+			return false;
+		}
+		return MessageDigest.isEqual(
+			internalApiKey.getBytes(StandardCharsets.UTF_8),
+			requestApiKey.getBytes(StandardCharsets.UTF_8)
 		);
 	}
 }
