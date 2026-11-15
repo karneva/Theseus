@@ -512,7 +512,8 @@ API·Core까지 컨테이너로 띄워 통합 확인하려면 `docker-compose.in
 # 노트북
 bash scripts/build-images.sh <태그>
 bash scripts/ship-images.sh --with-config <서버별칭> <태그>
-bash scripts/llm-tunnel.sh <서버별칭>
+docker compose -f infra/docker/llm-gateway/docker-compose.yml up -d   # 노트북 Ollama + 경로 필터
+bash scripts/llm-tunnel.sh --local-port 11435 <서버별칭>
 
 # 서버(최초 1회: sudo scripts/server-bootstrap.sh, env 작성, scripts/gen-secrets.sh --fill)
 /opt/theseus/app/scripts/deploy.sh

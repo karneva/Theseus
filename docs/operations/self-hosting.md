@@ -180,6 +180,17 @@ sshd는 원격 포워드를 기본으로 127.0.0.1에만 열기 때문에, 부�
 
 ### 7.1 노트북 Ollama 설정
 
+권장 방식은 [`infra/docker/llm-gateway`](../../infra/docker/llm-gateway/docker-compose.yml)의 LLM 게이트웨이입니다. Ollama(GPU, 아래 표의 설정이 들어 있음) 앞에 nginx 필터를 두어, 터널로는 core가 쓰는 `GET /v1/models`와 `POST /v1/chat/completions`만 통과시키고 `/api/pull`·`/api/delete`·`/api/create` 같은 관리 API는 403으로 막습니다. 노트북에서 직접 하는 관리 작업은 `127.0.0.1:11434`로 Ollama에 바로 붙습니다.
+
+```bash
+docker compose -f infra/docker/llm-gateway/docker-compose.yml up -d
+docker compose -f infra/docker/llm-gateway/docker-compose.yml exec ollama ollama pull qwen3:4b-instruct-2507-q4_K_M
+curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:11435/v1/models   # 200
+curl -s -o /dev/null -w '%{http_code}\n' -X POST http://127.0.0.1:11435/api/pull   # 403
+```
+
+Docker Desktop에서 GPU를 쓰려면 WSL2 백엔드와 NVIDIA 드라이버가 필요합니다. 게이트웨이를 쓰면 7.2의 터널을 `--local-port 11435`(PowerShell은 `-LocalPort 11435`)로 엽니다. Windows Ollama 앱을 직접 쓰는 경우에는 필터 없이 11434로 연결되므로 아래 환경 변수를 직접 설정합니다.
+
 Ollama는 VRAM이 24GB 미만인 GPU에서 기본 컨텍스트를 4096으로 잡습니다. Core의 ASK 프롬프트만으로 약 4,500토큰이라 기본값 그대로 두면 모든 채팅이 `HTTP 400 ... exceeds the available context size`로 실패합니다.
 E2E에서 요청당 프롬프트와 출력 합은 중앙값 7,343, 최대 11,231토큰이었으므로 **`OLLAMA_CONTEXT_LENGTH=16384`** 이상으로 둡니다.
 
@@ -195,7 +206,8 @@ Windows Ollama 앱은 `setx OLLAMA_CONTEXT_LENGTH 16384`처럼 사용자 환경 
 ### 7.2 터널 열기
 
 ```bash
-bash scripts/llm-tunnel.sh <서버별칭>                     # Git Bash / Linux / macOS
+bash scripts/llm-tunnel.sh --local-port 11435 <서버별칭>  # Git Bash / Linux / macOS (LLM 게이트웨이 사용 시)
+bash scripts/llm-tunnel.sh <서버별칭>                     # Ollama 앱을 11434로 직접 연결할 때
 ```
 
 ```powershell

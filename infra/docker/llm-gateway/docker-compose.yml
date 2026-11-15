@@ -1,0 +1,64 @@
+# 개발 노트북용 LLM 게이트웨이: Ollama(GPU) + 허용 경로만 통과시키는 nginx 필터.
+#
+# 셀프호스팅 서버의 core는 reverse SSH tunnel로 이 게이트웨이(127.0.0.1:11435)에 붙습니다.
+#   서버 core -> host.docker.internal:11434 -(ssh -R)-> 노트북 127.0.0.1:11435(llm-filter) -> ollama:11434
+#
+# 왜 필터를 두는가:
+#   터널을 Ollama에 직접 연결하면 /api/pull, /api/delete, /api/create 같은 관리 API까지 서버 쪽에 열린다.
+#   core가 실제로 쓰는 경로는 /v1/models, /v1/chat/completions뿐이므로 그 외는 403으로 막는다.
+#   노트북에서 직접 쓰는 관리 작업(모델 pull, 파인튜닝 모델 create)은 127.0.0.1:11434로 Ollama에 바로 붙는다.
+#
+# 사용:
+#   docker compose -f infra/docker/llm-gateway/docker-compose.yml up -d
+#   docker compose -f infra/docker/llm-gateway/docker-compose.yml exec ollama ollama pull qwen3:4b-instruct-2507-q4_K_M
+#   bash scripts/llm-tunnel.sh --local-port 11435 <서버별칭>
+name: theseus-llm
+
+services:
+  ollama:
+    image: ollama/ollama:${OLLAMA_IMAGE_TAG:-0.40.16}
+    restart: unless-stopped
+    # 관리용 포트는 노트북 루프백에만 연다(터널은 이 포트가 아니라 llm-filter로 연결).
+    ports:
+      - "127.0.0.1:11434:11434"
+    environment:
+      # Core의 ASK 프롬프트만 약 4.5k 토큰이라 기본값(4096)으로는 모든 채팅이 실패한다. E2E 최대 11.2k 토큰 → 16k.
+      OLLAMA_CONTEXT_LENGTH: ${OLLAMA_CONTEXT_LENGTH:-16384}
+      # 6GB GPU에서 4B Q4 모델 + 16k 컨텍스트를 GPU에 모두 올리기 위한 KV 캐시 절감.
+      OLLAMA_FLASH_ATTENTION: "1"
+      OLLAMA_KV_CACHE_TYPE: ${OLLAMA_KV_CACHE_TYPE:-q8_0}
+      # 첫 로드가 수십 초 걸리므로 유휴 시간에도 모델을 메모리에 유지한다.
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-30m}
+    volumes:
+      - ollama-models:/root/.ollama
+      # 파인튜닝한 GGUF와 Modelfile을 넣어 두는 자리(ollama create -f /models/Modelfile).
+      - ${LLM_MODELS_DIR:-./models}:/models:ro
+    gpus: all
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  llm-filter:
+    image: nginx:1.27.5-alpine
+    restart: unless-stopped
+    depends_on:
+      ollama:
+        condition: service_healthy
+    # reverse tunnel이 붙는 포트. 노트북 루프백에만 연다.
+    ports:
+      - "127.0.0.1:${LLM_FILTER_PORT:-11435}:8080"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  # E2E 때 받은 모델을 그대로 재사용하기 위해 이름을 고정한다.
+  ollama-models:
+    name: theseus-ollama
