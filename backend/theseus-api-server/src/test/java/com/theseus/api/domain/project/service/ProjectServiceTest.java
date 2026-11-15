@@ -1,5 +1,6 @@
 package com.theseus.api.domain.project.service;
 
+import com.theseus.api.support.IntegrationTestSupport;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.theseus.api.domain.auth.token.AuthenticatedUser;
@@ -23,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @Transactional
-class ProjectServiceTest {
+class ProjectServiceTest extends IntegrationTestSupport {
 
 	@Autowired
 	private ProjectService projectService;
@@ -38,7 +39,7 @@ class ProjectServiceTest {
 	private UserRepository userRepository;
 
 	@Test
-	@DisplayName("프로젝트 생성 시 PM은 ADMIN 권한과 accessLevel 100으로 등록된다")
+	@DisplayName("프로젝트 생성 시 PM은 ADMIN 권한과 ADMIN accessLevel(5)로 등록된다")
 	void createProjectRegistersAdminMemberWithAdminAccessLevel() {
 		// Given
 		User superAdmin = createUser("A287001", "Super Admin", SystemRole.SUPER_ADMIN);

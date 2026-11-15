@@ -2,14 +2,41 @@ from __future__ import annotations
 
 import unittest
 
-from theseus_engine.engine.agent_loop_control import should_auto_continue_after_assistant
 from theseus_engine.engine.loop_decision import (
+    AGENT_AUTO_CONTINUE_MAX,
     LoopContinuationDecision,
     LoopDecisionContext,
     classify_loop_continuation,
     decide_loop_continuation,
     parse_semantic_decision_payload,
 )
+
+
+def should_auto_continue_after_assistant(
+    *,
+    final_text: str,
+    stop_reason: str | None,
+    tool_call_count: int,
+    auto_continue_count: int,
+    has_available_tools: bool,
+    mode: str,
+) -> bool:
+    """loop_decision.classify_loop_continuation을 직접 호출하는 테스트 헬퍼.
+
+    예전 engine/agent_loop_control.py 호환 래퍼(테스트에서만 쓰임)를 제거하고
+    같은 판정을 loop_decision에서 바로 검증합니다.
+    """
+    return classify_loop_continuation(
+        LoopDecisionContext(
+            mode=mode,
+            stop_reason=stop_reason,
+            assistant_text=final_text,
+            tool_call_count=tool_call_count,
+            auto_continue_count=auto_continue_count,
+            available_tools=has_available_tools,
+            max_auto_continue=AGENT_AUTO_CONTINUE_MAX,
+        )
+    ).should_resume
 
 
 class AgentLoopControlTest(unittest.TestCase):

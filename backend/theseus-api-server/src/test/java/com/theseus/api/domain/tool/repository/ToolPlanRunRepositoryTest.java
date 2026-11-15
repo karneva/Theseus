@@ -1,5 +1,6 @@
 package com.theseus.api.domain.tool.repository;
 
+import com.theseus.api.support.IntegrationTestSupport;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.theseus.api.domain.chat.entity.ChatSession;
@@ -28,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @Transactional
-class ToolPlanRunRepositoryTest {
+class ToolPlanRunRepositoryTest extends IntegrationTestSupport {
 
 	@Autowired
 	private ToolPlanRunRepository toolPlanRunRepository;

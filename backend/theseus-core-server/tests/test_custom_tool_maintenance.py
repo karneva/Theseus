@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from src.tool_plan import planner
+from src.tool_plan import artifact_context
 from src.tooling.service import (
     STATUS_ACTIVE,
     ServerToolArtifactPaths,
@@ -85,13 +85,15 @@ class CustomToolMaintenanceTest(unittest.IsolatedAsyncioTestCase):
     def test_plan_custom_tool_paths_use_configured_runtime_root(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             configured = str((Path(tmp) / "custom_tools" / "projects").resolve())
-            with patch.object(planner.settings, "THESEUS_PROJECT_CUSTOM_TOOLS_DIR", configured):
-                root = planner._project_custom_tool_artifact_root(4)
-                normalized = planner._normalize_project_custom_tool_path(
+            with patch.object(
+                artifact_context.settings, "THESEUS_PROJECT_CUSTOM_TOOLS_DIR", configured
+            ):
+                root = artifact_context._project_custom_tool_artifact_root(4)
+                normalized = artifact_context._normalize_project_custom_tool_path(
                     "theseus_engine/custom_tools/cpu_monitor_tool.py",
                     4,
                 )
-                normalized_project = planner._normalize_project_custom_tool_path(
+                normalized_project = artifact_context._normalize_project_custom_tool_path(
                     "theseus_engine/custom_tools/projects/4/cpu_monitor_tool.meta.json",
                     4,
                 )

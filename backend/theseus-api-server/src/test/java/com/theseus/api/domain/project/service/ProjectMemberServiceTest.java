@@ -1,5 +1,6 @@
 package com.theseus.api.domain.project.service;
 
+import com.theseus.api.support.IntegrationTestSupport;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -28,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @Transactional
-class ProjectMemberServiceTest {
+class ProjectMemberServiceTest extends IntegrationTestSupport {
 
 	@Autowired
 	private ProjectMemberService projectMemberService;
@@ -69,7 +70,7 @@ class ProjectMemberServiceTest {
 	}
 
 	@Test
-	@DisplayName("ADMIN 프로젝트 멤버 등록 시 accessLevel은 100으로 보정되고 Tool 권한은 모두 허용된다")
+	@DisplayName("ADMIN 프로젝트 멤버 등록 시 accessLevel은 ADMIN 레벨(5)로 보정되고 Tool 권한은 모두 허용된다")
 	void createAdminProjectMemberNormalizesAccessLevel() {
 		// Given
 		ProjectFixture fixture = createProjectFixture("A155041");
@@ -98,13 +99,13 @@ class ProjectMemberServiceTest {
 	}
 
 	@Test
-	@DisplayName("일반 프로젝트 멤버 등록 시 accessLevel 100은 거부된다")
-	void createProjectMemberFailsWhenMemberAccessLevelIsAdminOnly() {
+	@DisplayName("일반 프로젝트 멤버 등록 시 허용 범위(1~5)를 벗어난 accessLevel은 거부된다")
+	void createProjectMemberFailsWhenMemberAccessLevelIsOutOfRange() {
 		// Given
 		ProjectFixture fixture = createProjectFixture("A155051");
 		User targetUser = createUser("A155052", UserStatus.ACTIVE);
 		ProjectMemberCreateRequest request = createMemberCreateRequest(targetUser.getEmployeeNumber(), ProjectRole.MEMBER);
-		ReflectionTestUtils.setField(request, "accessLevel", ProjectAccessLevelPolicy.ADMIN_ACCESS_LEVEL);
+		ReflectionTestUtils.setField(request, "accessLevel", ProjectAccessLevelPolicy.MAX_MEMBER_ACCESS_LEVEL + 1);
 
 		// When & Then
 		assertThatThrownBy(() -> projectMemberService.createProjectMember(
@@ -118,7 +119,7 @@ class ProjectMemberServiceTest {
 	}
 
 	@Test
-	@DisplayName("기존 멤버를 ADMIN으로 변경하면 accessLevel은 100으로 보정된다")
+	@DisplayName("기존 멤버를 ADMIN으로 변경하면 accessLevel은 ADMIN 레벨(5)로 보정된다")
 	void updateProjectMemberToAdminNormalizesAccessLevel() {
 		// Given
 		ProjectFixture fixture = createProjectFixture("A155061");
@@ -150,7 +151,7 @@ class ProjectMemberServiceTest {
 		ProjectFixture fixture = createProjectFixture("A155071");
 		User targetUser = createUser("A155072", UserStatus.ACTIVE);
 		ProjectMember targetProjectMember = createProjectMember(fixture.project(), targetUser, ProjectRole.ADMIN);
-		ProjectMemberUpdateRequest request = createMemberUpdateRequest(ProjectRole.MEMBER, 50);
+		ProjectMemberUpdateRequest request = createMemberUpdateRequest(ProjectRole.MEMBER, 3);
 
 		// When
 		projectMemberService.updateProjectMember(
@@ -166,13 +167,13 @@ class ProjectMemberServiceTest {
 	}
 
 	@Test
-	@DisplayName("일반 프로젝트 멤버 수정 시 accessLevel 100은 거부된다")
-	void updateProjectMemberFailsWhenMemberAccessLevelIsAdminOnly() {
+	@DisplayName("일반 프로젝트 멤버 수정 시 허용 범위(1~5)를 벗어난 accessLevel은 거부된다")
+	void updateProjectMemberFailsWhenMemberAccessLevelIsOutOfRange() {
 		// Given
 		ProjectFixture fixture = createProjectFixture("A155081");
 		User targetUser = createUser("A155082", UserStatus.ACTIVE);
 		ProjectMember targetProjectMember = createProjectMember(fixture.project(), targetUser, ProjectRole.MEMBER);
-		ProjectMemberUpdateRequest request = createMemberUpdateRequest(ProjectRole.MEMBER, ProjectAccessLevelPolicy.ADMIN_ACCESS_LEVEL);
+		ProjectMemberUpdateRequest request = createMemberUpdateRequest(ProjectRole.MEMBER, ProjectAccessLevelPolicy.MAX_MEMBER_ACCESS_LEVEL + 1);
 
 		// When & Then
 		assertThatThrownBy(() -> projectMemberService.updateProjectMember(

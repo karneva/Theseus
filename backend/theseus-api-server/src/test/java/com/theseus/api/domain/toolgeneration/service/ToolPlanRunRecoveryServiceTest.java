@@ -72,13 +72,13 @@ class ToolPlanRunRecoveryServiceTest {
 		TestFixture fixture = createFixture();
 		ToolPlanRun toolPlanRun = createRun(fixture, ToolPlanRunRequestType.GENERATE_PLAN, null, null);
 		when(toolPlanRunRepository.findTimedOutRunsForUpdate(
-			eq(List.of(ToolPlanRunStatus.REQUESTED, ToolPlanRunStatus.GENERATING)),
+			eq(List.of(ToolPlanRunStatus.GENERATING)),
 			any(LocalDateTime.class),
 			any(Pageable.class)
 		)).thenReturn(List.of(toolPlanRun));
 
 		// When
-		int failedCount = recoveryService.failTimedOutRuns(Duration.ofMinutes(30), 20);
+		int failedCount = recoveryService.failTimedOutRuns(Duration.ofMinutes(30), Duration.ofMinutes(180), 20);
 
 		// Then
 		assertThat(failedCount).isEqualTo(1);
@@ -111,13 +111,18 @@ class ToolPlanRunRecoveryServiceTest {
 		ToolPlan toolPlan = planGroup.getApprovedToolPlan();
 		ToolPlanRun buildRun = createRun(fixture, ToolPlanRunRequestType.BUILD_TOOL, planGroup, toolPlan);
 		when(toolPlanRunRepository.findTimedOutRunsForUpdate(
-			eq(List.of(ToolPlanRunStatus.REQUESTED, ToolPlanRunStatus.GENERATING)),
+			eq(List.of(ToolPlanRunStatus.GENERATING)),
+			any(LocalDateTime.class),
+			any(Pageable.class)
+		)).thenReturn(List.of());
+		when(toolPlanRunRepository.findTimedOutRunsForUpdate(
+			eq(List.of(ToolPlanRunStatus.REQUESTED)),
 			any(LocalDateTime.class),
 			any(Pageable.class)
 		)).thenReturn(List.of(buildRun));
 
 		// When
-		int failedCount = recoveryService.failTimedOutRuns(Duration.ofMinutes(30), 20);
+		int failedCount = recoveryService.failTimedOutRuns(Duration.ofMinutes(30), Duration.ofMinutes(180), 20);
 
 		// Then
 		assertThat(failedCount).isEqualTo(1);
@@ -136,10 +141,91 @@ class ToolPlanRunRecoveryServiceTest {
 	}
 
 	@Test
+	@DisplayName("Core 대기열에 있는 REQUESTED Run은 GENERATING보다 긴 제한 시간으로 판단하고 배치 크기를 나눠 쓴다")
+	void requestedRunsUseLongerTimeoutAndRemainingBatch() {
+		// Given
+		TestFixture fixture = createFixture();
+		ToolPlanRun generatingRun = createRun(fixture, ToolPlanRunRequestType.GENERATE_PLAN, null, null);
+		when(toolPlanRunRepository.findTimedOutRunsForUpdate(
+			eq(List.of(ToolPlanRunStatus.GENERATING)),
+			any(LocalDateTime.class),
+			any(Pageable.class)
+		)).thenReturn(List.of(generatingRun));
+
+		// When
+		LocalDateTime before = LocalDateTime.now();
+		recoveryService.failTimedOutRuns(Duration.ofMinutes(30), Duration.ofMinutes(180), 5);
+
+		// Then
+		ArgumentCaptor<LocalDateTime> cutoffCaptor = ArgumentCaptor.forClass(LocalDateTime.class);
+		ArgumentCaptor<Pageable> pageCaptor = ArgumentCaptor.forClass(Pageable.class);
+		verify(toolPlanRunRepository).findTimedOutRunsForUpdate(
+			eq(List.of(ToolPlanRunStatus.REQUESTED)),
+			cutoffCaptor.capture(),
+			pageCaptor.capture()
+		);
+		assertThat(cutoffCaptor.getValue()).isBefore(before.minusMinutes(179));
+		assertThat(cutoffCaptor.getValue()).isAfter(before.minusMinutes(181));
+		assertThat(pageCaptor.getValue().getPageSize()).isEqualTo(4);
+	}
+
+	@Test
+	@DisplayName("failRun은 build Run 발행 실패 시 PlanGroup·System Notice·SSE failed 상태를 함께 처리한다")
+	void failRunHandlesGroupNoticeAndState() {
+		// Given
+		TestFixture fixture = createFixture();
+		ToolPlanGroup planGroup = createApprovedPlanGroup(fixture);
+		ToolPlanRun buildRun = createRun(
+			fixture,
+			ToolPlanRunRequestType.BUILD_TOOL,
+			planGroup,
+			planGroup.getApprovedToolPlan()
+		);
+
+		// When
+		recoveryService.failRun(buildRun, "TAPP-010", "kafka send failed");
+
+		// Then
+		assertThat(buildRun.getStatus()).isEqualTo(ToolPlanRunStatus.FAILED);
+		assertThat(buildRun.getErrorCode()).isEqualTo("TAPP-010");
+		assertThat(planGroup.getStatus()).isEqualTo(ToolPlanGroupStatus.FAILED);
+		verify(chatMessageService).saveToolPlanEventMessage(
+			same(fixture.chatSession()),
+			same(planGroup.getApprovedToolPlan()),
+			same(buildRun),
+			eq(ChatMessageSenderType.SYSTEM),
+			eq(ChatMessageType.SYSTEM_NOTICE),
+			eq(ChatMessageContentType.TEXT),
+			eq("kafka send failed code=TAPP-010, message=kafka send failed"),
+			eq("tool-plan-run-failed:timeout-run-255:system")
+		);
+		ArgumentCaptor<ToolPlanRunState> stateCaptor = ArgumentCaptor.forClass(ToolPlanRunState.class);
+		verify(toolPlanRunStatePublisher).publishFailedAfterCommit(stateCaptor.capture());
+		assertThat(stateCaptor.getValue().getErrorCode()).isEqualTo("TAPP-010");
+		assertThat(stateCaptor.getValue().getStatus()).isEqualTo("FAILED");
+	}
+
+	@Test
+	@DisplayName("failRun은 이미 종료된 Run을 다시 처리하지 않는다")
+	void failRunSkipsFinishedRun() {
+		// Given
+		TestFixture fixture = createFixture();
+		ToolPlanRun run = createRun(fixture, ToolPlanRunRequestType.GENERATE_PLAN, null, null);
+		run.fail("FIRST", "first failure", LocalDateTime.now());
+
+		// When
+		recoveryService.failRun(run, "SECOND", "second failure");
+
+		// Then
+		assertThat(run.getErrorCode()).isEqualTo("FIRST");
+		verifyNoInteractions(chatMessageService, toolPlanRunStatePublisher);
+	}
+
+	@Test
 	@DisplayName("timeout 설정이 유효하지 않으면 Run을 조회하지 않는다")
 	void skipInvalidTimeout() {
 		// When
-		int failedCount = recoveryService.failTimedOutRuns(Duration.ZERO, 20);
+		int failedCount = recoveryService.failTimedOutRuns(Duration.ZERO, Duration.ofMinutes(180), 20);
 
 		// Then
 		assertThat(failedCount).isZero();

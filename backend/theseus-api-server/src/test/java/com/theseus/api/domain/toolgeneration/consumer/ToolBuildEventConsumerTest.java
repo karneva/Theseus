@@ -1,6 +1,6 @@
 package com.theseus.api.domain.toolgeneration.consumer;
 
-import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -83,15 +83,16 @@ class ToolBuildEventConsumerTest {
 	}
 
 	@Test
-	@DisplayName("서비스 예외가 발생해도 consumer 밖으로 전파하지 않는다")
-	void doesNotPropagateServiceException() {
+	@DisplayName("서비스 예외는 재시도와 DLT 처리를 위해 consumer 밖으로 전파한다")
+	void propagatesServiceException() {
 		// Given
 		ToolBuildEvent event = createEvent("TOOL_BUILD_COMPLETED");
 		doThrow(new IllegalStateException("failed")).when(toolBuildEventService).handleCompleted(event);
 
 		// When & Then
-		assertThatCode(() -> consumer.consume(event))
-			.doesNotThrowAnyException();
+		assertThatThrownBy(() -> consumer.consume(event))
+			.isInstanceOf(IllegalStateException.class)
+			.hasMessage("failed");
 	}
 
 	private ToolBuildEvent createEvent(String eventType) {

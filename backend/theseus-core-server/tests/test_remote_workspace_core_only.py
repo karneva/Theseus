@@ -1,14 +1,13 @@
+"""Remote Workspace 자격증명 redaction, runtime 조회, 모드별 remote tool 노출 검증."""
+
 from __future__ import annotations
 
 import os
 import unittest
 from pathlib import Path
 
-os.environ.setdefault("ALLOWED_ORIGINS", '["http://localhost:3000"]')
-
 from pydantic import ValidationError
 
-from src.builder.engine import _resolve_excluded_tools
 from src.remote_workspace.read_primitives import (
     REMOTE_READ_ANALYSIS_TOOL_NAMES,
     build_remote_read_analysis_tools,
@@ -25,6 +24,7 @@ from src.remote_workspace.write_primitives import (
     RemoteRunCommandTool,
     build_remote_write_execution_tools,
 )
+from theseus_engine.core.tool_visibility import ToolVisibilityPolicy, resolve_excluded_tool_names
 from theseus_engine.models.state import AgentMode, PlanPhase
 from theseus_engine.tools.core import ALL_CORE_TOOLS
 from theseus_engine.tools.core.base_tools import ToolExecutionContext, ToolRegistry
@@ -65,12 +65,15 @@ def _allowed_tools(
 ) -> set[str]:
     config = _remote_config(allow_write=allow_write)
     registry = _registry_with_remote(config)
-    excluded = _resolve_excluded_tools(
-        mode,
-        plan_phase,
+    excluded = resolve_excluded_tool_names(
         registry,
-        has_remote_workspace=True,
-        allow_remote_write_execution=mode == AgentMode.AGENT and allow_write,
+        ToolVisibilityPolicy(
+            mode=mode,
+            user_level=5,
+            plan_phase=plan_phase,
+            has_remote_workspace=True,
+            allow_remote_write_execution=mode == AgentMode.AGENT and allow_write,
+        ),
     )
     return {tool.name for tool in registry.list_tools()} - excluded
 
@@ -173,7 +176,18 @@ class RemoteWorkspaceCoreOnlySmokeTest(unittest.TestCase):
         self.assertFalse(REMOTE_WRITE_EXECUTION_TOOL_NAMES & plan_tools)
         self.assertFalse(REMOTE_WRITE_EXECUTION_TOOL_NAMES & agent_read_tools)
         self.assertTrue(REMOTE_WRITE_EXECUTION_TOOL_NAMES.issubset(agent_write_tools))
-        self.assertFalse({"read_file", "glob", "grep", "bash"} & agent_write_tools)
+
+    def test_remote_workspace_hides_overlapping_local_tools(self) -> None:
+        # Remote Workspace를 고르면 로컬(Core 컨테이너) 파일·셸 도구는 모든 모드에서 숨깁니다.
+        overlap = {"read_file", "glob", "grep", "bash", "write_file", "edit_file"}
+        for mode, phase in (
+            (AgentMode.ASK, None),
+            (AgentMode.PLAN, PlanPhase.DRAFTING),
+            (AgentMode.AGENT, None),
+        ):
+            with self.subTest(mode=mode):
+                tools = _allowed_tools(mode=mode, allow_write=True, plan_phase=phase)
+                self.assertFalse(overlap & tools)
 
     def test_remote_run_command_policy_blocks_shell_operators(self) -> None:
         tool = RemoteRunCommandTool(_remote_config(allow_write=True))

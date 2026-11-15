@@ -1,5 +1,6 @@
 package com.theseus.api.domain.tool.service;
 
+import com.theseus.api.support.IntegrationTestSupport;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -43,7 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @Transactional
-class ToolApprovalServiceTest {
+class ToolApprovalServiceTest extends IntegrationTestSupport {
 
 	@Autowired
 	private ToolApprovalService toolApprovalService;

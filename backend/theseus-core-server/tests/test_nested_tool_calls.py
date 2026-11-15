@@ -11,7 +11,6 @@ from pydantic import BaseModel, Field
 from theseus_engine.engine.query_engine import QueryContext, _execute_tool_call
 from theseus_engine.tools.core.base_tools import (
     BaseTool,
-    SystemRebootTool,
     ToolExecutionContext,
     ToolRegistry,
     ToolResult,
@@ -98,6 +97,19 @@ class _DuplicateParentTool(BaseTool):
         )
 
 
+class _FakeAgentTool(BaseTool):
+    """중첩 호출 차단 대상인 agent 도구 자리를 채우는 가짜 도구(실행되면 안 됨)."""
+
+    name = "agent"
+    description = "Stand-in for the sub-agent tool."
+    input_model = _EmptyInput
+    permission_level = 1
+
+    async def execute(self, arguments: _EmptyInput, context: ToolExecutionContext) -> ToolResult:
+        del arguments, context
+        return ToolResult(output="nested agent executed")
+
+
 class _DangerParentTool(BaseTool):
     name = "danger_parent_tool"
     description = "Attempts to call a blocked nested tool."
@@ -106,7 +118,7 @@ class _DangerParentTool(BaseTool):
 
     async def execute(self, arguments: _EmptyInput, context: ToolExecutionContext) -> ToolResult:
         del arguments
-        return await context.call_tool("system_reboot", {"reason": "test"})
+        return await context.call_tool("agent", {})
 
 
 def _query_context(registry: ToolRegistry, *, metadata: dict[str, object] | None = None) -> QueryContext:
@@ -214,7 +226,7 @@ class NestedToolCallTests(unittest.TestCase):
     def test_blocked_tool_name_cannot_run_as_nested_call(self) -> None:
         registry = ToolRegistry()
         registry.register(_DangerParentTool())
-        registry.register(SystemRebootTool())
+        registry.register(_FakeAgentTool())
 
         executed = asyncio.run(
             _execute_tool_call(

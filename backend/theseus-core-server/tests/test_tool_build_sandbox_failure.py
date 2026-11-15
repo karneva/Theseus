@@ -1,4 +1,12 @@
-import asyncio
+"""sandbox 실패가 TOOL_BUILD_FAILED 이벤트로 원인 정보와 함께 발행되는지 검증합니다.
+
+API/프론트가 실패 원인(errorType, exitCode, timeout, 리소스 제한)을 보여줄 수 있도록
+ToolBuildError 메시지가 이벤트에 그대로 실려야 합니다.
+"""
+
+from __future__ import annotations
+
+import unittest
 from datetime import datetime, timezone
 
 from src.tool_build.builder import ToolBuildError
@@ -46,28 +54,31 @@ def _build_event() -> ToolBuildRequestedEvent:
     )
 
 
-async def main() -> None:
-    publisher = FakePublisher()
-    processor = ToolBuildProcessor(
-        publisher=publisher,
-        builder=FailingBuilder(),
-        checkpoint_repo_factory=None,
-    )
-    await processor.process_build(_build_event())
+class ToolBuildSandboxFailureTest(unittest.IsolatedAsyncioTestCase):
+    async def test_sandbox_failure_is_published_with_classification(self) -> None:
+        publisher = FakePublisher()
+        processor = ToolBuildProcessor(
+            publisher=publisher,
+            builder=FailingBuilder(),
+            checkpoint_repo_factory=None,
+        )
 
-    failed_events = [
-        event for _, event in publisher.events
-        if isinstance(event, ToolBuildFailedEvent)
-    ]
-    assert len(failed_events) == 1
-    failed = failed_events[0]
-    assert failed.code == "SANDBOX_FAILED"
-    assert "errorType=result_missing" in failed.message
-    assert "exitCode=1" in failed.message
-    assert "timedOut=False" in failed.message
-    assert "resourceLimited=False" in failed.message
-    print("tool_build_sandbox_failure: ok")
+        await processor.process_build(_build_event())
+
+        failed_events = [
+            event for _, event in publisher.events if isinstance(event, ToolBuildFailedEvent)
+        ]
+        self.assertEqual(len(failed_events), 1)
+        failed = failed_events[0]
+        self.assertEqual(failed.code, "SANDBOX_FAILED")
+        for fragment in (
+            "errorType=result_missing",
+            "exitCode=1",
+            "timedOut=False",
+            "resourceLimited=False",
+        ):
+            self.assertIn(fragment, failed.message)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    unittest.main()

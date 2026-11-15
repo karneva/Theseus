@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class JwtTokenProviderTest {
 
-	private static final String SECRET = "theseus-local-development-jwt-secret-key-must-be-changed";
+	private static final String SECRET = "unit-test-only-jwt-secret-0123456789abcdef";
 	private static final long ACCESS_TOKEN_EXPIRATION_MILLIS = 3_600_000L;
 	private static final long REFRESH_TOKEN_EXPIRATION_MILLIS = 1_209_600_000L;
 
@@ -20,6 +20,17 @@ class JwtTokenProviderTest {
 		ACCESS_TOKEN_EXPIRATION_MILLIS,
 		REFRESH_TOKEN_EXPIRATION_MILLIS
 	);
+
+	@Test
+	@DisplayName("JWT_SECRET이 32바이트 미만이면 원인을 알려주는 메시지와 함께 생성에 실패한다")
+	void rejectsShortSecret() {
+		assertThatThrownBy(() ->
+			new JwtTokenProvider("too-short-secret", ACCESS_TOKEN_EXPIRATION_MILLIS, REFRESH_TOKEN_EXPIRATION_MILLIS)
+		)
+			.isInstanceOf(IllegalStateException.class)
+			.hasMessageContaining("JWT_SECRET")
+			.hasMessageContaining("32");
+	}
 
 	@Test
 	@DisplayName("access token은 발급할 때마다 고유한 식별자를 가진다")

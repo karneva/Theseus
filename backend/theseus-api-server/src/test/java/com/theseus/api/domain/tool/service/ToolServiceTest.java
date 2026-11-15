@@ -1,5 +1,6 @@
 package com.theseus.api.domain.tool.service;
 
+import com.theseus.api.support.IntegrationTestSupport;
 import com.theseus.api.common.exception.BusinessException;
 import com.theseus.api.common.exception.ErrorCode;
 import com.theseus.api.domain.auth.token.AuthenticatedUser;
@@ -29,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @Transactional
-class ToolServiceTest {
+class ToolServiceTest extends IntegrationTestSupport {
 
 	@Autowired
 	private ToolService toolService;
@@ -162,6 +163,43 @@ class ToolServiceTest {
 		assertThat(tool.getToolGrade()).isEqualTo(5);
 		assertThat(tool.getMetadataJson()).contains("\"suffix\":\"editable\"");
 		assertThat(tool.getMetadataJson()).contains("\"permissionLevel\":5");
+	}
+
+	@Test
+	@DisplayName("canDeleteTool 권한이 없는 일반 멤버는 Tool을 삭제할 수 없다")
+	void deleteToolFailsWhenCanDeleteToolIsFalse() {
+		// Given
+		ProjectFixture fixture = createProjectFixture("A141041", 5, true);
+		Tool tool = createTool(fixture.project(), fixture.projectMember(), "no-delete", ToolStatus.APPROVED, 1);
+
+		// When & Then
+		assertThatThrownBy(() -> toolService.deleteTool(
+			createAuthenticatedUser(fixture.user()),
+			fixture.project().getId(),
+			tool.getId()
+		))
+			.isInstanceOf(BusinessException.class)
+			.extracting(exception -> ((BusinessException) exception).getErrorCode())
+			.isEqualTo(ErrorCode.TOOL_DELETE_PERMISSION_REQUIRED);
+		assertThat(tool.isDeleted()).isFalse();
+	}
+
+	@Test
+	@DisplayName("프로젝트 ADMIN은 Tool을 논리 삭제할 수 있다")
+	void deleteToolMarksToolDeletedForProjectAdmin() {
+		// Given
+		ProjectFixture fixture = createProjectFixture("A141042", null, true, ProjectRole.ADMIN);
+		Tool tool = createTool(fixture.project(), fixture.projectMember(), "admin-delete", ToolStatus.APPROVED, 5);
+
+		// When
+		toolService.deleteTool(
+			createAuthenticatedUser(fixture.user()),
+			fixture.project().getId(),
+			tool.getId()
+		);
+
+		// Then
+		assertThat(toolRepository.findById(tool.getId()).orElseThrow().isDeleted()).isTrue();
 	}
 
 	@Test

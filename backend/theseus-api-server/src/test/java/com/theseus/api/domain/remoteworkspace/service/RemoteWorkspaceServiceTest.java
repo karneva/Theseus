@@ -1,5 +1,6 @@
 package com.theseus.api.domain.remoteworkspace.service;
 
+import com.theseus.api.support.IntegrationTestSupport;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -33,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @Transactional
-class RemoteWorkspaceServiceTest {
+class RemoteWorkspaceServiceTest extends IntegrationTestSupport {
 
 	@Autowired
 	private RemoteWorkspaceService remoteWorkspaceService;

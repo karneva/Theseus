@@ -97,6 +97,9 @@ class ToolPlanGenerationServiceTest {
 	@Mock
 	private ApplicationEventPublisher eventPublisher;
 
+	@Mock
+	private ToolPlanRunRecoveryService toolPlanRunRecoveryService;
+
 	private ToolPlanGenerationService toolPlanGenerationService;
 
 	@BeforeEach
@@ -114,7 +117,8 @@ class ToolPlanGenerationServiceTest {
 			userRepository,
 			chatMessageService,
 			eventPublisher,
-			objectMapper
+			objectMapper,
+			toolPlanRunRecoveryService
 		);
 	}
 
@@ -666,8 +670,8 @@ class ToolPlanGenerationServiceTest {
 	}
 
 	@Test
-	@DisplayName("Kafka 諛쒗뻾 ?ㅽ뙣瑜??섏떊?섎㈃ ToolPlanRun??FAILED濡??꾪솚?쒕떎")
-	void markRunPublishFailedChangesRunStatusToFailed() {
+	@DisplayName("Kafka 발행 실패를 수신하면 공통 실패 경로로 ToolPlanRun을 FAILED 처리한다")
+	void markRunPublishFailedDelegatesToFailRun() {
 		ProjectFixture fixture = createProjectFixture(true, ProjectMemberStatus.IN_PROGRESS);
 		ChatSession chatSession = createChatSession(30L, fixture.project(), fixture.projectMember(), false);
 		ToolPlanRun toolPlanRun = ToolPlanRun.builder()
@@ -684,10 +688,11 @@ class ToolPlanGenerationServiceTest {
 			new IllegalStateException("kafka send failed")
 		);
 
-		assertThat(toolPlanRun.getStatus()).isEqualTo(ToolPlanRunStatus.FAILED);
-		assertThat(toolPlanRun.getErrorCode()).isEqualTo(ErrorCode.TOOL_PLAN_KAFKA_PUBLISH_FAILED.getCode());
-		assertThat(toolPlanRun.getErrorMessage()).isEqualTo("kafka send failed");
-		assertThat(toolPlanRun.getCompletedAt()).isNotNull();
+		verify(toolPlanRunRecoveryService).failRun(
+			toolPlanRun,
+			ErrorCode.TOOL_PLAN_KAFKA_PUBLISH_FAILED.getCode(),
+			"kafka send failed"
+		);
 	}
 
 	private ToolPlanGenerationRequest createRequest(ToolPlanMode mode, String prompt) {

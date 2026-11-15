@@ -21,7 +21,7 @@ class GlobalExceptionHandlerTest {
 		.build();
 
 	@Test
-	@DisplayName("BusinessException 발생 시 code와 message만 실패 응답으로 반환한다")
+	@DisplayName("BusinessException 발생 시 ApiResponse 실패 형식으로 code와 message를 반환한다")
 	void handleBusinessException() throws Exception {
 		// Given
 		String path = "/business-exception";
@@ -31,7 +31,7 @@ class GlobalExceptionHandlerTest {
 			.andExpect(status().isUnauthorized())
 			.andExpect(jsonPath("$.code").value(ErrorCode.LOGIN_FAILED.getCode()))
 			.andExpect(jsonPath("$.message").value(ErrorCode.LOGIN_FAILED.getMessage()))
-			.andExpect(jsonPath("$.isSuccess").doesNotExist())
+			.andExpect(jsonPath("$.isSuccess").value(false))
 			.andExpect(jsonPath("$.result").doesNotExist());
 	}
 
@@ -46,7 +46,7 @@ class GlobalExceptionHandlerTest {
 			.andExpect(status().isForbidden())
 			.andExpect(jsonPath("$.code").value(ErrorCode.HANDLE_ACCESS_DENIED.getCode()))
 			.andExpect(jsonPath("$.message").value(ErrorCode.HANDLE_ACCESS_DENIED.getMessage()))
-			.andExpect(jsonPath("$.isSuccess").doesNotExist())
+			.andExpect(jsonPath("$.isSuccess").value(false))
 			.andExpect(jsonPath("$.result").doesNotExist());
 	}
 
