@@ -44,7 +44,7 @@ export function ToolList() {
       }
     };
 
-    fetchTools();
+    void fetchTools();
 
     return () => {
       isMounted = false;
@@ -85,26 +85,26 @@ export function ToolList() {
 
   return (
     <>
-      <div className="relative w-full h-full min-h-[calc(100vh-4rem)] bg-slate-950 flex justify-center overflow-x-hidden">
+      <div className="relative flex h-full min-h-[calc(100vh-4rem)] w-full justify-center overflow-x-hidden bg-slate-950">
         {/* Ambient Background Glow */}
-        <div className="absolute top-0 left-1/4 right-1/4 h-96 bg-blue-500/5 blur-[80px] rounded-full pointer-events-none" />
+        <div className="pointer-events-none absolute top-0 right-1/4 left-1/4 h-96 rounded-full bg-blue-500/5 blur-[80px]" />
 
-        <div className="relative w-full max-w-[1152px] px-6 pt-8 pb-24 flex flex-col">
+        <div className="relative flex w-full max-w-[1152px] flex-col px-6 pt-8 pb-24">
           {/* Content Area */}
-          <div className="flex-1 flex flex-col gap-8">
+          <div className="flex flex-1 flex-col gap-8">
             {/* Page Header */}
             <div className="flex flex-col gap-3">
-              <h1 className="text-3xl font-bold text-slate-100 pt-5">도구 목록</h1>
+              <h1 className="pt-5 text-3xl font-bold text-slate-100">도구 목록</h1>
             </div>
 
             {/* Tool Grid */}
             {isLoading ? (
-              <div className="flex-1 flex items-center justify-center py-20 text-slate-500">
-                <Activity className="w-6 h-6 animate-spin mr-2" />
+              <div className="flex flex-1 items-center justify-center py-20 text-slate-500">
+                <Activity className="mr-2 h-6 w-6 animate-spin" />
                 도구 목록을 불러오는 중...
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
                 {currentTools.map((tool) => (
                   <ToolCard
                     key={tool.toolId}
@@ -129,9 +129,9 @@ export function ToolList() {
                 size="sm"
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 transition-all"
+                className="text-slate-400 transition-all hover:bg-slate-800 hover:text-white disabled:opacity-30"
               >
-                <ChevronLeft className="w-4 h-4 mr-2" />
+                <ChevronLeft className="mr-2 h-4 w-4" />
                 이전
               </Button>
 
@@ -140,10 +140,10 @@ export function ToolList() {
                   <button
                     key={pageNum}
                     onClick={() => setCurrentPage(pageNum)}
-                    className={`w-8 h-8 rounded-md text-sm font-medium transition-all ${
+                    className={`h-8 w-8 rounded-md text-sm font-medium transition-all ${
                       currentPage === pageNum
                         ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]'
-                        : 'text-slate-500 hover:text-slate-200 hover:bg-slate-800'
+                        : 'text-slate-500 hover:bg-slate-800 hover:text-slate-200'
                     }`}
                   >
                     {pageNum}
@@ -156,10 +156,10 @@ export function ToolList() {
                 size="sm"
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 transition-all"
+                className="text-slate-400 transition-all hover:bg-slate-800 hover:text-white disabled:opacity-30"
               >
                 다음
-                <ChevronRight className="w-4 h-4 ml-2" />
+                <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           )}

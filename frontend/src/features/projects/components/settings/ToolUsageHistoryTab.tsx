@@ -74,20 +74,20 @@ export function ToolUsageHistoryTab({ projectId }: ToolUsageHistoryTabProps) {
       }
     };
 
-    fetchToolUsages();
+    void fetchToolUsages();
     return () => {
       cancelled = true;
     };
   }, [projectId]);
 
   return (
-    <Card className="bg-slate-900/40 backdrop-blur-xl border-slate-800 shadow-2xl shadow-blue-500/5 overflow-x-auto">
-      <CardHeader className="flex flex-row items-center justify-between border-b border-slate-800/50 mb-6 min-w-[900px]">
+    <Card className="overflow-x-auto border-slate-800 bg-slate-900/40 shadow-2xl shadow-blue-500/5 backdrop-blur-xl">
+      <CardHeader className="mb-6 flex min-w-[900px] flex-row items-center justify-between border-b border-slate-800/50">
         <div className="min-w-max">
-          <CardTitle className="text-white font-['Space_Grotesk'] mb-1 whitespace-nowrap">
+          <CardTitle className="mb-1 font-['Space_Grotesk'] whitespace-nowrap text-white">
             도구 사용 목록
           </CardTitle>
-          <CardDescription className="text-slate-400 whitespace-nowrap">
+          <CardDescription className="whitespace-nowrap text-slate-400">
             프로젝트 내 도구 호출 이력과 실행 결과를 관리합니다.
           </CardDescription>
         </div>
@@ -95,32 +95,32 @@ export function ToolUsageHistoryTab({ projectId }: ToolUsageHistoryTabProps) {
 
       <CardContent>
         {isLoading ? (
-          <div className="py-12 text-center text-slate-500 animate-pulse">
+          <div className="animate-pulse py-12 text-center text-slate-500">
             도구 사용 이력을 불러오는 중입니다.
           </div>
         ) : errorMessage ? (
-          <div className="py-12 text-center text-red-400 font-medium">{errorMessage}</div>
+          <div className="py-12 text-center font-medium text-red-400">{errorMessage}</div>
         ) : (
-          <div className="border border-slate-800 rounded-lg overflow-x-auto bg-slate-950/20">
+          <div className="overflow-x-auto rounded-lg border border-slate-800 bg-slate-950/20">
             <Table className="min-w-[900px]">
               <TableHeader className="bg-slate-950/50">
                 <TableRow className="border-slate-800 hover:bg-transparent">
-                  <TableHead className="w-[180px] text-slate-400 font-bold uppercase text-[10px] tracking-widest">
+                  <TableHead className="w-[180px] text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                     사용자
                   </TableHead>
-                  <TableHead className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">
+                  <TableHead className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                     도구명
                   </TableHead>
-                  <TableHead className="w-[120px] text-center text-slate-400 font-bold uppercase text-[10px] tracking-widest">
+                  <TableHead className="w-[120px] text-center text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                     성공 횟수
                   </TableHead>
-                  <TableHead className="w-[120px] text-center text-slate-400 font-bold uppercase text-[10px] tracking-widest">
+                  <TableHead className="w-[120px] text-center text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                     실패 횟수
                   </TableHead>
-                  <TableHead className="w-[170px] text-slate-400 font-bold uppercase text-[10px] tracking-widest">
+                  <TableHead className="w-[170px] text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                     사용일자
                   </TableHead>
-                  <TableHead className="w-[120px] text-center text-slate-400 font-bold uppercase text-[10px] tracking-widest">
+                  <TableHead className="w-[120px] text-center text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                     실행 결과
                   </TableHead>
                 </TableRow>
@@ -128,7 +128,7 @@ export function ToolUsageHistoryTab({ projectId }: ToolUsageHistoryTabProps) {
               <TableBody>
                 {rows.length === 0 ? (
                   <TableRow className="border-slate-800">
-                    <TableCell colSpan={6} className="text-center py-12 text-slate-500 font-medium">
+                    <TableCell colSpan={6} className="py-12 text-center font-medium text-slate-500">
                       프로젝트 멤버가 없습니다.
                     </TableCell>
                   </TableRow>
@@ -136,18 +136,18 @@ export function ToolUsageHistoryTab({ projectId }: ToolUsageHistoryTabProps) {
                   rows.map((row) => (
                     <TableRow
                       key={row.id}
-                      className="border-slate-800 hover:bg-slate-900/40 transition-colors"
+                      className="border-slate-800 transition-colors hover:bg-slate-900/40"
                     >
                       <TableCell>
-                        <div className="text-sm text-slate-300 font-medium">{row.usedByName}</div>
-                        <div className="text-xs text-slate-500 font-mono mt-0.5">
+                        <div className="text-sm font-medium text-slate-300">{row.usedByName}</div>
+                        <div className="mt-0.5 font-mono text-xs text-slate-500">
                           {row.usedByEmployeeNo}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="font-bold text-slate-200">{row.toolName || '-'}</div>
                         {row.toolId && (
-                          <div className="text-xs text-slate-500 font-mono mt-0.5">
+                          <div className="mt-0.5 font-mono text-xs text-slate-500">
                             TOOL #{row.toolId}
                           </div>
                         )}
@@ -155,7 +155,7 @@ export function ToolUsageHistoryTab({ projectId }: ToolUsageHistoryTabProps) {
                       <TableCell className="text-center">
                         <Badge
                           variant="outline"
-                          className="border-green-900 bg-green-950/30 text-green-400 font-bold text-[10px]"
+                          className="border-green-900 bg-green-950/30 text-[10px] font-bold text-green-400"
                         >
                           {row.successCount}
                         </Badge>
@@ -163,12 +163,12 @@ export function ToolUsageHistoryTab({ projectId }: ToolUsageHistoryTabProps) {
                       <TableCell className="text-center">
                         <Badge
                           variant="outline"
-                          className="border-red-900 bg-red-950/30 text-red-400 font-bold text-[10px]"
+                          className="border-red-900 bg-red-950/30 text-[10px] font-bold text-red-400"
                         >
                           {row.failedCount}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-xs text-slate-500 font-mono">
+                      <TableCell className="font-mono text-xs text-slate-500">
                         {formatDateTime(row.usedAt)}
                       </TableCell>
                       <TableCell className="text-center">

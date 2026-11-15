@@ -14,7 +14,7 @@ export function Pagination({
   itemName = 'items',
 }: PaginationProps) {
   return (
-    <div className="h-[65px] px-4 border-t border-[rgba(65,71,81,0.1)] flex items-center justify-between shrink-0">
+    <div className="flex h-[65px] shrink-0 items-center justify-between border-t border-[rgba(65,71,81,0.1)] px-4">
       <span className="text-xs text-white/40">
         Total {totalElements} {itemName}
       </span>
@@ -26,7 +26,7 @@ export function Pagination({
         >
           Prev
         </button>
-        <span className="text-xs text-white/60 px-2">
+        <span className="px-2 text-xs text-white/60">
           {page + 1} / {totalPages || 1}
         </span>
         <button

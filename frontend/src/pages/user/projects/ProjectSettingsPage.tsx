@@ -21,24 +21,24 @@ export default function ProjectSettingsPage() {
   }
 
   return (
-    <div className="flex-1 w-full h-full p-8 overflow-y-auto relative">
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:40px_40px] opacity-10 pointer-events-none" />
+    <div className="relative h-full w-full flex-1 overflow-y-auto p-8">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:40px_40px] opacity-10" />
 
-      <div className="max-w-6xl mx-auto space-y-8 relative z-10">
+      <div className="relative z-10 mx-auto max-w-6xl space-y-8">
         <div className="min-w-max">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-1.5 h-6 bg-blue-400 rounded-full" />
-            <h1 className="text-3xl font-['Space_Grotesk'] font-bold tracking-tight text-white whitespace-nowrap">
+          <div className="mb-2 flex items-center gap-2">
+            <div className="h-6 w-1.5 rounded-full bg-blue-400" />
+            <h1 className="font-['Space_Grotesk'] text-3xl font-bold tracking-tight whitespace-nowrap text-white">
               프로젝트 설정
             </h1>
           </div>
-          <p className="text-sm text-slate-400 font-medium whitespace-nowrap">
+          <p className="text-sm font-medium whitespace-nowrap text-slate-400">
             프로젝트 정보, 멤버, ToolPlan 승인 요청, Remote Workspace를 관리합니다.
           </p>
         </div>
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="bg-slate-900/50 backdrop-blur border border-slate-800 p-1 mb-8">
+          <TabsList className="mb-8 border border-slate-800 bg-slate-900/50 p-1 backdrop-blur">
             <TabsTrigger
               value="general"
               className="data-[state=active]:bg-blue-400 data-[state=active]:text-[#003a6b]"

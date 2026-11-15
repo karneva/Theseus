@@ -34,23 +34,6 @@ export const toolApi = {
     }
   },
 
-  /**
-   * Tool 상태를 변경합니다.
-   */
-  updateToolStatus: async (
-    projectId: string | number,
-    toolId: string | number,
-    status: 'APPROVED' | 'REJECTED',
-  ): Promise<boolean> => {
-    try {
-      await apiClient.patch(`/api/v1/projects/${projectId}/tools/${toolId}/status`, { status });
-      return true;
-    } catch (error) {
-      console.error(`Failed to update tool ${toolId} status:`, error);
-      throw error;
-    }
-  },
-
   updateToolAccessLevel: async (
     projectId: string | number,
     toolId: string | number,

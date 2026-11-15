@@ -3,7 +3,7 @@ import ProjectListSection from '../../features/admin/components/ProjectListSecti
 
 export default function SuperAdminPage() {
   return (
-    <div className="grid grid-cols-2 gap-[32px] w-full h-[calc(100vh-12rem)] min-h-[600px]">
+    <div className="grid h-[calc(100vh-12rem)] min-h-[600px] w-full grid-cols-2 gap-[32px]">
       {/* Left Column: User Management */}
       <UserManagementSection />
 

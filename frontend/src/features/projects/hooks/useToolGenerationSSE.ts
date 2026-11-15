@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '@/api/config';
+import { createId } from '@/lib/id';
 import { useCallback, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
@@ -56,6 +57,31 @@ function displayProgressMessage(message?: string) {
   return PLAN_PROGRESS_MESSAGES[message] || message;
 }
 
+/**
+ * ToolPlan run(PLAN 생성, BUILD)의 진행 이벤트를 SSE(GET .../tool-plan-runs/{runId}/events)로 받는 훅.
+ *
+ * PLAN 요청은 Kafka를 거쳐 Core가 비동기로 처리하므로, 요청 API는 runId와 sseUrl만 돌려주고
+ * 실제 결과는 이 스트림으로 받는다. 같은 runId로 이미 살아 있는 연결이 있으면 재사용하고,
+ * 다른 run으로 바꾸거나 project/session이 바뀌면 이전 연결을 끊는다.
+ * 다른 project/session의 이벤트(payload의 projectId/chatSessionId 불일치)는 무시한다.
+ *
+ * 이벤트 순서:
+ * - PLAN: `connected` -> `progress`*(REQUEST_RECEIVED, PLAN_DRAFTING, ... PLAN_COMPLETED 코드를
+ *   한국어 문구로 표시) -> `chunk`*(초안 텍스트. `replay=true`면 재접속 시 지금까지의 전체 본문이라
+ *   덧붙이지 않고 교체) -> 종료 이벤트 하나
+ *   - `completed` | `tool_plan_completed`: 세션 상세와 ToolPlan 상세를 다시 읽어 initSession으로
+ *     서버 상태를 그대로 반영한다(draftPhase는 보통 REVIEW).
+ *   - `skipped` | `tool_plan_skipped`: PLAN이 필요 없는 일반 대화로 판정됨. 세션을 다시 읽거나
+ *     placeholder를 일반 답변으로 채우고 PLAN 상태를 비운다.
+ *   - `failed` | `tool_plan_failed`: draftPhase=FAILED, SYSTEM_NOTICE와 토스트.
+ * - BUILD(승인 후 도구 생성): `progress`* -> `completed` | `tool_build_completed`
+ *   (toolId 반영 후 세션을 다시 읽어 BUILT 상태로) 또는 `tool_build_failed`.
+ *
+ * 상태 전이: 연결 시 PLAN이면 isGenerating=true, BUILD면 isBuilding=true.
+ * 종료 이벤트나 전송 오류(onerror)에서 둘 다 false로 돌리고 연결을 닫는다.
+ * onerror는 예외를 다시 던져 자동 재연결을 막는다. 재접속은 세션 진입 시
+ * useChatSessionLoader가 진행 중인 run을 발견했을 때만 한다.
+ */
 export function useToolGenerationSSE() {
   const { projectId, sessionId } = useParams<{ projectId: string; sessionId: string }>();
   const abortRef = useRef<AbortController | null>(null);
@@ -72,7 +98,13 @@ export function useToolGenerationSSE() {
   const connectSSE = useCallback(
     (sseUrl: string, flow: 'PLAN' | 'BUILD', id?: string | number) => {
       const streamId = id == null ? sseUrl : String(id);
-      if (connectedStreamRef.current === streamId && abortRef.current) {
+      // 같은 run에 이미 살아 있는 연결이 있으면 재사용한다. store.initSession이 외부에서
+      // abort한 연결은 재사용하지 않고 새로 연다.
+      if (
+        connectedStreamRef.current === streamId &&
+        abortRef.current &&
+        !abortRef.current.signal.aborted
+      ) {
         return;
       }
       if (connectedStreamRef.current && connectedStreamRef.current !== streamId) {
@@ -96,7 +128,7 @@ export function useToolGenerationSSE() {
       const fullUrl = sseUrl.startsWith('http') ? sseUrl : `${baseUrl}${sseUrl}`;
       const token = useAuthStore.getState().accessToken;
 
-      fetchEventSource(fullUrl, {
+      void fetchEventSource(fullUrl, {
         method: 'GET',
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -105,20 +137,20 @@ export function useToolGenerationSSE() {
         signal: controller.signal,
         openWhenHidden: true,
 
+        // fetch-event-source는 onmessage의 반환값을 기다리지 않는다. 본문 전체가 try/catch로
+        // 예외를 처리하므로 async 핸들러를 그대로 넘긴다.
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         async onmessage(ev) {
           if (!ev.data) return;
 
           try {
-            const data: ToolGenerationSseEvent = JSON.parse(ev.data);
+            const data = JSON.parse(ev.data) as ToolGenerationSseEvent;
 
             // Check if the event belongs to the current project and session
             if (
               (data.projectId !== undefined && String(data.projectId) !== String(projectId)) ||
               (data.chatSessionId !== undefined && String(data.chatSessionId) !== String(sessionId))
             ) {
-              console.log(
-                `[SSE] Ignoring event for different session: proj=${data.projectId}, sess=${data.chatSessionId}`,
-              );
               return;
             }
 
@@ -127,7 +159,6 @@ export function useToolGenerationSSE() {
 
             switch (eventType) {
               case 'connected':
-                console.log('[SSE] Connected to ToolPlan stream', data);
                 break;
 
               case 'progress': {
@@ -298,7 +329,7 @@ export function useToolGenerationSSE() {
                 store.setCurrentRunId(null);
 
                 const chatMessage = {
-                  messageId: crypto.randomUUID(),
+                  messageId: createId(),
                   senderType: 'ASSISTANT',
                   messageType: 'CHAT',
                   contentType: 'TEXT',
@@ -362,7 +393,7 @@ export function useToolGenerationSSE() {
                   data.errorMessage || data.message || 'Tool PLAN generation failed.';
                 toast.error(errorMessage);
                 store.addMessage({
-                  messageId: crypto.randomUUID(),
+                  messageId: createId(),
                   senderType: 'SYSTEM_NOTICE',
                   messageType: 'SYSTEM_NOTICE',
                   contentType: 'TEXT',
@@ -390,10 +421,6 @@ export function useToolGenerationSSE() {
           toast.error('SSE connection was lost.');
           disconnectSSE();
           throw err;
-        },
-
-        onclose() {
-          console.log('[SSE] Connection closed');
         },
       });
 

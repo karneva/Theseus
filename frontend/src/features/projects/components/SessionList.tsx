@@ -44,7 +44,7 @@ export function SessionList({ projectId, children, isCollapsed }: SessionListPro
         if (!cancelled) setIsSessionsLoading(false);
       }
     };
-    load();
+    void load();
     return () => {
       cancelled = true;
     };
@@ -54,12 +54,11 @@ export function SessionList({ projectId, children, isCollapsed }: SessionListPro
     if (!projectId) return;
     try {
       const session = await chatApi.createSession(projectId);
-      if (session && session.sessionId) {
-        refreshSessions();
-        navigate(`/projects/${projectId}/sessions/${session.sessionId}`);
-      } else {
-        navigate(`/projects/${projectId}/sessions/new`);
+      if (!session?.sessionId) {
+        throw new Error('Session id is missing in create session response');
       }
+      refreshSessions();
+      void navigate(`/projects/${projectId}/sessions/${session.sessionId}`);
     } catch (err) {
       console.error('Failed to create session:', err);
       alert('세션 생성에 실패했습니다.');
@@ -103,7 +102,7 @@ export function SessionList({ projectId, children, isCollapsed }: SessionListPro
       if (currentActiveSessionId === sessionId.toString()) {
         useChatSessionStore.getState().setClosed(true);
         // 종료 후 프로젝트 인덱스로 이동하여 새 세션 생성/찾기 로직 트리거
-        navigate(`/projects/${projectId}`, { replace: true });
+        void navigate(`/projects/${projectId}`, { replace: true });
       }
     } catch (err) {
       console.error('Failed to close session:', err);
@@ -115,19 +114,19 @@ export function SessionList({ projectId, children, isCollapsed }: SessionListPro
 
   return (
     <>
-      <div className={cn(isCollapsed ? 'px-1 mb-6 flex justify-center' : 'px-4 mb-6')}>
+      <div className={cn(isCollapsed ? 'mb-6 flex justify-center px-1' : 'mb-6 px-4')}>
         {isCollapsed ? (
           <button
             onClick={handleNewChat}
-            className="w-10 h-10 bg-blue-400 hover:bg-blue-500 text-[#003a6b] rounded-full flex items-center justify-center transition-all duration-200 shadow-md active:scale-95 cursor-pointer"
+            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-blue-400 text-[#003a6b] shadow-md transition-all duration-200 hover:bg-blue-500 active:scale-95"
             title="새 대화"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="h-5 w-5" />
           </button>
         ) : (
           <button
             onClick={handleNewChat}
-            className="w-full bg-blue-400 hover:bg-blue-500 text-[#003a6b] font-medium text-xs tracking-[0.6px] uppercase py-2 rounded flex items-center justify-center transition-colors active:scale-[0.98] cursor-pointer"
+            className="flex w-full cursor-pointer items-center justify-center rounded bg-blue-400 py-2 text-xs font-medium tracking-[0.6px] text-[#003a6b] uppercase transition-colors hover:bg-blue-500 active:scale-[0.98]"
           >
             새 대화
           </button>
@@ -137,16 +136,16 @@ export function SessionList({ projectId, children, isCollapsed }: SessionListPro
       {children}
 
       {!isCollapsed && (
-        <div className="flex-1 overflow-y-auto px-4 flex flex-col gap-3 min-h-0">
-          <div className="flex items-center gap-2 px-2 shrink-0">
-            <MessageSquarePlus className="w-3 h-3 text-slate-500" />
-            <h3 className="text-[10px] font-medium text-slate-500 uppercase tracking-[1px]">
+        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4">
+          <div className="flex shrink-0 items-center gap-2 px-2">
+            <MessageSquarePlus className="h-3 w-3 text-slate-500" />
+            <h3 className="text-[10px] font-medium tracking-[1px] text-slate-500 uppercase">
               대화 세션 목록
             </h3>
           </div>
           <ul className="flex flex-col gap-1">
             {isSessionsLoading ? (
-              <li className="px-3 py-2 text-[10px] text-slate-500 animate-pulse">
+              <li className="animate-pulse px-3 py-2 text-[10px] text-slate-500">
                 세션 목록 로딩 중...
               </li>
             ) : activeSessions.length > 0 ? (
@@ -156,30 +155,30 @@ export function SessionList({ projectId, children, isCollapsed }: SessionListPro
                     to={`/projects/${projectId}/sessions/${session.sessionId}`}
                     className={({ isActive }) =>
                       cn(
-                        'flex items-center justify-between w-full px-3 py-2 rounded text-xs tracking-[0.35px] transition-colors',
+                        'flex w-full items-center justify-between rounded px-3 py-2 text-xs tracking-[0.35px] transition-colors',
                         isActive
-                          ? 'bg-white/10 text-white font-medium'
+                          ? 'bg-white/10 font-medium text-white'
                           : 'text-slate-400 hover:bg-white/5 hover:text-slate-300',
                       )
                     }
                   >
-                    <span className="truncate flex-1">{session.title}</span>
+                    <span className="flex-1 truncate">{session.title}</span>
                   </NavLink>
 
-                  <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-1/2 right-1 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="p-1 hover:text-white text-slate-500 rounded transition-colors">
+                        <button className="rounded p-1 text-slate-500 transition-colors hover:text-white">
                           <MoreVertical size={14} />
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
                         align="end"
-                        className="bg-[#0b0e14] border-slate-800 text-slate-300 min-w-[100px]"
+                        className="min-w-[100px] border-slate-800 bg-[#0b0e14] text-slate-300"
                       >
                         <DropdownMenuItem
                           onClick={() => handleRenameSession(session.sessionId, session.title)}
-                          className="flex items-center gap-2 text-xs focus:bg-white/5 focus:text-white cursor-pointer"
+                          className="flex cursor-pointer items-center gap-2 text-xs focus:bg-white/5 focus:text-white"
                         >
                           <Pencil size={12} />
                           <span>이름 수정</span>
@@ -187,7 +186,7 @@ export function SessionList({ projectId, children, isCollapsed }: SessionListPro
                         {!session.isClosed && (
                           <DropdownMenuItem
                             onClick={() => handleCloseSession(session.sessionId)}
-                            className="flex items-center gap-2 text-xs focus:bg-red-500/10 focus:text-red-400 text-red-400/80 cursor-pointer"
+                            className="flex cursor-pointer items-center gap-2 text-xs text-red-400/80 focus:bg-red-500/10 focus:text-red-400"
                           >
                             <Trash2 size={12} />
                             <span>세션 종료</span>

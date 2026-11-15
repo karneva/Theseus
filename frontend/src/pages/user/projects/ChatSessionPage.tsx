@@ -8,7 +8,7 @@ export default function ChatSessionPage() {
 
   if (isLoading) {
     return (
-      <div className="h-full flex items-center justify-center bg-[#051424] text-slate-500">
+      <div className="flex h-full items-center justify-center bg-[#051424] text-slate-500">
         세션 데이터를 불러오는 중입니다...
       </div>
     );

@@ -23,7 +23,7 @@ export default function ProjectIndexPage() {
 
         if (latestActiveSession) {
           // 활성 세션이 있으면 해당 세션으로 이동
-          navigate(`/projects/${projectId}/sessions/${latestActiveSession.sessionId}`, {
+          void navigate(`/projects/${projectId}/sessions/${latestActiveSession.sessionId}`, {
             replace: true,
           });
         } else {
@@ -34,26 +34,28 @@ export default function ProjectIndexPage() {
           // 사이드바 세션 목록 갱신 트리거
           refreshSessions();
 
-          navigate(`/projects/${projectId}/sessions/${newSession.sessionId}`, { replace: true });
+          void navigate(`/projects/${projectId}/sessions/${newSession.sessionId}`, {
+            replace: true,
+          });
         }
       } catch (error) {
         console.error('Failed to redirect to session:', error);
         // 에러 발생 시 세션 목록 대기 페이지로 이동
-        navigate(`/projects/${projectId}/sessions`, { replace: true });
+        void navigate(`/projects/${projectId}/sessions`, { replace: true });
       }
     };
 
-    redirectLogic();
+    void redirectLogic();
     return () => {
       cancelled = true;
     };
   }, [projectId, navigate, refreshSessions]);
 
   return (
-    <div className="flex-1 flex items-center justify-center bg-[#010f1f]">
+    <div className="flex flex-1 items-center justify-center bg-[#010f1f]">
       <div className="flex flex-col items-center gap-4">
-        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-slate-400 animate-pulse text-sm">대화 세션에 연결 중입니다...</p>
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+        <p className="animate-pulse text-sm text-slate-400">대화 세션에 연결 중입니다...</p>
       </div>
     </div>
   );

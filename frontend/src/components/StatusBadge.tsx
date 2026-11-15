@@ -9,10 +9,10 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center justify-center px-[9px] py-[3px] rounded-[2px] border text-[10px] font-bold uppercase',
+        'inline-flex items-center justify-center rounded-[2px] border px-[9px] py-[3px] text-[10px] font-bold uppercase',
         status === 'ACTIVE'
-          ? 'bg-[rgba(34,197,94,0.1)] border-[rgba(34,197,94,0.2)] text-[#4ade80]'
-          : 'bg-[rgba(239,68,68,0.1)] border-[rgba(239,68,68,0.2)] text-[#f87171]',
+          ? 'border-[rgba(34,197,94,0.2)] bg-[rgba(34,197,94,0.1)] text-[#4ade80]'
+          : 'border-[rgba(239,68,68,0.2)] bg-[rgba(239,68,68,0.1)] text-[#f87171]',
         className,
       )}
     >

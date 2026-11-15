@@ -34,7 +34,7 @@ export default function ProjectLayout() {
       }
     };
 
-    fetchProjectInfo();
+    void fetchProjectInfo();
     return () => {
       cancelled = true;
       reset();
@@ -42,12 +42,12 @@ export default function ProjectLayout() {
   }, [projectId, setProject, setError, setIsLoading, reset]);
 
   return (
-    <div className="h-screen bg-[#010f1f] text-foreground flex relative overflow-hidden">
+    <div className="relative flex h-screen overflow-hidden bg-[#010f1f] text-foreground">
       {/* Global Left Sidebar */}
       <Sidebar projectId={projectId} />
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-hidden relative z-10 flex flex-col">
+      <main className="relative z-10 flex flex-1 flex-col overflow-hidden">
         <Outlet />
       </main>
     </div>

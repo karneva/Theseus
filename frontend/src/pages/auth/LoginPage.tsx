@@ -36,24 +36,24 @@ const LoginForm = ({ role, isLoading, onSubmit, errorMsg }: LoginFormProps) => {
       <div className="flex flex-col gap-4">
         {/* ID Input */}
         <div className="relative">
-          <label className="absolute -top-2 left-2 bg-[#0d1c2d] px-1 text-[#c1c7d3] text-[12px] font-medium tracking-[0.6px] z-10">
+          <label className="absolute -top-2 left-2 z-10 bg-[#0d1c2d] px-1 text-[12px] font-medium tracking-[0.6px] text-[#c1c7d3]">
             사번
           </label>
           <div
-            className={`bg-[#010f1f] border ${errors.loginId ? 'border-red-500' : 'border-[rgba(65,71,81,0.3)]'} rounded-[4px] h-[50px] flex items-center px-4 mt-2 relative focus-within:border-[#60a5fa] focus-within:ring-1 focus-within:ring-[#60a5fa]/50 transition-colors`}
+            className={`border bg-[#010f1f] ${errors.loginId ? 'border-red-500' : 'border-[rgba(65,71,81,0.3)]'} relative mt-2 flex h-[50px] items-center rounded-[4px] px-4 transition-colors focus-within:border-[#60a5fa] focus-within:ring-1 focus-within:ring-[#60a5fa]/50`}
           >
             <User
-              className={`w-4 h-4 mr-3 ${errors.loginId ? 'text-red-500' : 'text-[#8b919d]'}`}
+              className={`mr-3 h-4 w-4 ${errors.loginId ? 'text-red-500' : 'text-[#8b919d]'}`}
             />
             <input
               type="text"
               placeholder="사번"
-              className="bg-transparent border-none outline-none text-[#8b919d] text-[16px] w-full"
+              className="w-full border-none bg-transparent text-[16px] text-[#8b919d] outline-none"
               {...register('loginId')}
             />
           </div>
           {errors.loginId && (
-            <span className="text-red-500 text-[12px] mt-1 ml-1 block">
+            <span className="mt-1 ml-1 block text-[12px] text-red-500">
               {errors.loginId.message}
             </span>
           )}
@@ -61,24 +61,24 @@ const LoginForm = ({ role, isLoading, onSubmit, errorMsg }: LoginFormProps) => {
 
         {/* Password Input */}
         <div className="relative">
-          <label className="absolute -top-2 left-2 bg-[#0d1c2d] px-1 text-[#c1c7d3] text-[12px] font-medium tracking-[0.6px] z-10">
+          <label className="absolute -top-2 left-2 z-10 bg-[#0d1c2d] px-1 text-[12px] font-medium tracking-[0.6px] text-[#c1c7d3]">
             비밀번호
           </label>
           <div
-            className={`bg-[#010f1f] border ${errors.password ? 'border-red-500' : 'border-[rgba(65,71,81,0.3)]'} rounded-[4px] h-[50px] flex items-center px-4 mt-2 relative focus-within:border-[#60a5fa] focus-within:ring-1 focus-within:ring-[#60a5fa]/50 transition-colors`}
+            className={`border bg-[#010f1f] ${errors.password ? 'border-red-500' : 'border-[rgba(65,71,81,0.3)]'} relative mt-2 flex h-[50px] items-center rounded-[4px] px-4 transition-colors focus-within:border-[#60a5fa] focus-within:ring-1 focus-within:ring-[#60a5fa]/50`}
           >
             <Lock
-              className={`w-4 h-4 mr-3 ${errors.password ? 'text-red-500' : 'text-[#8b919d]'}`}
+              className={`mr-3 h-4 w-4 ${errors.password ? 'text-red-500' : 'text-[#8b919d]'}`}
             />
             <input
               type="password"
               placeholder="비밀번호"
-              className="bg-transparent border-none outline-none text-[#8b919d] text-[16px] w-full"
+              className="w-full border-none bg-transparent text-[16px] text-[#8b919d] outline-none"
               {...register('password')}
             />
           </div>
           {errors.password && (
-            <span className="text-red-500 text-[12px] mt-1 ml-1 block">
+            <span className="mt-1 ml-1 block text-[12px] text-red-500">
               {errors.password.message}
             </span>
           )}
@@ -86,8 +86,8 @@ const LoginForm = ({ role, isLoading, onSubmit, errorMsg }: LoginFormProps) => {
 
         {/* Error Message */}
         {errorMsg && (
-          <div className="flex items-center gap-2 text-red-400 bg-red-400/10 p-3 rounded-[4px] text-[13px] border border-red-400/20">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="flex items-center gap-2 rounded-[4px] border border-red-400/20 bg-red-400/10 p-3 text-[13px] text-red-400">
+            <AlertCircle className="h-4 w-4 shrink-0" />
             <p>{errorMsg}</p>
           </div>
         )}
@@ -97,10 +97,10 @@ const LoginForm = ({ role, isLoading, onSubmit, errorMsg }: LoginFormProps) => {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full bg-[#60a5fa] hover:bg-[#3b82f6] text-[#003a6b] font-medium text-[18px] rounded-[4px] h-[50px] flex items-center justify-center gap-2 transition-colors disabled:opacity-70"
+        className="flex h-[50px] w-full items-center justify-center gap-2 rounded-[4px] bg-[#60a5fa] text-[18px] font-medium text-[#003a6b] transition-colors hover:bg-[#3b82f6] disabled:opacity-70"
       >
         {isLoading ? '로그인 중...' : '로그인'}
-        {!isLoading && <LogIn className="w-4 h-4" />}
+        {!isLoading && <LogIn className="h-4 w-4" />}
       </button>
     </form>
   );
@@ -125,8 +125,6 @@ export default function LoginPage() {
     setIsLoading(true);
     setErrorMsg(null);
     try {
-      // In a real scenario, you might send the role as well if the API supports it,
-      // or the API determines the role based on the credentials.
       const res = await authApi.login(data);
 
       // 권한 검증: 관리자 탭에서 일반 유저 로그인 시도 시
@@ -150,9 +148,9 @@ export default function LoginPage() {
 
       // Redirect based on role
       if (res.systemRole === 'SUPER_ADMIN') {
-        navigate('/admin');
+        void navigate('/admin');
       } else {
-        navigate('/');
+        void navigate('/');
       }
     } catch (err: unknown) {
       console.error('Login Error:', err);
@@ -168,40 +166,40 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full flex flex-col items-center">
+    <div className="flex w-full flex-col items-center">
       {/* Brand Identity Section */}
       <div className="mb-8 flex flex-col items-center">
-        <div className="w-[58px] h-[50px] relative flex items-center justify-center bg-[#0F223A] border border-[#254670] rounded-xl mb-4 shadow-[0_0_20px_rgba(37,99,235,0.2)]">
-          <Terminal className="w-7 h-7 text-[#60a5fa]" />
+        <div className="relative mb-4 flex h-[50px] w-[58px] items-center justify-center rounded-xl border border-[#254670] bg-[#0F223A] shadow-[0_0_20px_rgba(37,99,235,0.2)]">
+          <Terminal className="h-7 w-7 text-[#60a5fa]" />
         </div>
-        <h1 className="font-['Space_Grotesk'] font-bold text-[#d4e4fa] text-[32px] tracking-[-1.6px] leading-tight">
+        <h1 className="font-['Space_Grotesk'] text-[32px] leading-tight font-bold tracking-[-1.6px] text-[#d4e4fa]">
           Theseus
         </h1>
-        <p className="font-semibold text-[#c1c7d3] text-[12px] tracking-[1.2px] uppercase mt-1">
+        <p className="mt-1 text-[12px] font-semibold tracking-[1.2px] text-[#c1c7d3] uppercase">
           AI LAB SYSTEM
         </p>
       </div>
 
       {/* Login Card */}
-      <div className="w-full max-w-[420px] backdrop-blur-[12px] bg-[#0d1c2d] border border-[rgba(65,71,81,0.2)] rounded-[8px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.5)] overflow-hidden relative">
+      <div className="relative w-full max-w-[420px] overflow-hidden rounded-[8px] border border-[rgba(65,71,81,0.2)] bg-[#0d1c2d] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.5)] backdrop-blur-[12px]">
         {/* Decorative Corner Accents */}
-        <div className="absolute top-0 left-0 w-[48px] h-[48px] border-t border-l border-[rgba(65,71,81,0.3)] pointer-events-none" />
-        <div className="absolute top-0 right-0 w-[48px] h-[48px] border-t border-r border-[rgba(65,71,81,0.3)] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[48px] h-[48px] border-b border-l border-[rgba(65,71,81,0.3)] pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-[48px] h-[48px] border-b border-r border-[rgba(65,71,81,0.3)] pointer-events-none" />
+        <div className="pointer-events-none absolute top-0 left-0 h-[48px] w-[48px] border-t border-l border-[rgba(65,71,81,0.3)]" />
+        <div className="pointer-events-none absolute top-0 right-0 h-[48px] w-[48px] border-t border-r border-[rgba(65,71,81,0.3)]" />
+        <div className="pointer-events-none absolute bottom-0 left-0 h-[48px] w-[48px] border-b border-l border-[rgba(65,71,81,0.3)]" />
+        <div className="pointer-events-none absolute right-0 bottom-0 h-[48px] w-[48px] border-r border-b border-[rgba(65,71,81,0.3)]" />
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           {/* Tabs */}
-          <TabsList className="w-full bg-transparent border-b border-[rgba(65,71,81,0.2)] rounded-none h-auto p-0 flex">
+          <TabsList className="flex h-auto w-full rounded-none border-b border-[rgba(65,71,81,0.2)] bg-transparent p-0">
             <TabsTrigger
               value="user"
-              className="flex-1 rounded-none data-[state=active]:bg-[rgba(28,43,60,0.4)] data-[state=active]:border-b-2 data-[state=active]:border-[#60a5fa] data-[state=active]:text-[#60a5fa] text-[#c1c7d3] h-[58px] text-[18px] font-medium transition-none data-[state=active]:shadow-none"
+              className="h-[58px] flex-1 rounded-none text-[18px] font-medium text-[#c1c7d3] transition-none data-[state=active]:border-b-2 data-[state=active]:border-[#60a5fa] data-[state=active]:bg-[rgba(28,43,60,0.4)] data-[state=active]:text-[#60a5fa] data-[state=active]:shadow-none"
             >
               사용자
             </TabsTrigger>
             <TabsTrigger
               value="admin"
-              className="flex-1 rounded-none data-[state=active]:bg-[rgba(28,43,60,0.4)] data-[state=active]:border-b-2 data-[state=active]:border-[#60a5fa] data-[state=active]:text-[#60a5fa] text-[#c1c7d3] h-[58px] text-[18px] font-medium transition-none data-[state=active]:shadow-none"
+              className="h-[58px] flex-1 rounded-none text-[18px] font-medium text-[#c1c7d3] transition-none data-[state=active]:border-b-2 data-[state=active]:border-[#60a5fa] data-[state=active]:bg-[rgba(28,43,60,0.4)] data-[state=active]:text-[#60a5fa] data-[state=active]:shadow-none"
             >
               관리자
             </TabsTrigger>
@@ -209,7 +207,7 @@ export default function LoginPage() {
 
           <TabsContent
             value="user"
-            className="p-6 m-0 focus-visible:outline-none focus-visible:ring-0"
+            className="m-0 p-6 focus-visible:ring-0 focus-visible:outline-none"
           >
             <LoginForm
               role="USER"
@@ -221,7 +219,7 @@ export default function LoginPage() {
 
           <TabsContent
             value="admin"
-            className="p-6 m-0 focus-visible:outline-none focus-visible:ring-0"
+            className="m-0 p-6 focus-visible:ring-0 focus-visible:outline-none"
           >
             <LoginForm
               role="ADMIN"

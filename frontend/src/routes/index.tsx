@@ -38,7 +38,7 @@ const routes: RouteObject[] = [
           {
             path: 'sessions',
             element: (
-              <div className="p-8 text-slate-500 h-full flex items-center justify-center">
+              <div className="flex h-full items-center justify-center p-8 text-slate-500">
                 좌측 메뉴에서 대화 세션을 선택하거나 '새 대화'를 시작하세요.
               </div>
             ),
@@ -58,12 +58,18 @@ const routes: RouteObject[] = [
         ],
       },
       {
-        path: '/admin',
-        element: <AdminLayout />,
+        // 관리자 화면은 SUPER_ADMIN만. API도 hasRole로 막지만 일반 사용자에게 UI가 보이지 않게 한다.
+        element: <ProtectedRoute allowedRoles={['SUPER_ADMIN']} />,
         children: [
           {
-            path: '',
-            element: <SuperAdminPage />,
+            path: '/admin',
+            element: <AdminLayout />,
+            children: [
+              {
+                path: '',
+                element: <SuperAdminPage />,
+              },
+            ],
           },
         ],
       },

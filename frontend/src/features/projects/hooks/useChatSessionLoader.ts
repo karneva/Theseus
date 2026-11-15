@@ -99,7 +99,6 @@ export function useChatSessionLoader(projectId?: string, sessionId?: string) {
       const flow = currentPlan.status === 'BUILDING' ? 'BUILD' : 'PLAN';
       const ssePath = `/api/v1/projects/${projId}/sessions/${sessId}/tool-plan-runs/${currentPlan.runId}/events`;
 
-      console.log(`[ChatLoader] Recovering ${flow} SSE connection:`, ssePath);
       connectSSE(ssePath, flow, currentPlan.runId);
     },
     [connectSSE, setIsGenerating, setProgressInfo, updateLastMessageContent],
@@ -159,7 +158,7 @@ export function useChatSessionLoader(projectId?: string, sessionId?: string) {
       }
     };
 
-    loadSessionData();
+    void loadSessionData();
 
     return () => {
       isMounted = false;

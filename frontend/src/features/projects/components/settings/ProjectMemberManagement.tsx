@@ -51,7 +51,7 @@ export function ProjectMemberManagement({ projectId }: ProjectMemberManagementPr
         if (!cancelled) setIsLoading(false);
       }
     };
-    fetchMembers();
+    void fetchMembers();
     return () => {
       cancelled = true;
     };
@@ -63,22 +63,22 @@ export function ProjectMemberManagement({ projectId }: ProjectMemberManagementPr
   };
 
   return (
-    <Card className="bg-slate-900/40 backdrop-blur-xl border-slate-800 shadow-2xl shadow-blue-500/5 overflow-x-auto">
-      <CardHeader className="flex flex-row items-center justify-between border-b border-slate-800/50 mb-6 min-w-[900px]">
+    <Card className="overflow-x-auto border-slate-800 bg-slate-900/40 shadow-2xl shadow-blue-500/5 backdrop-blur-xl">
+      <CardHeader className="mb-6 flex min-w-[900px] flex-row items-center justify-between border-b border-slate-800/50">
         <div className="min-w-max">
-          <CardTitle className="text-white font-['Space_Grotesk'] mb-1 whitespace-nowrap">
+          <CardTitle className="mb-1 font-['Space_Grotesk'] whitespace-nowrap text-white">
             멤버 관리
           </CardTitle>
-          <CardDescription className="text-slate-400 whitespace-nowrap">
+          <CardDescription className="whitespace-nowrap text-slate-400">
             프로젝트에 참여 중인 멤버와 권한을 관리합니다.
           </CardDescription>
         </div>
 
         <Button
-          className="bg-blue-400 hover:bg-blue-500 text-[#003a6b] font-bold flex items-center gap-2"
+          className="flex items-center gap-2 bg-blue-400 font-bold text-[#003a6b] hover:bg-blue-500"
           onClick={() => setIsAddOpen(true)}
         >
-          <Plus className="w-4 h-4" /> 멤버 추가
+          <Plus className="h-4 w-4" /> 멤버 추가
         </Button>
         <AddMemberModal
           projectId={projectId}
@@ -90,27 +90,27 @@ export function ProjectMemberManagement({ projectId }: ProjectMemberManagementPr
 
       <CardContent>
         {isLoading ? (
-          <div className="py-12 text-center text-slate-500 animate-pulse">
+          <div className="animate-pulse py-12 text-center text-slate-500">
             멤버 목록을 불러오는 중...
           </div>
         ) : (
-          <div className="border border-slate-800 rounded-lg overflow-x-auto bg-slate-950/20">
+          <div className="overflow-x-auto rounded-lg border border-slate-800 bg-slate-950/20">
             <Table className="min-w-[900px]">
               <TableHeader className="bg-slate-950/50">
                 <TableRow className="border-slate-800 hover:bg-transparent">
-                  <TableHead className="w-[180px] text-slate-400 font-bold uppercase text-[10px] tracking-widest">
+                  <TableHead className="w-[180px] text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                     이름 / 사번
                   </TableHead>
-                  <TableHead className="w-[160px] text-slate-400 font-bold uppercase text-[10px] tracking-widest">
+                  <TableHead className="w-[160px] text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                     역할 / 레벨
                   </TableHead>
-                  <TableHead className="w-[300px] text-center text-slate-400 font-bold uppercase text-[10px] tracking-widest pl-4">
+                  <TableHead className="w-[300px] pl-4 text-center text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                     도구 권한
                   </TableHead>
-                  <TableHead className="w-[120px] text-center text-slate-400 font-bold uppercase text-[10px] tracking-widest">
+                  <TableHead className="w-[120px] text-center text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                     상태
                   </TableHead>
-                  <TableHead className="w-[80px] text-center text-slate-400 font-bold uppercase text-[10px] tracking-widest">
+                  <TableHead className="w-[80px] text-center text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                     관리
                   </TableHead>
                 </TableRow>
@@ -118,7 +118,7 @@ export function ProjectMemberManagement({ projectId }: ProjectMemberManagementPr
               <TableBody>
                 {members.length === 0 ? (
                   <TableRow className="border-slate-800 hover:bg-slate-900/20">
-                    <TableCell colSpan={5} className="text-center py-12 text-slate-500 font-medium">
+                    <TableCell colSpan={5} className="py-12 text-center font-medium text-slate-500">
                       등록된 멤버가 없습니다.
                     </TableCell>
                   </TableRow>
@@ -126,11 +126,11 @@ export function ProjectMemberManagement({ projectId }: ProjectMemberManagementPr
                   members.map((member) => (
                     <TableRow
                       key={member.projectMemberId}
-                      className="border-slate-800 hover:bg-slate-900/40 transition-colors"
+                      className="border-slate-800 transition-colors hover:bg-slate-900/40"
                     >
                       <TableCell>
                         <div className="font-bold text-slate-200">{member.name}</div>
-                        <div className="text-xs text-slate-500 font-mono mt-0.5">
+                        <div className="mt-0.5 font-mono text-xs text-slate-500">
                           {member.employeeNumber}
                         </div>
                       </TableCell>
@@ -139,23 +139,23 @@ export function ProjectMemberManagement({ projectId }: ProjectMemberManagementPr
                           <Badge
                             variant="outline"
                             className={cn(
-                              'font-bold tracking-tight px-2 py-0.5 border-transparent flex items-center gap-1.5',
-                              'bg-slate-800/40 text-slate-300 border-slate-700/50 ring-1 ring-slate-800/50',
+                              'flex items-center gap-1.5 border-transparent px-2 py-0.5 font-bold tracking-tight',
+                              'border-slate-700/50 bg-slate-800/40 text-slate-300 ring-1 ring-slate-800/50',
                             )}
                           >
                             {member.projectRole}
                           </Badge>
-                          <span className="text-[10px] text-slate-500 font-bold whitespace-nowrap">
+                          <span className="text-[10px] font-bold whitespace-nowrap text-slate-500">
                             LV.{member.accessLevel}
                           </span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-1.5 flex-wrap pl-4">
+                        <div className="flex flex-wrap gap-1.5 pl-4">
                           {member.canUseTool && (
                             <Badge
                               variant="outline"
-                              className="text-[10px] px-1.5 py-0 h-4 border-slate-800 bg-slate-900/50 text-slate-400 uppercase font-bold tracking-tight"
+                              className="h-4 border-slate-800 bg-slate-900/50 px-1.5 py-0 text-[10px] font-bold tracking-tight text-slate-400 uppercase"
                             >
                               Use
                             </Badge>
@@ -163,7 +163,7 @@ export function ProjectMemberManagement({ projectId }: ProjectMemberManagementPr
                           {member.canCreateTool && (
                             <Badge
                               variant="outline"
-                              className="text-[10px] px-1.5 py-0 h-4 border-slate-800 bg-slate-900/50 text-slate-400 uppercase font-bold tracking-tight"
+                              className="h-4 border-slate-800 bg-slate-900/50 px-1.5 py-0 text-[10px] font-bold tracking-tight text-slate-400 uppercase"
                             >
                               Create
                             </Badge>
@@ -171,7 +171,7 @@ export function ProjectMemberManagement({ projectId }: ProjectMemberManagementPr
                           {member.canUpdateTool && (
                             <Badge
                               variant="outline"
-                              className="text-[10px] px-1.5 py-0 h-4 border-slate-800 bg-slate-900/50 text-slate-400 uppercase font-bold tracking-tight"
+                              className="h-4 border-slate-800 bg-slate-900/50 px-1.5 py-0 text-[10px] font-bold tracking-tight text-slate-400 uppercase"
                             >
                               Update
                             </Badge>
@@ -179,7 +179,7 @@ export function ProjectMemberManagement({ projectId }: ProjectMemberManagementPr
                           {member.canDeleteTool && (
                             <Badge
                               variant="outline"
-                              className="text-[10px] px-1.5 py-0 h-4 border-slate-800 bg-slate-900/50 text-slate-400 uppercase font-bold tracking-tight"
+                              className="h-4 border-slate-800 bg-slate-900/50 px-1.5 py-0 text-[10px] font-bold tracking-tight text-slate-400 uppercase"
                             >
                               Delete
                             </Badge>
@@ -190,7 +190,7 @@ export function ProjectMemberManagement({ projectId }: ProjectMemberManagementPr
                         <Badge
                           variant={member.status === 'IN_PROGRESS' ? 'default' : 'secondary'}
                           className={cn(
-                            'font-bold text-[10px]',
+                            'text-[10px] font-bold',
                             member.status === 'IN_PROGRESS'
                               ? 'bg-blue-400 text-[#003a6b] hover:bg-blue-400'
                               : 'bg-slate-800 text-slate-400 hover:bg-slate-800',
@@ -204,9 +204,9 @@ export function ProjectMemberManagement({ projectId }: ProjectMemberManagementPr
                           variant="ghost"
                           size="sm"
                           onClick={() => openEditModal(member)}
-                          className="text-slate-400 hover:text-blue-400 hover:bg-blue-400/10"
+                          className="text-slate-400 hover:bg-blue-400/10 hover:text-blue-400"
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Edit2 className="h-4 w-4" />
                         </Button>
                       </TableCell>
                     </TableRow>

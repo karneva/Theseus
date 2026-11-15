@@ -41,7 +41,7 @@ export function ProjectGeneralSettings({ projectId }: ProjectGeneralSettingsProp
         if (!cancelled) setIsLoading(false);
       }
     };
-    fetchProjectData();
+    void fetchProjectData();
     return () => {
       cancelled = true;
     };
@@ -69,12 +69,12 @@ export function ProjectGeneralSettings({ projectId }: ProjectGeneralSettingsProp
   }
 
   return (
-    <Card className="bg-slate-900/40 backdrop-blur-xl border-slate-800 shadow-2xl shadow-blue-500/5 overflow-x-auto">
+    <Card className="overflow-x-auto border-slate-800 bg-slate-900/40 shadow-2xl shadow-blue-500/5 backdrop-blur-xl">
       <CardHeader className="min-w-[500px]">
-        <CardTitle className="text-white font-['Space_Grotesk'] whitespace-nowrap">
+        <CardTitle className="font-['Space_Grotesk'] whitespace-nowrap text-white">
           일반 설정
         </CardTitle>
-        <CardDescription className="text-slate-400 whitespace-nowrap">
+        <CardDescription className="whitespace-nowrap text-slate-400">
           프로젝트의 기본 정보를 수정합니다.
         </CardDescription>
       </CardHeader>
@@ -83,7 +83,7 @@ export function ProjectGeneralSettings({ projectId }: ProjectGeneralSettingsProp
           <div className="space-y-2">
             <Label
               htmlFor="projectName"
-              className="text-slate-300 font-medium tracking-wide uppercase text-[10px]"
+              className="text-[10px] font-medium tracking-wide text-slate-300 uppercase"
             >
               프로젝트 이름
             </Label>
@@ -92,14 +92,14 @@ export function ProjectGeneralSettings({ projectId }: ProjectGeneralSettingsProp
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="프로젝트 이름을 입력하세요"
-              className="bg-slate-950/50 border-slate-800 text-slate-200 placeholder:text-slate-600 focus:border-blue-400/50 focus:ring-blue-400/20"
+              className="border-slate-800 bg-slate-950/50 text-slate-200 placeholder:text-slate-600 focus:border-blue-400/50 focus:ring-blue-400/20"
             />
           </div>
 
           <div className="space-y-2">
             <Label
               htmlFor="projectDescription"
-              className="text-slate-300 font-medium tracking-wide uppercase text-[10px]"
+              className="text-[10px] font-medium tracking-wide text-slate-300 uppercase"
             >
               프로젝트 설명
             </Label>
@@ -109,13 +109,13 @@ export function ProjectGeneralSettings({ projectId }: ProjectGeneralSettingsProp
               onChange={(e) => setDescription(e.target.value)}
               placeholder="프로젝트에 대한 설명을 입력하세요"
               rows={4}
-              className="bg-slate-950/50 border-slate-800 text-slate-200 placeholder:text-slate-600 focus:border-blue-400/50 focus:ring-blue-400/20"
+              className="border-slate-800 bg-slate-950/50 text-slate-200 placeholder:text-slate-600 focus:border-blue-400/50 focus:ring-blue-400/20"
             />
           </div>
 
           <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/30 p-4">
             <div className="space-y-0.5">
-              <Label className="text-slate-200 font-medium">프로젝트 활성화 상태</Label>
+              <Label className="font-medium text-slate-200">프로젝트 활성화 상태</Label>
             </div>
             <Switch
               checked={isActive}
@@ -125,11 +125,11 @@ export function ProjectGeneralSettings({ projectId }: ProjectGeneralSettingsProp
           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-end border-t border-slate-800 p-6 min-w-[500px]">
+      <CardFooter className="flex min-w-[500px] justify-end border-t border-slate-800 p-6">
         <Button
           onClick={handleSave}
           disabled={isSaving}
-          className="bg-blue-400 hover:bg-blue-500 text-[#003a6b] font-bold px-8"
+          className="bg-blue-400 px-8 font-bold text-[#003a6b] hover:bg-blue-500"
         >
           {isSaving ? '저장 중...' : '변경사항 저장'}
         </Button>

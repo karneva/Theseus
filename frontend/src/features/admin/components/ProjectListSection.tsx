@@ -62,7 +62,7 @@ export default function ProjectListSection() {
         if (!cancelled) setIsLoading(false);
       }
     };
-    load();
+    void load();
     return () => {
       cancelled = true;
     };
@@ -89,11 +89,11 @@ export default function ProjectListSection() {
   });
 
   return (
-    <div className="bg-[#0d1c2d] rounded-lg border border-[rgba(65,71,81,0.3)] shadow-2xl flex flex-col">
-      <div className="px-6 pt-6 pb-[25px] border-b border-[rgba(65,71,81,0.2)] flex items-center justify-between shrink-0">
+    <div className="flex flex-col rounded-lg border border-[rgba(65,71,81,0.3)] bg-[#0d1c2d] shadow-2xl">
+      <div className="flex shrink-0 items-center justify-between border-b border-[rgba(65,71,81,0.2)] px-6 pt-6 pb-[25px]">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded bg-[rgba(250,189,52,0.1)] flex items-center justify-center shrink-0">
-            <Layers className="w-5 h-5 text-[#fabd34]" />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-[rgba(250,189,52,0.1)]">
+            <Layers className="h-5 w-5 text-[#fabd34]" />
           </div>
           <div className="flex flex-col">
             <h3 className="text-[18px] font-medium text-[#d4e4fa]">프로젝트 목록</h3>
@@ -102,7 +102,7 @@ export default function ProjectListSection() {
 
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6b7280]" />
+            <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-[#6b7280]" />
             <Input
               value={searchTerm}
               onChange={(e) => {
@@ -110,24 +110,24 @@ export default function ProjectListSection() {
                 setPage(0);
               }}
               placeholder="프로젝트 검색..."
-              className="w-[192px] h-8 pl-9 bg-[#010f1f] border-[rgba(65,71,81,0.2)] text-[#6b7280] text-[12px] placeholder:text-[#6b7280] focus-visible:ring-1 focus-visible:ring-white/20 rounded"
+              className="h-8 w-[192px] rounded border-[rgba(65,71,81,0.2)] bg-[#010f1f] pl-9 text-[12px] text-[#6b7280] placeholder:text-[#6b7280] focus-visible:ring-1 focus-visible:ring-white/20"
             />
           </div>
           {isEditing && (
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center gap-2 bg-[#1a2c42] hover:bg-[#233852] border border-[#a4c9ff]/20 transition-colors px-4 py-1.5 rounded h-8"
+              className="flex h-8 items-center gap-2 rounded border border-[#a4c9ff]/20 bg-[#1a2c42] px-4 py-1.5 transition-colors hover:bg-[#233852]"
             >
-              <Plus className="w-3.5 h-3.5 text-[#a4c9ff]" />
+              <Plus className="h-3.5 w-3.5 text-[#a4c9ff]" />
               <span className="text-[14px] font-medium text-[#a4c9ff]">추가</span>
             </button>
           )}
           <button
             onClick={() => setIsEditing(!isEditing)}
-            className={`flex items-center gap-2 transition-colors px-4 py-1.5 rounded h-8 ${isEditing ? 'bg-[#fabd34] hover:bg-[#e5ac2d]' : 'bg-[#273647] hover:bg-[#34485e]'}`}
+            className={`flex h-8 items-center gap-2 rounded px-4 py-1.5 transition-colors ${isEditing ? 'bg-[#fabd34] hover:bg-[#e5ac2d]' : 'bg-[#273647] hover:bg-[#34485e]'}`}
           >
             <Settings2
-              className={`w-3.5 h-3.5 ${isEditing ? 'text-[#003a6b]' : 'text-[#fabd34]'}`}
+              className={`h-3.5 w-3.5 ${isEditing ? 'text-[#003a6b]' : 'text-[#fabd34]'}`}
             />
             <span
               className={`text-[14px] font-medium ${isEditing ? 'text-[#003a6b]' : 'text-[#fabd34]'}`}
@@ -138,30 +138,30 @@ export default function ProjectListSection() {
         </div>
       </div>
 
-      <div className="w-full min-h-[500px]">
+      <div className="min-h-[500px] w-full">
         <Table className="table-fixed">
-          <TableHeader className="bg-[rgba(28,43,60,0.5)] border-b border-[rgba(65,71,81,0.1)] sticky top-0 z-10">
+          <TableHeader className="sticky top-0 z-10 border-b border-[rgba(65,71,81,0.1)] bg-[rgba(28,43,60,0.5)]">
             <TableRow className="border-none hover:bg-transparent">
-              <TableHead className="text-[#c1c7d3] font-medium text-[14px] tracking-[1.2px] uppercase h-[40px] px-6 py-[10px] w-[180px]">
+              <TableHead className="h-[40px] w-[180px] px-6 py-[10px] text-[14px] font-medium tracking-[1.2px] text-[#c1c7d3] uppercase">
                 프로젝트 명
               </TableHead>
-              <TableHead className="text-[#c1c7d3] font-medium text-[14px] tracking-[1.2px] uppercase h-[40px] px-6 py-[10px] w-[140px]">
+              <TableHead className="h-[40px] w-[140px] px-6 py-[10px] text-[14px] font-medium tracking-[1.2px] text-[#c1c7d3] uppercase">
                 담당자 사번
               </TableHead>
-              <TableHead className="text-[#c1c7d3] font-medium text-[14px] tracking-[1.2px] uppercase h-[40px] px-6 py-[10px] w-[150px]">
+              <TableHead className="h-[40px] w-[150px] px-6 py-[10px] text-[14px] font-medium tracking-[1.2px] text-[#c1c7d3] uppercase">
                 담당자 이름
               </TableHead>
-              <TableHead className="text-[#c1c7d3] font-medium text-[14px] tracking-[1.2px] uppercase h-[40px] px-6 py-[10px] text-center w-[80px]">
+              <TableHead className="h-[40px] w-[80px] px-6 py-[10px] text-center text-[14px] font-medium tracking-[1.2px] text-[#c1c7d3] uppercase">
                 상태
               </TableHead>
-              <TableHead className="text-right text-white/60 font-medium h-10 px-6 py-2 w-[83px]"></TableHead>
+              <TableHead className="h-10 w-[83px] px-6 py-2 text-right font-medium text-white/60"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredProjects.length === 0
               ? !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-white/40">
+                    <TableCell colSpan={5} className="py-8 text-center text-white/40">
                       프로젝트가 없습니다.
                     </TableCell>
                   </TableRow>
@@ -169,48 +169,48 @@ export default function ProjectListSection() {
               : filteredProjects.map((project) => (
                   <TableRow
                     key={project.projectId}
-                    className="border-t border-[rgba(65,71,81,0.1)] h-[57px]"
+                    className="h-[57px] border-t border-[rgba(65,71,81,0.1)]"
                   >
-                    <TableCell className="text-[#d4e4fa] px-6 py-[10px] text-[14px] font-medium truncate whitespace-nowrap">
+                    <TableCell className="truncate px-6 py-[10px] text-[14px] font-medium whitespace-nowrap text-[#d4e4fa]">
                       {project.name}
                     </TableCell>
-                    <TableCell className="text-[#a4c9ff] px-6 py-[10px] text-[15px] font-mono truncate whitespace-nowrap">
+                    <TableCell className="truncate px-6 py-[10px] font-mono text-[15px] whitespace-nowrap text-[#a4c9ff]">
                       {project.projectAdminEmployeeNumber}
                     </TableCell>
-                    <TableCell className="text-[#c1c7d3] px-6 py-[10px] text-[15px] font-medium truncate whitespace-nowrap">
+                    <TableCell className="truncate px-6 py-[10px] text-[15px] font-medium whitespace-nowrap text-[#c1c7d3]">
                       {project.projectAdminName}
                     </TableCell>
                     <TableCell className="px-6 py-[10px] text-center">
                       <StatusBadge status={project.status} />
                     </TableCell>
-                    <TableCell className="px-6 text-center py-3">
+                    <TableCell className="px-6 py-3 text-center">
                       {isEditing && (
                         <div className="flex items-center justify-center gap-1">
                           <DropdownMenu>
-                            <DropdownMenuTrigger className="p-2 hover:bg-white/10 rounded-md transition-colors outline-none text-white/60">
-                              <MoreVertical className="w-4 h-4" />
+                            <DropdownMenuTrigger className="rounded-md p-2 text-white/60 transition-colors outline-none hover:bg-white/10">
+                              <MoreVertical className="h-4 w-4" />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
                               align="end"
-                              className="bg-[#051424] border-white/10 text-white min-w-[150px]"
+                              className="min-w-[150px] border-white/10 bg-[#051424] text-white"
                             >
                               <DropdownMenuItem
-                                className="hover:bg-white/10 focus:bg-white/10 cursor-pointer gap-2"
+                                className="cursor-pointer gap-2 hover:bg-white/10 focus:bg-white/10"
                                 onClick={() => {
                                   setSelectedProject(project);
                                   setIsEditModalOpen(true);
                                 }}
                               >
-                                <Edit className="w-4 h-4" />
+                                <Edit className="h-4 w-4" />
                                 <span>프로젝트 수정</span>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                           <button
                             onClick={() => handleStatusToggle(project.projectId, project.status)}
-                            className="p-2 hover:bg-red-500/10 rounded-md transition-colors text-red-400/60 hover:text-red-400"
+                            className="rounded-md p-2 text-red-400/60 transition-colors hover:bg-red-500/10 hover:text-red-400"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
                       )}
@@ -223,7 +223,7 @@ export default function ProjectListSection() {
               Array.from({ length: 8 - filteredProjects.length }).map((_, index) => (
                 <TableRow
                   key={`empty-${index}`}
-                  className="border-t border-[rgba(65,71,81,0.05)] h-[57px] hover:bg-transparent"
+                  className="h-[57px] border-t border-[rgba(65,71,81,0.05)] hover:bg-transparent"
                 >
                   <TableCell colSpan={5} />
                 </TableRow>

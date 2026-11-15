@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createId } from '@/lib/id';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { CheckCircle, FileCode, Layout, MessageSquarePlus, RotateCcw, X } from 'lucide-react';
@@ -133,7 +134,7 @@ export function InspectorPanel() {
     }
 
     addMessage({
-      messageId: crypto.randomUUID(),
+      messageId: createId(),
       senderType: 'USER',
       messageType: 'TOOL_FEEDBACK',
       contentType: 'TEXT',
@@ -142,7 +143,7 @@ export function InspectorPanel() {
     });
 
     addMessage({
-      messageId: crypto.randomUUID(),
+      messageId: createId(),
       senderType: 'ASSISTANT',
       messageType: 'TOOL_PLAN_RESPONSE',
       contentType: 'MARKDOWN',
@@ -178,7 +179,7 @@ export function InspectorPanel() {
     try {
       await chatApi.requestToolPlanApproval(projectId, currentToolPlanId);
       addMessage({
-        messageId: crypto.randomUUID(),
+        messageId: createId(),
         senderType: 'SYSTEM_NOTICE',
         messageType: 'TOOL_APPROVAL_REQUEST',
         contentType: 'TEXT',
@@ -197,36 +198,36 @@ export function InspectorPanel() {
   };
 
   return (
-    <div className="flex flex-col h-full w-full p-6">
+    <div className="flex h-full w-full flex-col p-6">
       <Tabs
         value={activeTab}
         onValueChange={(v) => setActiveTab(v as 'plan' | 'result')}
-        className="w-full h-full flex flex-col"
+        className="flex h-full w-full flex-col"
       >
-        <div className="flex items-center justify-between mb-6 shrink-0">
-          <TabsList className="bg-transparent border-b border-slate-700/50 p-0 rounded-none w-full justify-start gap-6">
+        <div className="mb-6 flex shrink-0 items-center justify-between">
+          <TabsList className="w-full justify-start gap-6 rounded-none border-b border-slate-700/50 bg-transparent p-0">
             <TabsTrigger
               value="plan"
-              className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 rounded-none px-1 pb-2 text-slate-400 flex items-center gap-2 transition-all shadow-none border-b-2 border-transparent font-medium"
+              className="flex items-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-1 pb-2 font-medium text-slate-400 shadow-none transition-all data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent data-[state=active]:text-blue-400"
             >
-              <Layout className="w-3.5 h-3.5" />
+              <Layout className="h-3.5 w-3.5" />
               PLAN
             </TabsTrigger>
             <TabsTrigger
               value="result"
-              className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 rounded-none px-1 pb-2 text-slate-400 flex items-center gap-2 transition-all shadow-none border-b-2 border-transparent font-medium"
+              className="flex items-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-1 pb-2 font-medium text-slate-400 shadow-none transition-all data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent data-[state=active]:text-blue-400"
               disabled={!createdTool && !toolResult && !isBuilding}
             >
-              <FileCode className="w-3.5 h-3.5" />
+              <FileCode className="h-3.5 w-3.5" />
               TOOL
             </TabsTrigger>
           </TabsList>
         </div>
 
-        <div className="flex-1 overflow-hidden min-h-0 relative">
+        <div className="relative min-h-0 flex-1 overflow-hidden">
           <TabsContent
             value="plan"
-            className="h-full m-0 overflow-y-auto pr-2 space-y-4 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent"
+            className="scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent m-0 h-full space-y-4 overflow-y-auto pr-2"
           >
             {currentPlan ? (
               <>
@@ -238,13 +239,13 @@ export function InspectorPanel() {
                         className={`${index > 0 ? 'mt-3 border-t border-slate-800/80 pt-3' : ''}`}
                       >
                         <div
-                          className={`mb-1 text-xs font-semibold leading-5 ${
+                          className={`mb-1 text-xs leading-5 font-semibold ${
                             section.tone === 'warning' ? 'text-amber-200' : 'text-blue-100'
                           }`}
                         >
                           {section.title}
                         </div>
-                        <div className="whitespace-pre-wrap text-[12px] leading-5 text-slate-400 [overflow-wrap:anywhere]">
+                        <div className="text-[12px] leading-5 [overflow-wrap:anywhere] whitespace-pre-wrap text-slate-400">
                           {section.content}
                         </div>
                       </section>
@@ -264,7 +265,7 @@ export function InspectorPanel() {
                         <div className="flex items-start gap-2">
                           <div className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400" />
                           <div className="min-w-0">
-                            <h3 className="text-sm font-semibold leading-5 text-blue-100 [overflow-wrap:anywhere]">
+                            <h3 className="text-sm leading-5 font-semibold [overflow-wrap:anywhere] text-blue-100">
                               {block.title}
                             </h3>
                             <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] leading-4 text-slate-500">
@@ -293,10 +294,10 @@ export function InspectorPanel() {
                           >
                             <div className="flex items-start gap-3">
                               <div className="min-w-0 flex-1">
-                                <div className="mb-1 text-xs font-semibold leading-5 text-slate-300">
+                                <div className="mb-1 text-xs leading-5 font-semibold text-slate-300">
                                   {field.label}
                                 </div>
-                                <div className="whitespace-pre-wrap text-[13px] leading-6 text-slate-400 [overflow-wrap:anywhere]">
+                                <div className="text-[13px] leading-6 [overflow-wrap:anywhere] whitespace-pre-wrap text-slate-400">
                                   {field.value}
                                 </div>
                               </div>
@@ -313,7 +314,7 @@ export function InspectorPanel() {
                         ))}
                       </div>
                     ) : (
-                      <div className="border-t border-slate-700/50 pt-3 text-[13px] leading-6 text-slate-400 whitespace-pre-wrap [overflow-wrap:anywhere]">
+                      <div className="border-t border-slate-700/50 pt-3 text-[13px] leading-6 [overflow-wrap:anywhere] whitespace-pre-wrap text-slate-400">
                         {block.content}
                       </div>
                     )}
@@ -321,26 +322,26 @@ export function InspectorPanel() {
                 ))}
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full text-slate-500 text-sm gap-4">
-                <Layout className="w-12 h-12 opacity-10" />
+              <div className="flex h-full flex-col items-center justify-center gap-4 text-sm text-slate-500">
+                <Layout className="h-12 w-12 opacity-10" />
                 AI가 PLAN을 생성하면 여기에 표시됩니다.
               </div>
             )}
           </TabsContent>
 
-          <TabsContent value="result" className="h-full m-0 overflow-hidden">
+          <TabsContent value="result" className="m-0 h-full overflow-hidden">
             {createdTool || toolResult ? (
-              <div className="h-full flex flex-col bg-[#051424] border border-slate-700/50 rounded overflow-hidden">
-                <div className="bg-slate-800/50 px-4 py-2 border-b border-slate-700/50 flex justify-between items-center shrink-0">
-                  <div className="text-[10px] text-slate-500 font-mono tracking-wider">
+              <div className="flex h-full flex-col overflow-hidden rounded border border-slate-700/50 bg-[#051424]">
+                <div className="flex shrink-0 items-center justify-between border-b border-slate-700/50 bg-slate-800/50 px-4 py-2">
+                  <div className="font-mono text-[10px] tracking-wider text-slate-500">
                     CREATED TOOL
                   </div>
-                  <div className="text-[10px] text-green-400 flex items-center gap-1 font-medium">
-                    <CheckCircle className="w-3 h-3" />
+                  <div className="flex items-center gap-1 text-[10px] font-medium text-green-400">
+                    <CheckCircle className="h-3 w-3" />
                     READY
                   </div>
                 </div>
-                <div className="flex-1 overflow-auto font-mono text-xs leading-relaxed scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+                <div className="scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent flex-1 overflow-auto font-mono text-xs leading-relaxed">
                   <SyntaxHighlighter
                     language="json"
                     style={vscDarkPlus}
@@ -356,20 +357,20 @@ export function InspectorPanel() {
                 </div>
               </div>
             ) : isBuilding ? (
-              <div className="flex flex-col items-center justify-center h-full text-slate-500 text-sm gap-4">
-                <FileCode className="w-12 h-12 opacity-10 animate-pulse" />
+              <div className="flex h-full flex-col items-center justify-center gap-4 text-sm text-slate-500">
+                <FileCode className="h-12 w-12 animate-pulse opacity-10" />
                 Tool을 생성하고 있습니다.
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full text-slate-500 text-sm gap-4">
-                <FileCode className="w-12 h-12 opacity-10" />
+              <div className="flex h-full flex-col items-center justify-center gap-4 text-sm text-slate-500">
+                <FileCode className="h-12 w-12 opacity-10" />
                 승인 후 실제 Tool이 생성되면 여기에 표시됩니다.
               </div>
             )}
           </TabsContent>
         </div>
 
-        <div className="pt-6 shrink-0 flex gap-3">
+        <div className="flex shrink-0 gap-3 pt-6">
           {activeTab === 'plan' ? (
             <>
               {commentMode ? (
@@ -379,19 +380,19 @@ export function InspectorPanel() {
                     setActiveFeedbackTarget(null);
                     clearDraftComments();
                   }}
-                  className="flex-1 border border-slate-500 text-slate-300 hover:bg-slate-800 py-3 rounded text-sm transition-colors font-medium flex items-center justify-center gap-2"
+                  className="flex flex-1 items-center justify-center gap-2 rounded border border-slate-500 py-3 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800"
                 >
                   취소
-                  <X className="w-4 h-4" />
+                  <X className="h-4 w-4" />
                 </button>
               ) : (
                 <button
                   disabled={!isReviewable || isGenerating || isBuilding || isClosed}
                   onClick={handleRequestFeedbackClick}
-                  className="flex-1 border border-slate-500 text-blue-100 hover:bg-slate-800 py-3 rounded text-sm transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex flex-1 items-center justify-center gap-2 rounded border border-slate-500 py-3 text-sm font-medium text-blue-100 transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   수정 요청
-                  <RotateCcw className="w-4 h-4" />
+                  <RotateCcw className="h-4 w-4" />
                 </button>
               )}
 
@@ -399,7 +400,7 @@ export function InspectorPanel() {
                 <button
                   disabled={!isReviewable || isGenerating || isBuilding || isClosed}
                   onClick={handleRequestFeedbackClick}
-                  className="flex-1 bg-blue-500 text-white border-blue-500 hover:bg-blue-600 py-3 rounded text-sm transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex flex-1 items-center justify-center gap-2 rounded border-blue-500 bg-blue-500 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   수정 요청 보내기
                 </button>
@@ -407,10 +408,10 @@ export function InspectorPanel() {
                 <button
                   onClick={handleApprovalRequest}
                   disabled={!isReviewable || isApproving || isGenerating || isClosed}
-                  className="flex-1 bg-blue-400 hover:bg-blue-500 text-[#00315d] font-bold py-3 rounded text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex flex-1 items-center justify-center gap-2 rounded bg-blue-400 py-3 text-sm font-bold text-[#00315d] transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isApproving ? '요청 중' : '생성 승인 요청'}
-                  {!isApproving && <CheckCircle className="w-4 h-4" />}
+                  {!isApproving && <CheckCircle className="h-4 w-4" />}
                 </button>
               )}
             </>
@@ -418,10 +419,10 @@ export function InspectorPanel() {
             <button
               disabled={isGenerating || isClosed}
               onClick={() => setActiveTab('plan')}
-              className="flex-1 border border-slate-500 text-blue-100 py-3 rounded text-sm transition-colors font-medium hover:bg-slate-800 flex items-center justify-center gap-2"
+              className="flex flex-1 items-center justify-center gap-2 rounded border border-slate-500 py-3 text-sm font-medium text-blue-100 transition-colors hover:bg-slate-800"
             >
               PLAN 보기
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="h-4 w-4" />
             </button>
           )}
         </div>

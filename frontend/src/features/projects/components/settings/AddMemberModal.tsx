@@ -75,7 +75,7 @@ export function AddMemberModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#0b1424] border-slate-800 text-slate-100">
+      <DialogContent className="border-slate-800 bg-[#0b1424] text-slate-100">
         <DialogHeader>
           <DialogTitle className="text-white">새 멤버 추가</DialogTitle>
           <DialogDescription className="text-slate-400">
@@ -86,7 +86,7 @@ export function AddMemberModal({
           <div className="space-y-2">
             <Label
               htmlFor="employeeNumber"
-              className="text-slate-300 uppercase text-[10px] tracking-wider"
+              className="text-[10px] tracking-wider text-slate-300 uppercase"
             >
               사번 (Employee Number)
             </Label>
@@ -95,19 +95,19 @@ export function AddMemberModal({
               placeholder="예: 082XXXX"
               value={newEmployeeNumber}
               onChange={(e) => setNewEmployeeNumber(e.target.value)}
-              className="bg-slate-950 border-slate-800 text-white"
+              className="border-slate-800 bg-slate-950 text-white"
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-slate-300 uppercase text-[10px] tracking-wider">역할 할당</Label>
+            <Label className="text-[10px] tracking-wider text-slate-300 uppercase">역할 할당</Label>
             <Select
               value={newRole}
               onValueChange={(v: 'MEMBER' | 'MANAGER' | 'ADMIN') => setNewRole(v)}
             >
-              <SelectTrigger className="bg-slate-950 border-slate-800 text-white">
+              <SelectTrigger className="border-slate-800 bg-slate-950 text-white">
                 <SelectValue placeholder="역할 선택" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-800 text-white">
+              <SelectContent className="border-slate-800 bg-slate-900 text-white">
                 <SelectItem value="MEMBER">Member</SelectItem>
                 <SelectItem value="MANAGER">Manager</SelectItem>
               </SelectContent>
@@ -116,7 +116,7 @@ export function AddMemberModal({
           <div className="space-y-2">
             <Label
               htmlFor="accessLevel"
-              className="text-slate-300 uppercase text-[10px] tracking-wider"
+              className="text-[10px] tracking-wider text-slate-300 uppercase"
             >
               Access Level
             </Label>
@@ -128,7 +128,7 @@ export function AddMemberModal({
               value={newRole === 'ADMIN' ? ADMIN_ACCESS_LEVEL : newAccessLevel}
               disabled={newRole === 'ADMIN'}
               onChange={(e) => setNewAccessLevel(clampMemberAccessLevel(Number(e.target.value)))}
-              className="bg-slate-950 border-slate-800 text-white"
+              className="border-slate-800 bg-slate-950 text-white"
             />
             <p className="text-[11px] text-slate-500">Member/Manager/Admin: 1-5</p>
           </div>
@@ -144,7 +144,7 @@ export function AddMemberModal({
           <Button
             onClick={handleAddMember}
             disabled={!newEmployeeNumber || isSubmitting}
-            className="bg-blue-400 hover:bg-blue-500 text-[#003a6b] font-bold"
+            className="bg-blue-400 font-bold text-[#003a6b] hover:bg-blue-500"
           >
             {isSubmitting ? '추가 중...' : '추가하기'}
           </Button>

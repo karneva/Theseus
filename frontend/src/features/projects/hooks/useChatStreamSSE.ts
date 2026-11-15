@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '@/api/config';
+import { createId } from '@/lib/id';
 import { useCallback, useRef } from 'react';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { toast } from 'sonner';
@@ -39,6 +40,25 @@ function isToolError(data: ChatStreamEvent): boolean {
   return data.is_error === true || data.isError === true;
 }
 
+/**
+ * ASK/AGENT 모드 채팅 스트림(POST .../messages/stream)을 SSE로 받는 훅.
+ *
+ * 호출 전제: 호출부(ChatArea)가 사용자 메시지와 빈 ASSISTANT placeholder를 추가하고
+ * `isGenerating=true`로 바꾼 뒤 `connectChatStream`을 부른다. 새 연결을 열면 이전 연결은 먼저 끊는다.
+ *
+ * 이벤트 순서(서버 기준):
+ * 1. `connected` - 스트림 수립. progressInfo만 갱신한다.
+ * 2. `chunk`* - 답변 조각. 마지막 ASSISTANT 메시지 뒤에 이어 붙인다.
+ * 3. 도구 호출(AGENT)마다
+ *    - 시작: `status` | `tool_start` | `tool_execution_started` -> TOOL_EXECUTION_STARTED 알림 upsert
+ *    - 종료: `tool_result` | `tool_complete` | `tool_execution_completed`
+ *      -> is_error에 따라 COMPLETED/FAILED로 같은 알림을 교체(매칭 규칙은 upsertToolExecutionNotice 참고)
+ * 4. 끝: `completed`(정상) 또는 `error`(서버 오류. SYSTEM_NOTICE 메시지와 토스트를 남기고 연결 종료)
+ *
+ * 상태 전이: 시작 시 isGenerating=true(호출부) -> `completed`/`error`/전송 오류(onerror)에서
+ * isGenerating=false, progressInfo=null, abortController=null. onerror는 예외를 다시 던져
+ * fetch-event-source의 자동 재연결을 막는다(같은 프롬프트가 중복 실행되지 않게).
+ */
 export function useChatStreamSSE() {
   const abortRef = useRef<AbortController | null>(null);
 
@@ -79,10 +99,11 @@ export function useChatStreamSSE() {
           signal: controller.signal,
           openWhenHidden: true,
 
-          async onopen(response) {
+          onopen(response) {
             if (!response.ok) {
-              throw new Error(`Chat stream failed with status ${response.status}`);
+              return Promise.reject(new Error(`Chat stream failed with status ${response.status}`));
             }
+            return Promise.resolve();
           },
 
           onmessage(ev) {
@@ -173,7 +194,7 @@ export function useChatStreamSSE() {
                   store.setProgressInfo(null);
                   store.setAbortController(null);
                   store.addMessage({
-                    messageId: crypto.randomUUID(),
+                    messageId: createId(),
                     senderType: 'SYSTEM_NOTICE',
                     messageType: 'SYSTEM_NOTICE',
                     contentType: 'TEXT',

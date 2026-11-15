@@ -102,7 +102,7 @@ export function EditMemberModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-[#0b1424] border-slate-800 text-slate-100">
+      <DialogContent className="max-w-md border-slate-800 bg-[#0b1424] text-slate-100">
         <DialogHeader>
           <DialogTitle className="text-white">멤버 권한 수정</DialogTitle>
           <DialogDescription className="text-slate-400">
@@ -111,9 +111,9 @@ export function EditMemberModal({
         </DialogHeader>
         <div className="space-y-6 py-4">
           {selectedMember?.projectRole === 'ADMIN' && (
-            <div className="bg-blue-400/10 border border-blue-400/20 rounded-md p-3 flex items-start gap-3">
-              <ShieldAlert className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
-              <p className="text-[12px] text-blue-300 leading-relaxed">
+            <div className="flex items-start gap-3 rounded-md border border-blue-400/20 bg-blue-400/10 p-3">
+              <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-blue-400" />
+              <p className="text-[12px] leading-relaxed text-blue-300">
                 프로젝트 담당자 변경은 시스템 관리자만 가능합니다.
               </p>
             </div>
@@ -121,11 +121,11 @@ export function EditMemberModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-slate-300 uppercase text-[10px] tracking-wider">
+              <Label className="text-[10px] tracking-wider text-slate-300 uppercase">
                 역할 (Role)
               </Label>
               {selectedMember?.projectRole === 'ADMIN' ? (
-                <div className="bg-slate-950 border border-slate-800 text-blue-400 font-bold h-10 rounded-md px-3 flex items-center text-sm">
+                <div className="flex h-10 items-center rounded-md border border-slate-800 bg-slate-950 px-3 text-sm font-bold text-blue-400">
                   ADMIN
                 </div>
               ) : (
@@ -133,10 +133,10 @@ export function EditMemberModal({
                   value={editRole}
                   onValueChange={(v: 'MEMBER' | 'MANAGER' | 'ADMIN') => handleRoleChange(v)}
                 >
-                  <SelectTrigger className="bg-slate-950 border-slate-800 text-white">
+                  <SelectTrigger className="border-slate-800 bg-slate-950 text-white">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-900 border-slate-800 text-white">
+                  <SelectContent className="border-slate-800 bg-slate-900 text-white">
                     <SelectItem value="MEMBER">Member</SelectItem>
                     <SelectItem value="MANAGER">Manager</SelectItem>
                   </SelectContent>
@@ -144,7 +144,7 @@ export function EditMemberModal({
               )}
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-300 uppercase text-[10px] tracking-wider">
+              <Label className="text-[10px] tracking-wider text-slate-300 uppercase">
                 레벨 (Access Level)
               </Label>
               <input
@@ -154,15 +154,15 @@ export function EditMemberModal({
                 value={editRole === 'ADMIN' ? ADMIN_ACCESS_LEVEL : editAccessLevel}
                 disabled={editRole === 'ADMIN' || selectedMember?.projectRole === 'ADMIN'}
                 onChange={(e) => setEditAccessLevel(clampMemberAccessLevel(Number(e.target.value)))}
-                className="bg-slate-950 border-slate-800 text-white h-10 rounded-md px-3 text-sm w-full focus:ring-1 focus:ring-blue-400 outline-none"
+                className="h-10 w-full rounded-md border-slate-800 bg-slate-950 px-3 text-sm text-white outline-none focus:ring-1 focus:ring-blue-400"
               />
               <p className="text-[11px] text-slate-500">Member/Manager/Admin: 1-5</p>
             </div>
           </div>
 
-          <div className="space-y-4 border border-slate-800 rounded-lg p-4 bg-slate-950/30">
-            <Label className="flex items-center gap-2 mb-2 text-blue-400 font-bold text-[11px] uppercase tracking-wider">
-              <ShieldAlert className="w-3.5 h-3.5" /> 도구 권한 세부 설정
+          <div className="space-y-4 rounded-lg border border-slate-800 bg-slate-950/30 p-4">
+            <Label className="mb-2 flex items-center gap-2 text-[11px] font-bold tracking-wider text-blue-400 uppercase">
+              <ShieldAlert className="h-3.5 w-3.5" /> 도구 권한 세부 설정
             </Label>
             <div className="flex items-center justify-between">
               <Label htmlFor="canUse" className="text-slate-300">
@@ -215,7 +215,7 @@ export function EditMemberModal({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-slate-300 uppercase text-[10px] tracking-wider">
+            <Label className="text-[10px] tracking-wider text-slate-300 uppercase">
               멤버 상태 (Status)
             </Label>
             <Select
@@ -223,10 +223,10 @@ export function EditMemberModal({
               onValueChange={(v: 'IN_PROGRESS' | 'COMPLETED') => setEditStatus(v)}
               disabled={selectedMember?.projectRole === 'ADMIN'}
             >
-              <SelectTrigger className="bg-slate-950 border-slate-800 text-white">
+              <SelectTrigger className="border-slate-800 bg-slate-950 text-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-800 text-white">
+              <SelectContent className="border-slate-800 bg-slate-900 text-white">
                 <SelectItem value="IN_PROGRESS">활동 중 (IN_PROGRESS)</SelectItem>
                 <SelectItem value="COMPLETED">활동 완료 (COMPLETED)</SelectItem>
               </SelectContent>
@@ -244,7 +244,7 @@ export function EditMemberModal({
           <Button
             onClick={handleEditMember}
             disabled={isSubmitting}
-            className="bg-blue-400 hover:bg-blue-500 text-[#003a6b] font-bold"
+            className="bg-blue-400 font-bold text-[#003a6b] hover:bg-blue-500"
           >
             {isSubmitting ? '저장 중...' : '변경사항 저장'}
           </Button>

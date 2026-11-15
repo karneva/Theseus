@@ -77,7 +77,7 @@ export function ToolApprovalDetailModal({
         }
       }
     };
-    fetchDetail();
+    void fetchDetail();
 
     return () => {
       isMounted = false;
@@ -95,64 +95,64 @@ export function ToolApprovalDetailModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative w-full max-w-4xl max-h-[90vh] bg-[#0b0e14] border border-slate-800 rounded-xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/50">
+      <div className="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-slate-800 bg-[#0b0e14] shadow-2xl duration-200 animate-in fade-in zoom-in-95">
+        <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900/50 px-6 py-4">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-bold text-slate-100">{approvalTitle}</h2>
-            <span className="px-2 py-1 text-[10px] font-medium uppercase tracking-wider rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">
+            <span className="rounded border border-blue-500/30 bg-blue-500/20 px-2 py-1 text-[10px] font-medium tracking-wider text-blue-400 uppercase">
               {planStatus}
             </span>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-500 hover:text-slate-300 hover:bg-slate-800 rounded-lg transition-colors"
+            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-800 hover:text-slate-300"
           >
-            <X className="w-5 h-5" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+        <div className="scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent flex-1 overflow-y-auto p-6">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20 text-slate-500">
-              <div className="w-8 h-8 border-2 border-slate-600 border-t-blue-500 rounded-full animate-spin mb-4" />
+              <div className="mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-600 border-t-blue-500" />
               상세 정보를 불러오는 중...
             </div>
           ) : (
             <div className="space-y-8">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-800/50">
-                  <div className="flex items-center gap-2 text-slate-500 mb-1">
-                    <FileText className="w-4 h-4" />
-                    <span className="text-xs uppercase tracking-wider">ToolPlan</span>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <div className="rounded-lg border border-slate-800/50 bg-slate-900/50 p-4">
+                  <div className="mb-1 flex items-center gap-2 text-slate-500">
+                    <FileText className="h-4 w-4" />
+                    <span className="text-xs tracking-wider uppercase">ToolPlan</span>
                   </div>
-                  <p className="text-sm text-slate-300 font-mono truncate">
+                  <p className="truncate font-mono text-sm text-slate-300">
                     {approvalItem.toolPlanId ?? '-'}
                   </p>
                 </div>
-                <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-800/50">
-                  <div className="flex items-center gap-2 text-slate-500 mb-1">
-                    <User className="w-4 h-4" />
-                    <span className="text-xs uppercase tracking-wider">Requested By</span>
+                <div className="rounded-lg border border-slate-800/50 bg-slate-900/50 p-4">
+                  <div className="mb-1 flex items-center gap-2 text-slate-500">
+                    <User className="h-4 w-4" />
+                    <span className="text-xs tracking-wider uppercase">Requested By</span>
                   </div>
-                  <p className="text-sm text-slate-300 truncate">
+                  <p className="truncate text-sm text-slate-300">
                     {approvalItem.requestedByUserName}
                   </p>
                 </div>
-                <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-800/50">
-                  <div className="flex items-center gap-2 text-slate-500 mb-1">
-                    <Clock className="w-4 h-4" />
-                    <span className="text-xs uppercase tracking-wider">Requested At</span>
+                <div className="rounded-lg border border-slate-800/50 bg-slate-900/50 p-4">
+                  <div className="mb-1 flex items-center gap-2 text-slate-500">
+                    <Clock className="h-4 w-4" />
+                    <span className="text-xs tracking-wider uppercase">Requested At</span>
                   </div>
-                  <p className="text-sm text-slate-300 truncate">
+                  <p className="truncate text-sm text-slate-300">
                     {new Date(approvalItem.requestedAt).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-800/50">
-                  <div className="flex items-center gap-2 text-slate-500 mb-1">
-                    <GitBranch className="w-4 h-4" />
-                    <span className="text-xs uppercase tracking-wider">Version</span>
+                <div className="rounded-lg border border-slate-800/50 bg-slate-900/50 p-4">
+                  <div className="mb-1 flex items-center gap-2 text-slate-500">
+                    <GitBranch className="h-4 w-4" />
+                    <span className="text-xs tracking-wider uppercase">Version</span>
                   </div>
-                  <p className="text-sm text-slate-300 truncate">
+                  <p className="truncate text-sm text-slate-300">
                     v{approvalItem.planVersion ?? '-'}
                   </p>
                 </div>
@@ -161,26 +161,26 @@ export function ToolApprovalDetailModal({
               {/* Code/Artifact Viewer */}
               {approvalItem.toolPlanId ? (
                 <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <FileText className="w-5 h-5 text-blue-400" />
-                    <h3 className="text-sm font-medium text-slate-300 uppercase tracking-wider">
+                  <div className="mb-3 flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-blue-400" />
+                    <h3 className="text-sm font-medium tracking-wider text-slate-300 uppercase">
                       Tool Plan
                     </h3>
                   </div>
                   {toolPlanDetail ? (
                     <div className="space-y-4">
                       {toolPlanDetail.requestedPrompt && (
-                        <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-800/50">
-                          <div className="text-xs uppercase tracking-wider text-slate-500 mb-2">
+                        <div className="rounded-lg border border-slate-800/50 bg-slate-900/50 p-4">
+                          <div className="mb-2 text-xs tracking-wider text-slate-500 uppercase">
                             Request
                           </div>
-                          <p className="text-sm text-slate-300 whitespace-pre-wrap">
+                          <p className="text-sm whitespace-pre-wrap text-slate-300">
                             {toolPlanDetail.requestedPrompt}
                           </p>
                         </div>
                       )}
-                      <div className="bg-[#1e1e1e] rounded-lg border border-slate-800 overflow-hidden">
-                        <pre className="p-4 max-h-[50vh] overflow-auto text-sm font-mono text-slate-300 whitespace-pre-wrap scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+                      <div className="overflow-hidden rounded-lg border border-slate-800 bg-[#1e1e1e]">
+                        <pre className="scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent max-h-[50vh] overflow-auto p-4 font-mono text-sm whitespace-pre-wrap text-slate-300">
                           <code>
                             {toolPlanDetail.rawMarkdown || 'ToolPlan 원문이 비어 있습니다.'}
                           </code>
@@ -188,11 +188,11 @@ export function ToolApprovalDetailModal({
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-[#1e1e1e] p-6 rounded-lg border border-slate-800 text-center">
-                      <p className="text-slate-400 text-sm mb-2">
+                    <div className="rounded-lg border border-slate-800 bg-[#1e1e1e] p-6 text-center">
+                      <p className="mb-2 text-sm text-slate-400">
                         ToolPlan 상세 정보를 불러올 수 없습니다.
                       </p>
-                      <p className="text-slate-500 text-xs">
+                      <p className="text-xs text-slate-500">
                         승인 요청 응답의 chatSessionId와 toolPlanId를 확인해 주세요.
                       </p>
                     </div>
@@ -200,14 +200,14 @@ export function ToolApprovalDetailModal({
                 </div>
               ) : (
                 <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Code className="w-5 h-5 text-blue-400" />
-                    <h3 className="text-sm font-medium text-slate-300 uppercase tracking-wider">
+                  <div className="mb-3 flex items-center gap-2">
+                    <Code className="h-5 w-5 text-blue-400" />
+                    <h3 className="text-sm font-medium tracking-wider text-slate-300 uppercase">
                       Python Code
                     </h3>
                   </div>
-                  <div className="bg-[#1e1e1e] rounded-lg border border-slate-800 overflow-hidden">
-                    <pre className="p-4 max-h-[50vh] overflow-auto text-sm font-mono text-slate-300 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+                  <div className="overflow-hidden rounded-lg border border-slate-800 bg-[#1e1e1e]">
+                    <pre className="scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent max-h-[50vh] overflow-auto p-4 font-mono text-sm text-slate-300">
                       <code>
                         {toolDetail
                           ? toolDetail.codeSnapshot || '# 파이썬 코드 정보를 불러올 수 없습니다.'
@@ -221,14 +221,14 @@ export function ToolApprovalDetailModal({
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/50 flex justify-between items-center">
+        <div className="flex items-center justify-between border-t border-slate-800 bg-slate-900/50 px-6 py-4">
           <div className="text-xs text-slate-500">
             ToolPlan 내용을 확인한 뒤 승인 또는 반려를 진행하세요.
           </div>
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+              className="rounded px-4 py-2 text-sm font-medium text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-200"
             >
               닫기
             </button>
@@ -236,13 +236,13 @@ export function ToolApprovalDetailModal({
               <>
                 <button
                   onClick={() => onActionClick('REJECT')}
-                  className="px-4 py-2 rounded text-sm font-medium bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors"
+                  className="rounded border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/20"
                 >
                   반려
                 </button>
                 <button
                   onClick={() => onActionClick('APPROVE')}
-                  className="px-4 py-2 rounded text-sm font-medium bg-blue-600 text-white hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/20"
+                  className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-blue-900/20 transition-colors hover:bg-blue-500"
                 >
                   승인
                 </button>

@@ -2,9 +2,9 @@ import { Outlet } from 'react-router-dom';
 
 export default function AuthLayout() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#051424] relative overflow-hidden">
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[#051424]">
       {/* Main content container */}
-      <div className="relative z-10 w-full p-4 flex justify-center">
+      <div className="relative z-10 flex w-full justify-center p-4">
         <Outlet />
       </div>
     </div>

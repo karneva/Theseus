@@ -2,7 +2,6 @@ import { http } from '@/api/http';
 import type { PageResponse } from '@/api/types';
 import { ToolPlanMode } from '@/features/projects/types/chat';
 import type {
-  ChatMessage,
   ChatSession,
   ChatSessionDetailResponse,
   ToolPlanDetailResponse,
@@ -43,14 +42,6 @@ export const chatApi = {
 
   closeSession: async (projectId: string, sessionId: string) => {
     return http.patch<ChatSession>(`/api/v1/projects/${projectId}/sessions/${sessionId}/close`);
-  },
-
-  createMessage: async (projectId: string, sessionId: string, content: string) => {
-    return http.post<ChatMessage>(`/api/v1/projects/${projectId}/sessions/${sessionId}/messages`, {
-      content,
-      messageType: 'CHAT',
-      contentType: 'TEXT',
-    });
   },
 
   requestToolPlanApproval: async (projectId: string, toolPlanId: string) => {

@@ -41,7 +41,7 @@ export function ChatComposer({
   );
 
   return (
-    <div className="px-8 pb-8 pt-4 bg-gradient-to-t from-[#051424] via-[#051424]/90 to-transparent z-10">
+    <div className="z-10 bg-gradient-to-t from-[#051424] via-[#051424]/90 to-transparent px-8 pt-4 pb-8">
       <div className="mb-3 flex gap-2">
         {MODE_OPTIONS.map((option) => (
           <button
@@ -49,10 +49,10 @@ export function ChatComposer({
             type="button"
             disabled={isGenerating || isClosed}
             onClick={() => setMode(option.value)}
-            className={`px-3 py-2 rounded border text-xs font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+            className={`rounded border px-3 py-2 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
               mode === option.value
-                ? 'bg-blue-400 border-blue-400 text-slate-950'
-                : 'bg-[#0d1c2d] border-slate-700 text-slate-400 hover:text-blue-200 hover:border-blue-400/50'
+                ? 'border-blue-400 bg-blue-400 text-slate-950'
+                : 'border-slate-700 bg-[#0d1c2d] text-slate-400 hover:border-blue-400/50 hover:text-blue-200'
             }`}
             title={option.description}
           >
@@ -69,7 +69,7 @@ export function ChatComposer({
             setSelectedRemoteWorkspaceId(value ? Number(value) : null);
           }}
           disabled={isGenerating || isClosed}
-          className="w-full rounded border border-slate-700 bg-[#0d1c2d] px-3 py-2 text-xs font-medium text-slate-300 outline-none transition-colors focus:border-blue-400/60 disabled:opacity-40"
+          className="w-full rounded border border-slate-700 bg-[#0d1c2d] px-3 py-2 text-xs font-medium text-slate-300 transition-colors outline-none focus:border-blue-400/60 disabled:opacity-40"
         >
           <option value="">Remote Workspace 없음</option>
           {remoteWorkspaces.map((workspace) => (
@@ -90,8 +90,8 @@ export function ChatComposer({
       </div>
 
       {isClosed ? (
-        <div className="bg-red-500/5 border border-red-500/20 rounded-lg p-6 flex flex-col items-center justify-center gap-4 shadow-xl backdrop-blur-sm">
-          <div className="flex items-center gap-2 text-red-400 font-medium">
+        <div className="flex flex-col items-center justify-center gap-4 rounded-lg border border-red-500/20 bg-red-500/5 p-6 shadow-xl backdrop-blur-sm">
+          <div className="flex items-center gap-2 font-medium text-red-400">
             <Lock size={18} className="animate-pulse" />
             <span className="text-sm tracking-tight">
               이 세션은 종료되었습니다. 기록만 확인할 수 있습니다.
@@ -99,21 +99,21 @@ export function ChatComposer({
           </div>
           <button
             onClick={onNewSession}
-            className="bg-blue-400 hover:bg-blue-500 text-slate-900 px-8 py-2.5 rounded font-bold transition-all hover:scale-[1.02] active:scale-[0.98] uppercase tracking-widest text-[11px] shadow-[0_0_20px_rgba(96,165,250,0.3)]"
+            className="rounded bg-blue-400 px-8 py-2.5 text-[11px] font-bold tracking-widest text-slate-900 uppercase shadow-[0_0_20px_rgba(96,165,250,0.3)] transition-all hover:scale-[1.02] hover:bg-blue-500 active:scale-[0.98]"
           >
             새 대화 시작하기
           </button>
         </div>
       ) : (
         <div
-          className={`bg-[#0d1c2d] border ${isGenerating ? 'border-slate-600' : 'border-slate-700/50'} rounded-lg p-3 flex items-end shadow-lg shadow-blue-500/5 transition-colors`}
+          className={`border bg-[#0d1c2d] ${isGenerating ? 'border-slate-600' : 'border-slate-700/50'} flex items-end rounded-lg p-3 shadow-lg shadow-blue-500/5 transition-colors`}
         >
           <textarea
             value={input}
             onChange={(e) => onInputChange(e.target.value)}
             onKeyDown={onKeyDown}
             disabled={isGenerating}
-            className="flex-1 bg-transparent border-none outline-none resize-none px-3 py-2 text-sm text-slate-300 placeholder-slate-500 min-h-[40px] max-h-[200px] disabled:opacity-50"
+            className="max-h-[200px] min-h-[40px] flex-1 resize-none border-none bg-transparent px-3 py-2 text-sm text-slate-300 placeholder-slate-500 outline-none disabled:opacity-50"
             rows={1}
             placeholder={
               isGenerating
@@ -128,7 +128,7 @@ export function ChatComposer({
           <button
             onClick={onSubmit}
             disabled={isGenerating || !input.trim()}
-            className="bg-blue-400 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 text-slate-900 px-6 py-2 rounded text-xs font-bold transition-colors ml-4 uppercase tracking-wider"
+            className="ml-4 rounded bg-blue-400 px-6 py-2 text-xs font-bold tracking-wider text-slate-900 uppercase transition-colors hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500"
           >
             {isGenerating ? '처리중' : '보내기'}
           </button>

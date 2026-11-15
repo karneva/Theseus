@@ -50,7 +50,7 @@ export function RemoteWorkspaceManagement({ projectId }: RemoteWorkspaceManageme
         if (!cancelled) setIsLoading(false);
       }
     };
-    load();
+    void load();
     return () => {
       cancelled = true;
     };
@@ -115,7 +115,7 @@ export function RemoteWorkspaceManagement({ projectId }: RemoteWorkspaceManageme
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-      <Card className="bg-slate-900/40 border-slate-800">
+      <Card className="border-slate-800 bg-slate-900/40">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-white">
             <Server className="h-4 w-4 text-blue-400" />
@@ -183,7 +183,7 @@ export function RemoteWorkspaceManagement({ projectId }: RemoteWorkspaceManageme
         </CardContent>
       </Card>
 
-      <Card className="bg-slate-900/40 border-slate-800">
+      <Card className="border-slate-800 bg-slate-900/40">
         <CardHeader>
           <CardTitle className="text-white">등록</CardTitle>
         </CardHeader>
@@ -193,7 +193,7 @@ export function RemoteWorkspaceManagement({ projectId }: RemoteWorkspaceManageme
             <Input
               value={form.name}
               onChange={(event) => setForm({ ...form, name: event.target.value })}
-              className="bg-slate-950/50 border-slate-800 text-slate-200"
+              className="border-slate-800 bg-slate-950/50 text-slate-200"
             />
           </div>
           <div className="grid grid-cols-[minmax(0,1fr)_88px] gap-2">
@@ -202,7 +202,7 @@ export function RemoteWorkspaceManagement({ projectId }: RemoteWorkspaceManageme
               <Input
                 value={form.host}
                 onChange={(event) => setForm({ ...form, host: event.target.value })}
-                className="bg-slate-950/50 border-slate-800 text-slate-200"
+                className="border-slate-800 bg-slate-950/50 text-slate-200"
               />
             </div>
             <div className="space-y-2">
@@ -213,7 +213,7 @@ export function RemoteWorkspaceManagement({ projectId }: RemoteWorkspaceManageme
                 max={65535}
                 value={form.port}
                 onChange={(event) => setForm({ ...form, port: Number(event.target.value) })}
-                className="bg-slate-950/50 border-slate-800 text-slate-200"
+                className="border-slate-800 bg-slate-950/50 text-slate-200"
               />
             </div>
           </div>
@@ -222,7 +222,7 @@ export function RemoteWorkspaceManagement({ projectId }: RemoteWorkspaceManageme
             <Input
               value={form.username}
               onChange={(event) => setForm({ ...form, username: event.target.value })}
-              className="bg-slate-950/50 border-slate-800 text-slate-200"
+              className="border-slate-800 bg-slate-950/50 text-slate-200"
             />
           </div>
           <div className="space-y-2">
@@ -231,7 +231,7 @@ export function RemoteWorkspaceManagement({ projectId }: RemoteWorkspaceManageme
               type="password"
               value={form.password}
               onChange={(event) => setForm({ ...form, password: event.target.value })}
-              className="bg-slate-950/50 border-slate-800 text-slate-200"
+              className="border-slate-800 bg-slate-950/50 text-slate-200"
             />
           </div>
           <div className="space-y-2">
@@ -239,7 +239,7 @@ export function RemoteWorkspaceManagement({ projectId }: RemoteWorkspaceManageme
             <Input
               value={form.privateKeyPath}
               onChange={(event) => setForm({ ...form, privateKeyPath: event.target.value })}
-              className="bg-slate-950/50 border-slate-800 text-slate-200"
+              className="border-slate-800 bg-slate-950/50 text-slate-200"
             />
           </div>
           <div className="space-y-2">
@@ -247,7 +247,7 @@ export function RemoteWorkspaceManagement({ projectId }: RemoteWorkspaceManageme
             <Input
               value={form.basePath}
               onChange={(event) => setForm({ ...form, basePath: event.target.value })}
-              className="bg-slate-950/50 border-slate-800 text-slate-200"
+              className="border-slate-800 bg-slate-950/50 text-slate-200"
             />
           </div>
           <label className="flex items-start gap-3 rounded border border-slate-800 bg-slate-950/40 p-3 text-sm text-slate-300">

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createId } from '@/lib/id';
 import type { KeyboardEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Lock } from 'lucide-react';
@@ -83,7 +84,7 @@ export function ChatArea() {
 
   const appendUserMessage = (content: string) => {
     addMessage({
-      messageId: crypto.randomUUID(),
+      messageId: createId(),
       senderType: 'USER',
       messageType: mode === ToolPlanMode.PLAN ? 'TOOL_PLAN_REQUEST' : 'CHAT',
       contentType: 'TEXT',
@@ -96,7 +97,7 @@ export function ChatArea() {
     messageType: ChatMessage['messageType'] = 'TOOL_PLAN_RESPONSE',
   ) => {
     addMessage({
-      messageId: crypto.randomUUID(),
+      messageId: createId(),
       senderType: 'ASSISTANT',
       messageType,
       contentType: 'MARKDOWN',
@@ -167,23 +168,23 @@ export function ChatArea() {
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      void handleSend();
     }
   };
 
   return (
-    <div className="flex flex-col h-full relative overflow-hidden">
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:40px_40px] opacity-20 pointer-events-none" />
+    <div className="relative flex h-full flex-col overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:40px_40px] opacity-20" />
 
-      <div className="h-14 border-b border-slate-800 bg-[#0b0e14]/60 backdrop-blur flex items-center justify-between px-6 z-20">
+      <div className="z-20 flex h-14 items-center justify-between border-b border-slate-800 bg-[#0b0e14]/60 px-6 backdrop-blur">
         <div className="flex items-center gap-1">
-          <span className="text-base font-bold text-blue-400 uppercase tracking-wider">
+          <span className="text-base font-bold tracking-wider text-blue-400 uppercase">
             {currentProject?.projectName || 'Loading...'}
           </span>
           <span className="mx-1.5 text-slate-600">/</span>
           <span className="text-sm font-medium text-slate-400">{title || '대화 세션'}</span>
           {isClosed && (
-            <div className="ml-3 flex items-center gap-1.5 px-2 py-0.5 bg-red-500/10 border border-red-500/20 rounded text-[10px] text-red-400 font-bold uppercase tracking-wider">
+            <div className="ml-3 flex items-center gap-1.5 rounded border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-[10px] font-bold tracking-wider text-red-400 uppercase">
               <Lock size={10} />
               Closed
             </div>
@@ -194,7 +195,7 @@ export function ChatArea() {
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto p-8 z-10 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent"
+        className="scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent z-10 flex-1 overflow-y-auto p-8"
       >
         {messages.length > 0 ? (
           <div className="space-y-6">
@@ -231,7 +232,7 @@ export function ChatArea() {
             <div ref={messagesEndRef} />
           </div>
         ) : (
-          <div className="text-slate-500 flex justify-center items-center h-full">
+          <div className="flex h-full items-center justify-center text-slate-500">
             모드를 선택하고 대화를 시작하세요.
           </div>
         )}
