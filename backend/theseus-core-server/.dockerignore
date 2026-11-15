@@ -22,6 +22,7 @@ docs/
 scratch/
 tests/
 scripts/
+benchmarks/
 theseus_cli/
 theseus_cli.py
 README.md
