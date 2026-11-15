@@ -29,6 +29,24 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * Core에 보낸 PLAN 생성/재생성 또는 Tool 빌드 요청 1건의 실행 기록입니다. runId가 Kafka key이자 SSE 구독 키입니다.
+ *
+ * <p>상태 전이:
+ * <pre>
+ * REQUESTED --(첫 progress/chunk 이벤트)--> GENERATING
+ * REQUESTED|GENERATING --completed--> COMPLETED
+ * REQUESTED|GENERATING --skipped----> SKIPPED   (PLAN이 필요 없다고 Core가 판단)
+ * REQUESTED|GENERATING --failed-----> FAILED    (Core 실패 이벤트, Kafka 발행 실패, 타임아웃 스케줄러)
+ * </pre>
+ * COMPLETED/SKIPPED/FAILED는 종료 상태라 이후 상태 변경 메서드는 TOOL_PLAN_RUN_ALREADY_FINISHED를 던집니다.
+ * 이벤트 서비스는 종료된 Run에 늦게 도착한 이벤트를 예외 없이 건너뜁니다.
+ *
+ * <p>중복 제거: Kafka는 at-least-once라 같은 이벤트가 다시 올 수 있습니다. Core는 runId마다 증가하는
+ * eventSequence를 붙이고, 처리한 마지막 값을 {@code lastEventSequence}에 저장합니다.
+ * {@link #hasProcessedEventSequence(Long)}가 true인 이벤트(같거나 작은 sequence)는 다시 처리하지 않습니다.
+ * sequence가 없는 이벤트는 중복 검사 없이 처리합니다.
+ */
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
@@ -233,6 +251,9 @@ public class ToolPlanRun {
 		this.historySnapshotJson = historySnapshotJson;
 	}
 
+	/**
+	 * 마지막으로 처리한 이벤트를 기록합니다. sequence가 없는 이벤트는 기존 lastEventSequence를 유지합니다.
+	 */
 	public void updateLastEvent(String eventType, Long eventSequence) {
 		this.lastEventType = eventType;
 		if (eventSequence != null) {
@@ -240,6 +261,9 @@ public class ToolPlanRun {
 		}
 	}
 
+	/**
+	 * 이미 처리한 sequence(마지막 값 이하)인지 판단합니다. 재전송·중복 이벤트를 건너뛰는 기준입니다.
+	 */
 	public boolean hasProcessedEventSequence(Long eventSequence) {
 		return eventSequence != null && lastEventSequence != null && eventSequence <= lastEventSequence;
 	}

@@ -10,6 +10,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+/**
+ * runId별 최신 진행 상태를 Redis({@code tool:plan:<runId>:state})에 TTL(state-ttl-minutes)과 함께 보관합니다.
+ *
+ * <p>재전송 규칙: SSE는 연결이 끊기면 그 사이 이벤트를 받지 못하므로, 화면이 다시 구독하면
+ * ToolPlanRunEventStreamService가 이 저장소의 최신 상태 한 건을 replay 이벤트로 먼저 보냅니다.
+ * progress는 기존 누적 content를 유지하고, chunk는 content를 이어 붙여 저장하므로 재구독 시에도 지금까지의
+ * 스트리밍 내용이 복원됩니다. completed/skipped/failed는 최종 상태로 통째로 덮어씁니다.
+ * Redis는 화면 복원용 캐시이며 진실의 원천은 DB(ToolPlanRun)입니다.
+ */
 @RequiredArgsConstructor
 @Component
 public class ToolPlanRunStateStore {

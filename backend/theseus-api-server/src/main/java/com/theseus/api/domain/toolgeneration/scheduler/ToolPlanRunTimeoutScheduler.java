@@ -29,6 +29,7 @@ public class ToolPlanRunTimeoutScheduler {
 
 		int failedCount = toolPlanRunRecoveryService.failTimedOutRuns(
 			properties.runTimeout(),
+			properties.requestedRunTimeout(),
 			properties.runTimeoutBatchSize()
 		);
 		if (failedCount > 0) {

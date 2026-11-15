@@ -25,6 +25,8 @@ public class ToolPlanRunEventStreamService {
 
 	/**
 	 * ToolPlanRun 진행 상태 SSE 구독을 등록하고 Redis 최신 상태가 있으면 즉시 전송합니다.
+	 * 순서는 등록 -> connected 이벤트 -> Redis 최신 상태 replay이며, 등록을 먼저 해 replay 직후 도착한
+	 * 실시간 이벤트를 놓치지 않습니다. 대신 같은 상태가 replay와 실시간으로 두 번 올 수 있으므로 소비 측은 최신 상태로 덮어쓰는 방식(멱등)으로 처리해야 합니다.
 	 */
 	public SseEmitter subscribe(
 		AuthenticatedUser currentUser,

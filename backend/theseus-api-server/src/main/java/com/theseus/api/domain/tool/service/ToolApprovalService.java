@@ -42,6 +42,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import com.theseus.api.domain.toolgeneration.service.ToolPlanRunRecoveryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -68,6 +69,7 @@ public class ToolApprovalService {
 	private final ChatMessageService chatMessageService;
 	private final ApplicationEventPublisher eventPublisher;
 	private final ObjectMapper objectMapper;
+	private final ToolPlanRunRecoveryService toolPlanRunRecoveryService;
 
 	/**
 	 * 승인 권한을 가진 프로젝트 멤버가 Tool 승인 요청 목록을 조회합니다.
@@ -221,6 +223,7 @@ public class ToolApprovalService {
 
 	/**
 	 * Tool build Kafka 발행 실패를 별도 트랜잭션으로 기록합니다.
+	 * 공통 실패 경로(failRun)를 거쳐 APPROVED에 머물던 PlanGroup도 FAILED로 정리하고 화면에 실패를 알립니다.
 	 */
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void markBuildRunPublishFailed(String runId, Throwable exception) {
@@ -230,10 +233,10 @@ public class ToolApprovalService {
 					return;
 				}
 
-				toolPlanRun.fail(
+				toolPlanRunRecoveryService.failRun(
+					toolPlanRun,
 					ErrorCode.TOOL_BUILD_KAFKA_PUBLISH_FAILED.getCode(),
-					resolveErrorMessage(exception),
-					LocalDateTime.now()
+					resolveErrorMessage(exception)
 				);
 			},
 			() ->

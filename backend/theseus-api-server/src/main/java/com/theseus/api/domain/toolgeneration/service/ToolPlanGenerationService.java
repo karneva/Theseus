@@ -78,6 +78,7 @@ public class ToolPlanGenerationService {
 	private final ChatMessageService chatMessageService;
 	private final ApplicationEventPublisher eventPublisher;
 	private final ObjectMapper objectMapper;
+	private final ToolPlanRunRecoveryService toolPlanRunRecoveryService;
 
 	/**
 	 * PLAN 생성 요청을 ToolPlanRun으로 기록하고 Kafka 요청 이벤트를 발행합니다.
@@ -225,6 +226,7 @@ public class ToolPlanGenerationService {
 
 	/**
 	 * Kafka 발행 실패를 별도 트랜잭션으로 ToolPlanRun에 기록합니다.
+	 * 공통 실패 경로(failRun)를 거쳐 System Notice와 SSE failed 이벤트까지 보내 화면이 즉시 실패를 알게 합니다.
 	 */
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void markRunPublishFailed(String runId, Throwable exception) {
@@ -234,10 +236,10 @@ public class ToolPlanGenerationService {
 					return;
 				}
 
-				toolPlanRun.fail(
+				toolPlanRunRecoveryService.failRun(
+					toolPlanRun,
 					ErrorCode.TOOL_PLAN_KAFKA_PUBLISH_FAILED.getCode(),
-					resolveErrorMessage(exception),
-					LocalDateTime.now()
+					resolveErrorMessage(exception)
 				);
 			},
 			() ->

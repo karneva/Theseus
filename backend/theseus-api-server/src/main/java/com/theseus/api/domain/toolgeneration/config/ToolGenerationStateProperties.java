@@ -8,9 +8,14 @@ public class ToolGenerationStateProperties {
 
 	private long stateTtlMinutes = 30;
 	private long sseTimeoutMillis = 1800000;
+	// GENERATING(Core가 처리를 시작함) Run의 제한 시간입니다. 마지막 상태 변경(updatedAt)부터 잽니다.
 	private long runTimeoutMinutes = 30;
+	// REQUESTED Run의 제한 시간입니다. Core는 요청을 한 번에 하나씩 처리하므로 대기열에 오래 머물 수 있어
+	// GENERATING보다 길게 둡니다. 너무 짧으면 Core가 나중에 처리할 Run을 API가 먼저 실패 처리합니다.
+	private long requestedRunTimeoutMinutes = 180;
 	private long runTimeoutCheckDelayMillis = 60000;
-	private boolean runTimeoutSchedulerEnabled = false;
+	// Kafka 결과 이벤트가 유실되면 Run이 REQUESTED/GENERATING에 멈추므로 타임아웃 복구는 기본으로 켭니다.
+	private boolean runTimeoutSchedulerEnabled = true;
 	private int runTimeoutBatchSize = 20;
 
 	public ToolGenerationStateProperties() {}
@@ -30,6 +35,10 @@ public class ToolGenerationStateProperties {
 
 	public Duration runTimeout() {
 		return Duration.ofMinutes(runTimeoutMinutes);
+	}
+
+	public Duration requestedRunTimeout() {
+		return Duration.ofMinutes(requestedRunTimeoutMinutes);
 	}
 
 	public long getStateTtlMinutes() {
@@ -54,6 +63,14 @@ public class ToolGenerationStateProperties {
 
 	public void setRunTimeoutMinutes(long runTimeoutMinutes) {
 		this.runTimeoutMinutes = runTimeoutMinutes;
+	}
+
+	public long getRequestedRunTimeoutMinutes() {
+		return requestedRunTimeoutMinutes;
+	}
+
+	public void setRequestedRunTimeoutMinutes(long requestedRunTimeoutMinutes) {
+		this.requestedRunTimeoutMinutes = requestedRunTimeoutMinutes;
 	}
 
 	public long getRunTimeoutCheckDelayMillis() {

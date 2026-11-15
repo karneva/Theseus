@@ -327,17 +327,18 @@ class ToolRetriever:
     def _get_index_lock(self) -> asyncio.Lock:
         """이벤트 루프 컨텍스트 안에서 Lock을 지연 초기화합니다.
 
-        asyncio.Lock은 생성 시점의 이벤트 루프에 바인딩됩니다.
-        루프가 바뀌면(테스트 환경 등) 기존 락을 버리고 새로 생성합니다.
+        asyncio.Lock은 처음 경합(대기)할 때 그 시점의 이벤트 루프에 바인딩되고, 그 전에는 `_loop`가 None입니다.
+        다른 루프에 바인딩된 락일 때만(테스트 환경 등) 버리고 새로 만듭니다.
+        아직 바인딩되지 않은 락까지 새로 만들면 호출마다 다른 락이 되어 동시 첫 호출이 모델을 중복 로드합니다.
         """
         try:
             current_loop = asyncio.get_running_loop()
         except RuntimeError:
             current_loop = None
 
+        bound_loop = getattr(self._index_lock, "_loop", None)
         if self._index_lock is None or (
-            current_loop is not None
-            and getattr(self._index_lock, "_loop", None) is not current_loop
+            current_loop is not None and bound_loop is not None and bound_loop is not current_loop
         ):
             self._index_lock = asyncio.Lock()
         return self._index_lock
@@ -458,7 +459,10 @@ class ToolRetriever:
                 len(current_tools),
             )
 
-            self._load_model()
+            # 첫 로드는 torch import, 모델 다운로드(HF_HOME 캐시가 비었을 때), 가중치 로드로 수십 초가 걸립니다.
+            # 이벤트 루프에서 바로 돌리면 그동안 Kafka consumer heartbeat, /health, 다른 SSE 스트림이 모두 멈추므로
+            # encode와 마찬가지로 스레드에서 실행합니다. 인덱스 락 안이라 중복 로드는 없습니다.
+            await asyncio.to_thread(self._load_model)
 
             texts: List[str] = []
             names: List[str] = []

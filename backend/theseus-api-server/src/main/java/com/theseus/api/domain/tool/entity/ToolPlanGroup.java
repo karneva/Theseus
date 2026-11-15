@@ -27,6 +27,22 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 한 채팅 세션에서 하나의 Tool을 만들기 위해 이어지는 PLAN 버전들과 승인·빌드 결과를 묶는 단위입니다.
+ *
+ * <p>상태 전이:
+ * <pre>
+ * PLANNING  --PLAN 완료(markReview)------------> REVIEW
+ * REVIEW    --재생성 PLAN 완료(markReview)-------> REVIEW   (latestToolPlan 교체)
+ * REVIEW    --승인 요청(markPending)-------------> PENDING
+ * PENDING   --승인(approve)---------------------> APPROVED --빌드 시작(startBuilding)--> BUILDING
+ * BUILDING  --빌드 완료(completeBuild)-----------> BUILT
+ * PENDING   --반려(reject)----------------------> REJECTED --재생성 PLAN 완료--> REVIEW
+ * PLANNING|REVIEW|PENDING|REJECTED --cancel----> CANCELLED
+ * BUILT/CANCELLED/FAILED를 제외한 상태 --fail----> FAILED   (빌드 실패, 빌드 Run 타임아웃)
+ * </pre>
+ * BUILT, CANCELLED, FAILED가 종료 상태이며 허용되지 않은 전이는 TOOL_PLAN_STATUS_TRANSITION_INVALID를 던집니다.
+ */
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(

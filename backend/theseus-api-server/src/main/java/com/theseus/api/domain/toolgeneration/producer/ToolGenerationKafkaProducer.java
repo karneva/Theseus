@@ -9,15 +9,14 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
 
+/**
+ * PLAN 생성과 Tool 빌드 요청을 작업별 Kafka 토픽으로 비동기 발행합니다.
+ * runId를 key로 사용하므로 동일 작업의 메시지는 같은 파티션에서 순서를 유지합니다.
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class ToolGenerationKafkaProducer {
-
-	/**
-	 * PLAN 생성과 Tool 빌드 요청을 작업별 Kafka 토픽으로 비동기 발행합니다.
-	 * runId를 key로 사용하므로 동일 작업의 메시지는 같은 파티션에서 순서를 유지합니다.
-	 */
 
 	private final KafkaTemplate<String, Object> kafkaTemplate;
 	private final KafkaTopicProperties kafkaTopicProperties;

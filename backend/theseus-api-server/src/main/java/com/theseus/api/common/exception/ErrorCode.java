@@ -20,6 +20,12 @@ public enum ErrorCode {
 		"지원하지 않는 HTTP 메서드입니다."
 	),
 	HANDLE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "COMMON-004", "접근 권한이 없습니다."),
+	RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON-005", "요청한 리소스를 찾을 수 없습니다."),
+	DATA_INTEGRITY_CONFLICT(
+		HttpStatus.CONFLICT,
+		"COMMON-006",
+		"다른 요청과 충돌했습니다. 잠시 후 다시 시도해 주세요."
+	),
 
 	// Auth
 	UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AUTH-001", "인증되지 않은 사용자입니다."),
@@ -27,6 +33,7 @@ public enum ErrorCode {
 	INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-003", "유효하지 않은 Refresh Token입니다."),
 	INTERNAL_API_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AUTH-004", "내부 API 인증에 실패했습니다."),
 	INVALID_TOKEN_TYPE(HttpStatus.UNAUTHORIZED, "AUTH-005", "지원하지 않는 토큰 타입입니다."),
+	INACTIVE_USER(HttpStatus.UNAUTHORIZED, "AUTH-006", "비활성화된 사용자입니다."),
 
 	// User
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER-001", "존재하지 않는 사용자입니다."),
@@ -144,6 +151,7 @@ public enum ErrorCode {
 	TOOL_ACCESS_LEVEL_REQUIRED(HttpStatus.FORBIDDEN, "TOOL-005", "Tool 접근 레벨이 부족합니다."),
 	TOOL_CREATE_PERMISSION_REQUIRED(HttpStatus.FORBIDDEN, "TOOL-006", "Tool 생성 권한이 필요합니다."),
 	TOOL_UPDATE_PERMISSION_REQUIRED(HttpStatus.FORBIDDEN, "TOOL-007", "Tool 수정 권한이 필요합니다."),
+	TOOL_DELETE_PERMISSION_REQUIRED(HttpStatus.FORBIDDEN, "TOOL-014", "Tool 삭제 권한이 필요합니다."),
 	DUPLICATE_TOOL_FILE_NAME(HttpStatus.CONFLICT, "TOOL-008", "이미 존재하는 Tool 파일명입니다."),
 	TOOL_REGENERATION_STATUS_REQUIRED(
 		HttpStatus.CONFLICT,
@@ -276,7 +284,7 @@ public enum ErrorCode {
 		"ToolPlan payload가 유효하지 않습니다."
 	),
 
-	TOOL_PLAN_RUN_NOT_FOUND(HttpStatus.NOT_FOUND, "TPLN-013", "ToolPlanRun??李얠쓣 ???놁뒿?덈떎."),
+	TOOL_PLAN_RUN_NOT_FOUND(HttpStatus.NOT_FOUND, "TPLN-013", "ToolPlanRun을 찾을 수 없습니다."),
 
 	// ToolBuild
 	TOOL_BUILD_EVENT_INVALID(
