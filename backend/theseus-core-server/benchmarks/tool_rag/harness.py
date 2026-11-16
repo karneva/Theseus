@@ -313,9 +313,16 @@ def _git_commit():
             text=True,
             timeout=10,
         ).stdout.strip()
-        return {"commit": sha or None, "engine_src_dirty": bool(dirty)}
+        if not sha:
+            raise RuntimeError("git 정보 없음")
+        return {"commit": sha, "engine_src_dirty": bool(dirty)}
     except Exception:
-        return {"commit": None, "engine_src_dirty": None}
+        # 컨테이너처럼 .git이 없는 곳: 실행자가 소스 커밋과 이미지를 환경변수로 넘깁니다.
+        return {
+            "commit": os.getenv("THESEUS_BENCH_SOURCE_COMMIT") or None,
+            "engine_src_dirty": None,
+            "image": os.getenv("THESEUS_BENCH_IMAGE") or None,
+        }
 
 
 def _pin_runtime(retriever, threads: int) -> int | None:

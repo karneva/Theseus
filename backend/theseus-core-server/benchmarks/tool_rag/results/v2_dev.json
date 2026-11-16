@@ -16,12 +16,12 @@
     "none_recall": 0.7222222222222222,
     "none_f1": 0.7428571428571428,
     "set_recall_delivered": 0.9700374531835205,
-    "avg_selected_schema_tokens": 1618.7943925233644,
-    "p95_selected_schema_tokens": 1822.7,
-    "warm_p50_ms": 6.570999976247549,
-    "warm_p95_ms": 12.570899969432503,
-    "cold_load_s": 0.6689145000418648,
-    "rss_delta_mb": 187.39453125
+    "avg_selected_schema_tokens": 1761.6542056074766,
+    "p95_selected_schema_tokens": 1975.6999999999998,
+    "warm_p50_ms": 5.198300001211464,
+    "warm_p95_ms": 7.653700013179332,
+    "cold_load_s": 0.7104300999781117,
+    "rss_delta_mb": 187.06640625
   },
   "meta": {
     "variant": "v2",
@@ -82,7 +82,7 @@
     },
     "feedback_log": "disabled (THESEUS_DATA_DIR -> 빈 임시 디렉터리)",
     "hf_offline": "1",
-    "commit": "6739df9b1c5a621202dcaf58253d74876b002388",
+    "commit": "18c26bb412b0ab18970df183b2a5cfa8d94582c9",
     "engine_src_dirty": false,
     "command": "python -m benchmarks.tool_rag.run --variant v2 --split dev --json benchmarks/tool_rag/results/v2_dev.json"
   },
@@ -203,11 +203,11 @@
     "set_size": {
       "n": 107,
       "min": 10.0,
-      "p5": 10.0,
-      "p50": 12.0,
-      "mean": 11.74766355140187,
-      "p95": 14.0,
-      "max": 15.0
+      "p5": 11.0,
+      "p50": 13.0,
+      "mean": 12.607476635514018,
+      "p95": 15.0,
+      "max": 16.0
     },
     "set_recall_by_lang": {
       "ko": 0.9623655913978494,
@@ -233,44 +233,44 @@
     "essentials_only": 1697,
     "delivered": {
       "n": 107,
-      "min": 1388.0,
-      "p5": 1451.3,
-      "p50": 1614.0,
-      "mean": 1618.7943925233644,
-      "p95": 1822.7,
-      "max": 1961.0
+      "min": 1462.0,
+      "p5": 1570.3,
+      "p50": 1736.0,
+      "mean": 1761.6542056074766,
+      "p95": 1975.6999999999998,
+      "max": 2109.0
     },
     "selected": {
       "n": 107,
-      "min": 1388.0,
-      "p5": 1451.3,
-      "p50": 1614.0,
-      "mean": 1618.7943925233644,
-      "p95": 1822.7,
-      "max": 1961.0
+      "min": 1462.0,
+      "p5": 1570.3,
+      "p50": 1736.0,
+      "mean": 1761.6542056074766,
+      "p95": 1975.6999999999998,
+      "max": 2109.0
     },
-    "delivered_mean_saving_vs_all": 0.6956009040008717
+    "delivered_mean_saving_vs_all": 0.6687374566364279
   },
   "latency": {
     "timed_call": "select",
     "passes": 3,
     "warm_query_ms": {
       "n": 321,
-      "min": 3.2338000019080937,
-      "p5": 4.426600004080683,
-      "p50": 6.570999976247549,
-      "mean": 7.294314329017743,
-      "p95": 12.570899969432503,
-      "max": 25.32949997112155
+      "min": 2.8332999791018665,
+      "p5": 3.4992999862879515,
+      "p50": 5.198300001211464,
+      "mean": 5.366013084706557,
+      "p95": 7.653700013179332,
+      "max": 13.882100000046194
     }
   },
   "resources": {
-    "cold_load_s": 0.6689145000418648,
-    "index_build_ms": 1147.1621000091545,
-    "rss_before_load_mb": 117.5,
-    "rss_after_load_mb": 304.89453125,
-    "rss_delta_mb": 187.39453125,
-    "rss_after_eval_mb": 333.3671875,
+    "cold_load_s": 0.7104300999781117,
+    "index_build_ms": 1009.3767000362277,
+    "rss_before_load_mb": 116.05859375,
+    "rss_after_load_mb": 303.125,
+    "rss_delta_mb": 187.06640625,
+    "rss_after_eval_mb": 333.10546875,
     "torch_threads": null
   },
   "hubness_top3_counts": {
@@ -341,7 +341,9 @@
         "ask_user",
         "tool_search",
         "enter_worktree",
+        "lsp",
         "search_knowledge_base",
+        "ingest_document",
         "memory_list",
         "skill_list",
         "list_mcp_resources"
@@ -400,8 +402,9 @@
         "grep",
         "bash",
         "ask_user",
-        "skill_list",
         "tool_search",
+        "skill_list",
+        "lsp",
         "search_knowledge_base",
         "memory_list"
       ],
@@ -459,6 +462,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "memory_write",
         "enter_worktree",
         "todo_write",
@@ -519,9 +523,9 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "ingest_document",
         "todo_write",
-        "tool_search",
         "task_create",
         "list_mcp_resources"
       ],
@@ -579,6 +583,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "lsp",
         "web_search",
         "skill_read",
@@ -638,8 +643,10 @@
         "grep",
         "bash",
         "ask_user",
-        "web_fetch",
         "tool_search",
+        "web_fetch",
+        "lsp",
+        "skill_save",
         "task_create"
       ],
       "rag_failed": false,
@@ -696,6 +703,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "exit_worktree",
         "enter_worktree",
         "task_create",
@@ -755,6 +763,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "enter_worktree",
         "exit_worktree",
         "task_get",
@@ -815,9 +824,9 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "ingest_document",
         "todo_write",
-        "tool_search",
         "web_fetch"
       ],
       "rag_failed": false,
@@ -874,10 +883,10 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "agent",
         "lsp",
-        "web_fetch",
-        "tool_search"
+        "web_fetch"
       ],
       "rag_failed": false,
       "none_pred": true
@@ -936,6 +945,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "task_create",
         "list_mcp_resources",
         "read_mcp_resource",
@@ -998,11 +1008,14 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "task_output",
         "task_create",
         "skill_list",
         "skill_read",
-        "task_stop"
+        "task_stop",
+        "task_list",
+        "task_get"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -1060,6 +1073,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "task_get",
         "task_create",
         "web_fetch",
@@ -1122,9 +1136,10 @@
         "grep",
         "bash",
         "ask_user",
-        "lsp",
         "tool_search",
+        "lsp",
         "web_search",
+        "deep_research",
         "memory_list"
       ],
       "rag_failed": false,
@@ -1184,6 +1199,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "lsp",
         "task_create",
         "skill_read",
@@ -1251,9 +1267,9 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "web_search",
         "web_fetch",
-        "tool_search",
         "deep_research",
         "list_mcp_resources"
       ],
@@ -1315,6 +1331,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "deep_research",
         "skill_save",
         "ingest_document",
@@ -1375,6 +1392,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "agent",
         "task_create",
         "task_get",
@@ -1438,6 +1456,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "ingest_document",
         "skill_read",
         "skill_save",
@@ -1501,6 +1520,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "skill_read",
         "skill_save",
         "ingest_document",
@@ -1565,9 +1585,11 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "skill_list",
         "brief",
         "skill_read",
+        "task_create",
         "task_list"
       ],
       "rag_failed": false,
@@ -1626,6 +1648,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "enter_worktree",
         "exit_worktree",
         "task_create",
@@ -1689,6 +1712,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "exit_worktree",
         "enter_worktree",
         "skill_save",
@@ -1750,12 +1774,14 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "memory_read",
         "memory_write",
         "memory_list",
         "brief",
         "skill_read",
-        "skill_list"
+        "skill_list",
+        "task_stop"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -1813,6 +1839,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "memory_read",
         "memory_write",
         "brief",
@@ -1875,9 +1902,9 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "list_mcp_resources",
         "read_mcp_resource",
-        "tool_search",
         "ingest_document",
         "task_create",
         "skill_list"
@@ -1938,10 +1965,11 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "custom_tool_read_source",
         "custom_tool_update_source",
-        "tool_search",
         "web_fetch",
+        "brief",
         "memory_list"
       ],
       "rag_failed": false,
@@ -1998,6 +2026,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "memory_list",
         "memory_write",
         "memory_read"
@@ -2060,7 +2089,8 @@
         "ask_user",
         "tool_search",
         "web_search",
-        "web_fetch"
+        "web_fetch",
+        "search_knowledge_base"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -2116,10 +2146,10 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "task_output",
         "exit_worktree",
-        "enter_worktree",
-        "tool_search"
+        "enter_worktree"
       ],
       "rag_failed": false,
       "none_pred": true
@@ -2175,6 +2205,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "lsp",
         "web_search",
         "web_fetch",
@@ -2237,9 +2268,9 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "web_search",
         "lsp",
-        "tool_search",
         "search_knowledge_base",
         "exit_worktree"
       ],
@@ -2301,6 +2332,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "deep_research",
         "brief",
         "exit_worktree",
@@ -2364,6 +2396,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "agent",
         "memory_list",
         "memory_write",
@@ -2426,12 +2459,13 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "lsp",
         "skill_list",
-        "tool_search",
         "ingest_document",
         "skill_read",
-        "task_get"
+        "task_get",
+        "task_list"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -2489,10 +2523,12 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "todo_write",
         "custom_tool_update_source",
         "task_list",
         "task_get",
+        "task_output",
         "skill_list",
         "exit_worktree"
       ],
@@ -2551,6 +2587,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "lsp",
         "brief",
         "skill_read",
@@ -2617,10 +2654,10 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "ingest_document",
         "skill_save",
-        "memory_write",
-        "tool_search"
+        "memory_write"
       ],
       "rag_failed": false,
       "none_pred": true
@@ -2682,6 +2719,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "search_knowledge_base",
         "brief",
         "task_stop",
@@ -2745,6 +2783,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "task_output",
         "skill_list",
         "skill_read",
@@ -2808,6 +2847,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "lsp",
         "web_fetch",
         "web_search",
@@ -2871,6 +2911,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "web_search",
         "enter_worktree",
         "custom_tool_read_source"
@@ -2930,6 +2971,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "lsp",
         "search_knowledge_base",
         "web_search",
@@ -2996,6 +3038,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "exit_worktree",
         "enter_worktree",
         "skill_save",
@@ -3060,6 +3103,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "ingest_document",
         "search_knowledge_base",
         "skill_save",
@@ -3124,6 +3168,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "memory_read",
         "memory_list",
         "memory_write",
@@ -3184,6 +3229,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "skill_read",
         "custom_tool_update_source",
         "enter_worktree",
@@ -3250,6 +3296,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "web_search",
         "deep_research",
         "skill_read"
@@ -3311,6 +3358,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "search_knowledge_base",
         "memory_write",
         "ingest_document",
@@ -3371,6 +3419,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "enter_worktree",
         "web_fetch",
         "memory_read"
@@ -3433,9 +3482,11 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "web_fetch",
         "lsp",
         "read_mcp_resource",
+        "ingest_document",
         "list_mcp_resources"
       ],
       "rag_failed": false,
@@ -3495,6 +3546,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "task_create",
         "todo_write",
         "brief",
@@ -3558,6 +3610,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "todo_write",
         "skill_read",
         "ingest_document",
@@ -3622,6 +3675,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "memory_list",
         "memory_read",
         "brief",
@@ -3686,6 +3740,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "brief",
         "enter_worktree",
         "exit_worktree",
@@ -3750,6 +3805,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "brief",
         "memory_write",
         "memory_list",
@@ -3811,6 +3867,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "memory_list",
         "memory_read",
         "memory_write",
@@ -3874,6 +3931,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "search_knowledge_base",
         "ingest_document",
         "skill_save",
@@ -3943,10 +4001,12 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "lsp",
         "web_fetch",
         "web_search",
-        "exit_worktree"
+        "exit_worktree",
+        "task_stop"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -4006,10 +4066,11 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "lsp",
         "web_search",
-        "tool_search",
-        "search_knowledge_base"
+        "search_knowledge_base",
+        "web_fetch"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -4069,6 +4130,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "task_stop",
         "task_output",
         "task_create",
@@ -4136,6 +4198,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "ingest_document",
         "search_knowledge_base",
         "brief",
@@ -4201,9 +4264,9 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "web_search",
-        "web_fetch",
-        "tool_search"
+        "web_fetch"
       ],
       "rag_failed": false,
       "none_pred": true
@@ -4262,10 +4325,10 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "skill_list",
         "task_list",
-        "memory_list",
-        "tool_search"
+        "memory_list"
       ],
       "rag_failed": false,
       "none_pred": true
@@ -4324,6 +4387,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "enter_worktree",
         "task_create",
         "web_fetch",
@@ -4386,6 +4450,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "web_search",
         "search_knowledge_base",
         "web_fetch",
@@ -4449,10 +4514,10 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "lsp",
         "skill_read",
-        "task_create",
-        "tool_search"
+        "task_create"
       ],
       "rag_failed": false,
       "none_pred": true
@@ -4511,10 +4576,10 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "enter_worktree",
         "lsp",
-        "web_fetch",
-        "tool_search"
+        "web_fetch"
       ],
       "rag_failed": false,
       "none_pred": true
@@ -4573,10 +4638,10 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "web_fetch",
         "web_search",
-        "search_knowledge_base",
-        "tool_search"
+        "search_knowledge_base"
       ],
       "rag_failed": false,
       "none_pred": true
@@ -4635,10 +4700,10 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "brief",
         "web_fetch",
-        "memory_write",
-        "tool_search"
+        "memory_write"
       ],
       "rag_failed": false,
       "none_pred": true
@@ -4697,6 +4762,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "lsp",
         "skill_read",
         "web_fetch",
@@ -4760,10 +4826,10 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "web_fetch",
         "ingest_document",
-        "task_create",
-        "tool_search"
+        "task_create"
       ],
       "rag_failed": false,
       "none_pred": true
@@ -4822,10 +4888,10 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "ingest_document",
         "task_create",
-        "skill_save",
-        "tool_search"
+        "skill_save"
       ],
       "rag_failed": false,
       "none_pred": true
@@ -4884,6 +4950,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "lsp",
         "memory_write",
         "task_create",
@@ -4947,10 +5014,10 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "task_list",
         "task_create",
-        "todo_write",
-        "tool_search"
+        "todo_write"
       ],
       "rag_failed": false,
       "none_pred": true
@@ -5006,6 +5073,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "read_mcp_resource",
         "enter_worktree",
         "ingest_document",
@@ -5065,6 +5133,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "memory_write",
         "memory_read",
         "memory_list",
@@ -5124,6 +5193,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "todo_write",
         "skill_save",
         "search_knowledge_base",
@@ -5184,10 +5254,11 @@
         "grep",
         "bash",
         "ask_user",
-        "web_fetch",
         "tool_search",
+        "web_fetch",
         "read_mcp_resource",
         "list_mcp_resources",
+        "deep_research",
         "skill_read"
       ],
       "rag_failed": false,
@@ -5248,10 +5319,10 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "task_stop",
         "task_list",
-        "task_get",
-        "tool_search"
+        "task_get"
       ],
       "rag_failed": false,
       "none_pred": true
@@ -5311,6 +5382,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "task_create",
         "task_stop",
         "task_get",
@@ -5374,9 +5446,9 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "brief",
         "lsp",
-        "tool_search",
         "task_get",
         "task_list",
         "task_stop"
@@ -5437,6 +5509,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "web_search",
         "custom_tool_update_source",
         "exit_worktree"
@@ -5495,6 +5568,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "brief",
         "todo_write",
         "task_stop"
@@ -5555,10 +5629,12 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "web_search",
         "search_knowledge_base",
         "exit_worktree",
-        "read_mcp_resource"
+        "read_mcp_resource",
+        "task_stop"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -5616,6 +5692,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "skill_read",
         "skill_save",
         "skill_list",
@@ -5678,6 +5755,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "skill_read",
         "skill_list",
         "skill_save",
@@ -5742,6 +5820,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "skill_list",
         "skill_read",
         "skill_save",
@@ -5805,6 +5884,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "exit_worktree",
         "enter_worktree",
         "custom_tool_read_source",
@@ -5868,6 +5948,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "brief",
         "task_output",
         "task_create"
@@ -5928,6 +6009,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "brief",
         "memory_write",
         "memory_read",
@@ -5991,6 +6073,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "memory_list",
         "memory_read",
         "memory_write",
@@ -6055,6 +6138,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "task_output",
         "todo_write",
         "task_get",
@@ -6185,6 +6269,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "task_create",
         "read_mcp_resource",
         "task_output",
@@ -6254,6 +6339,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "exit_worktree",
         "enter_worktree",
         "task_create",
@@ -6317,6 +6403,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "web_search",
         "search_knowledge_base",
         "read_mcp_resource",
@@ -6379,6 +6466,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "agent",
         "todo_write",
         "brief",
@@ -6443,6 +6531,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "deep_research",
         "todo_write",
         "memory_write",
@@ -6506,6 +6595,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "brief",
         "memory_write",
         "memory_read",
@@ -6567,9 +6657,9 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "list_mcp_resources",
         "lsp",
-        "tool_search",
         "memory_list",
         "task_list",
         "skill_list"
@@ -6631,6 +6721,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "search_knowledge_base",
         "ingest_document",
         "web_search",
@@ -6693,6 +6784,7 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "read_mcp_resource",
         "brief",
         "list_mcp_resources",
@@ -6756,10 +6848,10 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "custom_tool_update_source",
         "custom_tool_read_source",
-        "brief",
-        "tool_search"
+        "brief"
       ],
       "rag_failed": false,
       "none_pred": true
@@ -6818,10 +6910,10 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "web_fetch",
         "read_mcp_resource",
-        "ingest_document",
-        "tool_search"
+        "ingest_document"
       ],
       "rag_failed": false,
       "none_pred": true
@@ -6880,10 +6972,10 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "todo_write",
         "task_get",
-        "task_stop",
-        "tool_search"
+        "task_stop"
       ],
       "rag_failed": false,
       "none_pred": true
@@ -6942,10 +7034,10 @@
         "grep",
         "bash",
         "ask_user",
+        "tool_search",
         "deep_research",
         "web_search",
-        "search_knowledge_base",
-        "tool_search"
+        "search_knowledge_base"
       ],
       "rag_failed": false,
       "none_pred": true
