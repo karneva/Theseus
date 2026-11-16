@@ -12,16 +12,16 @@
     "hit1": 0.8135593220338984,
     "r3_ko": 0.9041666666666666,
     "r3_en": 0.9473684210526315,
-    "none_precision": 0.7647058823529411,
-    "none_recall": 0.7222222222222222,
-    "none_f1": 0.7428571428571428,
+    "none_precision": 0.0,
+    "none_recall": 0.0,
+    "none_f1": 0.0,
     "set_recall_delivered": 0.9700374531835205,
-    "avg_selected_schema_tokens": 1761.6542056074766,
-    "p95_selected_schema_tokens": 1975.6999999999998,
-    "warm_p50_ms": 5.198300001211464,
-    "warm_p95_ms": 7.653700013179332,
-    "cold_load_s": 0.7104300999781117,
-    "rss_delta_mb": 187.06640625
+    "avg_selected_schema_tokens": 1782.5607476635514,
+    "p95_selected_schema_tokens": 1983.4,
+    "warm_p50_ms": 5.293399968650192,
+    "warm_p95_ms": 7.570600020699203,
+    "cold_load_s": 0.7167266000178643,
+    "rss_delta_mb": 185.921875
   },
   "meta": {
     "variant": "v2",
@@ -29,17 +29,17 @@
       "wraps": "theseus_engine.core.tool_rag.ToolRetriever (repo v2)",
       "embedder_fingerprint": "onnx:7486bedf9a52c6bab73586272c5bdc866ac077a77d6aac4ff1d8f3bdb02c7610:spm:512:mean",
       "embed_backend": "onnx",
-      "embed_model_dir": "C:/Users/SSAFY/AppData/Local/Temp/claude/4a21eeadf20438cb/5203cd60-9af0-4744-9c6e-e7bdc6bce09a/scratchpad/tr2-impl/models/e5-small-int8",
+      "embed_model_dir": "C:/Users/SSAFY/.theseus/models/e5-small-int8",
       "threads": 4,
       "bm25_beta": 0.1,
       "cost_budget": 700.0,
       "rank_alpha": 1.0,
       "max_candidates": 12,
-      "none_mode": "soft",
+      "none_mode": "off",
       "none_rule": {
-        "w_top1": -96.1665380086168,
-        "w_cov": -3.350519611540678,
-        "b": 79.77115953481427
+        "w_top1": -84.26264668920324,
+        "w_cov": -5.3430981637257196,
+        "b": 69.78624051002548
       },
       "soft_keep": 3,
       "feedback": "off",
@@ -54,6 +54,7 @@
     "n_tools": 36,
     "legacy_demo_tools": false,
     "eval_set_sha256": "7777d3b30a5b64111dc2d6a3d5efeeb6122ac7d4b8cfe3778347285df7f35713",
+    "eval_set_file": "eval_set.jsonl",
     "frozen_essentials": [
       "ask_user",
       "bash",
@@ -82,7 +83,7 @@
     },
     "feedback_log": "disabled (THESEUS_DATA_DIR -> 빈 임시 디렉터리)",
     "hf_offline": "1",
-    "commit": "18c26bb412b0ab18970df183b2a5cfa8d94582c9",
+    "commit": "06117c128c8f4ed7d086f1c192630191176a60ff",
     "engine_src_dirty": false,
     "command": "python -m benchmarks.tool_rag.run --variant v2 --split dev --json benchmarks/tool_rag/results/v2_dev.json"
   },
@@ -205,7 +206,7 @@
       "min": 10.0,
       "p5": 11.0,
       "p50": 13.0,
-      "mean": 12.607476635514018,
+      "mean": 12.850467289719626,
       "p95": 15.0,
       "max": 16.0
     },
@@ -217,14 +218,14 @@
   "none_detection": {
     "definition": "양성 = 정답 type이 none인 질의. 예측 = decide_none(q), 없으면 rag_failed(유사도 도구 0개)",
     "source": "decide_none",
-    "tp": 13,
-    "fp": 4,
-    "fn": 5,
-    "tn": 85,
-    "precision": 0.7647058823529411,
-    "recall": 0.7222222222222222,
-    "f1": 0.7428571428571428,
-    "false_trigger_rate_answerable": 0.0449438202247191,
+    "tp": 0,
+    "fp": 0,
+    "fn": 18,
+    "tn": 89,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "false_trigger_rate_answerable": 0.0,
     "rag_failed_rate_all": 0.0
   },
   "prompt_tokens_cl100k": {
@@ -233,52 +234,52 @@
     "essentials_only": 1697,
     "delivered": {
       "n": 107,
-      "min": 1462.0,
-      "p5": 1570.3,
-      "p50": 1736.0,
-      "mean": 1761.6542056074766,
-      "p95": 1975.6999999999998,
+      "min": 1483.0,
+      "p5": 1594.2,
+      "p50": 1775.0,
+      "mean": 1782.5607476635514,
+      "p95": 1983.4,
       "max": 2109.0
     },
     "selected": {
       "n": 107,
-      "min": 1462.0,
-      "p5": 1570.3,
-      "p50": 1736.0,
-      "mean": 1761.6542056074766,
-      "p95": 1975.6999999999998,
+      "min": 1483.0,
+      "p5": 1594.2,
+      "p50": 1775.0,
+      "mean": 1782.5607476635514,
+      "p95": 1983.4,
       "max": 2109.0
     },
-    "delivered_mean_saving_vs_all": 0.6687374566364279
+    "delivered_mean_saving_vs_all": 0.6648061775736083
   },
   "latency": {
     "timed_call": "select",
     "passes": 3,
     "warm_query_ms": {
       "n": 321,
-      "min": 2.8332999791018665,
-      "p5": 3.4992999862879515,
-      "p50": 5.198300001211464,
-      "mean": 5.366013084706557,
-      "p95": 7.653700013179332,
-      "max": 13.882100000046194
+      "min": 2.660400001332164,
+      "p5": 3.581400029361248,
+      "p50": 5.293399968650192,
+      "mean": 5.401137694745467,
+      "p95": 7.570600020699203,
+      "max": 16.61350001813844
     }
   },
   "resources": {
-    "cold_load_s": 0.7104300999781117,
-    "index_build_ms": 1009.3767000362277,
-    "rss_before_load_mb": 116.05859375,
-    "rss_after_load_mb": 303.125,
-    "rss_delta_mb": 187.06640625,
-    "rss_after_eval_mb": 333.10546875,
+    "cold_load_s": 0.7167266000178643,
+    "index_build_ms": 1006.6536000231281,
+    "rss_before_load_mb": 117.6015625,
+    "rss_after_load_mb": 303.5234375,
+    "rss_delta_mb": 185.921875,
+    "rss_after_eval_mb": 332.1796875,
     "torch_threads": null
   },
   "hubness_top3_counts": {
     "lsp": 28,
     "web_search": 21,
     "tool_search": 19,
-    "web_fetch": 18,
     "enter_worktree": 17,
+    "web_fetch": 17,
     "brief": 17,
     "agent": 15,
     "memory_write": 14,
@@ -438,12 +439,12 @@
           0.8885
         ],
         [
-          "exit_worktree",
-          0.8747
+          "local_write_report",
+          0.8775
         ],
         [
-          "local_write_report",
-          0.8727
+          "exit_worktree",
+          0.8747
         ],
         [
           "task_create",
@@ -548,7 +549,7 @@
         ],
         [
           "local_write_report",
-          0.8728
+          0.8756
         ],
         [
           "web_search",
@@ -612,7 +613,7 @@
         ],
         [
           "local_write_report",
-          0.8468
+          0.8513
         ],
         [
           "lsp",
@@ -684,7 +685,7 @@
         ],
         [
           "local_write_report",
-          0.8499
+          0.8537
         ],
         [
           "memory_list",
@@ -808,12 +809,12 @@
           0.8193
         ],
         [
-          "agent",
-          0.8176
+          "local_write_report",
+          0.8188
         ],
         [
-          "local_write_report",
-          0.8154
+          "agent",
+          0.8176
         ]
       ],
       "delivered": [
@@ -843,6 +844,10 @@
       "gold_ne": [],
       "pred_sim_top8": [
         [
+          "local_write_report",
+          0.8233
+        ],
+        [
           "agent",
           0.8208
         ],
@@ -853,10 +858,6 @@
         [
           "web_fetch",
           0.8174
-        ],
-        [
-          "local_write_report",
-          0.8154
         ],
         [
           "enter_worktree",
@@ -889,7 +890,7 @@
         "web_fetch"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q022",
@@ -933,8 +934,8 @@
           0.8133
         ],
         [
-          "exit_worktree",
-          0.8103
+          "local_write_report",
+          0.8105
         ]
       ],
       "delivered": [
@@ -1357,7 +1358,7 @@
         ],
         [
           "local_write_report",
-          0.8407
+          0.8436
         ],
         [
           "task_create",
@@ -1624,12 +1625,12 @@
           0.8413
         ],
         [
-          "task_output",
-          0.8299
+          "local_write_report",
+          0.8338
         ],
         [
-          "local_write_report",
-          0.8297
+          "task_output",
+          0.8299
         ],
         [
           "task_get",
@@ -1882,16 +1883,16 @@
           0.8229
         ],
         [
+          "local_write_report",
+          0.8185
+        ],
+        [
           "custom_tool_read_source",
           0.8107
         ],
         [
           "lsp",
           0.8096
-        ],
-        [
-          "local_write_report",
-          0.8093
         ]
       ],
       "delivered": [
@@ -2149,10 +2150,11 @@
         "tool_search",
         "task_output",
         "exit_worktree",
-        "enter_worktree"
+        "enter_worktree",
+        "task_get"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q062",
@@ -2305,7 +2307,7 @@
         ],
         [
           "local_write_report",
-          0.8745
+          0.8761
         ],
         [
           "ingest_document",
@@ -2556,7 +2558,7 @@
         ],
         [
           "local_write_report",
-          0.7951
+          0.7997
         ],
         [
           "skill_read",
@@ -2626,6 +2628,10 @@
           0.8065
         ],
         [
+          "local_write_report",
+          0.8063
+        ],
+        [
           "search_knowledge_base",
           0.8061
         ],
@@ -2636,10 +2642,6 @@
         [
           "task_stop",
           0.8048
-        ],
-        [
-          "local_write_report",
-          0.804
         ],
         [
           "todo_write",
@@ -2657,10 +2659,14 @@
         "tool_search",
         "ingest_document",
         "skill_save",
-        "memory_write"
+        "memory_write",
+        "search_knowledge_base",
+        "memory_read",
+        "task_stop",
+        "memory_list"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q080",
@@ -3026,8 +3032,8 @@
           0.8229
         ],
         [
-          "skill_read",
-          0.8166
+          "local_write_report",
+          0.8196
         ]
       ],
       "delivered": [
@@ -3088,7 +3094,7 @@
         ],
         [
           "exit_worktree",
-          0.8323
+          0.8322
         ],
         [
           "task_create",
@@ -3217,8 +3223,8 @@
           0.8204
         ],
         [
-          "agent",
-          0.8169
+          "local_write_report",
+          0.8179
         ]
       ],
       "delivered": [
@@ -3268,12 +3274,12 @@
           0.9229
         ],
         [
-          "skill_read",
-          0.9109
+          "local_write_report",
+          0.9128
         ],
         [
-          "local_write_report",
-          0.91
+          "skill_read",
+          0.9109
         ],
         [
           "tool_search",
@@ -3403,12 +3409,12 @@
           0.8553
         ],
         [
-          "custom_tool_read_source",
-          0.8483
+          "local_write_report",
+          0.8495
         ],
         [
-          "local_write_report",
-          0.8464
+          "custom_tool_read_source",
+          0.8483
         ]
       ],
       "delivered": [
@@ -3451,7 +3457,7 @@
         ],
         [
           "local_write_report",
-          0.8771
+          0.8774
         ],
         [
           "read_mcp_resource",
@@ -3652,19 +3658,19 @@
         ],
         [
           "web_fetch",
-          0.8964
+          0.8965
         ],
         [
           "list_mcp_resources",
           0.8611
         ],
         [
-          "lsp",
-          0.8555
+          "local_write_report",
+          0.8577
         ],
         [
-          "local_write_report",
-          0.8551
+          "lsp",
+          0.8555
         ]
       ],
       "delivered": [
@@ -3908,7 +3914,7 @@
         ],
         [
           "skill_list",
-          0.8606
+          0.8605
         ],
         [
           "memory_read",
@@ -4118,8 +4124,8 @@
           0.8244
         ],
         [
-          "memory_write",
-          0.8167
+          "local_write_report",
+          0.82
         ]
       ],
       "delivered": [
@@ -4269,7 +4275,7 @@
         "web_fetch"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q142",
@@ -4328,10 +4334,11 @@
         "tool_search",
         "skill_list",
         "task_list",
-        "memory_list"
+        "memory_list",
+        "list_mcp_resources"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q143",
@@ -4517,10 +4524,13 @@
         "tool_search",
         "lsp",
         "skill_read",
-        "task_create"
+        "task_create",
+        "task_list",
+        "task_get",
+        "task_stop"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q149",
@@ -4557,7 +4567,7 @@
         ],
         [
           "local_write_report",
-          0.7967
+          0.8016
         ],
         [
           "agent",
@@ -4579,10 +4589,11 @@
         "tool_search",
         "enter_worktree",
         "lsp",
-        "web_fetch"
+        "web_fetch",
+        "web_search"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q152",
@@ -4611,7 +4622,7 @@
         ],
         [
           "search_knowledge_base",
-          0.8443
+          0.8442
         ],
         [
           "lsp",
@@ -4644,7 +4655,7 @@
         "search_knowledge_base"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q153",
@@ -4685,7 +4696,7 @@
         ],
         [
           "local_write_report",
-          0.796
+          0.798
         ],
         [
           "enter_worktree",
@@ -4703,10 +4714,11 @@
         "tool_search",
         "brief",
         "web_fetch",
-        "memory_write"
+        "memory_write",
+        "todo_write"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q154",
@@ -4795,7 +4807,7 @@
         ],
         [
           "lsp",
-          0.8211
+          0.8212
         ],
         [
           "skill_save",
@@ -4832,7 +4844,7 @@
         "task_create"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q159",
@@ -4891,10 +4903,12 @@
         "tool_search",
         "ingest_document",
         "task_create",
-        "skill_save"
+        "skill_save",
+        "search_knowledge_base",
+        "todo_write"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q160",
@@ -4910,12 +4924,12 @@
       ],
       "pred_sim_top8": [
         [
-          "local_write_report",
-          0.8428
-        ],
-        [
           "lsp",
           0.8417
+        ],
+        [
+          "local_write_report",
+          0.8413
         ],
         [
           "agent",
@@ -5017,10 +5031,12 @@
         "tool_search",
         "task_list",
         "task_create",
-        "todo_write"
+        "todo_write",
+        "task_get",
+        "task_stop"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q165",
@@ -5106,7 +5122,7 @@
         ],
         [
           "local_write_report",
-          0.8354
+          0.84
         ],
         [
           "custom_tool_update_source",
@@ -5154,31 +5170,31 @@
       "pred_sim_top8": [
         [
           "local_write_report",
-          0.9146
+          0.9177
         ],
         [
           "todo_write",
-          0.8567
+          0.8569
         ],
         [
           "skill_save",
-          0.842
+          0.8423
         ],
         [
           "search_knowledge_base",
-          0.8194
+          0.8197
         ],
         [
           "list_mcp_resources",
-          0.813
+          0.8132
         ],
         [
           "deep_research",
-          0.8009
+          0.8011
         ],
         [
           "memory_list",
-          0.7974
+          0.7975
         ],
         [
           "ingest_document",
@@ -5238,12 +5254,12 @@
           0.7941
         ],
         [
-          "enter_worktree",
-          0.7887
+          "local_write_report",
+          0.7917
         ],
         [
-          "skill_read",
-          0.7872
+          "enter_worktree",
+          0.7887
         ]
       ],
       "delivered": [
@@ -5322,10 +5338,13 @@
         "tool_search",
         "task_stop",
         "task_list",
-        "task_get"
+        "task_get",
+        "task_create",
+        "task_output",
+        "skill_list"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q172",
@@ -5411,7 +5430,7 @@
         ],
         [
           "local_write_report",
-          0.8746
+          0.8789
         ],
         [
           "lsp",
@@ -5605,6 +5624,10 @@
           0.7947
         ],
         [
+          "local_write_report",
+          0.7935
+        ],
+        [
           "read_mcp_resource",
           0.7928
         ],
@@ -5615,10 +5638,6 @@
         [
           "lsp",
           0.7903
-        ],
-        [
-          "deep_research",
-          0.79
         ]
       ],
       "delivered": [
@@ -5860,6 +5879,10 @@
           0.8037
         ],
         [
+          "local_write_report",
+          0.8027
+        ],
+        [
           "task_stop",
           0.8025
         ],
@@ -5870,10 +5893,6 @@
         [
           "skill_save",
           0.8001
-        ],
-        [
-          "task_output",
-          0.7994
         ]
       ],
       "delivered": [
@@ -5932,12 +5951,12 @@
           0.8042
         ],
         [
-          "deep_research",
-          0.7955
+          "local_write_report",
+          0.7964
         ],
         [
-          "local_write_report",
-          0.7891
+          "deep_research",
+          0.7955
         ]
       ],
       "delivered": [
@@ -6176,7 +6195,7 @@
         ],
         [
           "web_fetch",
-          0.8479
+          0.8478
         ],
         [
           "task_list",
@@ -6242,7 +6261,7 @@
         ],
         [
           "list_mcp_resources",
-          0.8444
+          0.8443
         ],
         [
           "task_list",
@@ -6391,8 +6410,8 @@
           0.8029
         ],
         [
-          "lsp",
-          0.8022
+          "local_write_report",
+          0.8023
         ]
       ],
       "delivered": [
@@ -6427,7 +6446,7 @@
       "pred_sim_top8": [
         [
           "local_write_report",
-          0.8433
+          0.8501
         ],
         [
           "agent",
@@ -6496,7 +6515,7 @@
         ],
         [
           "local_write_report",
-          0.8956
+          0.9017
         ],
         [
           "todo_write",
@@ -6765,7 +6784,7 @@
         ],
         [
           "local_write_report",
-          0.8117
+          0.8147
         ],
         [
           "custom_tool_update_source",
@@ -6833,7 +6852,7 @@
         ],
         [
           "local_write_report",
-          0.7739
+          0.7759
         ],
         [
           "agent",
@@ -6851,10 +6870,11 @@
         "tool_search",
         "custom_tool_update_source",
         "custom_tool_read_source",
-        "brief"
+        "brief",
+        "task_get"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q230",
@@ -6894,12 +6914,12 @@
           0.7753
         ],
         [
-          "web_search",
-          0.7716
+          "local_write_report",
+          0.7718
         ],
         [
-          "local_write_report",
-          0.7683
+          "web_search",
+          0.7716
         ]
       ],
       "delivered": [
@@ -6913,10 +6933,11 @@
         "tool_search",
         "web_fetch",
         "read_mcp_resource",
-        "ingest_document"
+        "ingest_document",
+        "task_create"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q233",
@@ -6975,10 +6996,13 @@
         "tool_search",
         "todo_write",
         "task_get",
-        "task_stop"
+        "task_stop",
+        "web_search",
+        "brief",
+        "task_list"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q236",
@@ -7019,7 +7043,7 @@
         ],
         [
           "local_write_report",
-          0.7732
+          0.7743
         ],
         [
           "read_mcp_resource",
@@ -7037,10 +7061,13 @@
         "tool_search",
         "deep_research",
         "web_search",
-        "search_knowledge_base"
+        "search_knowledge_base",
+        "task_output",
+        "task_get",
+        "skill_read"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     }
   ]
 }

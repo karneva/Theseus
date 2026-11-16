@@ -41,7 +41,7 @@ FIXED_QUERIES = [
 
 # 커밋된 베이스라인(v1) dev 결과(results/baseline_dev.json)보다 확실히 나아야 하는 하한(설계서 기준)
 DEV_FLOORS = {"r3": 0.88, "set_recall_delivered": 0.95}
-# tool_search(약 140 토큰)를 일부만 보내는 턴마다 고정으로 넣은 뒤(R2) dev 평균은 1761.7입니다.
+# tool_search(약 140 토큰)를 일부만 보내는 턴마다 고정으로 넣은 뒤 dev 평균은 1761.7, none 판정을 기본으로 끈 뒤 1782.6입니다.
 DEV_TOKEN_CEILING = 1800.0
 
 
