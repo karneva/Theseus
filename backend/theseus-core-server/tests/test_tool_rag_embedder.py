@@ -29,6 +29,42 @@ def _onnx_available() -> bool:
     return True
 
 
+class ModelIntegrityTest(unittest.TestCase):
+    """embedder.json의 sha256과 실제 파일이 다르면 로드를 거부합니다(모델 불필요, onnxruntime import 전에 검사)."""
+
+    def _model_dir(self, tmp: str, *, declared: str | None) -> Path:
+        directory = Path(tmp)
+        (directory / "model.onnx").write_bytes(b"not really an onnx model")
+        meta = {"dim": 384, "pooling": "mean"}
+        if declared is not None:
+            meta["sha256"] = declared
+        (directory / "embedder.json").write_text(json.dumps(meta), encoding="utf-8")
+        return directory
+
+    def test_mismatched_model_sha_is_rejected(self) -> None:
+        import tempfile
+
+        from theseus_engine.core.tool_rag.embedding import EmbedderUnavailableError, OnnxE5Embedder
+
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = self._model_dir(tmp, declared="0" * 64)
+            with self.assertRaises(EmbedderUnavailableError) as ctx:
+                OnnxE5Embedder(directory)
+            self.assertIn("sha256", str(ctx.exception))
+
+    def test_matching_sha_passes_integrity_check(self) -> None:
+        import hashlib
+        import tempfile
+
+        from theseus_engine.core.tool_rag.embedding import EmbedderUnavailableError, OnnxE5Embedder
+
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = self._model_dir(tmp, declared=hashlib.sha256(b"not really an onnx model").hexdigest())
+            with self.assertRaises(EmbedderUnavailableError) as ctx:  # 해시는 통과, 그다음 단계(토크나이저 없음 등)에서 실패
+                OnnxE5Embedder(directory)
+            self.assertNotIn("sha256", str(ctx.exception))
+
+
 @unittest.skipUnless(MODEL_DIR is not None and _onnx_available(), "Tool RAG ONNX 모델 또는 onnxruntime 없음")
 class OnnxEmbedderTest(unittest.TestCase):
     @classmethod
@@ -42,6 +78,10 @@ class OnnxEmbedderTest(unittest.TestCase):
         self.assertEqual(self.emb.dim, 384)
         self.assertEqual(self.emb.query_prefix, "query: ")
         self.assertTrue(self.emb.fingerprint.startswith("onnx:"))
+        from theseus_engine.core.tool_rag.embedding import file_sha256
+
+        actual = file_sha256(Path(MODEL_DIR) / "model.onnx")
+        self.assertTrue(self.emb.fingerprint.startswith(f"onnx:{actual}:"))
 
     def test_golden_vectors_against_torch_reference(self) -> None:
         texts = [item["text"] for item in self.golden["items"]]

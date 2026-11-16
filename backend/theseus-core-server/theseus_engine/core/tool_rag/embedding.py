@@ -145,6 +145,7 @@ class EmbedderSpec:
     query_prefix: str
     passage_prefix: str
     quantization: str
+    tokenizer_sha256: str = ""
 
     @classmethod
     def load(cls, model_dir: Path) -> "EmbedderSpec":
@@ -164,6 +165,7 @@ class EmbedderSpec:
             query_prefix=str(meta.get("query_prefix", "query: ")),
             passage_prefix=str(meta.get("passage_prefix", "passage: ")),
             quantization=str(meta.get("quantization", "")),
+            tokenizer_sha256=str(meta.get("tokenizer_sha256", "")),
         )
 
 
@@ -175,11 +177,23 @@ def file_sha256(path: Path, chunk: int = 1 << 20) -> str:
     return digest.hexdigest()
 
 
+def _verify_sha256(path: Path, actual: str, declared: str) -> None:
+    if declared and declared.strip().lower() != actual:
+        raise EmbedderUnavailableError(
+            f"{path.name}의 sha256({actual[:12]}…)이 {EMBEDDER_META_FILE} 선언값({declared[:12]}…)과 다릅니다. "
+            "모델을 바꿨다면 scripts/provision_tool_rag_model.py로 embedder.json을 다시 만들고 none 보정도 다시 하세요."
+        )
+
+
 class OnnxE5Embedder:
     """onnxruntime으로 E5 계열 encoder를 돌리는 임베더(평균 풀링 + L2 정규화).
 
     batch_size는 1로 고정합니다. 동적 int8 양자화 모델은 활성값 양자화 범위를 배치 단위로 잡기 때문에
     같은 문장도 배치 구성에 따라 벡터가 달라집니다. 1개씩 돌리면 결정적이고 메모리도 적게 씁니다.
+
+    로드할 때 model.onnx(와 sentencepiece 모델)의 실제 sha256을 계산해 embedder.json 선언값과 비교합니다(113 MiB 기준
+    약 0.1 s). 다르면 EmbedderUnavailableError를 냅니다. 모델만 바꾸고 embedder.json을 그대로 두면 옛 none 보정값과
+    디스크 벡터 캐시가 새 모델 점수와 섞이기 때문입니다. fingerprint도 선언값이 아니라 계산한 해시로 만듭니다.
     """
 
     def __init__(self, model_dir: str | os.PathLike, *, threads: int = 2, max_length: int | None = None) -> None:
@@ -190,12 +204,14 @@ class OnnxE5Embedder:
                 f"Tool RAG 임베딩 모델이 없습니다: {model_path}. "
                 "scripts/provision_tool_rag_model.py로 만들거나 THESEUS_EMBED_MODEL_DIR을 지정하세요."
             )
+        self.spec = EmbedderSpec.load(directory)
+        model_sha = file_sha256(model_path)
+        _verify_sha256(model_path, model_sha, self.spec.sha256)
         try:
             import onnxruntime as ort
         except ImportError as exc:
             raise EmbedderUnavailableError("onnxruntime 패키지가 없습니다(requirements.txt).") from exc
 
-        self.spec = EmbedderSpec.load(directory)
         self.model_dir = directory
         self.dim = self.spec.dim
         self.query_prefix = self.spec.query_prefix
@@ -206,6 +222,8 @@ class OnnxE5Embedder:
 
         spm_path = directory / SPM_FILE
         if spm_path.is_file():
+            if self.spec.tokenizer_sha256:
+                _verify_sha256(spm_path, file_sha256(spm_path), self.spec.tokenizer_sha256)
             try:
                 self._tok = SpmXlmrTokenizer(spm_path, max_length=self.max_length)
             except ImportError as exc:
@@ -228,7 +246,6 @@ class OnnxE5Embedder:
         self._out_name = self._sess.get_outputs()[0].name
         self._run_lock = threading.Lock()
 
-        model_sha = self.spec.sha256 or f"size{model_path.stat().st_size}"
         self.fingerprint = f"onnx:{model_sha}:{tok_kind}:{self.max_length}:{self.spec.pooling}"
         self.threads = so.intra_op_num_threads
 

@@ -134,7 +134,7 @@ flowchart LR
 - 특징 2개: 앵커 코사인 최댓값 top1(tool_search 제외), 질의 토큰 중 도구 카탈로그 어휘에 있는 비율 cov.
 - dev 전체로 class-balanced 로지스틱 회귀를 적합하고, 임계값은 "답 있는 질의를 none으로 판정하는 비율 ≤ 5%" 중 F1 최대인
   값으로 잡았습니다. 결과 규칙은 `top1 + 0.0348·cov < 0.8295`이면 none입니다.
-- 보정 파일(`tool_rag/data/toolrag_calibration.e5-small-int8.json`)은 모델 sha256과 레시피 버전이 맞을 때만 적용됩니다.
+- 보정 파일(`tool_rag/data/toolrag_calibration.e5-small-int8.json`)은 모델 sha256과 레시피 버전이 맞을 때만 적용됩니다. 런타임은 로드할 때 `model.onnx`와 sentencepiece 모델의 실제 sha256을 계산해 `embedder.json` 선언값과 비교하고(약 0.1 s), 다르면 모델을 쓰지 않고 보이는 도구 전부를 보냅니다. 임베더 fingerprint도 계산한 해시로 만듭니다.
   다른 모델을 쓰면 경고를 남기고 none 판정을 끕니다. 절대 코사인 임계값은 모델과 양자화에 묶여 있기 때문입니다.
 
 ### 4.5 임베딩 백엔드 (`embedding.py`)
