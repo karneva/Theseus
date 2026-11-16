@@ -68,7 +68,7 @@ LLM은 서버에 두지 않습니다. 개발 노트북의 Ollama를 reverse SSH 
 | data | `theseus-data` | `internal: true`(외부 차단) | api, core, mysql, postgres, redis, kafka, kafka-init, kafka-ui |
 | docker-api | `theseus-docker-api` | `internal: true` | core, docker-proxy |
 
-core가 edge에도 붙는 이유는 LLM 터널(호스트 docker0 IP), 외부 LLM API, 임베딩 모델 다운로드처럼 밖으로 나가는 트래픽이 필요하기 때문입니다. core-permissions는 `network_mode: none`입니다.
+core가 edge에도 붙는 이유는 LLM 터널(호스트 docker0 IP), 외부 LLM API처럼 밖으로 나가는 트래픽이 필요하기 때문입니다(Tool RAG 임베딩 모델은 이미지에 들어 있어 내려받지 않습니다). core-permissions는 `network_mode: none`입니다.
 ufw는 edge 브리지(`theseus-edge`)에서 docker0 IP의 11434 포트로 들어오는 트래픽만 추가로 허용합니다.
 
 | 서비스 | 컨테이너 포트 | 호스트 publish |
@@ -95,7 +95,7 @@ nginx가 막는 경로: `/api/internal/**`, `/swagger-ui`, `/v3/api-docs`, `/act
 | `/opt/theseus/custom-tools` | core | 승인·빌드된 Tool 코드(`*_tool.py`)와 메타데이터(`*.meta.json`), 프로젝트별 디렉터리 |
 | `/opt/theseus/core-data` | core | 엔진 런타임 데이터(`THESEUS_DATA_DIR`) |
 | `/opt/theseus/sandbox-tmp` | core, sandbox | sandbox 검증용 임시 작업 디렉터리(호스트와 Core가 같은 경로를 공유) |
-| `theseus-hf-cache` 볼륨 | core | 임베딩 모델 캐시(`HF_HOME`) |
+| `theseus-hf-cache` 볼륨 | core | 선택 기능(`requirements-torch.txt`)용 모델 캐시(`HF_HOME`). Tool RAG 모델은 이미지의 `/opt/models/e5-small-int8` |
 
 최종 상태는 MySQL에 두고, 진행 중 상태는 Redis와 SSE로 전달합니다.
 
@@ -132,7 +132,7 @@ sequenceDiagram
 
 - API는 Core SSE 본문을 가공하지 않고 그대로 흘려보냅니다. nginx는 이 경로와 Run 이벤트 경로에 `proxy_buffering off`, `gzip off`, 3600초 타임아웃을 겁니다.
 - AGENT 모드에서 Core는 프로젝트 권한과 모드에 맞는 도구만 노출합니다. 승인된 custom Tool도 Core 서버 레지스트리에 로드되어 같은 방식으로 호출됩니다.
-- 동적 도구 선택(`THESEUS_DYNAMIC_TOOL_RETRIEVAL`, 코드 기본값 켜짐)에서는 `ToolRetriever`가 `intfloat/multilingual-e5-small` 임베딩으로 관련 도구를 고릅니다. 모델은 첫 요청에서 이벤트 루프 밖 스레드로 한 번만 로드합니다.
+- Tool RAG(`THESEUS_TOOL_RAG_ENABLED`, 기본 켜짐)가 보이는 도구 중 이번 턴에 보낼 도구만 고릅니다(필수 도구 + 비용 인지 슬롯, 맞는 도구가 없으면 상위 3개 + tool_search). 임베딩은 이미지에 든 multilingual-e5-small ONNX int8이고, 기동 직후 백그라운드 스레드에서 로드합니다. 로드 전이나 검색 실패 시에는 보이는 도구 전부를 보냅니다. tool_search와 도구 실행 뒤 사후 주입도 보이는 도구 안에서만 합니다. 자세한 내용은 [Tool RAG](./tool-rag.md)를 참고하세요.
 
 ### 4.3 PLAN → 승인 → BUILD
 
