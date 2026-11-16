@@ -107,17 +107,17 @@ class V2RegressionTest(unittest.TestCase):
 
     def test_packaged_calibration_applies_only_in_soft_mode(self) -> None:
         # none 판정은 기본으로 꺼져 있고(THESEUS_TOOL_RAG_NONE_MODE=off), soft로 켜면 동봉 보정 규칙이 실제 모델의
-        # fingerprint·레시피와 맞아 적용됩니다. soft fallback 동작 자체는 단위 테스트(가짜 임베더)가 봅니다.
-        query = "구글 캘린더에 일정 등록해줘"
+        # fingerprint·레시피와 맞아 적용됩니다. 질의는 평가셋·보정셋·홀드아웃에 없는, 동봉 규칙이 none으로 보는 잡담입니다.
+        query = "오늘 날씨 어때"
         off = self.retr.retrieve_sync(query, self.reg, candidates=self.names)
         self.assertFalse(off.is_none)
         rule = self.retr.none_rule()
         self.assertIsNotNone(rule)
         res = self.retr.retrieve_sync(query, self.reg, candidates=self.names, none_mode="soft")
-        self.assertEqual(res.is_none, rule.is_none(res.top1, res.coverage))
-        if res.is_none:
-            self.assertEqual(res.slot_names[-1], "tool_search")
-            self.assertLessEqual(len(res.slot_names), 4)
+        self.assertTrue(rule.is_none(res.top1, res.coverage))
+        self.assertTrue(res.is_none)
+        self.assertEqual(res.slot_names[-1], "tool_search")
+        self.assertLessEqual(len(res.slot_names), 4)
 
     def test_dev_split_metrics_and_parity_with_committed_results(self) -> None:
         try:
