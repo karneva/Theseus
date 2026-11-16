@@ -1,0 +1,205 @@
+{"id": "c001", "query": "auth/service.py 열어서 보여줘", "lang": "ko", "relevant": ["read_file"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c002", "query": "settings.gradle에 뭐 들어있는지 좀 봐줘", "lang": "ko", "relevant": ["read_file"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c003", "query": "README.md 새로 하나 만들어줘. 설치랑 실행 방법 정도만 적어서", "lang": "ko", "relevant": ["write_file"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c004", "query": "config.yaml에서 timeout 30으로 돼있는거 60으로 바꿔", "lang": "ko", "relevant": ["edit_file"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c005", "query": "UserController 어딘가에 getUesr 오타 있음 getUser로 고쳐줘", "lang": "ko", "relevant": ["grep", "edit_file"], "type": "multi", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c006", "query": "_test.py로 끝나는 파일 전부 어디 있는지 찾아줘", "lang": "ko", "relevant": ["glob"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c007", "query": "src 밑에 tsx 파일 몇 개야", "lang": "ko", "relevant": ["glob"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c008", "query": "TODO 주석 남아있는 곳 다 찾아", "lang": "ko", "relevant": ["grep"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c009", "query": "legacyFetch 아직 호출하는 데 어디어디야?", "lang": "ko", "relevant": ["grep"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c010", "query": "pytest 돌려봐", "lang": "ko", "relevant": ["bash"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c011", "query": "npm install 해줘", "lang": "ko", "relevant": ["bash"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c012", "query": "gradle build 하면 에러나는데 원인 좀 찾아줘", "lang": "ko", "relevant": ["bash", "read_file"], "type": "multi", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c013", "query": "npm run dev 백그라운드로 띄워놔", "lang": "ko", "relevant": ["task_create"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c014", "query": "uvicorn 서버 켜놓고 계속 돌게 해줘 포트 8000", "lang": "ko", "relevant": ["task_create"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c015", "query": "백그라운드 잡 목록", "lang": "ko", "relevant": ["task_list"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c016", "query": "dev 서버 콘솔 출력 마지막 부분 확인해봐 에러 났나", "lang": "ko", "relevant": ["task_output"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c017", "query": "로컬에 띄워둔 dev 서버 이제 꺼줘", "lang": "ko", "relevant": ["task_stop"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c018", "query": "task 3번 상태 어때? 끝났어?", "lang": "ko", "relevant": ["task_get"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c019", "query": "그 빌드 작업 언제 시작했고 종료코드 몇이었는지 알려줘", "lang": "ko", "relevant": ["task_get"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c020", "query": "FastAPI 0.115 버전 변경사항 검색해봐", "lang": "ko", "relevant": ["web_search"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c021", "query": "이 에러 구글링 좀 ModuleNotFoundError: No module named 'pydantic_core._pydantic_core'", "lang": "ko", "relevant": ["web_search"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c022", "query": "https://docs.python.org/3/whatsnew/3.13.html 이 페이지 내용 요약해줘", "lang": "ko", "relevant": ["web_fetch"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c023", "query": "이 이슈 링크 읽어봐 https://github.com/encode/httpx/issues/2983", "lang": "ko", "relevant": ["web_fetch"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c024", "query": "Qdrant, Milvus, pgvector 여러 자료 찾아보고 비교 정리해줘", "lang": "ko", "relevant": ["deep_research"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c025", "query": "Rust async 런타임 생태계 요즘 어떤지 깊게 조사 좀", "lang": "ko", "relevant": ["deep_research"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c026", "query": "parse_config 함수 정의된 위치로 가줘 파이썬 코드임", "lang": "ko", "relevant": ["lsp"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c027", "query": "OrderService.calculate 참조하는 곳 전부", "lang": "ko", "relevant": ["lsp"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c028", "query": "models.py에 정의된 클래스랑 함수 이름만 쭉 뽑아줘", "lang": "ko", "relevant": ["lsp"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c029", "query": "utils.py 42번째 줄 result 변수 타입이 뭐로 추론돼?", "lang": "ko", "relevant": ["lsp"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c030", "query": "테스트 작성은 서브에이전트한테 맡기고 너는 리팩터링 계속해", "lang": "ko", "relevant": ["agent"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c031", "query": "payment 모듈 문서화 작업 따로 병렬로 하나 돌려줘", "lang": "ko", "relevant": ["agent"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c032", "query": "MCP 서버 쪽에 연결된 리소스 뭐 있는지 보여줘", "lang": "ko", "relevant": ["list_mcp_resources"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c033", "query": "mcp 리소스 docs://api/v2 내용 가져와", "lang": "ko", "relevant": ["read_mcp_resource"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c034", "query": "저번에 저장한 배포 절차 스킬 불러와", "lang": "ko", "relevant": ["skill_read"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c035", "query": "이번에 한 DB 마이그레이션 순서 다음에도 쓰게 스킬로 남겨둬", "lang": "ko", "relevant": ["skill_save"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c036", "query": "저장된 스킬 뭐뭐 있지", "lang": "ko", "relevant": ["skill_list"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c037", "query": "feature/login 브랜치 따로 워크트리로 빼서 실험해보자", "lang": "ko", "relevant": ["enter_worktree"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c038", "query": "../wt-exp 워크트리 다 썼으니 지워줘", "lang": "ko", "relevant": ["exit_worktree"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c039", "query": "사내 문서에서 배포 승인 정책 찾아줘", "lang": "ko", "relevant": ["search_knowledge_base"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c040", "query": "우리 팀 온보딩 가이드 지식베이스에 있나?", "lang": "ko", "relevant": ["search_knowledge_base"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c041", "query": "이 아키텍처 결정사항 지식베이스에 넣어둬 다음 세션에서도 참고하게", "lang": "ko", "relevant": ["ingest_document"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c042", "query": "TODO.md에 'Redis 캐시 TTL 조정' 추가", "lang": "ko", "relevant": ["todo_write"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c043", "query": "할일 목록에서 로그인 버그 항목 완료 체크해줘", "lang": "ko", "relevant": ["todo_write"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c044", "query": "앞으로 커밋 메시지는 한국어로 쓴다고 기억해둬", "lang": "ko", "relevant": ["memory_write"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c045", "query": "내가 전에 기억하라고 했던 코딩 컨벤션 뭐였지?", "lang": "ko", "relevant": ["memory_read"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c046", "query": "CSV를 마크다운 표로 바꿔주는 커스텀 도구 새로 하나 만들어줘", "lang": "ko", "relevant": ["create_tool"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c047", "query": "내가 만든 csv_to_md 커스텀 툴 코드 좀 보여줘", "lang": "ko", "relevant": ["custom_tool_read_source"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c048", "query": "커스텀 툴 jira_summary에서 출력 필드명 summary를 title로 바꿔줘", "lang": "ko", "relevant": ["custom_tool_update_source", "custom_tool_read_source"], "type": "multi", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c049", "query": "PDF에서 텍스트 뽑는 도구 있는지 찾아봐", "lang": "ko", "relevant": ["tool_search"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c050", "query": "원격 워크스페이스에서 .log 파일들 어디 있는지 찾아", "lang": "ko", "relevant": ["remote_glob"], "type": "single", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c051", "query": "원격 서버 코드에서 DB_PASSWORD 쓰는 곳 검색", "lang": "ko", "relevant": ["remote_grep"], "type": "single", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c052", "query": "원격 서버 app.log 마지막 100줄", "lang": "ko", "relevant": ["remote_tail_log"], "type": "single", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c053", "query": "원격 서버 CPU 왜 이렇게 높아?", "lang": "ko", "relevant": ["remote_check_cpu"], "type": "single", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c054", "query": "원격 서버 메모리 얼마나 남았어", "lang": "ko", "relevant": ["remote_check_memory"], "type": "single", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c055", "query": "원격 서버에 .env.production 파일 새로 만들어줘", "lang": "ko", "relevant": ["remote_write_file"], "type": "single", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c056", "query": "원격 서버 docker-compose.yml에서 포트 8080을 9090으로", "lang": "ko", "relevant": ["remote_edit_file"], "type": "single", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c057", "query": "원격 서버 디스크랑 메모리 보고 결과 리포트 md로 남겨줘", "lang": "ko", "relevant": ["remote_check_disk", "remote_check_memory", "local_write_report"], "type": "multi", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c058", "query": "방금 원격 로그 분석한 거 리포트 파일로 저장해줘", "lang": "ko", "relevant": ["local_write_report"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c059", "query": "배포 환경 staging으로 할지 prod로 할지는 나한테 먼저 물어보고 진행해", "lang": "ko", "relevant": ["ask_user"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c060", "query": "린트 돌려", "lang": "ko", "relevant": ["bash"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c061", "query": "package.json 의존성 버전 확인", "lang": "ko", "relevant": ["read_file"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c062", "query": ".gitignore 만들어줘 파이썬 프로젝트용", "lang": "ko", "relevant": ["write_file"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c063", "query": "OPENAI_API_KEY 환경변수 읽는 코드 어디야", "lang": "ko", "relevant": ["grep"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c064", "query": "도커파일 어디있지", "lang": "ko", "relevant": ["glob"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c065", "query": "3000번 포트 누가 쓰고 있는지 확인", "lang": "ko", "relevant": ["bash"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c066", "query": "alembic upgrade head 실행해서 마이그레이션 적용", "lang": "ko", "relevant": ["bash"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c067", "query": "웹팩 watch 모드로 계속 돌려놔", "lang": "ko", "relevant": ["task_create"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c068", "query": "돌리던 celery 워커 중지", "lang": "ko", "relevant": ["task_stop"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c069", "query": "백그라운드로 돌린 테스트 결과 출력 봐줘", "lang": "ko", "relevant": ["task_output"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c070", "query": "Spring Boot 3.3 릴리즈 노트 찾아봐", "lang": "ko", "relevant": ["web_search"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c071", "query": "원격 서버 load average", "lang": "ko", "relevant": ["remote_check_cpu"], "type": "single", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c072", "query": "원격 df -h", "lang": "ko", "relevant": ["remote_check_disk"], "type": "single", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c073", "query": "원격 서버 free -m 결과 좀", "lang": "ko", "relevant": ["remote_check_memory"], "type": "single", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c074", "query": "원격 서버 src 아래 py 파일 목록", "lang": "ko", "relevant": ["remote_glob"], "type": "single", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c075", "query": "원격 워크스페이스 코드에서 FIXME 찾기", "lang": "ko", "relevant": ["remote_grep"], "type": "single", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c076", "query": "원격 nginx error.log 최근 거 보여줘", "lang": "ko", "relevant": ["remote_tail_log"], "type": "single", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c077", "query": "원격 settings.py DEBUG=True 를 False로 바꿔", "lang": "ko", "relevant": ["remote_edit_file"], "type": "single", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c078", "query": "원격 서버에서 pip list 돌려봐", "lang": "ko", "relevant": ["remote_run_command"], "type": "single", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c079", "query": "원격 서버 crontab 설정 파일 읽어", "lang": "ko", "relevant": ["remote_read_file"], "type": "single", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c080", "query": "utils/date.py의 format_date 함수 좀 깔끔하게 리팩터링해줘", "lang": "ko", "relevant": ["read_file", "edit_file"], "type": "multi", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c081", "query": "로그인 API에 rate limit 붙여줘", "lang": "ko", "relevant": ["grep", "read_file", "edit_file"], "type": "multi", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c082", "query": "CHANGELOG.md에 이번 버전 내용 추가하고 커밋까지", "lang": "ko", "relevant": ["edit_file", "bash"], "type": "multi", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c083", "query": "show me src/main.rs", "lang": "en", "relevant": ["read_file"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c084", "query": "create a Dockerfile for this node app", "lang": "en", "relevant": ["write_file"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c085", "query": "rename DB_HOST to DATABASE_HOST in config/settings.py", "lang": "en", "relevant": ["edit_file"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c086", "query": "find all the .proto files", "lang": "en", "relevant": ["glob"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c087", "query": "where do we call stripe.charge?", "lang": "en", "relevant": ["grep"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c088", "query": "run the unit tests", "lang": "en", "relevant": ["bash"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c089", "query": "kick off the long e2e suite in the background and keep going", "lang": "en", "relevant": ["task_create"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c090", "query": "what bg jobs are running rn", "lang": "en", "relevant": ["task_list"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c091", "query": "tail the output of the build task", "lang": "en", "relevant": ["task_output"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c092", "query": "kill task 2", "lang": "en", "relevant": ["task_stop"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c093", "query": "is the docker build task finished? what was the exit code", "lang": "en", "relevant": ["task_get"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c094", "query": "look up how to fix a CORS preflight 403 behind nginx", "lang": "en", "relevant": ["web_search"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c095", "query": "fetch https://peps.python.org/pep-0703/ and give me the gist", "lang": "en", "relevant": ["web_fetch"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c096", "query": "do a thorough research on WebGPU browser support across sources and write up findings", "lang": "en", "relevant": ["deep_research"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c097", "query": "jump to definition of build_index in indexer.py", "lang": "en", "relevant": ["lsp"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c098", "query": "spin up a helper to write docs for the api module while we fix bugs", "lang": "en", "relevant": ["agent"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c099", "query": "what MCP resources do we have", "lang": "en", "relevant": ["list_mcp_resources"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c100", "query": "pull up my saved release checklist recipe", "lang": "en", "relevant": ["skill_read"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c101", "query": "save this debugging workflow so we can reuse it next time", "lang": "en", "relevant": ["skill_save"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c102", "query": "list skills", "lang": "en", "relevant": ["skill_list"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c103", "query": "make a worktree for hotfix/1.2.3", "lang": "en", "relevant": ["enter_worktree"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c104", "query": "remove the experiment worktree, we're done with it", "lang": "en", "relevant": ["exit_worktree"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c105", "query": "condense this whole thread into a short brief so we can keep going", "lang": "en", "relevant": ["brief"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c106", "query": "check the internal kb for our on-call runbook", "lang": "en", "relevant": ["search_knowledge_base"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c107", "query": "add this API design doc to the knowledge base", "lang": "en", "relevant": ["ingest_document"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c108", "query": "add 'migrate to pnpm' to my todo list", "lang": "en", "relevant": ["todo_write"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c109", "query": "remember that I prefer tabs over spaces", "lang": "en", "relevant": ["memory_write"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c110", "query": "what memory files did you save for this project?", "lang": "en", "relevant": ["memory_list"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c111", "query": "read back my user-level preferences memory", "lang": "en", "relevant": ["memory_read"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c112", "query": "build a custom tool that turns openapi yaml into markdown tables", "lang": "en", "relevant": ["create_tool"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c113", "query": "is there any tool that can query sqlite? look it up", "lang": "en", "relevant": ["tool_search"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c114", "query": "remote: search the app dir for OutOfMemoryError", "lang": "en", "relevant": ["remote_grep"], "type": "single", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c115", "query": "check ram on the remote box", "lang": "en", "relevant": ["remote_check_memory"], "type": "single", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c116", "query": "tail /var/log/syslog on the remote server", "lang": "en", "relevant": ["remote_tail_log"], "type": "single", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c117", "query": "restart gunicorn on the remote server", "lang": "en", "relevant": ["remote_run_command"], "type": "single", "registry": "server_remote", "source": "blind-writer-2026-11-16"}
+{"id": "c118", "query": "fix the failing test in test_parser.py", "lang": "en", "relevant": ["bash", "read_file", "edit_file"], "type": "multi", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c119", "query": "write the remote disk audit findings to a json report locally", "lang": "en", "relevant": ["local_write_report"], "type": "single", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c120", "query": "카톡으로 팀장님께 오늘 좀 늦는다고 보내줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c121", "query": "슬랙 #dev 채널에 배포 완료 공지 올려줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c122", "query": "엑셀에 열어둔 시트에 피벗 테이블 추가해줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c123", "query": "지금 띄워놓은 PPT 슬라이드 폰트 전부 나눔고딕으로", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c124", "query": "지메일 받은편지함 안 읽은 메일 정리해줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c125", "query": "이번 달 카드 결제 내역 확인해줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c126", "query": "토스로 친구한테 3만원 송금", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c127", "query": "인스타에 어제 찍은 사진 올려줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c128", "query": "거실 불 꺼줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c129", "query": "에어컨 24도로 맞춰", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c130", "query": "배민으로 치킨 한 마리 시켜줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c131", "query": "커피 좀 타다 줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c132", "query": "모니터 높이 좀 올려줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c133", "query": "뮤텍스랑 세마포어 차이 설명해줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c134", "query": "REST랑 GraphQL 장단점 알려줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c135", "query": "빅오 표기법이 뭐야", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c136", "query": "TCP 3-way handshake 설명 좀", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c137", "query": "파이썬 GIL이 뭔지 간단히", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c138", "query": "안녕", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c139", "query": "오늘 기분 어때?", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c140", "query": "심심한데 개발자 농담 하나 해줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c141", "query": "나 요즘 번아웃 온 것 같아", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c142", "query": "주말에 여자친구랑 어디 갈까", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c143", "query": "저녁 메뉴 추천", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c144", "query": "이직할까 말까 고민된다", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c145", "query": "지라 티켓 THE-123 Done으로 바꿔", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c146", "query": "줌 회의 링크 만들어서 공유해줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c147", "query": "디스코드 서버에 우리 봇 초대해줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c148", "query": "유튜브에 데모 영상 업로드해줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c149", "query": "넷플릭스에서 볼만한 거 추천해줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c150", "query": "회사 앞으로 택시 불러줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c151", "query": "이 문서 프린터로 두 장 뽑아줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c152", "query": "노트북 배터리 직접 교체하는 법", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c153", "query": "키보드 청소 좀 해줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c154", "query": "그룹웨어에 다음 주 금요일 연차 신청 올려줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c155", "query": "아이폰 알람 7시로 맞춰줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c156", "query": "엄마한테 문자 보내줘 저녁 먹고 간다고", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c157", "query": "트위터에 릴리즈 소식 트윗해줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c158", "query": "쿠팡에서 USB-C 허브 하나 주문", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c159", "query": "내 은행 계좌 잔액 알려줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c160", "query": "삼성전자 10주 매수 주문 넣어줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c161", "query": "로봇청소기 돌려", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c162", "query": "세탁기 저녁 8시에 끝나게 예약", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c163", "query": "SOLID 원칙 하나씩 설명해줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c164", "query": "해시맵 조회가 왜 평균 O(1)이야", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c165", "query": "정규화 1NF 2NF 3NF 차이 알려줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c166", "query": "CAP 정리가 뭐야", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c167", "query": "함수형 프로그래밍이 뭔지 쉽게", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c168", "query": "ㅋㅋㅋ 웃기네", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c169", "query": "너 이름이 뭐야?", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c170", "query": "오늘 내 생일인데 축하 좀 해줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c171", "query": "피그마에서 명함 시안 색 바꿔줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c172", "query": "구글 시트 공유 권한 편집자로 바꿔줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c173", "query": "아웃룩에 온 회의 초대 수락해줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c174", "query": "회사 VPN 앱 켜서 연결해줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c175", "query": "영수증 사진 찍어서 경비 청구 올려줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c176", "query": "헬스장 PT 화요일로 예약해줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c177", "query": "다음 주 부산 출장 KTX 표 끊어줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c178", "query": "블루투스 이어폰 페어링 좀 해줘", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c179", "query": "면접 때 자기소개 어떻게 하면 좋을까", "lang": "ko", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c180", "query": "book a table for two at an italian place tonight", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c181", "query": "email the client that the release slipped a week", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c182", "query": "put a 30 min standup on my outlook calendar every weekday", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c183", "query": "post our launch announcement on linkedin", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c184", "query": "turn off the living room lights", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c185", "query": "order me a pepperoni pizza", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c186", "query": "pay the AWS invoice with the company card", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c187", "query": "what's the difference between a process and a thread", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c188", "query": "explain big endian vs little endian", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c189", "query": "how does garbage collection work in java, short version", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c190", "query": "hey how's it going", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c191", "query": "tell me a joke about javascript", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c192", "query": "i can't sleep lately, any tips?", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c193", "query": "should I buy a new mechanical keyboard", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c194", "query": "message my manager on teams that I'm out sick", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c195", "query": "leave a comment on the google doc draft", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c196", "query": "call an uber to the airport", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c197", "query": "water my plants", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c198", "query": "plug the HDMI cable into my monitor", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c199", "query": "what is a monad, simply", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c200", "query": "what does idempotent mean for http methods", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c201", "query": "move the Trello card to done", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c202", "query": "play some lofi on spotify", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c203", "query": "renew my passport", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c204", "query": "remind me on my phone to call mom at 6", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}
+{"id": "c205", "query": "what's your favorite programming language?", "lang": "en", "relevant": [], "type": "none", "registry": "core", "source": "blind-writer-2026-11-16"}

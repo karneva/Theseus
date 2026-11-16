@@ -45,6 +45,10 @@ HERE = Path(__file__).resolve().parent
 EVAL_SET_PATH = HERE / "eval_set.jsonl"
 # LF 정규화한 eval_set.jsonl의 sha256 (동결 원본과 동일). 라벨이 바뀌면 평가를 거부합니다.
 EVAL_SET_SHA256 = "7777d3b30a5b64111dc2d6a3d5efeeb6122ac7d4b8cfe3778347285df7f35713"
+# 2차 홀드아웃(holdout_set.jsonl). eval_set·용어집·few-shot을 보지 않은 작성자가 도구 카탈로그만 보고 쓴 질의를
+# 다른 주석자가 독립으로 라벨링하고 불일치를 판정한 세트입니다. 튜닝에 쓰지 않고 최종 구성만 평가합니다.
+HOLDOUT_SET_PATH = HERE / "holdout_set.jsonl"
+HOLDOUT_SET_SHA256 = "29483798f4dc28f2dd4c8509b966b7922d8214ce11739232d20dfb2a7598f9bb"
 
 # 지표 정의에 쓰는 필수 도구 집합. 동결 베이스라인 측정 시점의 ESSENTIAL_TOOL_NAMES로 고정합니다.
 # (저장소의 ESSENTIAL_TOOL_NAMES를 바꾸는 변형이 나와도 "유사도 슬롯" 지표의 정의는 바뀌지 않아야 함)
@@ -53,7 +57,7 @@ FROZEN_ESSENTIALS: frozenset[str] = frozenset(
 )
 KS = (3, 5, 8)
 DEFAULT_SELECT_K = 8  # select()가 없는 검색기의 전달 집합 = 필수 도구 ∪ 유사도 상위 8
-SPLITS = ("dev", "test", "all")
+SPLITS = ("dev", "test", "all", "holdout")
 REGISTRY_KINDS = ("core", "server", "server-default")
 # 실제 서버 기본값(THESEUS_ENABLE_ENGINE_RAG_TOOLS=false)이 가시성에서 빼는 엔진 RAG 도구(src/builder/engine.py)
 SERVER_DEFAULT_DISABLED: frozenset[str] = frozenset({"search_knowledge_base", "ingest_document"})
@@ -159,15 +163,16 @@ def load_eval_set(split: str = "all", registry: str = "core", verify: bool = Tru
     """
     if split not in SPLITS:
         raise ValueError(f"split must be one of {SPLITS}, got {split!r}")
-    raw = EVAL_SET_PATH.read_bytes().replace(b"\r\n", b"\n")
+    path, pinned = (HOLDOUT_SET_PATH, HOLDOUT_SET_SHA256) if split == "holdout" else (EVAL_SET_PATH, EVAL_SET_SHA256)
+    raw = path.read_bytes().replace(b"\r\n", b"\n")
     if verify:
         digest = hashlib.sha256(raw).hexdigest()
-        if digest != EVAL_SET_SHA256:
-            raise RuntimeError(f"eval_set.jsonl이 동결본과 다릅니다 (sha256 {digest}). 라벨은 수정하지 않습니다.")
+        if digest != pinned:
+            raise RuntimeError(f"{path.name}이 동결본과 다릅니다 (sha256 {digest}). 라벨은 수정하지 않습니다.")
     rows = [json.loads(line) for line in raw.decode("utf-8").splitlines() if line.strip()]
     if registry == "core":
         rows = [r for r in rows if r["registry"] == "core"]
-    if split != "all":
+    if split not in ("all", "holdout"):
         rows = [r for r in rows if r["split"] == split]
     return rows
 
@@ -564,7 +569,8 @@ def evaluate(
             "n_none": len(nonerecs),
             "n_tools": len(names_in_reg),
             "legacy_demo_tools": legacy_demo_tools,
-            "eval_set_sha256": EVAL_SET_SHA256,
+            "eval_set_sha256": HOLDOUT_SET_SHA256 if split == "holdout" else EVAL_SET_SHA256,
+            "eval_set_file": (HOLDOUT_SET_PATH if split == "holdout" else EVAL_SET_PATH).name,
             "frozen_essentials": sorted(FROZEN_ESSENTIALS),
             "repo_essentials_equal_frozen": repo_ess_same,
             "ks": list(KS),
