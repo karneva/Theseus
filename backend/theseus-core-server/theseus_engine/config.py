@@ -265,7 +265,13 @@ def get_tool_rag_settings() -> ToolRagSettings:
         soft_keep=_env_int("THESEUS_TOOL_RAG_SOFT_KEEP", 3, minimum=0),
         small_set=_env_int("THESEUS_TOOL_RAG_SMALL_SET", 12, minimum=0),
         hook_budget=_env_number("THESEUS_TOOL_RAG_HOOK_BUDGET", 400.0, minimum=0.0),
-        hook_max_inject=_env_int("THESEUS_TOOL_RAG_HOOK_MAX_INJECT_PER_SESSION", 6, minimum=0),
+        # 턴(요청)당 상한. 엔진과 훅 실행기는 턴마다 새로 만들고 주입한 도구도 다음 턴에는 남지 않습니다(호출한 도구만
+        # 히스토리 고정). 구 이름 ..._PER_SESSION도 읽습니다.
+        hook_max_inject=_env_int(
+            "THESEUS_TOOL_RAG_HOOK_MAX_INJECT_PER_TURN",
+            _env_int("THESEUS_TOOL_RAG_HOOK_MAX_INJECT_PER_SESSION", 6, minimum=0),
+            minimum=0,
+        ),
         cache_dir=cache_dir,
         feedback=_env_choice("THESEUS_TOOL_RAG_FEEDBACK", "cli", ("off", "cli")),
         feedback_max_per_tool=_env_int("THESEUS_TOOL_RAG_FEEDBACK_MAX_PER_TOOL", 5, minimum=0),

@@ -123,7 +123,7 @@ class TheseusHookExecutor:
             frozenset(injectable_names) if injectable_names is not None else None
         )
         self._provenance = provenance if provenance is not None else {}
-        self._injected_this_session = 0
+        self._injected_this_turn = 0  # 이 실행기는 턴마다 새로 만들어집니다
         self._enable_dynamic_tools = enable_dynamic_tools
         self._permission_prompt = permission_prompt
         self._llm_client = llm_client
@@ -672,7 +672,8 @@ class TheseusHookExecutor:
         """도구 실행 결과로 연관 도구를 찾아 현재 세션에 주입합니다.
 
         후보는 보이는 도구(injectable_names) 중 아직 없는 것뿐이고, 비용 예산(THESEUS_TOOL_RAG_HOOK_BUDGET)과
-        세션당 상한(THESEUS_TOOL_RAG_HOOK_MAX_INJECT_PER_SESSION)을 지킵니다. v1은 full_registry 전체에서
+        턴당 상한(THESEUS_TOOL_RAG_HOOK_MAX_INJECT_PER_TURN)을 지킵니다. 이 실행기는 턴(서버 요청, CLI 입력)마다
+        새로 만들어지므로 카운터도 턴 단위입니다. v1은 full_registry 전체에서
         골라 ASK 모드나 낮은 user_level에서도 bash·write_file 등을 주입했습니다(가시성/RBAC 우회).
         """
         if not self._active_registry or not self._retriever or not self._full_registry:
@@ -680,7 +681,7 @@ class TheseusHookExecutor:
         if self._injectable_names is None:
             return
         settings = get_tool_rag_settings()
-        remaining = settings.hook_max_inject - self._injected_this_session
+        remaining = settings.hook_max_inject - self._injected_this_turn
         if remaining <= 0:
             return
 
@@ -722,7 +723,7 @@ class TheseusHookExecutor:
             ):
                 injected.append(name)
         if injected:
-            self._injected_this_session += len(injected)
+            self._injected_this_turn += len(injected)
             log.info(
                 "[DynamicDiscovery] 도구 %d개 주입: %s (쿼리: '%s')",
                 len(injected),

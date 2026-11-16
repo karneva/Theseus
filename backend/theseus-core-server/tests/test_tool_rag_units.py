@@ -284,5 +284,19 @@ class FeedbackLoggerTest(unittest.TestCase):
         self.assertTrue((Path(self._tmp.name) / "tool_usage.jsonl.1").exists())
 
 
+class SettingsTest(unittest.TestCase):
+    def test_hook_inject_cap_is_per_turn_with_legacy_name(self) -> None:
+        from theseus_engine.config import get_tool_rag_settings
+
+        new, old = "THESEUS_TOOL_RAG_HOOK_MAX_INJECT_PER_TURN", "THESEUS_TOOL_RAG_HOOK_MAX_INJECT_PER_SESSION"
+        clean = {k: v for k, v in os.environ.items() if k not in (new, old)}
+        with patch.dict(os.environ, clean, clear=True):
+            self.assertEqual(get_tool_rag_settings().hook_max_inject, 6)
+            with patch.dict(os.environ, {old: "2"}):
+                self.assertEqual(get_tool_rag_settings().hook_max_inject, 2)
+                with patch.dict(os.environ, {new: "4"}):
+                    self.assertEqual(get_tool_rag_settings().hook_max_inject, 4)
+
+
 if __name__ == "__main__":
     unittest.main()
