@@ -158,10 +158,10 @@ compose가 값을 고정해 넘기는 항목(env 파일에서 바꾸지 않음):
 | `THESEUS_EMBED_MODEL_ID` / `THESEUS_EMBED_MODEL_REVISION` | `intfloat/multilingual-e5-small` / `614241f6…` | sentence-transformers 백엔드용 모델과 리비전 |
 | `THESEUS_EMBED_THREADS` | `min(2, CPU 수)` | onnxruntime intra-op 스레드 |
 | `THESEUS_EMBED_MAX_LENGTH` | `512` | 토큰 최대 길이 |
-| `THESEUS_TOOL_RAG_CALIBRATION_FILE` | (빈 값) | none 판정 보정 파일 경로. 비우면 모델 디렉터리 → 패키지 동봉 파일 순. 모델 sha256이 다르면 none 판정을 끔 |
+| `THESEUS_TOOL_RAG_CALIBRATION_FILE` | (빈 값) | none 판정 보정 파일 경로(`THESEUS_TOOL_RAG_NONE_MODE=soft`일 때만 읽음). 비우면 모델 디렉터리 → 패키지 동봉 파일 순. 모델 sha256이나 레시피 버전이 다르면 none 판정을 끔 |
 | `THESEUS_TOOL_RAG_BM25_BETA` | `0.10` | 순위 점수의 BM25 가중치(0이면 dense만) |
 | `THESEUS_TOOL_RAG_COST_BUDGET` / `THESEUS_TOOL_RAG_RANK_ALPHA` / `THESEUS_TOOL_RAG_MAX_CANDIDATES` | `700` / `1.0` / `12` | 비용 인지 슬롯: 순위 i의 후보는 `i^alpha × 스키마 글자수/4 ≤ budget`이면 포함(1위는 항상), 상위 max개까지 |
-| `THESEUS_TOOL_RAG_NONE_MODE` / `THESEUS_TOOL_RAG_SOFT_KEEP` | `soft` / `3` | `soft`: "맞는 도구 없음"이면 슬롯을 상위 N개로 줄임(tool_search는 일부만 보내는 턴에 항상 들어감). `off`: 판정 안 함 |
+| `THESEUS_TOOL_RAG_NONE_MODE` / `THESEUS_TOOL_RAG_SOFT_KEEP` | `off` / `3` | `off`(기본): "맞는 도구 없음" 판정 안 함. `soft`: 판정되면 슬롯을 상위 N개로 줄임(tool_search는 일부만 보내는 턴에 항상 들어감). 판정이 다른 작성자의 질의로 전이되지 않아 기본으로 끕니다([Tool RAG 문서 4.4절](../architecture/tool-rag.md)) |
 | `THESEUS_TOOL_RAG_SMALL_SET` | `12` | 보이는 도구가 이 수 이하이면 검색하지 않고 전부 보냄 |
 | `THESEUS_TOOL_RAG_HOOK_BUDGET` / `THESEUS_TOOL_RAG_HOOK_MAX_INJECT_PER_TURN` | `400` / `6` | 도구 실행 뒤 사후 훅이 보이는 도구 중에서 주입할 때의 비용 예산과 턴(서버 요청·CLI 입력 1회)당 상한(측정하지 않은 제안값). 구 이름 `..._PER_SESSION`도 읽습니다. |
 | `THESEUS_TOOL_RAG_CACHE_DIR` | `${THESEUS_DATA_DIR}/tool_rag_cache` | 도구 벡터 디스크 캐시(npz). 빈 값이면 끔 |

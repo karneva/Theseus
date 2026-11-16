@@ -11,6 +11,11 @@ v2 설계, 평가 프로토콜, 결과, 한계, 그리고 3단계(임베딩 파�
 
 ## 1. 요약
 
+> **구성 변경(3차, 2026-11-16) 안내.** 이 장과 5장의 test·all 수치는 커밋 18c26bb 구성(none 판정 켬, remote_* few-shot 없음)의
+> 값입니다. 그 뒤 dev와 보정용 질의 세트만으로 (1) remote_* 도구 순위 전용 few-shot, (2) 용어집 `remote → 원격`,
+> (3) none 판정 기본 끔과 보정 데이터 변경을 정했습니다(4.10절, 현재 구성 dev 결과는 5.4절). 현재 구성의 test·holdout
+> 최종 수치는 다시 재는 중이며 측정이 끝나면 이 표들을 갱신합니다.
+
 같은 평가셋 test 분할(core 레지스트리, 유사도 슬롯 평가 n=70, 질의 106개)에서 v1과 v2를 비교했습니다.
 
 | 지표 | v1 | v2 | 차이 (paired bootstrap 95% CI) |
@@ -103,7 +108,7 @@ flowchart LR
     L --> S
     E --> A["앵커 top1"]
     Q --> C["어휘 커버리지 cov"]
-    A --> N{"none 판정<br/>top1 + 0.0348·cov < 0.8295"}
+    A --> N{"none 판정(기본 끔)<br/>soft: top1 + 0.0634·cov < 0.8282"}
     C --> N
     V["보이는 도구<br/>(모드·RBAC 필터)"] --> P
     S --> P["필수 ∩ 보이는 도구<br/>+ tool_search(보이면 항상)<br/>+ 히스토리 도구<br/>+ 비용 인지 슬롯"]
@@ -116,13 +121,21 @@ flowchart LR
 ### 4.1 도구 텍스트 (`text.py`, `tool_gloss.py`)
 
 - **순위용 passage**: `"passage: {name} ({이름 단어}): {description} 입력: {파라미터 이름}. 한국어: {용어집 표기} {few-shot…}"`.
-  영어 설명 옆에 도구 공통 영→한 용어집(115개 항목, 예: read→읽기, worktree→워크트리)으로 만든 한국어 표기를 붙여 한국어 질의가
+  영어 설명 옆에 도구 공통 영→한 용어집(116개 항목, 예: read→읽기, worktree→워크트리)으로 만든 한국어 표기를 붙여 한국어 질의가
   설명과 직접 맞닿게 했습니다. 용어집은 결정적이고 커스텀·MCP 도구에도 자동으로 적용됩니다.
+- **용어집 출처**: 지금 용어집은 dev 질의를 본 뒤 작성됐습니다(6장 2항). 출처가 깨끗한 대안으로, 질의를 한 번도 보지 않은
+  작성자가 도구 카탈로그 어휘만으로 만든 블라인드 용어집(335개 항목)과 미리 정한 규칙으로 비교했고 현재 용어집을 유지했습니다(4.10절).
+  `remote → 원격`(블라인드 용어집에도 있는 어휘)만 더했습니다.
+- **few-shot**: 코어 도구는 `examples.TOOL_EXAMPLE_QUERIES`(passage·BM25·앵커·커버리지에 모두 들어감). Remote Workspace 도구 10개는
+  평가셋·용어집을 보지 않은 작성자가 카탈로그만 보고 쓴 예시(도구당 한국어 2 + 영어 2)를 `examples.RANKING_ONLY_EXAMPLE_QUERIES`로
+  붙이며, **순위용 passage와 BM25에만** 넣습니다. none 규칙은 core 레지스트리(remote_* 없음)로 보정하므로, remote 앵커까지 넓히면
+  서버 레지스트리의 none 특징이 보정 분포 밖으로 나갑니다(dev server-default에서 none 재현율 0.722 → 0.556). 도구 클래스 속성
+  대신 이 표에 둔 이유는 앵커에서 빼야 하고, 코어 few-shot과 한곳에서 검토하며 `RECIPE_VERSION`(현재 v2.3)으로 함께 관리하기 위해서입니다.
 - **BM25 문서**: 이름×3 + (설명 + 용어집 표기) + 파라미터 이름·설명 + few-shot. 토크나이저는 한글을 음절 bigram으로 자르고
   라틴 문자는 camelCase/snake_case로 나눈 뒤 경량 stem과 불용어 제거를 합니다. 형태소 분석기가 없어도 "메모리에"와 "메모리"가
   bigram으로 겹칩니다.
 - **앵커**: none 판정 전용으로 v1 레시피("이름: 설명 예시 질문: …")를 따로 임베딩합니다. 보정 계수가 이 분포에 맞춰져 있어서
-  피드백 few-shot은 섞지 않습니다.
+  피드백 few-shot과 순위 전용 few-shot(remote_*)은 섞지 않습니다. 용어집도 앵커·커버리지에는 들어가지 않습니다.
 
 ### 4.2 순위 (`retriever.py`, `lexical.py`)
 
@@ -141,7 +154,7 @@ flowchart LR
 - **비용 인지 슬롯**: 나머지 후보의 순위 i(1부터)는 `i × cost(tool) ≤ 700`일 때 넣습니다. cost는 스키마 압축 JSON 글자 수 / 4,
   1위는 항상, 상위 12개까지만 봅니다. 순위 사전확률(1/i)을 스키마 비용으로 나눈 값으로 거르는 것과 같아서, 스키마가 큰 도구는
   상위에 있을 때만 들어갑니다. dev에서 C=700은 adaptive k=8 대비 set_recall +0.002에 토큰 −303이었습니다.
-- **none soft fallback**: none으로 판정하면 슬롯을 상위 3개로 줄입니다(tool_search는 위 규칙으로 이미 들어 있음). 슬롯을 비우지
+- **none soft fallback**(기본 꺼짐, `THESEUS_TOOL_RAG_NONE_MODE=soft`로 켬): none으로 판정하면 슬롯을 상위 3개로 줄입니다(tool_search는 위 규칙으로 이미 들어 있음). 슬롯을 비우지
   않으므로 오판해도 정답이 대부분 그대로 전달됩니다(test 오판 9건 중 7건은 정답 전달).
 
 ### 4.4 none 판정 (`calibration.py`, `benchmarks/tool_rag/calibrate.py`)
@@ -149,8 +162,25 @@ flowchart LR
 - 특징 2개: 앵커 코사인 최댓값 top1(tool_search 제외), 질의 토큰 중 도구 카탈로그 어휘에 있는 비율 cov. 둘 다 **인덱스 전체 도구**
   기준이라 모드·RBAC로 숨긴 도구도 들어갑니다. 그래서 "보이는 도구 중에 맞는 것이 없다"가 아니라 "카탈로그 전체에 맞는 것이
   없다"를 판정합니다(6장 10항).
-- dev 전체로 class-balanced 로지스틱 회귀를 적합하고, 임계값은 "답 있는 질의를 none으로 판정하는 비율 ≤ 5%" 중 F1 최대인
-  값으로 잡았습니다. 결과 규칙은 `top1 + 0.0348·cov < 0.8295`이면 none입니다.
+- **기본은 끕니다**(`THESEUS_TOOL_RAG_NONE_MODE=off`). 판정이 다른 작성자의 질의로 전이되지 않았기 때문입니다(아래 표, 4.10절 R3).
+  `score()`는 top1·cov를 어차피 계산하므로 끈다고 지연이 줄지는 않고, 턴당 토큰이 dev core 1761.7 → 1782.6, server-default
+  1765.6 → 1788.3으로 늘며 set_recall은 같습니다(none on/off 하네스, 둘 다 커밋 0771e25 구성).
+- soft로 켤 때 쓰는 규칙은 평가셋 dev core 107개(none 18) + 보정용 질의 세트 `calibration_set.jsonl` core 184개(none 86, 평가셋·
+  용어집·few-shot을 보지 않은 작성자가 쓴 질의)를 합친 291개로 적합합니다. class-balanced 로지스틱 회귀, 임계값은 "답 있는 질의를
+  none으로 판정하는 비율 ≤ 5%" 중 F1 최대. 결과 규칙은 `top1 + 0.0634·cov < 0.8282`이면 none입니다(이전: dev만으로 적합한
+  `top1 + 0.0348·cov < 0.8295`). 합친 데이터의 반복 5-fold × 20 CV는 F1 0.677 ± 0.020, false-none 5.1%입니다.
+- 두 세트 사이 전이(한쪽으로 적합 → 다른 쪽 평가)는 보정 파일 `fit.transfer`에 함께 기록합니다. 두 작성자는 none의 정의가
+  달라서(dev는 외부 서비스 요청 위주, 보정 세트는 잡담·일반 지식까지 none) 한쪽에서 잡은 임계값이 다른 쪽에서 크게 빗나갑니다.
+
+  | 방법 (탐색 단계 추천안) | 보정 세트 → dev F1 / false-none | dev → 보정 세트 F1 / false-none | 합친 CV F1 |
+  |---|---|---|---|
+  | [top1, cov] (현재 절차) | 0.190 / 1.1% | 0.819 / 12.2% | 0.677 |
+  | [top3 앵커 평균, cov, BM25/토큰, 한글 비율] | 0.538 / 1.1% | 0.815 / 7.1% | 0.757(선택 편향 보정 0.701) |
+  | [top1, cov, 프로토타입 margin] (질의 291개를 프로토타입으로 탑재) | 0.743 / 4.5% | 0.835 / 6.1% | 0.850 |
+
+  미리 정한 채택 기준(양방향 모두 F1 ≥ 0.5이고 false-none ≤ 5%)을 넘는 추천안이 없어 기본값을 끔으로 정했습니다. 추천안이 아니었던
+  순수 kNN 투표 일부 설정(k=5·9, τ=0.05)은 기준을 넘었지만 k·τ에 따라 전이 F1이 0.55~0.83으로 흔들려, 전이 결과로 설정을 고르는
+  것이 곧 그 지표에 맞추는 일이라 후보로 삼지 않았습니다.
 - 보정 파일(`tool_rag/data/toolrag_calibration.e5-small-int8.json`)은 모델 sha256과 레시피 버전이 맞을 때만 적용됩니다. 런타임은 로드할 때 `model.onnx`와 sentencepiece 모델의 실제 sha256을 계산해 `embedder.json` 선언값과 비교하고(약 0.1 s), 다르면 모델을 쓰지 않고 보이는 도구 전부를 보냅니다. 임베더 fingerprint도 계산한 해시로 만듭니다.
   다른 모델을 쓰면 경고를 남기고 none 판정을 끕니다. 절대 코사인 임계값은 모델과 양자화에 묶여 있기 때문입니다.
 
@@ -217,11 +247,44 @@ tool_search를 반복해도 bash·write_file·edit_file·remote_run_command가 �
 설정에서 dev를 반으로 나눠 한쪽에서 고르고 다른 쪽에서 재는 일을 200번 반복했고, 낙관 편향은 +0.005(int8)였습니다.
 실제 dev → test 하락은 R@3 0.918 → 0.895였습니다.
 
+### 4.10 3차 변경: 미리 정한 규칙과 dev 측정
+
+결과를 보기 전에 규칙(R1~R4)을 정해 두고 그대로 따랐습니다. 쓴 데이터는 평가셋 dev 분할과 `calibration_set.jsonl`뿐이고 test·holdout은
+읽지 않았습니다. 명령은 모두 `python -m benchmarks.tool_rag.run --split dev --passes 0`(저장소 밖 변형으로 옵션 전환).
+
+**R1 remote few-shot** (유지 조건: dev server-default set_recall과 dev server R@3가 **둘 다** 나빠지지 않을 것 → 유지, 순위 전용 배치)
+
+| 배치 (none soft, 보정 그대로) | server-default set_recall | server R@3 | server set_recall | none F1 (server-default) |
+|---|---|---|---|---|
+| 없음 | 0.898 | 0.826 | 0.918 | 0.743 |
+| 순위 전용(passage·BM25) | 0.935 | 0.881 | 0.953 | 0.743 |
+| 앵커·커버리지까지 | 0.935 | 0.881 | 0.953 | 0.645 |
+
+core는 remote 도구가 없어 모든 지표가 같습니다.
+
+**R2 용어집** (블라인드가 dev core R@3 최선보다 0.010 넘게 낮지 않으면 블라인드, 아니면 합집합이 0.010 안이면 합집합, 아니면 현재 → **현재 유지**)
+
+| 용어집 | 항목 | core R@3 | core MRR | core set_recall | server-default R@3 | server-default set_recall |
+|---|---|---|---|---|---|---|
+| 현재(dev를 본 뒤 작성) | 115 | **0.9181** | 0.894 | 0.970 | 0.881 | 0.935 |
+| 블라인드(카탈로그 어휘만) | 335 | 0.9040 | 0.858 | 0.961 | 0.883 | 0.925 |
+| 합집합(블라인드 + replace, sub-agent, mcp) | 338 | 0.8955 | 0.858 | 0.955 | 0.883 | 0.925 |
+
+**R4 서버 격차 보고서의 제안**: dev 측정으로 뒷받침되는 것만 넣었습니다. 제안 1(remote 한국어 few-shot)은 R1로 반영했습니다(블라인드
+예시 전체, 도구당 4개). 제안 2 `remote → 원격` 용어집 항목은 R1 위에서 dev server·server-default R@3 0.881 → 0.895, MRR 0.836 → 0.844,
+set_recall 같음, core 변화 없음이라 넣었습니다. 비용 예산(C=900: +0.010 set_recall에 +114 토큰)과 remote 비용 할인은 넣지 않았습니다.
+
+**R3 none 판정** (추천안의 양방향 전이 우선 → 기준 미달이면 off): 4.4절 표처럼 어느 추천안도 양방향 F1 ≥ 0.5·false-none ≤ 5%를 넘지 못해
+**off**. 탐색 단계의 의사결정 분석에서도 판정의 이득은 턴당 약 20~75 토큰(스키마 프롬프트의 1~4%)으로 작았고, 완벽한 분류기라도
+dev 비율에서 턴당 약 22 토큰이 상한이었습니다.
+
 ## 5. 결과
 
 결과 파일은 `backend/theseus-core-server/benchmarks/tool_rag/results/`에 있습니다. v1 수치는 측정 당시 HEAD 3b9467e(결과 JSON의
 `meta.commit`, Python 3.12, torch 2.15 CPU 4스레드), v2 수치는 커밋 18c26bb(Python 3.11, onnxruntime 1.32.0 4스레드,
 `engine_src_dirty=false`)에서 같은 Windows 노트북으로 쟀습니다. v1 검색기 코드는 f9862e4와 3b9467e에서 같습니다.
+
+아래 5.1~5.3의 v2 test·all 수치는 커밋 18c26bb 구성의 값이고, 3차 변경 뒤 최종 구성의 test·holdout 수치는 다시 재는 중입니다(현재 구성 dev 결과는 5.4절).
 
 v2 수치는 리뷰 수정(도구 인스턴스 해석, tool_search 고정) 뒤 다시 잰 값입니다. tool_search 고정은 전달 집합을 바꾸므로 dev로
 효과를 확인한 뒤 test와 all을 다시 한 번 평가했습니다. 순위(R@k·MRR)와 none 판정은 바뀌지 않았고, 바뀐 것은 전달 집합·토큰·지연입니다.
@@ -287,13 +350,36 @@ Linux 컨테이너의 v2 dev 결과(`results/v2_dev_linux_2cpu.json`, 이미지 
 `meta.commit`·`meta.image`에 기록)는 Windows `v2_dev.json`과 질의 107개 모두에서 순위·전달 집합·none 판정이 같았습니다.
 Docker 빌드에서 만든 int8 모델도 로컬과 sha256이 같았습니다(7486bedf…).
 
+### 5.4 현재 구성 dev 결과 (3차 변경 뒤)
+
+커밋 06117c1(`engine_src_dirty=false`), Windows 4스레드, 같은 하네스. dev 분할만 다시 쟀습니다.
+
+```bash
+python -m benchmarks.tool_rag.run --variant v2 --split dev --json benchmarks/tool_rag/results/v2_dev.json
+python -m benchmarks.tool_rag.run --variant v2 --registry server --split dev --json benchmarks/tool_rag/results/v2_server_dev.json
+python -m benchmarks.tool_rag.run --variant v2 --registry server-default --split dev --json benchmarks/tool_rag/results/v2_server_default_dev.json
+```
+
+| 레지스트리 | 구성 | R@3 | MRR | set_recall | 토큰 평균 / p95 | none |
+|---|---|---|---|---|---|---|
+| core | 18c26bb | 0.918 | 0.894 | 0.970 | 1762 / 1976 | soft (F1 0.743, in-sample) |
+| core | **06117c1** | 0.918 | 0.894 | 0.970 | 1783 / 1983 | off |
+| server | 0771e25 | 0.826 | 0.812 | 0.918 | 1767 / 1979 | soft |
+| server | **06117c1** | **0.895** | 0.844 | **0.953** | 1788 / 1998 | off |
+| server-default | 0771e25 | 0.826 | 0.812 | 0.898 | 1766 / 1985 | soft |
+| server-default | **06117c1** | **0.895** | 0.844 | **0.935** | 1804 / 1998 | off |
+
+- core는 순위·set_recall이 같고 none을 끈 만큼 토큰이 약 21 늘었습니다. 서버 레지스트리는 remote few-shot으로 R@3 +0.069,
+  set_recall +0.035~0.037이고, 같은 조건의 전부 전송(server-default 0.953, server 0.985) 대비 격차가 0.055 → 0.018, 0.067 → 0.032로 줄었습니다.
+- `results/v2_dev_linux_2cpu.json`은 18c26bb 구성 그대로입니다(Linux 컨테이너는 다시 재지 않았습니다).
+
 ## 6. 한계와 주의 사항
 
 1. **none 판정이 test에서 일반화되지 않았습니다.** dev in-sample F1 0.743, dev 교차검증 추정 0.653이었지만 test는 0.267
    (tp 4 / fp 9 / fn 13)이었고, 답 있는 질의를 none으로 본 비율이 10.1%였습니다. 오판은 주로 task_* 계열 한국어 질의와 짧은
    grep/glob 질의였고, soft fallback 덕분에 9건 중 7건은 정답이 그대로 전달됐습니다. 놓친 none은 구글 캘린더, 카카오톡, 노션,
-   PPT 같은 외부 서비스 요청이었습니다. dev·test none이 각각 18·17개뿐이라 표본이 작습니다. 필요하면
-   `THESEUS_TOOL_RAG_NONE_MODE=off`로 끕니다(끈 구성은 test에서 평가하지 않았습니다).
+   PPT 같은 외부 서비스 요청이었습니다. dev·test none이 각각 18·17개뿐이라 표본이 작습니다. 3차 변경에서 다른 작성자의 보정용
+   질의 세트로 전이를 재 보니 이 문제가 재현돼(4.4절) 기본값을 `off`로 바꿨습니다. 켜려면 `THESEUS_TOOL_RAG_NONE_MODE=soft`입니다.
 2. **한국어 용어집은 dev 질의를 본 뒤 작성됐고, test 정보가 일부 섞였을 수 있습니다.** 항목을 30% 무작위로 지워도 dev R@3 평균
    0.882, 50% 지워도 0.856으로 용어집을 안 쓰는 최선 조합(0.845) 이상이었습니다. 다만 튜닝 입력이던 베이스라인 진단 보고서가
    dev·test 합산 실패 분석으로 "task_create는 백그라운드 요청에서 거의 안 뽑힌다"고 적었는데, '백그라운드'가 들어간 평가 질의 8개
@@ -304,8 +390,17 @@ Docker 빌드에서 만든 int8 모델도 로컬과 sha256이 같았습니다(74
    0.942 → 0.913, 해당 8개 질의 R@3 0.812 → 0.490. 영어 설명을 기계적으로 옮긴 자연스러운 항목이라 의도적 test 적합의 증거는
    아니지만, test 수치는 "부분적으로 오염됐을 수 있음"으로 읽어야 합니다. 3단계에서는 진단 보고서를 dev 전용으로 다시 만들고,
    dev에 근거가 있는 용어집 항목만으로 구성을 다시 골라야 합니다. 새 코어 도구를 추가할 때는 용어집과 few-shot을 같이 갱신해야 합니다.
+   3차 변경에서 질의를 보지 않고 카탈로그 어휘만으로 만든 블라인드 용어집과 비교했습니다(4.10절 R2). 블라인드 용어집에도
+   `background → 백그라운드`가 같은 표기로 들어 있어(task_* 설명의 카탈로그 어휘) 이 항목은 카탈로그만 봐도 나오는 항목입니다.
+   블라인드 용어집은 dev core R@3가 0.904로 현재(0.918)보다 0.014 낮아 미리 정한 허용폭(0.010)을 넘었고, 현재 용어집을 유지했습니다.
 3. **서버 레지스트리(Remote Workspace 도구 포함)는 core보다 약합니다**(test R@3 0.778, set_recall 하네스 server 0.865 / 실제 서버
-   기본값 0.812). remote_* 도구에 few-shot이 없기 때문입니다. remote 도구에 example_queries를 2~3개씩 다는 것이 다음 개선 후보입니다.
+   기본값 0.812, 18c26bb 구성). remote_* 도구에 few-shot이 없었기 때문이고, 3차 변경에서 순위 전용 few-shot을 붙여 dev server-default
+   set_recall 0.898 → 0.935, R@3 0.826 → 0.895가 됐습니다(5.4절). 남은 dev 격차는 코어 도구 순위(모호한 질의 "저번에 하던 거 불러와",
+   web_search를 가리는 deep_research)와 비용 규칙입니다. few-shot이 붙은 remote 도구가 remote가 아닌 질의의 상위 3에 더 자주
+   들어가는 부작용이 있습니다(dev server, remote 정답이 없는 질의 107개의 상위 3에 remote 도구 22 → 69회). 그 때문에 비용 규칙에
+   밀려 빠진 정답이 dev server-default 1건(q032 deep_research), server 3건(q032, q066 web_search, q101 skill_save) 생겼습니다
+   (같은 비교에서 새로 전달된 질의는 server-default 5건, server 7건). 블라인드 예시 중 한국어 2개만 쓰면 q032는 잃지 않았다는
+   탐색 단계 측정이 있지만, 미리 정한 규칙대로 예시 전체를 넣었습니다.
 4. 비용 예산 700은 dev에서 골랐고, 토큰은 cl100k 프록시라 로컬 모델 토크나이저와 다릅니다.
 5. int8 동작은 같은 노트북 CPU(AVX2·VNNI 지원)의 Windows와 Linux 컨테이너에서만 확인했습니다. VNNI가 없는 CPU에서는 확인하지 못했습니다.
    순위가 torch와 완전히 같아야 하면 fp32 ONNX(`--quantization fp32`, RSS 약 +517 MB)를 쓰면 됩니다.
@@ -331,7 +426,7 @@ Docker 빌드에서 만든 int8 모델도 로컬과 sha256이 같았습니다(74
    `embedder.json`의 `sha256`, `dim`, `max_length`, `pooling`, `query_prefix`, `passage_prefix`를 런타임이 그대로 읽으므로
    프리픽스나 차원이 달라도 코드는 바꾸지 않습니다.
 2. `THESEUS_EMBED_MODEL_DIR=<새 디렉터리> python -m benchmarks.tool_rag.calibrate --out <새 디렉터리>/toolrag_calibration.json`으로
-   dev 분할에서 none 규칙을 다시 적합합니다. 보정 파일은 새 모델의 fingerprint를 기록하므로 옛 모델 보정값이 섞이지 않습니다.
+   dev core + calibration_set core로 none 규칙을 다시 적합합니다(fit 블록에 두 세트 사이 전이가 기록되니, 기준을 넘으면 기본값을 다시 검토). 보정 파일은 새 모델의 fingerprint를 기록하므로 옛 모델 보정값이 섞이지 않습니다.
 3. 비용 예산과 BM25 β도 dev에서 다시 확인합니다(`THESEUS_TOOL_RAG_COST_BUDGET`, `THESEUS_TOOL_RAG_BM25_BETA`).
 4. `python -m benchmarks.tool_rag.run --variant v2 --split dev`로 비교하고, 최종 구성만 test를 1회 평가한 뒤
    `compare.py`로 v2(현재 모델)와 비교합니다.

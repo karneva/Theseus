@@ -13,13 +13,14 @@ v2(`theseus_engine/core/tool_rag`, 현재 저장소 구현)를 같은 정의로 
 | `baseline.py` | v1 `ToolRetriever`(`legacy_v1.py`, f9862e4 동결 사본)를 감싼 `BaselineRetriever`. torch 필요 |
 | `legacy_v1.py` | v1 검색기 코드 사본(키워드 리랭크, 임계값 0.3, adaptive k). 베이스라인 재측정 전용 |
 | `v2.py` | 저장소 v2 구현을 감싼 `V2Retriever`(`--variant v2`)와 v1 서버 동작 참조점 `AllVisibleTools`(`--variant all-visible`) |
-| `calibrate.py` | none 판정 보정: dev 분할만으로 선형 규칙을 적합해 `toolrag_calibration*.json`을 씁니다 |
+| `calibration_set.jsonl` | none 보정용 질의 205개(core 184, none 86). 평가셋·용어집·few-shot을 보지 않은 작성자가 쓴 튜닝용 세트. 답 있는 질의의 `relevant`는 작성자 한 명의 추정. 수정 금지(`calibrate.py`가 sha256으로 검증) |
+| `calibrate.py` | none 판정 보정: dev core + `calibration_set.jsonl` core를 합쳐 선형 규칙을 적합하고, 합친 CV와 두 세트 사이 전이 추정을 함께 `toolrag_calibration*.json`의 `fit`에 씁니다 |
 | `compare.py` | 두 결과 JSON의 질의 단위 paired bootstrap 비교(95% CI) |
 | `container_probe.py` | Core 이미지 안에서 `import src.main` → 첫 검색 → 웜 검색의 RSS·시간 측정 |
 | `run.py` | CLI |
 | `_env.py` | 결정성 고정(피드백 로그를 빈 디렉터리로, HF 오프라인, 바이트코드 끔). 패키지 import 시 먼저 실행됩니다. |
 | `results/baseline_{dev,test,all}.json` | v1 베이스라인 결과(측정 HEAD 3b9467e, v1 검색기는 f9862e4와 같음) |
-| `results/v2_{dev,test,all}.json` | v2 결과(core 레지스트리), `v2_server_{test,all}.json`은 server, `v2_server_default_{test,all}.json`은 server-default 레지스트리 |
+| `results/v2_{dev,test,all}.json` | v2 결과(core 레지스트리), `v2_server_{dev,test,all}.json`은 server, `v2_server_default_{dev,test,all}.json`은 server-default 레지스트리. dev 파일은 현재 구성(06117c1), test·all 파일은 18c26bb 구성 |
 | `results/all_visible_{core,server,server_default}_{test,all}.json` | v1 서버 동작(검색 없이 보이는 도구 전부) 참조점 |
 | `results/compare_baseline_v2_{dev,test,all}.json` | `compare.py` 출력 |
 | `results/v2_dev_linux_2cpu.json`, `results/container_probe.json` | Linux 컨테이너(2 vCPU, 1.5 GB) 측정 |
@@ -148,6 +149,9 @@ python -m benchmarks.tool_rag.run --variant baseline --split all --legacy-demo-t
 
 ## v2 결과 (저장소 구현, core 레지스트리)
 
+> 아래 표와 서버 test 수치는 커밋 18c26bb 구성(none 판정 켬, remote_* few-shot 없음)입니다. 이후 3차 변경(아래 "3차 변경")을 dev와
+> `calibration_set.jsonl`만으로 정했고, 현재 구성의 test·holdout 최종 수치는 다시 재는 중입니다.
+
 커밋 18c26bb, Windows 11 / Python 3.11.15 / onnxruntime 1.32.0(4 스레드) / 모델 `e5-small-int8`(sha256 7486bedf…).
 처음 저장소 구현(6739df9)은 Combine 단계 스크래치 구현(`FinalV2`)과 dev·test·all 모든 질의의 상위 8 순위·점수·전달 집합·none 판정이
 같았습니다. 이후 코드 리뷰에서 "일부만 보내는 턴에 tool_search가 없다"는 결함을 고쳐 tool_search를 항상 넣었고(전달 집합 변경),
@@ -176,5 +180,36 @@ set_recall +0.126 [+0.066, +0.193], 스키마 토큰 −168 [−224, −113], �
 엔진 RAG 도구 2개 숨김). test 기준 전부 전송 5593 / 5367 토큰, set_recall 0.974 / 0.922, v2는 1753 / 1758 토큰,
 set_recall 0.865 / 0.812입니다.
 
+### 3차 변경 (dev만으로 결정, 커밋 6c2ecb6 · 650158c · 06117c1)
+
+미리 정한 규칙(R1~R4)과 dev 측정은 [설계 문서 4.10절](../../../../docs/architecture/tool-rag.md)에 있습니다.
+
+- **remote_* few-shot**: Remote Workspace 도구 10개에 블라인드 작성 예시(도구당 한국어 2 + 영어 2)를 `examples.RANKING_ONLY_EXAMPLE_QUERIES`로
+  붙였습니다. 순위용 passage·BM25에만 넣고 none 앵커·커버리지에는 넣지 않습니다.
+- **용어집**: 질의를 보지 않고 카탈로그 어휘로 만든 블라인드 용어집과 비교해(dev core R@3 현재 0.918 / 블라인드 0.904 / 합집합 0.895)
+  현재 용어집을 유지하고 `remote → 원격`만 더했습니다. `RECIPE_VERSION` v2.3.
+- **none 판정 기본 끔**: 두 작성자 세트 사이 전이에서 어떤 추천안도 양방향 F1 ≥ 0.5·false-none ≤ 5%를 넘지 못했습니다.
+  `THESEUS_TOOL_RAG_NONE_MODE=soft`로 켤 때 쓰는 보정은 dev core 107 + calibration_set core 184로 다시 적합했습니다
+  (`top1 + 0.0634·cov < 0.8282`, 합친 CV F1 0.677, false-none 5.1%). 하네스 none P/R/F1은 기본 구성에서 0입니다.
+
+현재 구성 dev 결과(커밋 06117c1, `engine_src_dirty=false`):
+
+```bash
+python -m benchmarks.tool_rag.run --variant v2 --split dev --json benchmarks/tool_rag/results/v2_dev.json
+python -m benchmarks.tool_rag.run --variant v2 --registry server --split dev --json benchmarks/tool_rag/results/v2_server_dev.json
+python -m benchmarks.tool_rag.run --variant v2 --registry server-default --split dev --json benchmarks/tool_rag/results/v2_server_default_dev.json
+python -m benchmarks.tool_rag.compare benchmarks/tool_rag/results/baseline_dev.json benchmarks/tool_rag/results/v2_dev.json --json benchmarks/tool_rag/results/compare_baseline_v2_dev.json
+```
+
+| registry | n (순위) | R@3 | R@3 KO / EN | MRR | Hit@1 | set_recall_delivered | 스키마 토큰 평균 / p95 | none |
+|---|---|---|---|---|---|---|---|---|
+| core | 59 | 0.918 | 0.904 / 0.947 | 0.894 | 0.814 | 0.970 | 1783 / 1983 | off |
+| server | 70 | 0.895 | 0.897 / 0.891 | 0.844 | 0.729 | 0.953 | 1788 / 1998 | off |
+| server-default | 70 | 0.895 | 0.897 / 0.891 | 0.844 | 0.729 | 0.935 | 1804 / 1998 | off |
+
+변경 전 dev(0771e25): core 0.918 / 0.970 / 1762, server R@3 0.826 / set_recall 0.918 / 1767, server-default 0.826 / 0.898 / 1766.
+dev 베이스라인 대비(core): R@3 +0.350 [+0.240, +0.463], set_recall +0.141 [+0.080, +0.207], 토큰 −115 [−183, −47].
+`results/v2_dev_linux_2cpu.json`은 18c26bb 구성 그대로입니다.
+
 모델 준비(로컬): `pip install -r requirements-tool-rag-model.txt` 후
-`python scripts/provision_tool_rag_model.py --out ~/.theseus/models/e5-small-int8`. 보정 재적합: `python -m benchmarks.tool_rag.calibrate --out <파일>`.
+`python scripts/provision_tool_rag_model.py --out ~/.theseus/models/e5-small-int8`. 보정 재적합(dev core + calibration_set core, test·holdout은 읽지 않음): `python -m benchmarks.tool_rag.calibrate --out <파일>`.
