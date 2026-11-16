@@ -217,6 +217,37 @@ class EmbeddingCacheTest(unittest.TestCase):
             _, _, new3 = again.get_or_encode("fp2", ["a"], emb.encode, emb.dim)
             self.assertEqual(new3, 1)
 
+    def test_flush_keeps_vectors_of_other_registries(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            emb = FakeEmbedder()
+            cache = EmbeddingCache(tmp)
+            _, core_keys, _ = cache.get_or_encode("fp", ["core1", "core2"], emb.encode, emb.dim)
+            cache.flush("fp", core_keys)
+            _, remote_keys, _ = cache.get_or_encode("fp", ["core1", "remote1"], emb.encode, emb.dim)
+            cache.flush("fp", remote_keys)  # 두 번째 레지스트리만 넘겨도 core2가 지워지면 안 됩니다
+            restarted = EmbeddingCache(tmp)
+            _, _, new = restarted.get_or_encode("fp", ["core1", "core2", "remote1"], emb.encode, emb.dim)
+            self.assertEqual(new, 0)
+            # 재시작 뒤 다시 저장해도 디스크에서 읽은 벡터가 유지됩니다.
+            restarted.flush("fp", [])
+            restarted._dirty.add("fp")
+            restarted.flush("fp", [])
+            _, _, new2 = EmbeddingCache(tmp).get_or_encode("fp", ["core2", "remote1"], emb.encode, emb.dim)
+            self.assertEqual(new2, 0)
+
+    def test_flush_respects_disk_cap(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            emb = FakeEmbedder()
+            cache = EmbeddingCache(tmp, max_disk_entries=3)
+            for i in range(5):
+                _, keys, _ = cache.get_or_encode("fp", [f"t{i}"], emb.encode, emb.dim)
+                cache.flush("fp", keys)
+            again = EmbeddingCache(tmp)
+            _, _, new_recent = again.get_or_encode("fp", ["t4", "t3", "t2"], emb.encode, emb.dim)
+            self.assertEqual(new_recent, 0)
+            _, _, new_old = again.get_or_encode("fp", ["t0"], emb.encode, emb.dim)
+            self.assertEqual(new_old, 1)
+
 
 class FeedbackLoggerTest(unittest.TestCase):
     def setUp(self) -> None:
