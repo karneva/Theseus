@@ -9,6 +9,7 @@ v2(`theseus_engine/core/tool_rag`, 현재 저장소 구현)를 같은 정의로 
 | 파일 | 내용 |
 |---|---|
 | `eval_set.jsonl` | 동결 평가셋 236개 질의(한국어 164 / 영어 72, single 134 · multi 67 · none 35, dev/test 118/118). 수정 금지. 하네스가 sha256으로 검증합니다. |
+| `holdout_set.jsonl` | 최종 평가 전용 홀드아웃 140개 질의(한국어 90 / 영어 50, single 80 · multi 41 · none 19, core 111 · Remote Workspace 29). 평가셋·용어집·few-shot을 보지 않은 작성자 3명이 도구 카탈로그만 보고 썼고, 다른 주석자가 독립 라벨링(135개 일치, 5개 판정). sha256(2948379…)은 개발 전에 0771e25에서 고정했고 파일은 최종 평가 커밋 3ef5ee0에서 추가했습니다. 수정 금지, 튜닝에 쓰지 않음 |
 | `harness.py` | `build_registry`, `Retriever` 프로토콜, `evaluate`, 지표 함수 |
 | `baseline.py` | v1 `ToolRetriever`(`legacy_v1.py`, f9862e4 동결 사본)를 감싼 `BaselineRetriever`. torch 필요 |
 | `legacy_v1.py` | v1 검색기 코드 사본(키워드 리랭크, 임계값 0.3, adaptive k). 베이스라인 재측정 전용 |
@@ -18,19 +19,25 @@ v2(`theseus_engine/core/tool_rag`, 현재 저장소 구현)를 같은 정의로 
 | `compare.py` | 두 결과 JSON의 질의 단위 paired bootstrap 비교(95% CI) |
 | `container_probe.py` | Core 이미지 안에서 `import src.main` → 첫 검색 → 웜 검색의 RSS·시간 측정 |
 | `run.py` | CLI |
+| `final_eval.sh` | 최종 평가(홀드아웃 1회 + test·all 재측정 + 비교)를 만든 명령. `PY_V2`, `PY_V1`, `OLD_TREE`, `THESEUS_EMBED_MODEL_DIR`, `HF_HOME` 환경 변수가 필요합니다(파일 맨 위 사용법) |
 | `_env.py` | 결정성 고정(피드백 로그를 빈 디렉터리로, HF 오프라인, 바이트코드 끔). 패키지 import 시 먼저 실행됩니다. |
 | `results/baseline_{dev,test,all}.json` | v1 베이스라인 결과(측정 HEAD 3b9467e, v1 검색기는 f9862e4와 같음) |
-| `results/v2_{dev,test,all}.json` | v2 결과(core 레지스트리), `v2_server_{dev,test,all}.json`은 server, `v2_server_default_{dev,test,all}.json`은 server-default 레지스트리. dev 파일은 현재 구성(06117c1), test·all 파일은 18c26bb 구성 |
+| `results/v2_{dev,test,all}.json` | v2 결과(core 레지스트리), `v2_server_{dev,test,all}.json`은 server, `v2_server_default_{dev,test,all}.json`은 server-default 레지스트리. dev 파일은 06117c1, test·all 파일은 63e1e19(현재 구성, test는 두 번째 평가) |
 | `results/all_visible_{core,server,server_default}_{test,all}.json` | v1 서버 동작(검색 없이 보이는 도구 전부) 참조점 |
 | `results/compare_baseline_v2_{dev,test,all}.json` | `compare.py` 출력 |
+| `results/{baseline,v2,v2pre,all_visible}_holdout{,_server,_server_default}.json` | 홀드아웃 결과. `baseline`은 v1 검색기, `v2`는 현재 구성(63e1e19), `v2pre`는 개선 전 v2(87df973 worktree에 현재 하네스를 복사해 측정), `all_visible`은 v1 서버 동작. 접미사 없음은 core 레지스트리 |
+| `results/compare_{baseline,v2pre}_v2_holdout{,_server,_server_default}.json` | 홀드아웃 paired bootstrap 비교(v1 → v2, 개선 전 v2 → v2) |
 | `results/v2_dev_linux_2cpu.json`, `results/container_probe.json` | Linux 컨테이너(2 vCPU, 1.5 GB) 측정 |
 
 ## 평가 프로토콜 (반드시 지킬 것)
 
-1. 기법을 고르고 하이퍼파라미터를 튜닝할 때는 **dev 분할만** 씁니다.
-2. **test 분할은 최종 구성과 베이스라인에 대해 한 번만** 평가합니다. test 결과를 보고 다시 튜닝하지 않습니다.
-3. `eval_set.jsonl`의 질의와 라벨은 고치지 않습니다. 바뀌면 `load_eval_set`이 해시 불일치로 평가를 거부합니다.
-4. 결과를 옮길 때는 측정한 숫자와 그 명령을 그대로 적습니다(결과 JSON의 `meta.command`, `meta.commit`).
+1. 기법을 고르고 하이퍼파라미터를 튜닝할 때는 **dev 분할**과 `calibration_set.jsonl`만 씁니다.
+2. **홀드아웃(`--split holdout`)은 최종 구성과 비교 대상에 대해 한 번만** 평가합니다. 홀드아웃 결과를 보고 다시 튜닝하지 않습니다.
+   지금 홀드아웃은 3차 변경의 최종 평가(3ef5ee0)에 썼으므로, 이후 구성을 바꾸면 같은 절차로 새 홀드아웃을 만들고 개발 전에 해시를 고정합니다.
+3. test 분할은 2차 구성(18c26bb)의 최종 평가에 썼고, 3차 변경 뒤 한 번 더 쟀습니다(두 번째 평가). 튜닝 입력에 test 질의가 섞였을
+   가능성도 있어 보조 지표로만 씁니다.
+4. `eval_set.jsonl`, `holdout_set.jsonl`, `calibration_set.jsonl`의 질의와 라벨은 고치지 않습니다. 바뀌면 하네스와 `calibrate.py`가 해시 불일치로 평가를 거부합니다.
+5. 결과를 옮길 때는 측정한 숫자와 그 명령을 그대로 적습니다(결과 JSON의 `meta.command`, `meta.commit`).
 
 ## 측정 항목
 
@@ -63,7 +70,7 @@ python -m benchmarks.tool_rag.run --variant baseline --split dev
 python -m benchmarks.tool_rag.run --variant baseline --split all --json benchmarks/tool_rag/results/baseline_all.json
 ```
 
-주요 옵션: `--split dev|test|all`(기본 dev), `--registry core|server|server-default`(기본 core), `--json 경로`, `--passes N`(지연 반복, 0이면 생략), `--threads N`(torch 스레드, 기본 4), `--no-per-item`, `--variant-kwargs '{"base_k": 5}'`.
+주요 옵션: `--split dev|test|all|holdout`(기본 dev, holdout은 최종 평가 전용), `--registry core|server|server-default`(기본 core), `--json 경로`, `--passes N`(지연 반복, 0이면 생략), `--threads N`(torch 스레드, 기본 4), `--no-per-item`, `--variant-kwargs '{"base_k": 5}'`.
 
 `--variant`에는 `baseline`, `패키지.모듈:클래스`, 또는 `C:/어딘가/my_variant.py:클래스`(저장소 밖 파일)를 줄 수 있습니다.
 
@@ -147,38 +154,70 @@ python -m benchmarks.tool_rag.run --variant baseline --split all --legacy-demo-t
 
 새 변형은 현재 저장소 베이스라인(`results/baseline_*.json`)과 비교합니다. `--legacy-demo-tools`는 재현 확인용으로만 씁니다.
 
-## v2 결과 (저장소 구현, core 레지스트리)
+## 최종 결과: 홀드아웃 (1회 평가, 커밋 3ef5ee0)
 
-> 아래 표와 서버 test 수치는 커밋 18c26bb 구성(none 판정 켬, remote_* few-shot 없음)입니다. 이후 3차 변경(아래 "3차 변경")을 dev와
-> `calibration_set.jsonl`만으로 정했고, 현재 구성의 test·holdout 최종 수치는 다시 재는 중입니다.
+v2는 커밋 63e1e19(`engine_src_dirty=false`), Windows 11 / Python 3.11.15 / onnxruntime 1.32.0(4 스레드) / 모델 `e5-small-int8`(sha256 7486bedf…).
+v1은 torch 환경(Python 3.12.13)의 `--variant baseline`, 개선 전 v2는 87df973 worktree에 현재 하네스를 복사해 쟀습니다(하네스 차이는 holdout
+분할 지원뿐). 전체 명령은 `final_eval.sh`입니다.
 
-커밋 18c26bb, Windows 11 / Python 3.11.15 / onnxruntime 1.32.0(4 스레드) / 모델 `e5-small-int8`(sha256 7486bedf…).
-처음 저장소 구현(6739df9)은 Combine 단계 스크래치 구현(`FinalV2`)과 dev·test·all 모든 질의의 상위 8 순위·점수·전달 집합·none 판정이
-같았습니다. 이후 코드 리뷰에서 "일부만 보내는 턴에 tool_search가 없다"는 결함을 고쳐 tool_search를 항상 넣었고(전달 집합 변경),
-dev에서 효과를 확인한 뒤 test·all을 다시 평가했습니다. 순위와 none 판정은 그대로이고 전달 집합·토큰만 바뀌었습니다.
-Linux 컨테이너(2 vCPU, 이미지 theseus-core:rag2-18c26bb) dev 결과(`results/v2_dev_linux_2cpu.json`)는 질의 107개 모두 같았습니다.
+```bash
+python -m benchmarks.tool_rag.run --variant v2 --split holdout --json benchmarks/tool_rag/results/v2_holdout.json
+python -m benchmarks.tool_rag.run --variant v2 --split holdout --registry server-default --passes 0 --json benchmarks/tool_rag/results/v2_holdout_server_default.json
+python -m benchmarks.tool_rag.compare benchmarks/tool_rag/results/baseline_holdout.json benchmarks/tool_rag/results/v2_holdout.json --json benchmarks/tool_rag/results/compare_baseline_v2_holdout.json
+```
+
+| registry | 구현 | n (순위) | R@3 | R@3 KO / EN | MRR | Hit@1 | set_recall_delivered | 스키마 토큰 평균 / p95 | 도구 수 | none P / R / F1 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| core | v1 | 67 | 0.493 | 0.549 / 0.404 | 0.497 | 0.388 | 0.708 | 1968 / 2417 | 13.75 | 0 / 0 / 0 |
+| core | v2 개선 전 | 67 | 0.806 | 0.841 / 0.750 | 0.752 | 0.642 | 0.899 | 1750 / 1999 | 12.72 | 0.714 / 0.526 / 0.606 |
+| core | **v2** | 67 | **0.806** | 0.841 / 0.750 | 0.752 | 0.642 | **0.899** | 1771 / 1999 | 12.95 | off |
+| core | 전부 전송 | | | | | | 0.978 | 4460 / 4460 | 34 | |
+| server-default | v1 | 96 | 0.399 | 0.438 / 0.338 | 0.442 | 0.344 | 0.610 | 1880 / 2307 | 13.34 | 0 / 0 / 0 |
+| server-default | v2 개선 전 | 96 | 0.684 | 0.655 / 0.730 | 0.671 | 0.573 | 0.764 | 1754 / 2020 | 13.39 | 0.667 / 0.526 / 0.588 |
+| server-default | **v2** | 96 | **0.818** | 0.822 / 0.811 | 0.761 | 0.656 | **0.842** | 1769 / 1980 | 13.50 | off |
+| server-default | 전부 전송 | | | | | | 0.935 | 5367 / 5367 | 42 | |
+| server | v2 | 96 | 0.818 | 0.822 / 0.811 | 0.761 | 0.656 | 0.862 | 1759 / 1977 | 13.39 | off |
+| server | 전부 전송 | | | | | | 0.972 | 5593 / 5593 | 44 | |
+
+질의 111개(core) / 140개(server 레지스트리). 전부 전송(`--variant all-visible`)은 검색을 하지 않으므로 순위 지표를 적지 않았습니다.
+paired bootstrap(10000회, seed 0):
+
+- core v1 → v2: R@3 +0.313 [+0.201, +0.433](24승 1패), set_recall +0.190 [+0.118, +0.268], 토큰 −197 [−256, −139]
+- core 개선 전 → v2: R@3·set_recall 차이 0, 토큰 +20 [+10, +32](none 판정을 끈 비용)
+- server-default v1 → v2: R@3 +0.418 [+0.328, +0.512](46승 0패), set_recall +0.231 [+0.157, +0.310], 토큰 −111 [−160, −63]
+- server-default 개선 전 → v2: R@3 +0.134 [+0.075, +0.203](16승 0패), set_recall +0.077 [+0.023, +0.134], 토큰 +15 [−8, +38]
+
+개선 전 v2(none 켬)의 홀드아웃 none F1 0.606은 기본값을 끄기로 정한 **뒤에** 본 사후 관찰이라 결정에 쓰지 않았습니다
+(설계 문서 4.4절). 홀드아웃의 한계(LLM이 쓴 질의, n=67, 영어가 약함)는 설계 문서 3.3절에 있습니다.
+
+## v2 test·all (현재 구성, test는 두 번째 평가)
+
+test는 2차 구성(18c26bb)의 최종 평가에 한 번 썼고, 3차 변경 뒤 현재 구성(63e1e19)으로 다시 쟀습니다. 튜닝 입력에 test 질의가 섞였을
+가능성도 있어 보조 지표입니다. 처음 저장소 구현(6739df9)은 Combine 단계 스크래치 구현(`FinalV2`)과 dev·test·all 모든 질의의 상위 8
+순위·점수·전달 집합·none 판정이 같았고, 이후 리뷰에서 tool_search를 항상 넣도록 고친 뒤(전달 집합 변경) test·all을 한 번 더 평가했습니다.
 baseline 결과의 `meta.commit`은 측정 당시 HEAD 3b9467e입니다(v1 검색기 코드는 f9862e4와 같음).
 
 ```bash
 cd backend/theseus-core-server
 export PYTHONDONTWRITEBYTECODE=1 PYTHONIOENCODING=utf-8 THESEUS_EMBED_MODEL_DIR=<모델 디렉터리>
-python -m benchmarks.tool_rag.run --variant v2 --split {dev,test,all} --json benchmarks/tool_rag/results/v2_{split}.json
+python -m benchmarks.tool_rag.run --variant v2 --split {test,all} --json benchmarks/tool_rag/results/v2_{split}.json
 python -m benchmarks.tool_rag.compare benchmarks/tool_rag/results/baseline_test.json benchmarks/tool_rag/results/v2_test.json
 ```
 
-| split | n | R@3 | R@3 KO | R@3 EN | R@5 | MRR | Hit@1 | set_recall_delivered | 스키마 토큰 평균 / p95 | none P / R / F1 |
+| split | n | R@3 | R@3 KO | R@3 EN | R@5 | MRR | Hit@1 | set_recall_delivered | 스키마 토큰 평균 / p95 | none |
 |---|---|---|---|---|---|---|---|---|---|---|
-| dev | 59 | 0.918 | 0.904 | 0.947 | 0.952 | 0.894 | 0.814 | 0.970 | 1762 / 1976 | 0.765 / 0.722 / 0.743 (in-sample) |
-| test | 70 | 0.895 | 0.894 | 0.899 | 0.952 | 0.864 | 0.786 | 0.942 | 1770 / 2011 | 0.308 / 0.235 / 0.267 |
-| all | 129 | 0.906 | 0.898 | 0.921 | 0.952 | 0.877 | 0.798 | 0.956 | 1766 / 1983 | 0.567 / 0.486 / 0.523 |
+| test | 70 | 0.895 | 0.894 | 0.899 | 0.952 | 0.864 | 0.786 | 0.942 | 1792 / 2064 | off |
+| all | 129 | 0.906 | 0.898 | 0.921 | 0.952 | 0.877 | 0.798 | 0.956 | 1787 / 1990 | off |
 
 베이스라인 대비 test paired bootstrap(10000회, seed 0): R@3 +0.260 [+0.152, +0.364](23승 2패),
-set_recall +0.126 [+0.066, +0.193], 스키마 토큰 −168 [−224, −113], 전달 도구 수 13.37 → 12.78.
-토큰에는 모든 턴의 tool_search 스키마(176 토큰)가 들어 있습니다(고정 전 test 1622 / 1884).
+set_recall +0.126 [+0.066, +0.193], 스키마 토큰 −147 [−204, −89], 전달 도구 수 13.37 → 13.08.
+all: R@3 +0.301 [+0.222, +0.379](47승 2패), set_recall +0.134 [+0.091, +0.180], 토큰 −131 [−175, −86].
+토큰에는 모든 턴의 tool_search 스키마(176 토큰)가 들어 있습니다.
+첫 test 평가(18c26bb, none 켬)는 같은 순위에 set_recall 0.942, 토큰 1770 / 2011, none P/R/F1 0.308 / 0.235 / 0.267이었습니다.
 
-서버 레지스트리: `--registry server`(엔진 RAG 도구가 보이는 CLI AGENT 정책)와 `--registry server-default`(실제 서버 기본값,
-엔진 RAG 도구 2개 숨김). test 기준 전부 전송 5593 / 5367 토큰, set_recall 0.974 / 0.922, v2는 1753 / 1758 토큰,
-set_recall 0.865 / 0.812입니다.
+서버 레지스트리 test: `--registry server`(엔진 RAG 도구가 보이는 CLI AGENT 정책)와 `--registry server-default`(실제 서버 기본값,
+엔진 RAG 도구 2개 숨김). 전부 전송 5593 / 5367 토큰, set_recall 0.974 / 0.922, v2는 1792 / 1801 토큰, set_recall 0.912 / 0.859,
+R@3 0.869입니다(18c26bb 구성은 R@3 0.778).
 
 ### 3차 변경 (dev만으로 결정, 커밋 6c2ecb6 · 650158c · 06117c1)
 
