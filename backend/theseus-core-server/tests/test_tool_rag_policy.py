@@ -288,5 +288,33 @@ class InstanceIsolationTest(_Base):
                     self.assertEqual(tool.config.host, host, name)
 
 
+class StreamAssemblyOffLoopTest(unittest.TestCase):
+    """서버 SSE 경로가 엔진 조립(질의 인코딩·인덱스 구축)을 이벤트 루프 밖에서 하는지."""
+
+    def test_get_query_engine_runs_in_worker_thread(self) -> None:
+        import threading
+
+        from src.auth.schemas import SessionContext
+        from src.builder.engine import EngineInitializationError
+        from src.routes import stream
+
+        seen: dict[str, object] = {}
+
+        def fake_get_query_engine(context):
+            seen["thread"] = threading.current_thread()
+            raise EngineInitializationError("stop here")
+
+        async def drive() -> list[str]:
+            seen["loop_thread"] = threading.current_thread()
+            context = EngineBuildContext(user_level=5, project_tool_permissions={}, user_query="hi")
+            session = SessionContext(user_id=1, project_id=1, permission_level=5, token="t")
+            return [event async for event in stream.stream_agent_response(session, 1, "hi", context, db=None)]
+
+        with patch.object(stream, "get_query_engine", fake_get_query_engine):
+            events = asyncio.run(drive())
+        self.assertIsNot(seen["thread"], seen["loop_thread"])
+        self.assertTrue(any("ENGINE_INIT_FAILED" in e for e in events))
+
+
 if __name__ == "__main__":
     unittest.main()
