@@ -54,7 +54,9 @@ FROZEN_ESSENTIALS: frozenset[str] = frozenset(
 KS = (3, 5, 8)
 DEFAULT_SELECT_K = 8  # select()가 없는 검색기의 전달 집합 = 필수 도구 ∪ 유사도 상위 8
 SPLITS = ("dev", "test", "all")
-REGISTRY_KINDS = ("core", "server")
+REGISTRY_KINDS = ("core", "server", "server-default")
+# 실제 서버 기본값(THESEUS_ENABLE_ENGINE_RAG_TOOLS=false)이 가시성에서 빼는 엔진 RAG 도구(src/builder/engine.py)
+SERVER_DEFAULT_DISABLED: frozenset[str] = frozenset({"search_knowledge_base", "ingest_document"})
 
 _ENC = None
 
@@ -113,7 +115,9 @@ def build_registry(kind: str = "core", *, legacy_demo_tools: bool = False):
 
     core   : ALL_CORE_TOOLS (CLI/TUI/runner setup_engine, Remote Workspace 없는 서버). 헤드라인.
     server : 서버 get_query_engine + Remote Workspace(allowWriteExecution=true)
-             = ALL_CORE_TOOLS + remote_* 읽기/쓰기 도구.
+             = ALL_CORE_TOOLS + remote_* 읽기/쓰기 도구. 가시성은 CLI AGENT 정책이라 엔진 RAG 도구 2개가 보입니다.
+    server-default : server와 같은 레지스트리에 실제 서버 기본 가시성(엔진 RAG 도구 2개 숨김)을 적용합니다.
+             정답에 그 도구가 있는 질의는 어떤 변형도 전달할 수 없으므로 set_recall 상한이 1보다 낮습니다.
     legacy_demo_tools=True: 동결 베이스라인(2026-11-15 측정) 당시처럼 데모 도구 dummy_echo,
              system_reboot를 맨 앞에 다시 넣습니다. 4a2d1f0에서 ALL_CORE_TOOLS에서 빠졌으며
              동결 결과를 그대로 재현할 때만 씁니다.
@@ -134,7 +138,8 @@ def build_registry(kind: str = "core", *, legacy_demo_tools: bool = False):
         reg.register(SystemRebootTool())
     for tool_cls in ALL_CORE_TOOLS:
         reg.register(tool_cls())
-    if kind == "server":
+    reg.bench_kind = kind  # _visibility_policy가 읽습니다(server-default)
+    if kind in ("server", "server-default"):
         from src.remote_workspace.read_primitives import build_remote_read_analysis_tools
         from src.remote_workspace.write_primitives import build_remote_write_execution_tools
 
@@ -150,7 +155,7 @@ def build_registry(kind: str = "core", *, legacy_demo_tools: bool = False):
 def load_eval_set(split: str = "all", registry: str = "core", verify: bool = True) -> list[dict]:
     """평가셋을 읽어 분할·레지스트리로 거릅니다.
 
-    registry='core'이면 registry=="core" 항목만, 'server'이면 전체 항목을 씁니다(동결 벤치와 동일).
+    registry='core'이면 registry=="core" 항목만, 'server'·'server-default'이면 전체 항목을 씁니다(동결 벤치와 동일).
     """
     if split not in SPLITS:
         raise ValueError(f"split must be one of {SPLITS}, got {split!r}")
@@ -249,11 +254,14 @@ def _visibility_policy(registry):
     from theseus_engine.core.tool_visibility import ToolVisibilityPolicy
     from theseus_engine.models.modes import AgentMode
 
-    # 동결 벤치의 CLI AGENT 모드 정책: user_level=5, 도구별 permission_level 그대로
+    # 동결 벤치의 CLI AGENT 모드 정책: user_level=5, 도구별 permission_level 그대로.
+    # server-default는 여기에 서버 기본 비활성 도구(엔진 RAG)를 더합니다.
+    disabled = SERVER_DEFAULT_DISABLED if getattr(registry, "bench_kind", "core") == "server-default" else frozenset()
     return ToolVisibilityPolicy(
         mode=AgentMode.AGENT,
         user_level=5,
         tool_permissions={t.name: getattr(t, "permission_level", 1) for t in registry.list_tools()},
+        disabled_tools=disabled,
     )
 
 
@@ -345,7 +353,7 @@ def evaluate(
     """검색기를 동결 평가셋으로 평가해 지표 dict를 돌려줍니다.
 
     split   : 'dev'(튜닝용) | 'test'(최종 1회) | 'all'
-    registry: 'core'(헤드라인) | 'server'
+    registry: 'core'(헤드라인) | 'server' | 'server-default'(실제 서버 기본 가시성)
     결과의 "summary"에 주요 지표가 평평하게 정리돼 있습니다.
 
     legacy_demo_tools: 동결 원본 재현용 (build_registry 참고). 새 변형 비교에는 쓰지 않습니다.
