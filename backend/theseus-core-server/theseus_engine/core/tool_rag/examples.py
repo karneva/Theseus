@@ -1,7 +1,10 @@
 """도구 검색의 정적 데이터: 필수 도구 집합과 코어 도구 few-shot 예시 질의.
 
-few-shot 예시는 순위용 passage와 BM25 문서(shots 필드), none 판정용 앵커 passage에 들어갑니다.
-커스텀 도구는 클래스 속성 ``example_queries``로 자기 예시를 붙일 수 있습니다(tool_factory가 작성을 권장).
+* ``TOOL_EXAMPLE_QUERIES``(코어 도구): 순위용 passage와 BM25 문서(shots 필드), none 판정용 앵커 passage와 커버리지
+  어휘에 모두 들어갑니다. 커스텀 도구의 클래스 속성 ``example_queries``도 같은 경로를 탑니다(tool_factory가 작성을 권장).
+* ``RANKING_ONLY_EXAMPLE_QUERIES``(Remote Workspace remote_* 도구): 순위용 passage와 BM25 문서에만 넣고 앵커·커버리지
+  어휘에는 넣지 않습니다. none 규칙은 core 레지스트리(remote_* 없음)로 보정하므로 remote_* 앵커를 few-shot으로 넓히면
+  서버 레지스트리의 none 특징이 보정 분포 밖으로 나갑니다.
 """
 
 from __future__ import annotations
@@ -174,5 +177,71 @@ TOOL_EXAMPLE_QUERIES: dict[str, list[str]] = {
         "긴 대화 압축해줘",
         "지금까지 내용 정리해줘",
         "컨텍스트 줄여줘",
+    ],
+}
+
+# Remote Workspace 도구 few-shot(순위 전용). 평가셋·용어집·few-shot을 보지 않은 작성자가 도구 카탈로그만 보고 쓴
+# 예시입니다(도구당 한국어 2 + 영어 2). remote_* 도구 클래스는 src/remote_workspace에 있지만, 코어 few-shot과 한곳에서
+# 검토하고 RECIPE_VERSION으로 함께 관리하려고 여기에 둡니다. 클래스 속성 example_queries로 두면 앵커에도 들어갑니다.
+RANKING_ONLY_EXAMPLE_QUERIES: dict[str, list[str]] = {
+    "remote_read_file": [
+        "원격 서버 설정 파일 열어봐",
+        "원격 워크스페이스 app.py 내용 보여줘",
+        "open config.yml on the remote server",
+        "show me remote main.py contents",
+    ],
+    "remote_glob": [
+        "원격 서버에서 yml 파일 다 찾아줘",
+        "원격 워크스페이스 로그 파일 위치 찾아",
+        "list all .py files on remote",
+        "find Dockerfiles in the remote workspace",
+    ],
+    "remote_grep": [
+        "원격 코드에서 API_KEY 검색해줘",
+        "원격 서버 소스에서 에러 문구 찾아",
+        "grep the remote repo for TODO",
+        "search remote code for db_connect calls",
+    ],
+    "remote_tail_log": [
+        "원격 서버 에러 로그 최근 줄 보여줘",
+        "원격 app.log 끝부분 확인해줘",
+        "tail the nginx log on remote",
+        "show latest lines of remote app.log",
+    ],
+    "remote_check_cpu": [
+        "원격 서버 CPU 사용률 확인해줘",
+        "원격에서 CPU 많이 먹는 프로세스 뭐야",
+        "check CPU load on the remote server",
+        "which process is hogging remote CPU",
+    ],
+    "remote_check_memory": [
+        "원격 서버 메모리 얼마나 남았어",
+        "원격 서버 램 사용량 보여줘",
+        "check RAM usage on remote box",
+        "is the remote server running out of memory",
+    ],
+    "remote_check_disk": [
+        "원격 서버 디스크 용량 확인해줘",
+        "원격 서버 저장공간 얼마나 남았어",
+        "check disk space on the remote server",
+        "is the remote disk almost full",
+    ],
+    "remote_write_file": [
+        "원격 서버에 새 설정 파일 만들어줘",
+        "원격에 deploy.sh 파일 작성해줘",
+        "create a new .env file on remote",
+        "write a config file to the remote server",
+    ],
+    "remote_edit_file": [
+        "원격 설정 파일에서 포트 번호 바꿔줘",
+        "원격 서버 코드 한 줄 수정해줘",
+        "change the timeout value in remote config",
+        "patch server_name in remote nginx.conf",
+    ],
+    "remote_run_command": [
+        "원격 서버에서 서비스 재시작해줘",
+        "원격에서 git pull 실행해",
+        "run docker ps on the remote server",
+        "restart the app service remotely",
     ],
 }

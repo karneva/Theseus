@@ -6,12 +6,15 @@
   "{name} ({name 단어}): {description} 입력: {파라미터 이름}. 한국어: {용어집 표기} {few-shot, 쉼표 구분}"
   (Combine 단계 최종 레시피 'pbest'. few-shot 라벨 '예시 질문:'은 없앴습니다.)
 * ``anchor_body``: none 판정용 앵커. 현행(v1) concat 레시피 "{name}: {description} 예시 질문: …".
-  보정 계수가 이 분포에 맞춰져 있으므로 피드백 few-shot은 넣지 않습니다.
+  보정 계수가 이 분포에 맞춰져 있으므로 피드백 few-shot과 순위 전용 few-shot(remote_*)은 넣지 않습니다.
 * ``bm25_document``: name×3 + (description + 용어집 표기) + 파라미터 이름·설명 + few-shot.
 * ``coverage_document``: none 판정 커버리지 어휘(앵커 텍스트 + 입력 스키마 JSON).
 * ``schema_cost_chars``: LLM에 보내는 스키마 비용 프록시(압축 JSON 글자 수 / 4). tiktoken 불필요.
 
-RECIPE_VERSION은 위 레시피가 바뀌면 올립니다(인덱스 fingerprint에 들어가 재인덱싱을 일으킵니다).
+RECIPE_VERSION은 위 레시피나 정적 few-shot·용어집이 바뀌면 올립니다(인덱스 fingerprint에 들어가 재인덱싱을 일으키고,
+보정 파일의 recipe_version과 맞아야 none 규칙이 적용됩니다).
+  v2.1: 최초 v2 레시피
+  v2.2: remote_* 순위 전용 few-shot(examples.RANKING_ONLY_EXAMPLE_QUERIES)
 """
 
 from __future__ import annotations
@@ -23,7 +26,7 @@ from typing import Any, Sequence
 from theseus_engine.core.tool_rag.lexical import bm25_tokens
 from theseus_engine.core.tool_rag.tool_gloss import korean_gloss
 
-RECIPE_VERSION = "v2.1"
+RECIPE_VERSION = "v2.2"
 
 
 def split_name(name: str) -> str:

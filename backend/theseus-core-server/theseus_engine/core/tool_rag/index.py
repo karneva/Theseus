@@ -17,7 +17,11 @@ from typing import Any, Mapping, Sequence
 
 import numpy as np
 
-from theseus_engine.core.tool_rag.examples import TOOL_EXAMPLE_QUERIES, TOOL_SEARCH_NAME
+from theseus_engine.core.tool_rag.examples import (
+    RANKING_ONLY_EXAMPLE_QUERIES,
+    TOOL_EXAMPLE_QUERIES,
+    TOOL_SEARCH_NAME,
+)
 from theseus_engine.core.tool_rag.lexical import BM25, coverage_tokens
 from theseus_engine.core.tool_rag.text import (
     RECIPE_VERSION,
@@ -42,8 +46,9 @@ def static_examples(tool: Any) -> list[str]:
 
 
 def merged_examples(tool: Any, feedback: Mapping[str, Sequence[str]]) -> list[str]:
+    """순위용 few-shot: 정적 예시 + 순위 전용 예시(remote_*) + 피드백(중복 제거, 순서 유지). 앵커에는 쓰지 않습니다."""
     out = static_examples(tool)
-    for q in feedback.get(tool.name, ()):
+    for q in [*RANKING_ONLY_EXAMPLE_QUERIES.get(tool.name, ()), *feedback.get(tool.name, ())]:
         if q and q not in out:
             out.append(q)
     return out

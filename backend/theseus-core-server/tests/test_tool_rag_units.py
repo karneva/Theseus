@@ -333,6 +333,39 @@ class FeedbackLoggerTest(unittest.TestCase):
         self.assertIn("주간 회의록 요약해줘", built.passages[idx])
         self.assertNotIn("주간 회의록 요약해줘", built.anchors[idx])
 
+    def test_remote_examples_reach_ranking_but_not_anchor_or_coverage(self) -> None:
+        from src.remote_workspace.read_primitives import build_remote_read_analysis_tools
+        from src.remote_workspace.schemas import RemoteWorkspaceConnectionConfig
+        from src.remote_workspace.write_primitives import build_remote_write_execution_tools
+        from theseus_engine.core.tool_rag.examples import RANKING_ONLY_EXAMPLE_QUERIES
+        from theseus_engine.core.tool_rag.index import build_texts, static_examples
+
+        cfg = RemoteWorkspaceConnectionConfig.model_validate(
+            {
+                "remoteWorkspaceId": 1, "projectId": 10, "host": "example.internal", "port": 22,
+                "username": "u", "password": "p", "basePath": "/srv/app", "allowWriteExecution": True,
+                "status": "ACTIVE",
+            }
+        )
+        remote = [*build_remote_read_analysis_tools(cfg), *build_remote_write_execution_tools(cfg)]
+        remote_names = {t.name for t in remote}
+        # 모든 remote_* 도구에 예시가 있고, 예시 표에 없는 도구 이름은 없습니다(오타 방지).
+        self.assertEqual(remote_names, set(RANKING_ONLY_EXAMPLE_QUERIES))
+        for name, queries in RANKING_ONLY_EXAMPLE_QUERIES.items():
+            self.assertGreaterEqual(sum(any("가" <= ch <= "힣" for ch in q) for q in queries), 2, name)
+
+        built = build_texts(remote, feedback={}, passage_prefix="passage: ")
+        for i, tool in enumerate(remote):
+            shot = RANKING_ONLY_EXAMPLE_QUERIES[tool.name][0]
+            self.assertEqual(static_examples(tool), [])
+            self.assertIn(shot, built.passages[i])
+            self.assertNotIn(shot, built.anchors[i])
+        with patch.dict(RANKING_ONLY_EXAMPLE_QUERIES, {}, clear=True):
+            no_examples = build_texts(remote, feedback={}, passage_prefix="passage: ")
+        self.assertEqual(built.anchors, no_examples.anchors)
+        self.assertEqual(built.coverage_vocab, no_examples.coverage_vocab)
+        self.assertNotEqual(built.bm25_docs, no_examples.bm25_docs)
+
     def test_log_rotation(self) -> None:
         from theseus_engine.core import tool_usage_logger as tul
 
