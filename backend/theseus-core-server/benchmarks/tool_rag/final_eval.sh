@@ -1,9 +1,32 @@
+# Tool RAG 최종 평가(홀드아웃 1회 + test·all 재측정)를 만든 명령입니다. 결과는 results/에 씁니다.
+#
+# 사용법 (Git Bash/Linux):
+#   export PY_V2=<v2 환경 python>            # onnxruntime 등 requirements.txt + tiktoken, psutil
+#   export PY_V1=<v1 베이스라인 환경 python>  # torch + sentence-transformers (requirements-torch.txt)
+#   export OLD_TREE=<개선 전 커밋(87df973) worktree 루트>
+#                                            # git worktree add <경로> 87df973 뒤, 현재 benchmarks/tool_rag/의
+#                                            # 하네스(harness.py, run.py 등, holdout 분할 지원)를 그 worktree에 복사합니다.
+#   export THESEUS_EMBED_MODEL_DIR=<e5-small-int8 모델 디렉터리>
+#   export HF_HOME=<intfloat/multilingual-e5-small 캐시가 있는 HF 캐시>   # v1 베이스라인용
+#   bash benchmarks/tool_rag/final_eval.sh
+#
+# 홀드아웃은 최종 구성에 대해 한 번만 평가합니다. 이 스크립트를 다시 돌려 결과를 보고 튜닝하지 않습니다.
 set -u
-SRV=/c/DEV/Theseus/backend/theseus-core-server
-OLD=/c/DEV/Theseus-wt/eval-87df973/backend/theseus-core-server
-export PYTHONDONTWRITEBYTECODE=1 PYTHONIOENCODING=utf-8 THESEUS_EMBED_MODEL_DIR=C:/Users/SSAFY/.theseus/models/e5-small-int8 HF_HUB_OFFLINE=1 HF_HOME=C:/DEV/Theseus-wt/toolrag-env/hf_home
-P2=/c/DEV/Theseus-wt/toolrag-env/v2/Scripts/python.exe
-P1=/c/DEV/Theseus-wt/toolrag-env/v1/Scripts/python.exe
+for v in PY_V2 PY_V1 OLD_TREE THESEUS_EMBED_MODEL_DIR HF_HOME; do
+  if [ -z "${!v:-}" ]; then
+    echo "final_eval.sh: 환경 변수 $v가 비어 있습니다. 파일 맨 위 사용법을 보세요." >&2
+    exit 2
+  fi
+done
+SRV=$(cd "$(dirname "$0")/../.." && pwd)
+OLD=$OLD_TREE/backend/theseus-core-server
+if [ ! -d "$OLD/benchmarks/tool_rag" ]; then
+  echo "final_eval.sh: $OLD/benchmarks/tool_rag가 없습니다. OLD_TREE는 개선 전 커밋 worktree의 루트여야 합니다." >&2
+  exit 2
+fi
+export PYTHONDONTWRITEBYTECODE=1 PYTHONIOENCODING=utf-8 HF_HUB_OFFLINE=1 THESEUS_EMBED_MODEL_DIR HF_HOME
+P2=$PY_V2
+P1=$PY_V1
 R=$SRV/benchmarks/tool_rag/results
 f() { grep -v -i "warning\|TripleDES\|algorithms\." ; }
 cd $SRV
