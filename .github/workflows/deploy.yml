@@ -1,0 +1,257 @@
+# 셀프호스팅 서버 자동 배포(CD).
+#
+# 흐름: 이미지 빌드(GitHub 러너) -> GHCR push -> SSH로 서버의 ci-deploy.sh 호출(커밋 SHA만 전달)
+#       -> 서버가 저장소에서 그 커밋의 배포 설정을 직접 가져와 pull·retag·deploy.sh -> 외부 확인
+#   - dev push: CI 워크플로의 모든 검사가 통과하면 ci.yml의 deploy job이 이 워크플로를 호출합니다(workflow_call).
+#   - 수동: Actions 탭에서 ref(dev 브랜치, 또는 dev에 포함된 커밋 SHA 7~40자)를 넣어 실행합니다.
+#     예전 커밋을 넣으면 롤백으로 쓸 수 있습니다. 이미 GHCR에 있는 태그는 다시 빌드하지 않습니다.
+#
+# 서버는 빌드하지 않습니다(2 vCPU / 3.8GB). 레지스트리에서 바뀐 레이어만 받습니다.
+# 배포 키로는 "dev에 포함된 커밋을 배포"만 할 수 있습니다. 스크립트·compose는 서버가 저장소에서 직접 가져옵니다.
+#
+# 필요한 설정(GitHub, 저장소 Settings):
+#   Variables(저장소): DEPLOY_ENABLED=true          자동 배포 켜기. 없으면 dev push에서 배포 job을 건너뜁니다
+#   Environment "production"
+#     Secrets: DEPLOY_SSH_KEY                      ci-deploy.sh에 forced command로 묶인 배포 전용 개인 키
+#              DEPLOY_SSH_KNOWN_HOSTS              서버 호스트 키(ssh-keyscan 결과). 호스트 키를 고정해 중간자 공격을 막습니다
+#     Variables: DEPLOY_SSH_HOST, DEPLOY_SSH_USER, DEPLOY_DOMAIN(외부 확인용, 비우면 건너뜀)
+#     Deployment branches: dev만 허용(다른 브랜치·PR에서 실행한 워크플로가 배포 키를 읽지 못하게)
+# 서버 쪽 준비는 docs/operations/self-hosting.md의 "10.1 자동 배포(GitHub Actions)"를 참고하세요.
+name: Deploy
+
+on:
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 배포할 dev 브랜치 또는 dev에 포함된 커밋 SHA(7~40자, 롤백용)
+        required: true
+        default: dev
+
+permissions: {}
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      sha: ${{ steps.meta.outputs.sha }}
+      tag: ${{ steps.meta.outputs.tag }}
+      registry: ${{ steps.meta.outputs.registry }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # ref 입력(브랜치, 짧은 SHA)을 직접 풀고 dev 포함 여부를 확인하려면 전체 이력이 필요합니다.
+          fetch-depth: 0
+
+      - name: Resolve commit
+        id: meta
+        env:
+          INPUT_REF: ${{ inputs.ref }}
+        run: |
+          ref="${INPUT_REF:-$GITHUB_SHA}"
+          if [[ ! "$ref" =~ ^[0-9A-Za-z._/-]+$ ]]; then
+            echo "::error::ref 형식이 잘못됐습니다: $ref"
+            exit 1
+          fi
+          sha="$(git rev-parse --verify --quiet "origin/$ref^{commit}" || git rev-parse --verify --quiet "$ref^{commit}" || true)"
+          if [[ -z "$sha" ]]; then
+            echo "::error::커밋을 찾지 못했습니다: $ref"
+            exit 1
+          fi
+          # 서버(ci-deploy.sh)도 같은 검사를 하지만, 빌드 전에 미리 막습니다.
+          if ! git merge-base --is-ancestor "$sha" origin/dev; then
+            echo "::error::dev 브랜치에 포함되지 않은 커밋은 배포하지 않습니다: $sha"
+            exit 1
+          fi
+          # tag: 노트북 수동 배포(build-images.sh)와 같은 규칙인 7자리 short sha.
+          # registry: GHCR 이미지 이름은 소문자여야 합니다.
+          {
+            echo "sha=$sha"
+            echo "tag=${sha::7}"
+            echo "registry=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/"
+          } >> "$GITHUB_OUTPUT"
+          echo "배포 대상: $sha"
+
+  build:
+    name: Build ${{ matrix.component }}
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - component: api
+            context: backend/theseus-api-server
+            file: backend/theseus-api-server/Dockerfile
+          - component: core
+            context: backend/theseus-core-server
+            file: backend/theseus-core-server/Dockerfile
+          - component: frontend
+            context: frontend
+            file: frontend/Dockerfile
+            # 비우면 same-origin(/api)으로 호출하므로 한 이미지를 어느 도메인에도 씁니다(build-images.sh와 같음).
+            build-args: VITE_API_BASE_URL=
+          - component: nginx
+            context: infra/docker/selfhost/nginx
+            file: infra/docker/selfhost/nginx/Dockerfile
+          - component: sandbox
+            context: backend/theseus-core-server
+            file: backend/theseus-core-server/Dockerfile.sandbox
+    env:
+      IMAGE: ${{ needs.plan.outputs.registry }}theseus-${{ matrix.component }}
+      TAG: ${{ needs.plan.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.sha }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 같은 커밋을 다시 배포(재실행, 롤백)할 때는 빌드를 건너뜁니다.
+      - name: Check existing image
+        id: exists
+        run: |
+          if docker buildx imagetools inspect "$IMAGE:$TAG" >/dev/null 2>&1; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "이미 있음: $IMAGE:$TAG"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # 레이어 캐시는 GHCR의 :buildcache 태그에 둡니다(GitHub Actions 캐시 10GB 한도와 무관, core 이미지가 큼).
+      # revision 라벨은 서버(ci-deploy.sh)가 pull한 이미지가 요청한 커밋으로 빌드됐는지 확인하는 데 씁니다.
+      - uses: docker/build-push-action@v6
+        if: steps.exists.outputs.skip != 'true'
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.IMAGE }}:${{ env.TAG }}
+          build-args: ${{ matrix.build-args }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ needs.plan.outputs.sha }}
+          cache-from: type=registry,ref=${{ env.IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.IMAGE }}:buildcache,mode=max
+          # 단일 플랫폼 이미지라 attestation manifest 없이 단순한 manifest로 올립니다.
+          provenance: false
+
+  deploy:
+    name: Deploy to server
+    needs: [plan, build]
+    runs-on: ubuntu-latest
+    # 서버는 healthy를 최대 8분씩(배포, 롤백) 기다리고 core 이미지 pull도 몇 분 걸립니다.
+    # 세션이 끊겨도 서버 쪽 배포·롤백은 끝까지 진행합니다(ci-deploy.sh가 세션과 출력을 분리).
+    timeout-minutes: 45
+    environment: production
+    # 배포는 하나씩만 합니다. 진행 중인 배포는 취소하지 않습니다.
+    # 기다리는 배포가 이미 있으면 GitHub가 그것을 더 새 배포로 바꿉니다(최신 커밋이 앞선 변경을 모두 포함).
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      # 서버가 GHCR에서 pull할 때 이 작업의 GITHUB_TOKEN을 씁니다(작업이 끝나면 만료).
+      packages: read
+    env:
+      SHA: ${{ needs.plan.outputs.sha }}
+      TAG: ${{ needs.plan.outputs.tag }}
+      SSH_HOST: ${{ vars.DEPLOY_SSH_HOST }}
+      SSH_USER: ${{ vars.DEPLOY_SSH_USER }}
+      DOMAIN: ${{ vars.DEPLOY_DOMAIN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.sha }}
+          # 서버에서 실행 중인 커밋과 비교하려면 이력이 필요합니다.
+          fetch-depth: 0
+
+      - name: Prepare SSH
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
+        run: |
+          missing=()
+          [[ -n "$SSH_KEY" ]] || missing+=(secret:DEPLOY_SSH_KEY)
+          [[ -n "$KNOWN_HOSTS" ]] || missing+=(secret:DEPLOY_SSH_KNOWN_HOSTS)
+          [[ -n "$SSH_HOST" ]] || missing+=(var:DEPLOY_SSH_HOST)
+          [[ -n "$SSH_USER" ]] || missing+=(var:DEPLOY_SSH_USER)
+          if [[ ${#missing[@]} -gt 0 ]]; then
+            echo "::error::production environment 설정이 없습니다: ${missing[*]}"
+            exit 1
+          fi
+          dir="$RUNNER_TEMP/ssh"
+          install -d -m 700 "$dir"
+          printf '%s\n' "$SSH_KEY" > "$dir/key"
+          chmod 600 "$dir/key"
+          printf '%s\n' "$KNOWN_HOSTS" > "$dir/known_hosts"
+          cat > "$dir/config" <<EOF
+          Host theseus-server
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile $dir/key
+            IdentitiesOnly yes
+            UserKnownHostsFile $dir/known_hosts
+            StrictHostKeyChecking yes
+            BatchMode yes
+            ConnectTimeout 20
+            ServerAliveInterval 30
+            ServerAliveCountMax 6
+          EOF
+
+      # 서버에서 실행 중인 커밋 이후 문서(*.md, docs/, exec/)만 바뀌었으면 컨테이너를 다시 만들지 않습니다.
+      # 직전 push가 아니라 실제 배포된 커밋과 비교하므로, 기다리던 배포가 대체돼도 코드 변경을 놓치지 않습니다.
+      # 수동 실행은 항상 배포합니다.
+      - name: Compare with deployed commit
+        id: changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          deployed="$(ssh -F "$RUNNER_TEMP/ssh/config" theseus-server status | sed -n 's/^IMAGE_TAG=//p' | head -n 1)"
+          echo "서버 IMAGE_TAG=${deployed:-없음}, 배포 대상=$TAG"
+          skip=false
+          if [[ "$EVENT_NAME" != "workflow_dispatch" && "$deployed" =~ ^[0-9a-f]{7,40}$ ]] \
+             && full="$(git rev-parse --verify --quiet "$deployed^{commit}")"; then
+            changed="$(git diff --name-only "$full" "$SHA")"
+            if ! grep -qvE '(\.md$|^docs/|^exec/)' <<<"$changed"; then
+              skip=true
+              echo "배포된 커밋($deployed) 이후 문서만 바뀌어 배포를 건너뜁니다." | tee -a "$GITHUB_STEP_SUMMARY"
+            fi
+          fi
+          echo "skip=$skip" >> "$GITHUB_OUTPUT"
+
+      # 커밋 SHA만 명령으로 보냅니다. 레지스트리 토큰은 stdin 1행으로만 넘겨 서버의 프로세스 목록과 로그에 남지 않게 합니다.
+      - name: Deploy
+        if: steps.changes.outputs.skip != 'true'
+        env:
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REGISTRY_USER: ${{ github.actor }}
+        run: |
+          printf '%s\n' "$REGISTRY_TOKEN" \
+            | ssh -F "$RUNNER_TEMP/ssh/config" theseus-server "deploy $SHA $REGISTRY_USER"
+
+      - name: External check
+        if: env.DOMAIN != '' && steps.changes.outputs.skip != 'true'
+        run: |
+          curl -fsS --retry 6 --retry-delay 5 --retry-all-errors -o /dev/null "https://$DOMAIN/healthz"
+          curl -fsS --retry 3 --retry-delay 5 --retry-all-errors -o /dev/null "https://$DOMAIN/"
+          echo "https://$DOMAIN 응답 확인 (IMAGE_TAG=$TAG)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Clean up SSH key
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/ssh"

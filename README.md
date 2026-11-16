@@ -302,8 +302,8 @@ flowchart TB
 | 서버 | SSAFY 제공 EC2 + 관리형 서비스 | 서버 한 대(Ubuntu 24.04, 2 vCPU, 3.8GB RAM) |
 | DB·캐시 | RDS MySQL·PostgreSQL, ElastiCache Redis | 같은 compose 안의 MySQL·PostgreSQL·Redis 컨테이너 |
 | LLM | SSAFY LLM API, GPU 서버 vLLM | 노트북 Ollama(GPU) + reverse SSH tunnel |
-| 배포 | GitLab Webhook → Jenkins | 노트북 빌드 → SSH 전송 → `deploy.sh` |
-| CI | Jenkins | GitHub Actions(테스트, compose 검증, gitleaks), TLS는 compose 안의 certbot이 자동 갱신 |
+| CI | Jenkins | GitHub Actions(테스트, compose 검증, gitleaks) |
+| CD | GitLab Webhook → Jenkins 빌드 → Docker Compose 재배포 → Health Check | `dev` push → GitHub Actions 빌드 → GHCR → 서버는 pull만(실패 시 자동 롤백) |
 
 <details>
 <summary>개인 서버에 올리기 위한 경량화 내용</summary>
@@ -321,9 +321,9 @@ flowchart TB
 | PostgreSQL | shared_buffers 64MB, max_connections 40 → 160m |
 | Redis | maxmemory 48mb(volatile-lru) → 64m |
 | Core | 임베딩 모델 로드 순간에도 OOM kill 대신 스왑으로 버티도록 `memswap_limit` 3g |
-| 빌드 | 서버에서 빌드하지 않음. 노트북에서 linux/amd64 이미지를 빌드해 `docker save \| ssh docker load`로 전송 |
+| 빌드·배포 | 서버에서 빌드하지 않음. GitHub Actions 러너가 이미지를 빌드해 GHCR에 올리고, 서버는 바뀐 레이어만 pull. 서버에 Jenkins를 두지 않아 JVM 하나(약 0.5~1GB)를 아낌 |
 | LLM | 서버에 GPU·모델을 두지 않고 노트북 Ollama를 터널로 연결. 터널 쪽에는 `/v1/models`, `/v1/chat/completions`만 통과시키는 nginx 필터를 둠 |
-| 운영 도구 | Jenkins·GitLab 제거, Kafka UI는 필요할 때만 켜는 `ops` 프로필로 분리 |
+| 운영 도구 | Kafka UI는 필요할 때만 켜는 `ops` 프로필로 분리 |
 | Sandbox | BUILD 검증 컨테이너마다 128m, 실행이 끝나면 바로 삭제 |
 
 **실측(E2E 전체 흐름):** 기동 직후 약 1.3GiB, PLAN·BUILD 중 동시 최대 약 2.2GiB였고 OOM kill과 재시작은 없었습니다. 서비스별 수치와 근거는 [셀프호스팅 가이드의 메모리 예산](./docs/operations/self-hosting.md#12-메모리-예산)에 있습니다.
@@ -344,7 +344,7 @@ flowchart TB
 | **Data** | MySQL 8.4, PostgreSQL 16, pgvector, Redis 7.4 |
 | **Messaging / Streaming** | Kafka(KRaft), SSE |
 | **Remote / Sandbox** | SSH, Paramiko, Docker, docker-socket-proxy |
-| **Infra / CI (개인 서버)** | Docker Compose, Nginx, Let's Encrypt(certbot), GitHub Actions, Dependabot, gitleaks |
+| **Infra / CI·CD (개인 서버)** | Docker Compose, Nginx, Let's Encrypt(certbot), GitHub Actions, GHCR, Dependabot, gitleaks |
 | **개발 당시 Infra** | Jenkins, GitLab Webhook, AWS EC2, RDS(MySQL·PostgreSQL), ElastiCache, S3 |
 | **협업** | GitLab, Jira, Notion, Mattermost |
 
@@ -544,7 +544,11 @@ API·Core까지 컨테이너로 띄워 통합 확인하려면 `docker-compose.in
 
 ### 배포(셀프호스팅)
 
-운영 배포는 **서버 한 대(Ubuntu 24.04, 2 vCPU, 3.8GB RAM + 스왑 4GB)에 docker compose로 전체 스택**을 올리는 구성입니다. 이미지는 노트북에서 빌드해 SSH로 옮기고, LLM은 노트북의 Ollama를 reverse SSH tunnel로 연결합니다.
+운영 배포는 **서버 한 대(Ubuntu 24.04, 2 vCPU, 3.8GB RAM + 스왑 4GB)에 docker compose로 전체 스택**을 올리는 구성입니다. 서버는 이미지를 빌드하지 않고, LLM은 노트북의 Ollama를 reverse SSH tunnel로 연결합니다.
+
+**자동 배포(CD)**: `dev`에 push하고 CI가 통과하면 [Deploy 워크플로](./.github/workflows/deploy.yml)가 이미지를 빌드해 GHCR에 올리고, 배포 전용 SSH 키로 서버의 [`ci-deploy.sh`](./scripts/ci-deploy.sh)에 커밋 SHA만 넘깁니다. 서버는 그 커밋이 `dev`에 있는지 확인하고 설정과 이미지를 직접 받아 `deploy.sh`로 갱신하며, healthy가 되지 않으면 직전 버전으로 롤백합니다. 이전 커밋을 수동 실행하면 롤백으로 쓸 수 있습니다. 1회 설정은 [셀프호스팅 가이드 10.1](./docs/operations/self-hosting.md#101-자동-배포github-actions)에 있습니다.
+
+**수동 배포**는 노트북에서 빌드해 SSH로 옮깁니다.
 
 ```bash
 # 노트북
@@ -583,7 +587,7 @@ bash scripts/llm-tunnel.sh --local-port 11435 <서버별칭>
 
 ### CI
 
-[GitHub Actions](./.github/workflows/ci.yml)가 PR과 `dev`/`main` push마다 다음을 검사합니다. 배포는 하지 않습니다.
+[GitHub Actions](./.github/workflows/ci.yml)가 PR과 `dev`/`main` push마다 다음을 검사합니다. `dev` push에서 모두 통과하면 [자동 배포](#deploy)로 이어집니다.
 
 | Job | 내용 |
 | --- | --- |
@@ -592,6 +596,7 @@ bash scripts/llm-tunnel.sh --local-port 11435 <서버별칭>
 | Frontend | Node(`.nvmrc`), `npm ci`, lint, `npm test -- --run`, build |
 | Infra | selfhost compose, local compose(3개 파일 함께) `config` 검증 |
 | Secret scan | gitleaks |
+| Deploy | `dev` push 한정. 이미지 빌드·GHCR push → 서버 배포 → 외부 `/healthz` 확인 |
 
 의존성 갱신은 [Dependabot](./.github/dependabot.yml)이 매주 PR로 올립니다.
 
@@ -686,7 +691,7 @@ SSAFY 프로젝트 종료 후 저장소를 정리해 **서버 한 대에서 직�
 | 보안 강화 | `web_fetch`·`deep_research`의 SSRF 차단(사설망·메타데이터 대역, 리다이렉트 재검사), 내부 API를 `INTERNAL_API_KEY` 고정 시간 비교로 통일, nginx에서 `/api/internal`·Swagger·Actuator 차단, 로그인 rate limit, prod CORS off·`*` 거부, refresh 쿠키 Secure, 비활성 사용자 토큰 차단, JSON 401/403 응답, sandbox 컨테이너 하드닝(네트워크 차단, uid 65534, cap_drop, read-only)과 docker socket proxy, 토큰을 브라우저 저장소에 두지 않음 |
 | 설정 외부화 | API는 `application.yaml` + `local`/`prod` 프로필과 Flyway 마이그레이션, Core는 base URL 하나(`SPRING_BOOT_INTERNAL_URL`)와 provider 접두사 모델 라우팅, Kafka 토픽 이름을 `KAFKA_TOPIC_*`로 공유, 실행 환경별 env 템플릿 정리 |
 | 안정성 | Kafka 결과 consumer 재시도와 DLT, Run 타임아웃 실패 처리, ToolRetriever 임베딩 모델 로드를 이벤트 루프 밖으로 이동 |
-| 테스트와 CI | API 197개(Testcontainers), Core 131개, Frontend 38개(Vitest) 모두 통과(정리 전: API 159개 중 32개 실패, Core import 실패, Frontend `npm ci` 실패). GitHub Actions(테스트, compose 검증, gitleaks)와 Dependabot 추가 |
+| 테스트와 CI | API 197개(Testcontainers), Core 131개, Frontend 38개(Vitest) 모두 통과(정리 전: API 159개 중 32개 실패, Core import 실패, Frontend `npm ci` 실패). GitHub Actions(테스트, compose 검증, gitleaks, `dev` 자동 배포)와 Dependabot 추가 |
 | 경량 셀프호스팅 | 2 vCPU / 3.8GB 서버용 compose, 노트북 빌드·SSH 전송 배포 스크립트, Let's Encrypt 자동 갱신, 백업 스크립트, 노트북 Ollama reverse tunnel. 경량화 내용은 [개인 서버 구성](#self-hosted-setup) 참고 |
 | 정리 | 미사용 모듈·의존성·데모 도구 삭제, VS Code 확장 wrapper를 `scripts/vscode-extension/`으로 이동, 커밋된 빌드 산출물 제거, 문서 갱신 |
 

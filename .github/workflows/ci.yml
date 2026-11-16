@@ -1,5 +1,5 @@
 # PR과 기본 브랜치 push마다 서비스별 테스트·빌드, compose 문법, 비밀 유출 여부를 검사합니다.
-# 이 워크플로는 검증만 하고 이미지 푸시나 배포는 하지 않습니다.
+# dev push에서 모든 검사가 통과하면 deploy job이 셀프호스팅 서버 배포(deploy.yml)를 호출합니다.
 name: CI
 
 on:
@@ -11,10 +11,12 @@ on:
 permissions:
   contents: read
 
-# 같은 브랜치에 새 커밋이 올라오면 이전 실행은 취소해 러너 시간을 아낍니다.
+# PR에 새 커밋이 올라오면 이전 실행은 취소해 러너 시간을 아낍니다.
+# push 실행은 커밋마다 따로 돌려 어떤 커밋의 검사도 버리지 않습니다. 서버 배포는 deploy.yml의
+# deploy-production 그룹이 하나씩 처리합니다.
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   api:
@@ -147,3 +149,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # PR 코멘트 작성에는 쓰기 권한이 필요하므로 끄고, 결과는 job 실패와 로그로만 알립니다.
           GITLEAKS_ENABLE_COMMENTS: "false"
+
+  # dev에 push되고 위 검사가 모두 통과했을 때만 서버에 배포합니다.
+  # 저장소 변수 DEPLOY_ENABLED=true일 때만 동작하므로, 서버·시크릿 준비 전에는 건너뜁니다.
+  deploy:
+    name: Deploy
+    needs: [api, core, frontend, infra, gitleaks]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev' && vars.DEPLOY_ENABLED == 'true'
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit

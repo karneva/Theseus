@@ -35,7 +35,7 @@ Theseus 전체 스택을 서버 한 대에 docker compose로 올리는 절차의
 
 운영 원칙은 다음과 같습니다.
 
-- **이미지는 노트북에서 빌드**해 SSH로 옮깁니다. 서버는 빌드하지 않고 `up -d --no-build`만 합니다.
+- **서버는 이미지를 빌드하지 않습니다.** 노트북에서 빌드해 SSH로 옮기거나(수동), `dev` push 때 GitHub Actions가 빌드해 GHCR에 올리고 서버가 받습니다([자동 배포](#101-자동-배포github-actions)). 서버는 `up -d --no-build`만 합니다.
 - **LLM은 노트북의 Ollama**를 reverse SSH tunnel로 서버에 연결합니다. Core는 `OLLAMA_BASE_URL=http://host.docker.internal:11434/v1`로 호출합니다.
 - **비밀값은 저장소 밖**의 `/opt/theseus/theseus.env`(권한 600)에만 둡니다.
 
@@ -322,6 +322,97 @@ docker image prune                             # 이전 이미지 정리(선택)
 
 - DB 스키마는 API가 기동할 때 Flyway(`db/migration`)로 올립니다. 마이그레이션이 있는 업그레이드 전에는 `backup.sh`를 먼저 실행합니다.
 - DB, custom-tools, core-data는 볼륨과 `/opt/theseus` 아래에 있으므로 `down`(볼륨 유지) 후 `up -d`에도 남습니다.
+
+### 10.1 자동 배포(GitHub Actions)
+
+`dev`에 push하고 CI(테스트, compose 검증, gitleaks)가 모두 통과하면 [`deploy.yml`](../../.github/workflows/deploy.yml)이 배포합니다.
+
+```text
+dev push -> CI 통과 -> 러너에서 이미지 5개 빌드 -> GHCR push(ghcr.io/<owner>/theseus-*:<sha7>)
+         -> SSH(배포 전용 키, forced command)로 "deploy <커밋 SHA>"만 전달 -> 서버 ci-deploy.sh
+            -> 저장소(DEPLOY_GIT_URL)를 직접 fetch, 커밋이 dev에 포함됐는지 확인, 그 커밋의 compose·scripts 추출
+            -> 새 compose 검증 -> GHCR pull, 이미지 라벨(revision)이 커밋과 같은지 확인, 로컬 이름으로 retag
+            -> DB 덤프(MySQL, PostgreSQL) -> 설정·IMAGE_TAG 반영 -> deploy.sh(healthy 대기, 최대 8분)
+            -> 실패하면 직전 IMAGE_TAG·설정으로 롤백
+         -> 러너에서 https://<도메인>/healthz 확인
+```
+
+- 서버는 빌드하지 않고 레지스트리에서 바뀐 레이어만 받습니다. 빌드 캐시는 GHCR의 `:buildcache` 태그에 둡니다.
+- 서버에서 실행 중인 커밋 이후 문서(`*.md`, `docs/`, `exec/`)만 바뀌었으면 컨테이너를 다시 만들지 않습니다.
+- 배포는 한 번에 하나씩 합니다. 진행 중인 배포는 취소하지 않고, 기다리는 배포가 있으면 더 새 커밋의 배포로 바뀝니다.
+- GitHub job이 취소되거나 SSH가 끊겨도 서버 쪽 배포·롤백은 끝까지 진행합니다. 결과는 `~/.theseus-deploy/last-deploy.log`에 남고 `status`로도 볼 수 있습니다.
+- **롤백**: Actions 탭에서 Deploy 워크플로를 `ref`에 이전 커밋 SHA(7자 `IMAGE_TAG`도 가능)를 넣어 수동 실행합니다. GHCR에 있는 태그면 다시 빌드하지 않습니다.
+- **DB 마이그레이션**: API는 기동할 때 Flyway를 적용하고, 이미지 롤백으로는 스키마가 되돌아가지 않습니다. 자동 롤백은 하위 호환(컬럼·테이블 추가만) 마이그레이션에서만 안전합니다. 배포 전 덤프는 `~/.theseus-deploy/predeploy-dumps/`에 최근 5개를 남깁니다.
+- 노트북 수동 배포(`build-images.sh` → `ship-images.sh` → `deploy.sh`)도 그대로 쓸 수 있습니다. 두 방식 모두 로컬 이미지 이름이 `theseus-*:<태그>`로 같습니다.
+
+**보안 설계**
+
+| 항목 | 방식 |
+| --- | --- |
+| 배포 키 | 배포 전용 ed25519 키. `authorized_keys`에서 `restrict,command=`로 `ci-deploy.sh`만 실행(셸, 포트 포워딩, pty 불가) |
+| 서버 진입점 | `/opt/theseus/bin/ci-deploy.sh`(root 소유). 명령은 `deploy <40자 SHA> <사용자>`, `status`만 받고 형식을 검사 |
+| 실행할 코드 | 클라이언트는 코드·설정을 보내지 않음. 서버가 `DEPLOY_GIT_URL`에서 직접 가져오고 `dev`에 포함된 커밋만 배포 |
+| 이미지 | 서버 env의 `DEPLOY_PULL_REGISTRY`에서만 받고, `org.opencontainers.image.revision` 라벨이 요청한 커밋과 다르면 중단 |
+| 레지스트리 인증 | 배포 job의 `GITHUB_TOKEN`(`packages: read`, job이 끝나면 만료)을 stdin으로만 전달하고 임시 `DOCKER_CONFIG`에서 쓰고 지움 |
+| 호스트 확인 | 서버 호스트 키를 `DEPLOY_SSH_KNOWN_HOSTS`로 고정(`StrictHostKeyChecking yes`) |
+| 비밀값 | `theseus.env`는 GitHub에 올라가지 않음. 자동 배포는 `IMAGE_TAG` 줄만 바꿈 |
+
+- 배포 키가 유출돼도 할 수 있는 일은 **`dev`에 이미 있는 커밋을 다시 배포(롤백 포함)하는 것**뿐입니다.
+- 반대로 `dev`에 push할 수 있는 사람은 서버에서 코드를 실행할 수 있습니다(배포 사용자는 docker 그룹이라 사실상 root 권한). `dev` 브랜치 보호(PR 필수, CI 통과 필수)를 켜 두세요.
+
+**1회 설정**
+
+1. 서버: 새 `scripts/`를 서버에 올리고(처음 한 번), 배포 진입점을 설치합니다. env에 자동 배포 값을 적습니다.
+
+   ```bash
+   # 노트북(자동 배포가 들어간 커밋에서): 설정과 스크립트만 복사
+   tar -czf - infra/docker/selfhost scripts | ssh <서버별칭> 'tar -xzf - -C /opt/theseus/app'
+
+   # 서버
+   sudo /opt/theseus/app/scripts/server-bootstrap.sh --only-ci-deploy   # ci-deploy.sh만 설치(다른 단계는 실행하지 않음)
+   # /opt/theseus/theseus.env 에 추가
+   DEPLOY_PULL_REGISTRY=ghcr.io/<owner>/
+   DEPLOY_GIT_URL=https://github.com/<owner>/<repo>.git
+   IMAGE_REGISTRY=
+   ```
+
+   `ci-deploy.sh`는 자동 배포로 갱신되지 않습니다. 이 파일이 바뀌면 배포된 뒤 `--only-ci-deploy`를 다시 실행합니다.
+
+2. 노트북: 배포 전용 키를 만들고 공개 키를 forced command로 등록합니다.
+
+   ```bash
+   ssh-keygen -t ed25519 -N '' -C theseus-ci-deploy -f ./theseus-ci-deploy
+   printf 'restrict,command="/opt/theseus/bin/ci-deploy.sh" %s\n' "$(cat ./theseus-ci-deploy.pub)" \
+     | ssh <서버별칭> 'cat >> ~/.ssh/authorized_keys'
+   ssh -i ./theseus-ci-deploy -o IdentitiesOnly=yes <user>@<서버 호스트> status   # IMAGE_TAG와 서비스 상태가 나오면 성공
+   ssh-keyscan -t ed25519,rsa,ecdsa <서버 호스트> > ./known_hosts.theseus
+   ssh-keygen -lf ./known_hosts.theseus   # 서버에서 ssh-keygen -lf /etc/ssh/ssh_host_*_key.pub 결과와 지문이 같은지 확인
+   ```
+
+3. GitHub 저장소 Settings:
+   - Environments → `production` 생성
+     - Deployment branches and tags: Selected branches → `dev`
+     - Secrets: `DEPLOY_SSH_KEY`(개인 키 `theseus-ci-deploy` 전체), `DEPLOY_SSH_KNOWN_HOSTS`(`known_hosts.theseus` 내용)
+     - Variables: `DEPLOY_SSH_HOST`(서버 호스트), `DEPLOY_SSH_USER`(예: `ubuntu`), `DEPLOY_DOMAIN`(외부 확인용)
+     - 필요하면 Required reviewers를 켜서 배포 전에 승인을 받습니다.
+   - Variables(저장소): `DEPLOY_ENABLED=true`. 이 값이 없으면 dev push에서 배포 job을 건너뜁니다.
+
+   GitHub CLI로는 다음과 같습니다(환경과 브랜치 정책은 웹에서 만듭니다).
+
+   ```bash
+   gh secret set DEPLOY_SSH_KEY --env production < ./theseus-ci-deploy
+   gh secret set DEPLOY_SSH_KNOWN_HOSTS --env production < ./known_hosts.theseus
+   gh variable set DEPLOY_SSH_HOST --env production --body <서버 호스트>
+   gh variable set DEPLOY_SSH_USER --env production --body ubuntu
+   gh variable set DEPLOY_DOMAIN --env production --body <도메인>
+   gh variable set DEPLOY_ENABLED --body true
+   rm ./theseus-ci-deploy   # GitHub에 등록한 뒤 로컬 개인 키는 지웁니다
+   ```
+
+4. 첫 배포: Actions 탭에서 Deploy 워크플로를 `dev` 브랜치, `ref=dev`로 수동 실행합니다. GHCR 패키지(theseus-api, -core, -frontend, -nginx, -sandbox)는 저장소에 연결된 private 패키지로 만들어지고, 서버는 배포 job의 토큰으로 받습니다.
+
+- 서버 보안 그룹(방화벽)이 GitHub Actions 러너의 SSH(22) 접속을 허용해야 합니다. 러너 IP는 고정되지 않습니다.
+- 서버 디스크: 구성 요소별로 `DEPLOY_KEEP_TAGS`(기본 3)개 태그와 현재·직전 태그만 남기고 정리합니다. 저장소 사본은 `~/.theseus-deploy/repo.git`에 둡니다.
 
 ## 11. 운영 점검
 
