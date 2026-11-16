@@ -499,7 +499,7 @@ API·Core까지 컨테이너로 띄워 통합 확인하려면 `docker-compose.in
 | 영역 | 명령 | 현재 결과 |
 | --- | --- | --- |
 | API Server | `cd backend/theseus-api-server && ./gradlew test`(Testcontainers, Docker 필요) | 197개 통과 |
-| Core Server | `cd backend/theseus-core-server && python -m pytest -q`(DB·Kafka·Docker 불필요) | 186개 통과(Tool RAG ONNX 모델이 없으면 그중 8개, 테스트 전용 `THESEUS_TEST_TOKENIZER_JSON`이 없으면 1개 건너뜀) |
+| Core Server | `cd backend/theseus-core-server && python -m pytest -q`(DB·Kafka·Docker 불필요) | 193개 중 192개 통과·1개 건너뜀(테스트 전용 `THESEUS_TEST_TOKENIZER_JSON`이 없을 때). Tool RAG ONNX 모델이 없으면 8개를 더 건너뜀 |
 | Frontend | `cd frontend && npm run lint && npm test -- --run && npm run build` | 38개 통과 |
 
 <a id="deploy"></a>

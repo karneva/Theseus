@@ -9,7 +9,7 @@ v2(`theseus_engine/core/tool_rag`, 현재 저장소 구현)를 같은 정의로 
 | 파일 | 내용 |
 |---|---|
 | `eval_set.jsonl` | 동결 평가셋 236개 질의(한국어 164 / 영어 72, single 134 · multi 67 · none 35, dev/test 118/118). 수정 금지. 하네스가 sha256으로 검증합니다. |
-| `holdout_set.jsonl` | 최종 평가 전용 홀드아웃 140개 질의(한국어 90 / 영어 50, single 80 · multi 41 · none 19, core 111 · Remote Workspace 29). 평가셋·용어집·few-shot을 보지 않은 작성자 3명이 도구 카탈로그만 보고 썼고, 다른 주석자가 독립 라벨링(135개 일치, 5개 판정). sha256(2948379…)은 개발 전에 0771e25에서 고정했고 파일은 최종 평가 커밋 3ef5ee0에서 추가했습니다. 수정 금지, 튜닝에 쓰지 않음 |
+| `holdout_set.jsonl` | 최종 평가 전용 홀드아웃 140개 질의(한국어 90 / 영어 50, single 80 · multi 41 · none 19, core 111 · Remote Workspace 29). 평가셋·용어집·few-shot을 보지 않은 작성자 2명(한국어 90, 영어 50)이 도구 카탈로그만 보고 썼고, 다른 주석자가 독립 라벨링(135개 일치, 5개 판정). sha256(2948379…)은 개발 전에 0771e25에서 고정했고 파일은 최종 평가 커밋 3ef5ee0에서 추가했습니다. 수정 금지, 튜닝에 쓰지 않음 |
 | `harness.py` | `build_registry`, `Retriever` 프로토콜, `evaluate`, 지표 함수 |
 | `baseline.py` | v1 `ToolRetriever`(`legacy_v1.py`, f9862e4 동결 사본)를 감싼 `BaselineRetriever`. torch 필요 |
 | `legacy_v1.py` | v1 검색기 코드 사본(키워드 리랭크, 임계값 0.3, adaptive k). 베이스라인 재측정 전용 |
@@ -217,14 +217,17 @@ all: R@3 +0.301 [+0.222, +0.379](47승 2패), set_recall +0.134 [+0.091, +0.180]
 
 서버 레지스트리 test: `--registry server`(엔진 RAG 도구가 보이는 CLI AGENT 정책)와 `--registry server-default`(실제 서버 기본값,
 엔진 RAG 도구 2개 숨김). 전부 전송 5593 / 5367 토큰, set_recall 0.974 / 0.922, v2는 1792 / 1801 토큰, set_recall 0.912 / 0.859,
-R@3 0.869입니다(18c26bb 구성은 R@3 0.778).
+R@3 0.869입니다(18c26bb 구성은 R@3 0.778). 이 이득에는 근접 중복 효과가 섞여 있습니다. remote few-shot 하나("open config.yml on the
+remote server")가 test q205와 difflib 유사도 0.765(dev q206과는 0.929)이고 q205가 미스에서 1위로 바뀌었습니다. 깨끗한 추정은
+홀드아웃 server 수치입니다(few-shot과 홀드아웃 질의의 최대 유사도 0.593).
 
 ### 3차 변경 (dev만으로 결정, 커밋 6c2ecb6 · 650158c · 06117c1)
 
 미리 정한 규칙(R1~R4)과 dev 측정은 [설계 문서 4.10절](../../../../docs/architecture/tool-rag.md)에 있습니다.
 
 - **remote_* few-shot**: Remote Workspace 도구 10개에 블라인드 작성 예시(도구당 한국어 2 + 영어 2)를 `examples.RANKING_ONLY_EXAMPLE_QUERIES`로
-  붙였습니다. 순위용 passage·BM25에만 넣고 none 앵커·커버리지에는 넣지 않습니다.
+  붙였습니다. 순위용 passage·BM25에만 넣고 none 앵커·커버리지에는 넣지 않습니다. 이 예시는 평가셋과의 근접 중복 필터(0.75)를 거치지
+  않았습니다(위 q205·q206). 앞으로 넣는 few-shot은 평가셋·홀드아웃과 0.75 필터를 거칩니다.
 - **용어집**: 질의를 보지 않고 카탈로그 어휘로 만든 블라인드 용어집과 비교해(dev core R@3 현재 0.918 / 블라인드 0.904 / 합집합 0.895)
   현재 용어집을 유지하고 `remote → 원격`만 더했습니다. `RECIPE_VERSION` v2.3.
 - **none 판정 기본 끔**: 두 작성자 세트 사이 전이에서 어떤 추천안도 양방향 F1 ≥ 0.5·false-none ≤ 5%를 넘지 못했습니다.
