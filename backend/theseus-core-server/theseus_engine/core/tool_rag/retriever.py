@@ -201,7 +201,6 @@ class ToolRetriever:
         index = ToolIndex(
             fingerprint=fingerprint,
             names=names,
-            tools=tuple(tools),
             passages=passages,
             anchors=anchors,
             bm25=BM25(texts.bm25_docs),
@@ -322,7 +321,8 @@ class ToolRetriever:
             soft_keep=settings.soft_keep,
             tool_search_visible=TOOL_SEARCH_NAME in allowed,
         )
-        by_name = dict(zip(index.names, index.tools))
+        # 인덱스가 아니라 이번 호출의 레지스트리에서 인스턴스를 찾습니다(같은 fingerprint의 다른 세션 도구를 돌려주지 않음).
+        by_name = {t.name: t for t in registry.list_tools()}
         score_of = dict(zip(index.names, scores.tolist()))
         elapsed = (time.perf_counter() - started) * 1000
         result = RetrievalResult(

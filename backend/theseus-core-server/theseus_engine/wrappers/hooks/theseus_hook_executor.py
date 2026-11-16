@@ -710,10 +710,9 @@ class TheseusHookExecutor:
             log.debug("[DynamicDiscovery] 도구 검색 중 오류 발생: %s", e)
             return
 
-        by_name = {t.name: t for t in result.tools}
         injected: list[str] = []
         for name in result.slot_names[:remaining]:
-            tool = by_name.get(name)
+            tool = self._full_registry.get(name)  # 이번 요청의 인스턴스(검색 결과 객체를 그대로 쓰지 않음)
             if tool is not None and inject_visible_tool(
                 self._active_registry,
                 tool,

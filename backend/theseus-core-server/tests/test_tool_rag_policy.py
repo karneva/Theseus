@@ -37,16 +37,18 @@ class _DummyClient:
     model_name = "dummy"
 
 
-def _remote_config(allow_write: bool) -> RemoteWorkspaceConnectionConfig:
+def _remote_config(
+    allow_write: bool, host: str = "example.internal", username: str = "bench", base_path: str = "/srv/app"
+) -> RemoteWorkspaceConnectionConfig:
     return RemoteWorkspaceConnectionConfig.model_validate(
         {
             "remoteWorkspaceId": 1,
             "projectId": 10,
-            "host": "example.internal",
+            "host": host,
             "port": 22,
-            "username": "bench",
+            "username": username,
             "password": "unused",
-            "basePath": "/srv/app",
+            "basePath": base_path,
             "allowWriteExecution": allow_write,
             "status": "ACTIVE",
         }
@@ -204,6 +206,86 @@ class InjectionPolicyTest(_Base):
         self.assertTrue(inject_visible_tool(active, tools["read_file"], ("read_file",), provenance=prov))
         self.assertFalse(inject_visible_tool(active, tools["read_file"], ("read_file",)))  # 이미 있음
         self.assertEqual(prov, {"read_file": "tool_search"})
+
+
+class InstanceIsolationTest(_Base):
+    """캐시된 인덱스가 다른 요청의 도구 인스턴스를 돌려주지 않는지(세션 간 Remote Workspace 설정 혼용 방지).
+
+    remote_* 도구는 설명·스키마가 같고 접속 정보(self.config)만 다르므로 레지스트리 fingerprint가 같습니다.
+    """
+
+    QUERY = "원격 서버 로그 파일 읽어줘 remote read file tail log grep"
+
+    def _remote_sent(self, assembly) -> dict[str, object]:
+        return {t.name: t for t in assembly.engine._tool_registry.list_tools() if t.name.startswith("remote_")}
+
+    def test_server_turns_get_their_own_remote_config(self) -> None:
+        workspaces = [
+            ("tenant-a.internal", "u1", "/srv/a"),
+            ("tenant-b.internal", "u2", "/srv/b"),
+            ("tenant-a.internal", "u1", "/srv/a"),
+        ]
+        for host, user, base in workspaces:
+            with self.subTest(host=host):
+                assembly = self.build(
+                    query=self.QUERY,
+                    remote=_remote_config(allow_write=True, host=host, username=user, base_path=base),
+                )
+                self.assertEqual(assembly.tool_selection_mode, "retrieved")
+                remote = self._remote_sent(assembly)
+                self.assertTrue(remote, "remote_* 도구가 하나도 선택되지 않았습니다")
+                full = assembly.engine._tool_metadata["tool_registry"]
+                for name, tool in remote.items():
+                    self.assertIs(tool, full.get(name), name)
+                    self.assertEqual(tool.config.host, host, name)
+                    self.assertEqual(tool.config.username, user, name)
+                # 같은 인덱스를 공유해야 합니다(재인덱싱이 아니라 인스턴스 해석으로 해결).
+        self.assertEqual(len(self.retriever._indexes), 1)
+
+    def test_retrieve_sync_returns_callers_instances(self) -> None:
+        from src.remote_workspace.read_primitives import build_remote_read_analysis_tools
+        from theseus_engine.tools.core import ALL_CORE_TOOLS
+
+        def registry_for(host: str) -> ToolRegistry:
+            registry = ToolRegistry()
+            for cls in ALL_CORE_TOOLS:
+                registry.register(cls())
+            for tool in build_remote_read_analysis_tools(_remote_config(allow_write=False, host=host)):
+                registry.register(tool)
+            return registry
+
+        for host in ("tenant-a.internal", "tenant-b.internal"):
+            registry = registry_for(host)
+            result = self.retriever.retrieve_sync(self.QUERY, registry)
+            self.assertTrue(result.tools)
+            for tool in result.tools:
+                self.assertIs(tool, registry.get(tool.name))
+
+    def test_hook_injects_current_request_instance(self) -> None:
+        for host in ("tenant-a.internal", "tenant-b.internal"):
+            with self.subTest(host=host):
+                assembly = self.build(query="웹에서 최신 뉴스 검색해줘", remote=_remote_config(allow_write=False, host=host))
+                before = set(self._remote_sent(assembly))
+                hook = assembly.engine._hook_executor
+                allowed_remote = {n for n in assembly.allowed_tools if n.startswith("remote_")} - before
+                self.assertTrue(allowed_remote)
+                hook._delegate.set_injectable_names(allowed_remote)  # 주입이 remote_* 도구로만 가도록 좁힘
+                asyncio.run(
+                    hook.execute(
+                        HookEvent.POST_TOOL_USE,
+                        {
+                            "tool_name": "web_search",
+                            "tool_input": {"query": "x"},
+                            "tool_output": "remote server log file tail read grep remote_read_file remote_tail_log",
+                        },
+                    )
+                )
+                full = assembly.engine._tool_metadata["tool_registry"]
+                injected = {n: t for n, t in self._remote_sent(assembly).items() if n not in before}
+                self.assertTrue(injected, "훅이 remote_* 도구를 주입하지 않았습니다")
+                for name, tool in injected.items():
+                    self.assertIs(tool, full.get(name), name)
+                    self.assertEqual(tool.config.host, host, name)
 
 
 if __name__ == "__main__":

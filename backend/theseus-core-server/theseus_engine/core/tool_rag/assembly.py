@@ -123,7 +123,8 @@ def select_tools_for_turn(
     leaked = [n for n in result.names if n not in visible_set]
     if leaked:  # 검색기 계약 위반 방어(후보 밖 도구는 절대 보내지 않음)
         log.error("[ToolRAG] 후보 밖 도구가 선택돼 제외합니다: %s", leaked)
-    tools = [t for t in result.tools if t.name in visible_set]
+    # 보내는 인스턴스는 이번 요청의 보이는 레지스트리에서 꺼냅니다(세션별 Remote Workspace 설정·custom tool 코드 유지).
+    tools = [t for t in (visible_registry.get(n) for n in result.names if n in visible_set) if t is not None]
     return ToolSelection(
         registry=_registry_of(tools),
         mode="retrieved",

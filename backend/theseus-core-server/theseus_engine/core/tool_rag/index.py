@@ -80,8 +80,9 @@ def registry_fingerprint(tools: Sequence[Any], *, embedder_fingerprint: str, fee
 @dataclass(frozen=True)
 class ToolIndex:
     fingerprint: str
+    # 이름·벡터·비용만 둡니다. 도구 인스턴스는 넣지 않습니다: fingerprint는 인스턴스 상태(Remote Workspace 접속 정보,
+    # 매 턴 다시 로드한 custom tool 모듈)를 담지 않으므로, 반환할 도구는 항상 호출자의 레지스트리에서 찾아야 합니다.
     names: tuple[str, ...]
-    tools: tuple[Any, ...]
     passages: np.ndarray  # (T, d) 순위용
     anchors: np.ndarray  # (T, d) none 판정용
     bm25: BM25
