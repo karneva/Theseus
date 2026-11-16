@@ -12,18 +12,16 @@ from theseus_engine.tools.core import (
     ALL_CORE_TOOLS,
     load_custom_tools,
     load_custom_tools_for_project,
-    ToolSearchTool,
 )
 from theseus_engine.tools.core.custom_tool_paths import workspace_custom_tool_dirs
 from theseus_engine.tools.tool_repair import ToolRepairPolicy
-from theseus_engine.core.tool_retriever import ESSENTIAL_TOOL_NAMES
 from theseus_engine.core.tool_visibility import (
     ToolVisibilityPolicy,
     active_tool_names,
     build_visible_registry,
     can_create_tool_for_state,
 )
-from theseus_engine.config import stream_max_agent_turns
+from theseus_engine.config import get_tool_rag_settings, stream_max_agent_turns
 from theseus_engine.models.rbac import TheseusPermissionChecker
 from theseus_engine.wrappers.hooks.theseus_hook_executor import (
     TheseusHookExecutor,
@@ -34,13 +32,14 @@ from theseus_engine.observability.stats import (
 )  # noqa: F401 (reset_stats 경로에서 사용)
 from theseus_engine.engine.cost_tracker import CostTracker
 from theseus_engine.memory.scoped_memory import ScopedMemory
-from theseus_engine.core.tool_retriever import ToolRetriever, build_retrieved_registry
+from theseus_engine.core.tool_rag.assembly import (
+    PROVENANCE_METADATA_KEY,
+    aselect_tools_for_turn,
+)
 from theseus_engine.skills.injection import SkillInjectionConfig
 
-# 동적 도구 활성화 여부 (기본값 True)
-THESEUS_DYNAMIC_TOOL_RETRIEVAL = (
-    os.getenv("THESEUS_DYNAMIC_TOOL_RETRIEVAL", "true").lower() == "true"
-)
+# 동적 도구 선택(Tool RAG) 기본값: THESEUS_TOOL_RAG_ENABLED(구 THESEUS_DYNAMIC_TOOL_RETRIEVAL)
+THESEUS_DYNAMIC_TOOL_RETRIEVAL = get_tool_rag_settings().enabled
 
 
 def _workspace_custom_tool_dirs(cwd: Path) -> list[Path]:
@@ -155,46 +154,6 @@ async def setup_engine(
         project_tool_permissions,
     )
 
-    # --------------------------------------------------------------
-    # 동적 도구 선택 (Top-K Tool Retrieval)
-    # --------------------------------------------------------------
-    current_registry = full_registry
-    rag_failed = False
-
-    if enable_dynamic_tools and user_query:
-        try:
-            print(f"🔍 질의 기반 도구 최적화 중 (Top-{top_k})...")
-            retriever = ToolRetriever(full_registry)
-            selected_tools = await retriever.retrieve_top_k(
-                user_query,
-                full_registry,
-                k=top_k,
-                history_messages=history_messages,
-            )
-
-            selected_names = {t.name for t in selected_tools}
-            similarity_added = len(selected_names - ESSENTIAL_TOOL_NAMES)
-            rag_failed = similarity_added == 0
-
-            if selected_tools:
-                current_registry = build_retrieved_registry(selected_tools)
-                print(f"🎯 선택된 도구: {', '.join([t.name for t in selected_tools])}")
-
-            if rag_failed:
-                print("⚠️ RAG 유사도 선택 실패 (필수 도구만 반환) → ToolSearchTool 활성화")
-            else:
-                print(f"✅ RAG 도구 선택 성공 ({similarity_added}개 유사도 매칭)")
-        except Exception as _e:
-            import logging as _logging
-
-            _logging.getLogger(__name__).warning(
-                "[ToolRetriever] 도구 검색 실패, 전체 레지스트리 사용: %s",
-                _e,
-            )
-            print("⚠️ 도구 검색 중 오류 발생. 전체 레지스트리를 사용합니다.")
-            rag_failed = True
-    # --------------------------------------------------------------
-
     # Theseus 자체 PermissionSettings 사용
     from theseus_engine.models.rbac import TheseusPermissionSettings
 
@@ -215,11 +174,8 @@ async def setup_engine(
         project_id=project_id,
         actor_role=actor_role,
     )
-    if can_create_tool and current_registry.get("create_tool") is None:
-        creator = full_registry.get("create_tool")
-        if creator is not None:
-            current_registry.register(creator)
 
+    # ── 보이는 도구(모드·계획 단계·RBAC·프로젝트 비활성) ─────────────
     visibility_policy = ToolVisibilityPolicy(
         mode=sm.mode,
         plan_phase=getattr(sm, "plan_phase", None),
@@ -233,17 +189,41 @@ async def setup_engine(
         visibility_policy,
     )
     search_injectable_tool_names = active_tool_names(search_injectable_registry)
-    active_registry = build_visible_registry(current_registry, visibility_policy)
 
-    if rag_failed and active_registry.get("tool_search") is None:
-        active_registry.register(ToolSearchTool())
-        print("🔧 ToolSearchTool이 폴백으로 활성화되었습니다.")
+    # ── 동적 도구 선택(Tool RAG v2): 보이는 도구 중 필수 + 비용 인지 슬롯만 보냄 ─────
+    # top_k는 v1 시그니처 호환용으로만 남아 있습니다(v2는 비용 예산이 슬롯 수를 정함).
+    del top_k
+    if enable_dynamic_tools and user_query:
+        print("🔍 질의 기반 도구 선택 중...")
+        selection = await aselect_tools_for_turn(
+            full_registry=full_registry,
+            visible_registry=search_injectable_registry,
+            user_query=user_query,
+            history_messages=history_messages,
+            pinned=("create_tool",) if can_create_tool else (),
+        )
+    else:
+        selection = await aselect_tools_for_turn(
+            full_registry=full_registry,
+            visible_registry=search_injectable_registry,
+            user_query=None,
+        )
+    active_registry = selection.registry
+    if selection.mode == "retrieved":
+        print(f"🎯 선택된 도구: {', '.join(selection.names)}")
+        if selection.is_none:
+            print("⚠️ 맞는 도구가 없다고 판단 → 상위 일부 + ToolSearchTool로 보냄")
+    elif enable_dynamic_tools and user_query and selection.reason.startswith("error"):
+        print("⚠️ 도구 검색 중 오류 발생. 보이는 도구 전부를 사용합니다.")
 
     active_tool_names_tuple = active_tool_names(active_registry)
+    tool_rag_provenance = dict(selection.provenance)
     if enable_hooks:
         hook_executor = TheseusHookExecutor(
             active_registry=active_registry,
             full_registry=full_registry,
+            injectable_names=search_injectable_tool_names,
+            provenance=tool_rag_provenance,
             enable_dynamic_tools=enable_dynamic_tools,
             permission_prompt=permission_prompt_func,
             llm_client=api_client,
@@ -262,7 +242,7 @@ async def setup_engine(
         system_prompt=(
             sm.get_system_prompt(
                 available_tools=active_tool_names_tuple,
-                runtime_reminders=runtime_reminders,
+                runtime_reminders=tuple(runtime_reminders or ()) + selection.runtime_reminders(),
             )
             + ("\n\n" + memory_context if memory_context else "")
         ),
@@ -276,6 +256,7 @@ async def setup_engine(
             "tool_permissions": project_tool_permissions,
             "active_registry": active_registry,
             "search_injectable_tool_names": search_injectable_tool_names,
+            PROVENANCE_METADATA_KEY: tool_rag_provenance,
             "custom_tool_inventory": custom_tool_inventory,
             "llm_client": api_client,
             "model_name": model_name,

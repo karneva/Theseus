@@ -85,6 +85,13 @@ async def lifespan(app: FastAPI):
                 raise
             logger.warning("Sandbox startup check failed: %s", exc)
 
+    try:
+        from src.builder.engine import start_tool_rag_warmup
+
+        start_tool_rag_warmup()
+    except Exception as exc:  # 검색 없이도 서버는 동작합니다(보이는 도구 전부 전송).
+        logger.warning("Tool RAG warmup could not start: %s", exc)
+
     scheduler = setup_scheduler()
     app.state.billing_scheduler = scheduler
     app.state.tool_plan_consumer = None

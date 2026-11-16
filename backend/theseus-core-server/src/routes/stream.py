@@ -120,11 +120,14 @@ async def stream_agent_response(
         usage_data.model_name = assembly.model_name
 
         logger.info(
-            "Starting Theseus stream for user=%s project=%s mode=%s tools=%s",
+            "Starting Theseus stream for user=%s project=%s mode=%s tools=%s (sent %d/%d, %s)",
             session.user_id,
             session.project_id,
             engine_context.mode.name,
-            ",".join(assembly.allowed_tools),
+            ",".join(assembly.sent_tools or assembly.allowed_tools),
+            len(assembly.sent_tools),
+            len(assembly.allowed_tools),
+            assembly.tool_selection_mode,
         )
 
         async for event in assembly.engine.submit_message(prompt):

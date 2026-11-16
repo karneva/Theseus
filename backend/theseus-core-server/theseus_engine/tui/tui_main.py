@@ -739,8 +739,8 @@ class TheseusTUI(App):
                 can_create_tool=can_create_tool,
             ),
         )
-        self._bundle.engine.set_tool_registry(active_registry)
         active_names = tuple(tool.name for tool in active_registry.list_tools())
+        self._bundle.engine.set_tool_registry(active_registry, injectable_names=active_names)
         self._bundle.engine.set_system_prompt(
             self.theseus_sm.get_system_prompt(
                 available_tools=active_names,
