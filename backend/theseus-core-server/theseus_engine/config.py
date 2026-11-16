@@ -261,7 +261,7 @@ def get_tool_rag_settings() -> ToolRagSettings:
         cost_budget=_env_number("THESEUS_TOOL_RAG_COST_BUDGET", 700.0, minimum=0.0),
         rank_alpha=_env_number("THESEUS_TOOL_RAG_RANK_ALPHA", 1.0, minimum=0.0),
         max_candidates=_env_int("THESEUS_TOOL_RAG_MAX_CANDIDATES", 12, minimum=1),
-        none_mode=_env_choice("THESEUS_TOOL_RAG_NONE_MODE", "soft", ("off", "soft")),
+        none_mode=_env_choice("THESEUS_TOOL_RAG_NONE_MODE", "off", ("off", "soft")),
         soft_keep=_env_int("THESEUS_TOOL_RAG_SOFT_KEEP", 3, minimum=0),
         small_set=_env_int("THESEUS_TOOL_RAG_SMALL_SET", 12, minimum=0),
         hook_budget=_env_number("THESEUS_TOOL_RAG_HOOK_BUDGET", 400.0, minimum=0.0),

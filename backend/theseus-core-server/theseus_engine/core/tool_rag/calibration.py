@@ -1,12 +1,13 @@
 """none 판정 보정값 로더.
 
-보정 파일(JSON)은 benchmarks/tool_rag/calibrate.py가 dev 분할만으로 만듭니다. 형식:
+none 판정은 기본으로 꺼져 있고(THESEUS_TOOL_RAG_NONE_MODE=off), soft로 켤 때만 이 보정값을 읽습니다.
+보정 파일(JSON)은 benchmarks/tool_rag/calibrate.py가 평가셋 dev core + calibration_set core로 만듭니다. 형식:
 
     {
       "embedder_fingerprint": "onnx:<model sha256>:spm:512:mean",
-      "recipe_version": "v2.1",
+      "recipe_version": "v2.3",
       "none_rule": {"w_top1": ..., "w_cov": ..., "b": ...},
-      "fit": {...}            # 적합 메타(분할, 표본 수, CV 추정치, 날짜)
+      "fit": {...}            # 적합 메타(데이터·해시, 방법, 합친 CV, 두 세트 사이 전이 추정, 기본값 결정, 날짜)
     }
 
 찾는 순서: THESEUS_TOOL_RAG_CALIBRATION_FILE → <모델 디렉터리>/toolrag_calibration.json → 패키지 동봉 파일(data/).

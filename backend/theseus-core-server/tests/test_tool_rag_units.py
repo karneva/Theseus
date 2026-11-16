@@ -402,6 +402,90 @@ class EngineRagVisibilityTest(unittest.TestCase):
             self.assertEqual(eb.unavailable_engine_rag_tools(), frozenset())
 
 
+class CalibrationLoaderTest(unittest.TestCase):
+    FP = "onnx:abc:spm:512:mean"
+
+    def setUp(self) -> None:
+        from theseus_engine.core.tool_rag import calibration
+
+        calibration.load_none_rule.cache_clear()
+        self.addCleanup(calibration.load_none_rule.cache_clear)
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        # 패키지 동봉 파일이 후보에 섞이지 않도록 빈 디렉터리로 바꿉니다.
+        patcher = patch.object(calibration, "PACKAGED_DIR", Path(self._tmp.name) / "none")
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def _write(self, **changes) -> str:
+        from theseus_engine.core.tool_rag.text import RECIPE_VERSION
+
+        data = {
+            "embedder_fingerprint": self.FP,
+            "recipe_version": RECIPE_VERSION,
+            "none_rule": {"w_top1": -100.0, "w_cov": -5.0, "b": 82.0},
+        }
+        data.update(changes)
+        path = Path(self._tmp.name) / f"cal_{len(os.listdir(self._tmp.name))}.json"
+        path.write_text(json.dumps(data), encoding="utf-8")
+        return str(path)
+
+    def test_matching_file_loads_rule(self) -> None:
+        from theseus_engine.core.tool_rag.calibration import load_none_rule
+
+        rule = load_none_rule(self.FP, self._write(), None)
+        self.assertEqual(rule, NoneRule(-100.0, -5.0, 82.0))
+        self.assertTrue(rule.is_none(0.80, 0.0))
+        self.assertFalse(rule.is_none(0.83, 0.0))
+
+    def test_fingerprint_or_recipe_mismatch_disables_rule(self) -> None:
+        from theseus_engine.core.tool_rag.calibration import load_none_rule
+
+        with self.assertLogs("theseus_engine.core.tool_rag.calibration", level="WARNING"):
+            self.assertIsNone(load_none_rule("onnx:other:spm:512:mean", self._write(), None))
+        with self.assertLogs("theseus_engine.core.tool_rag.calibration", level="WARNING"):
+            self.assertIsNone(load_none_rule(self.FP, self._write(recipe_version="v0"), None))
+        with self.assertLogs("theseus_engine.core.tool_rag.calibration", level="WARNING"):
+            self.assertIsNone(load_none_rule(self.FP, self._write(none_rule={"w_top1": 1.0}), None))
+
+    def test_model_dir_file_is_used_when_no_explicit_file(self) -> None:
+        from theseus_engine.core.tool_rag.calibration import CALIBRATION_FILE, load_none_rule
+
+        model_dir = Path(self._tmp.name) / "model"
+        model_dir.mkdir()
+        Path(self._write()).replace(model_dir / CALIBRATION_FILE)
+        self.assertIsNotNone(load_none_rule(self.FP, None, str(model_dir)))
+
+
+class PackagedCalibrationTest(unittest.TestCase):
+    def test_packaged_file_matches_recipe_and_records_fit(self) -> None:
+        from theseus_engine.core.tool_rag.calibration import PACKAGED_DIR
+        from theseus_engine.core.tool_rag.text import RECIPE_VERSION
+
+        files = sorted(PACKAGED_DIR.glob("toolrag_calibration*.json"))
+        self.assertTrue(files)
+        for path in files:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(data["recipe_version"], RECIPE_VERSION, path.name)
+            fit = data["fit"]
+            # dev core + calibration_set core를 합쳐 적합하고 test·holdout은 쓰지 않습니다.
+            self.assertEqual(set(fit["data"]), {"dev", "calibration_set"})
+            self.assertEqual(fit["n"], sum(d["n"] for d in fit["data"].values()))
+            self.assertIn("calibration_set_to_dev", fit["transfer"])
+            self.assertIn("dev_to_calibration_set", fit["transfer"])
+            self.assertIn("cv_5fold_x20_pooled", fit)
+            self.assertEqual(fit["decision"]["runtime_default"], "off")
+
+    def test_none_mode_defaults_to_off(self) -> None:
+        from theseus_engine.config import get_tool_rag_settings
+
+        clean = {k: v for k, v in os.environ.items() if k != "THESEUS_TOOL_RAG_NONE_MODE"}
+        with patch.dict(os.environ, clean, clear=True):
+            self.assertEqual(get_tool_rag_settings().none_mode, "off")
+            with patch.dict(os.environ, {"THESEUS_TOOL_RAG_NONE_MODE": "soft"}):
+                self.assertEqual(get_tool_rag_settings().none_mode, "soft")
+
+
 class SettingsTest(unittest.TestCase):
     def test_hook_inject_cap_is_per_turn_with_legacy_name(self) -> None:
         from theseus_engine.config import get_tool_rag_settings

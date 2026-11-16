@@ -1,15 +1,25 @@
-"""none 판정 보정: dev 분할만으로 선형 규칙을 적합해 toolrag_calibration.json을 씁니다.
+"""none 판정 보정: dev core + calibration_set core로 선형 규칙을 적합해 toolrag_calibration.json을 씁니다.
 
     python -m benchmarks.tool_rag.calibrate --out theseus_engine/core/tool_rag/data/toolrag_calibration.e5-small-int8.json
 
-절차(Combine 단계와 같음, numpy만 사용):
-  1. 특징: top1 = 앵커 passage 원시 코사인 최댓값(tool_search 제외), cov = 질의 커버리지.
-  2. class-balanced L2 로지스틱 회귀(Newton, 표준화 공간)를 dev 전체에 적합합니다.
-  3. 임계값: dev에서 false-none(답 있는 질의를 none으로 판정한 비율) <= cap(기본 5%) 중 F1이 최대인 값.
-  4. 참고용으로 반복 계층 5-fold × 20 CV 추정치(P/R/F1/false-none)를 같이 기록합니다.
+데이터(test·holdout은 읽지 않습니다):
+  * 평가셋 dev 분할 core 질의 107개(none 18개)
+  * calibration_set.jsonl core 질의 184개(none 86개). 평가셋·용어집·few-shot을 보지 않은 작성자가 쓴 튜닝용 질의.
+    답 있는 질의의 relevant 라벨은 작성자 한 명의 추정이지만 none 판정에는 type(none 여부)만 씁니다.
+두 세트를 합친 291개(none 104개)로 적합합니다. 작성자가 다른 두 세트는 none 정의가 달라서(dev는 외부 서비스 위주,
+calibration_set은 잡담·일반 지식까지 none) 한쪽에만 맞춘 임계값은 다른 쪽에서 크게 빗나갔습니다.
 
-test 분할은 읽지 않습니다. 임베딩 모델을 바꾸면(3단계 파인튜닝 등) 새 모델 디렉터리로 이 스크립트를 다시 돌려
-보정 파일을 만든 뒤 하네스로 dev와 test를 1회 평가합니다.
+절차(numpy만 사용):
+  1. 특징: top1 = 앵커 passage 원시 코사인 최댓값(tool_search 제외), cov = 질의 커버리지.
+  2. class-balanced L2 로지스틱 회귀(Newton, 표준화 공간)를 합친 데이터 전체에 적합합니다.
+  3. 임계값: false-none(답 있는 질의를 none으로 판정한 비율) <= cap(기본 5%) 중 F1이 최대인 값.
+  4. 기록용 추정치: 합친 데이터의 반복 계층 5-fold × 20 CV, 그리고 두 세트 사이 전이(calibration_set으로 적합 → dev
+     평가, dev로 적합 → calibration_set 평가).
+
+런타임 기본값은 none 판정을 끕니다(THESEUS_TOOL_RAG_NONE_MODE=off). 미리 정한 채택 기준(양방향 전이에서 F1 >= 0.5이고
+false-none <= 5%)을 이 규칙과 탐색한 대안(특징 추가, 프로토타입 margin)이 모두 넘지 못했기 때문입니다(fit.decision).
+이 파일은 THESEUS_TOOL_RAG_NONE_MODE=soft로 켤 때 쓰입니다. 임베딩 모델을 바꾸면(3단계 파인튜닝 등) 새 모델 디렉터리로
+이 스크립트를 다시 돌립니다.
 """
 
 from __future__ import annotations
@@ -19,12 +29,18 @@ from . import _env  # noqa: F401  # 반드시 theseus_engine보다 먼저
 import argparse
 import dataclasses
 import datetime as dt
+import hashlib
 import json
 from pathlib import Path
 
 import numpy as np
 
 from . import harness
+
+CALIBRATION_SET_PATH = harness.HERE / "calibration_set.jsonl"
+# LF 정규화한 calibration_set.jsonl의 sha256(0771e25에서 고정). 바뀌면 보정을 거부합니다.
+CALIBRATION_SET_SHA256 = "6745784ec5916d936ee4cf96d54e097e634b204d5274de6b989da951d67cb1d3"
+TRANSFER_TARGET = {"min_f1": 0.5, "max_false_none": 0.05}
 
 
 def fit_lr(X: np.ndarray, y: np.ndarray, C: float = 1.0, iters: int = 100) -> tuple[np.ndarray, float]:
@@ -105,6 +121,42 @@ def cv_none(top1, cov, y, cap=0.05, folds=5, reps=20, seed=0) -> dict:
     }
 
 
+def load_calibration_set(registry: str = "core") -> list[dict]:
+    raw = CALIBRATION_SET_PATH.read_bytes().replace(b"\r\n", b"\n")
+    digest = hashlib.sha256(raw).hexdigest()
+    if digest != CALIBRATION_SET_SHA256:
+        raise RuntimeError(f"calibration_set.jsonl이 고정본과 다릅니다(sha256 {digest}).")
+    rows = [json.loads(line) for line in raw.decode("utf-8").splitlines() if line.strip()]
+    return [r for r in rows if r["registry"] == registry] if registry == "core" else rows
+
+
+def apply_rule(rule: dict, top1: np.ndarray, cov: np.ndarray) -> np.ndarray:
+    return rule["w_top1"] * top1 + rule["w_cov"] * cov + rule["b"] >= 0
+
+
+def confusion(pred: np.ndarray, y: np.ndarray) -> dict:
+    tp = int((pred & (y == 1)).sum())
+    fp = int((pred & (y == 0)).sum())
+    fn = int(y.sum()) - tp
+    prec = tp / (tp + fp) if tp + fp else 0.0
+    rec = tp / max(1, int(y.sum()))
+    f1 = 2 * prec * rec / (prec + rec) if prec + rec else 0.0
+    return {
+        "tp": tp, "fp": fp, "fn": fn, "precision": prec, "recall": rec, "f1": f1,
+        "false_none": fp / max(1, int((y == 0).sum())),
+    }
+
+
+def transfer(src: tuple, dst: tuple, cap: float) -> dict:
+    """src(top1, cov, y)로 적합한 규칙을 dst에서 평가합니다."""
+    rule = fit_none_rule(*src, cap=cap)
+    return {"rule": rule, **confusion(apply_rule(rule, dst[0], dst[1]), dst[2])}
+
+
+def passes_target(t: dict) -> bool:
+    return t["f1"] >= TRANSFER_TARGET["min_f1"] and t["false_none"] <= TRANSFER_TARGET["max_false_none"]
+
+
 def main(argv=None) -> int:
     from theseus_engine.config import get_tool_rag_settings
     from theseus_engine.core.tool_rag.cache import EmbeddingCache
@@ -113,7 +165,7 @@ def main(argv=None) -> int:
 
     ap = argparse.ArgumentParser(prog="python -m benchmarks.tool_rag.calibrate")
     ap.add_argument("--out", required=True, type=Path)
-    ap.add_argument("--cap", type=float, default=0.05, help="dev false-none 상한")
+    ap.add_argument("--cap", type=float, default=0.05, help="false-none 상한(답 있는 질의 중 none 판정 비율)")
     ap.add_argument("--threads", type=int, default=4)
     args = ap.parse_args(argv)
 
@@ -122,31 +174,57 @@ def main(argv=None) -> int:
     )
     retr = ToolRetriever(settings=settings, cache=EmbeddingCache(None), none_rule=None)
     index = retr.get_index(harness.build_registry("core"))
-    rows = harness.load_eval_set("dev", "core")  # test는 읽지 않습니다.
-    y = np.array([int(r["type"] == "none") for r in rows])
-    feats = [retr.score(r["query"], index)[1:] for r in rows]
-    top1 = np.array([f[0] for f in feats])
-    cov = np.array([f[1] for f in feats])
+    sources = {
+        "dev": harness.load_eval_set("dev", "core"),  # test·holdout은 읽지 않습니다.
+        "calibration_set": load_calibration_set("core"),
+    }
+    data = {}
+    for key, rows in sources.items():
+        feats = [retr.score(r["query"], index)[1:] for r in rows]
+        data[key] = (
+            np.array([f[0] for f in feats]),
+            np.array([f[1] for f in feats]),
+            np.array([int(r["type"] == "none") for r in rows]),
+        )
+    top1, cov, y = (np.concatenate([data[k][i] for k in sources]) for i in range(3))
 
     rule = fit_none_rule(top1, cov, y, cap=args.cap)
     cv = cv_none(top1, cov, y, cap=args.cap)
-    pred = rule["w_top1"] * top1 + rule["w_cov"] * cov + rule["b"] >= 0
-    tp, fp = int((pred & (y == 1)).sum()), int((pred & (y == 0)).sum())
+    c2d = transfer(data["calibration_set"], data["dev"], args.cap)
+    d2c = transfer(data["dev"], data["calibration_set"], args.cap)
+    in_sample = {k: confusion(apply_rule(rule, *data[k][:2]), data[k][2]) for k in sources}
+    in_sample["pooled"] = confusion(apply_rule(rule, top1, cov), y)
+    target_met = passes_target(c2d) and passes_target(d2c)
     out = {
         "embedder_fingerprint": retr.embedder().fingerprint,
         "recipe_version": RECIPE_VERSION,
         "none_rule": rule,
         "equivalent": f"top1 + {rule['w_cov'] / rule['w_top1']:.4f}*cov < {-rule['b'] / rule['w_top1']:.5f} -> none",
         "fit": {
-            "split": "dev",
+            "data": {
+                "dev": {"source": "eval_set.jsonl split=dev registry=core", "n": int(len(data["dev"][2])),
+                        "n_none": int(data["dev"][2].sum()), "sha256": harness.EVAL_SET_SHA256},
+                "calibration_set": {"source": "calibration_set.jsonl registry=core",
+                                    "n": int(len(data["calibration_set"][2])),
+                                    "n_none": int(data["calibration_set"][2].sum()), "sha256": CALIBRATION_SET_SHA256},
+            },
             "registry": "core",
             "n": int(len(y)),
             "n_none": int(y.sum()),
-            "method": "class-balanced L2 logistic regression [top1, cov] + threshold (false-none <= cap, max F1)",
+            "method": "class-balanced L2 logistic regression [top1, cov] on pooled dev + calibration_set, "
+            "threshold = max F1 with false-none <= cap",
             "cap": args.cap,
-            "in_sample": {"tp": tp, "fp": fp, "fn": int(y.sum()) - tp},
-            "cv_5fold_x20": cv,
-            "eval_set_sha256": harness.EVAL_SET_SHA256,
+            "in_sample": in_sample,
+            "cv_5fold_x20_pooled": cv,
+            "transfer": {"calibration_set_to_dev": c2d, "dev_to_calibration_set": d2c},
+            "decision": {
+                "target": TRANSFER_TARGET,
+                "target_met_both_directions": target_met,
+                "runtime_default": "soft" if target_met else "off",
+                "note": "THESEUS_TOOL_RAG_NONE_MODE 기본값은 off. 이 규칙은 soft로 켤 때만 쓰입니다."
+                if not target_met
+                else "양방향 전이 기준을 넘음",
+            },
             "date": dt.date.today().isoformat(),
         },
     }
