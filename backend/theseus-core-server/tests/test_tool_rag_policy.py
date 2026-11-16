@@ -115,6 +115,19 @@ class ServerAssemblyTest(_Base):
             set(assembly.engine._tool_metadata["search_injectable_tool_names"]), set(assembly.allowed_tools)
         )
 
+    def test_tool_search_is_always_sent_with_a_subset(self) -> None:
+        from theseus_engine.core.tool_rag.retriever import TOOL_SEARCH_REMINDER
+
+        for mode, query in ((AgentMode.AGENT, "웹에서 최신 뉴스 검색해줘"), (AgentMode.ASK, "이 저장소 구조 설명해줘")):
+            with self.subTest(mode=mode):
+                assembly = self.build(mode=mode, query=query)
+                self.assertEqual(assembly.tool_selection_mode, "retrieved")
+                sent = self.sent(assembly)
+                self.assertLess(len(sent), len(assembly.allowed_tools))
+                self.assertIn("tool_search", assembly.allowed_tools)
+                self.assertIn("tool_search", sent)
+                self.assertIn(TOOL_SEARCH_REMINDER, assembly.engine._system_prompt)
+
     def test_history_tools_are_kept(self) -> None:
         history = [{"role": "assistant", "content": [{"type": "tool_use", "id": "t1", "name": "skill_list", "input": {}}]}]
         self.assertIn("skill_list", self.sent(self.build(history=history)))

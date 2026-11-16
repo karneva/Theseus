@@ -4,8 +4,10 @@
   1. 질의를 1번 인코딩합니다('query: ' 프리픽스, LRU 256).
   2. 순위 점수 = cos(q, passage) + bm25_beta * BM25(q) / max BM25(q).
   3. none 특징 = 앵커 passage 코사인 최댓값(top1, tool_search 제외) + 질의 커버리지(cov).
-  4. 전달 집합 = 필수 ∩ 후보 → 히스토리 도구 ∩ 후보 → 비용 인지 슬롯(후보에서 앞의 둘을 뺀 순위).
-     none이면 슬롯 상위 soft_keep개 + tool_search.
+     인덱스 전체 도구 기준이라 숨긴 도구(모드·RBAC)도 들어갑니다(보정과 같은 정의, 알려진 한계).
+  4. 전달 집합 = 필수 ∩ 후보 → tool_search(후보에 있을 때) → 히스토리 도구 ∩ 후보 → 비용 인지 슬롯(후보에서 앞의
+     것들을 뺀 순위). none이면 슬롯을 상위 soft_keep개로 줄입니다. tool_search는 비용 예산 밖에서 항상 넣습니다.
+     일부 도구만 보내는 턴에서 슬롯이 정답을 놓쳤을 때 모델이 나머지 보이는 도구를 찾을 유일한 경로이기 때문입니다.
 
 ``candidates``는 호출자가 가시성 정책(모드·계획 단계·RBAC·프로젝트 비활성)으로 계산한 "보이는 도구" 이름 집합입니다.
 검색기는 후보 밖의 도구를 절대 돌려주지 않습니다. 서버 조립, tool_search, 사후 훅 주입이 모두 이 규칙을 씁니다.
@@ -295,6 +297,8 @@ class ToolRetriever:
         scores, top1, cov = self.score(query, index)
 
         essentials = [n for n in index.names if include_essentials and n in ESSENTIAL_TOOL_NAMES and n in allowed]
+        if include_essentials and TOOL_SEARCH_NAME in allowed:
+            essentials.append(TOOL_SEARCH_NAME)  # 필수처럼 비용 예산 밖에서(사후 훅 주입은 include_essentials=False)
         essentials += [n for n in dict.fromkeys(pinned) if n in allowed and n not in essentials]
         fixed = set(essentials)
         history = [n for n in extract_history_tool_names(history_messages) if n in allowed and n not in fixed]

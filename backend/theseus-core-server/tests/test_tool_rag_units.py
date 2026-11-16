@@ -193,6 +193,19 @@ class RetrieverIndexTest(unittest.TestCase):
         self.assertLessEqual(len(res.slot_names), 4)
         self.assertTrue(ESSENTIAL_TOOL_NAMES <= set(res.names))
 
+    def test_tool_search_is_fixed_outside_budget_but_not_for_hook(self) -> None:
+        reg = core_registry()
+        names = [t.name for t in reg.list_tools()]
+        retr = make_retriever(none_mode="off")
+        res = retr.retrieve_sync("웹에서 최신 뉴스 검색해줘", reg, candidates=names, budget=0)
+        self.assertIn("tool_search", res.essential_names)
+        self.assertIn("tool_search", res.names)
+        self.assertEqual(res.similarity_count, 1)  # 예산 0이어도 1위 슬롯은 들어가고 tool_search는 슬롯이 아님
+        hook = retr.retrieve_sync("웹에서 최신 뉴스 검색해줘", reg, candidates=names, include_essentials=False)
+        self.assertNotIn("tool_search", hook.essential_names)
+        hidden = retr.retrieve_sync("웹에서 최신 뉴스 검색해줘", reg, candidates=[n for n in names if n != "tool_search"])
+        self.assertNotIn("tool_search", hidden.names)
+
     def test_compat_retrieve_top_k(self) -> None:
         import asyncio
 
