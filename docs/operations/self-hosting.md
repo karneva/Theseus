@@ -364,7 +364,7 @@ docker stats --no-stream --format 'table {{.Name}}\t{{.MemUsage}}\t{{.CPUPerc}}'
 
 - 일회성 서비스: kafka-init 256m, core-permissions 32m(기동 시 잠깐). sandbox 컨테이너는 BUILD 검증마다 `SANDBOX_MEMORY_LIMIT`(기본 128m)로 1초 남짓 실행됩니다. `ops` 프로필 kafka-ui(384m)는 예산 밖입니다.
 - core는 첫 AGENT/PLAN 요청 때 임베딩 모델을 올리면서 약 900MiB로 늘고 그 뒤로 유지됩니다(cgroup `memory.peak` 1156M).
-- 위 core 수치는 Tool RAG v1(torch, sentence-transformers) 이미지로 잰 값입니다. v2 이미지(ONNX int8, torch 없음)는 같은 조건의 전체 스택 E2E를 다시 재지 않았습니다. 대신 컨테이너 프로브(`--cpus=2 --memory=1.5g`, `import src.main` 뒤 검색 1회)에서 core 프로세스 RSS가 v1 이미지 1079~1091MiB, v2 이미지 422~423MiB였습니다([Tool RAG 결과](../architecture/tool-rag.md#53-자원)).
+- 위 core 수치는 Tool RAG v1(torch, sentence-transformers) 이미지로 잰 값입니다. v2 이미지(ONNX int8, torch 없음)는 같은 조건의 전체 스택 E2E를 다시 재지 않았습니다. 대신 컨테이너 프로브(`--cpus=2 --memory=1.5g`, `import src.main` 뒤 검색 1회)에서 core 프로세스 RSS가 v1 이미지 1079~1091MiB, v2 이미지 419~421MiB였습니다([Tool RAG 결과](../architecture/tool-rag.md#53-자원)).
 - E2E 동안 OOM kill과 재시작은 없었습니다. 3.8GB 서버에서 OS 몫(약 0.3~0.4GB)을 빼면 페이지 캐시와 sandbox에 약 1.2GB가 남습니다.
 - **kafka가 가장 빠듯합니다.** 브로커 자체는 283~297MiB(anon)이지만, 30초마다 healthcheck가 같은 cgroup 안에서 JVM(`kafka-broker-api-versions`, `-Xmx64m`)을 띄워 1.3초 동안 71~81MB를 더 씁니다. 그래서 cgroup이 448M에 자주 닿고 페이지 캐시를 회수합니다(`memory.events max` 약 20분에 2504회). OOM은 아니지만 서버에서 스왑이나 지연이 보이면 TCP healthcheck로 바꾸거나 `mem_limit`을 512m로 올립니다.
 - frontend/nginx는 `worker_processes auto`라 CPU 수만큼 worker를 띄웁니다. 22코어 노트북에서 frontend `memory.peak`가 31M/32M이었고, 2 vCPU 서버에서는 더 적게 씁니다.

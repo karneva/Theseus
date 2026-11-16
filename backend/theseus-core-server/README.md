@@ -84,8 +84,8 @@ stdio fallback으로 실행할 수 있습니다.
 - `theseus_engine.core.tool_visibility`가 ASK/PLAN/AGENT/COORDINATOR mode별
   active tool registry를 공통 계산합니다.
 - `theseus_engine.core.tool_rag`(Tool RAG v2)가 보이는 도구 중 이번 턴에 보낼 도구를 고릅니다.
-  multilingual-e5-small ONNX int8 임베딩 + BM25, 필수 도구 + 비용 인지 슬롯, "맞는 도구 없음"이면
-  상위 3개 + tool_search. 서버 조립과 CLI/TUI가 같은 규칙을 쓰고, tool_search와 사후 훅은 보이는 도구 안에서만
+  multilingual-e5-small ONNX int8 임베딩 + BM25, 필수 도구 + tool_search(보이면 항상) + 비용 인지 슬롯,
+  "맞는 도구 없음"이면 슬롯을 상위 3개로 줄임. 서버 조립과 CLI/TUI가 같은 규칙을 쓰고, tool_search와 사후 훅은 보이는 도구 안에서만
   주입합니다. 설계와 측정은 [docs/architecture/tool-rag.md](../../docs/architecture/tool-rag.md)를 참고하세요.
 - `theseus_engine.tools.tool_repair`는 CLI/TUI/Extension/Server ToolBuild가
   공유하는 custom tool repair 정책과 실패 분류를 제공합니다.
@@ -533,7 +533,9 @@ pytest -q
 ```
 
 ONNX 모델이 필요한 테스트(임베더 골든 벡터·결정성, v2 회귀)는 모델 디렉터리가 없으면 건너뜁니다.
-`THESEUS_EMBED_MODEL_DIR`을 지정하면 함께 돕니다. Tool RAG 평가 하네스는 [benchmarks/tool_rag](benchmarks/tool_rag/README.md)에 있습니다.
+`THESEUS_EMBED_MODEL_DIR`을 지정하면 함께 돕니다. 토크나이저 일치 테스트 1개는 추가로 `THESEUS_TEST_TOKENIZER_JSON`
+(`intfloat/multilingual-e5-small`의 tokenizer.json 경로, 테스트 전용)이 있어야 돌고, 없으면 건너뜁니다.
+현재 186개: 모델 없음 178 통과·8 건너뜀, 모델만 있음 185 통과·1 건너뜀, 둘 다 있음 186 통과. Tool RAG 평가 하네스는 [benchmarks/tool_rag](benchmarks/tool_rag/README.md)에 있습니다.
 
 VSCode Extension 변경 검증은 `vscode-extension`에서 실행합니다.
 

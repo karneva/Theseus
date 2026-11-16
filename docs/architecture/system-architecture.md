@@ -132,7 +132,7 @@ sequenceDiagram
 
 - API는 Core SSE 본문을 가공하지 않고 그대로 흘려보냅니다. nginx는 이 경로와 Run 이벤트 경로에 `proxy_buffering off`, `gzip off`, 3600초 타임아웃을 겁니다.
 - AGENT 모드에서 Core는 프로젝트 권한과 모드에 맞는 도구만 노출합니다. 승인된 custom Tool도 Core 서버 레지스트리에 로드되어 같은 방식으로 호출됩니다.
-- Tool RAG(`THESEUS_TOOL_RAG_ENABLED`, 기본 켜짐)가 보이는 도구 중 이번 턴에 보낼 도구만 고릅니다(필수 도구 + 비용 인지 슬롯, 맞는 도구가 없으면 상위 3개 + tool_search). 임베딩은 이미지에 든 multilingual-e5-small ONNX int8이고, 기동 직후 백그라운드 스레드에서 로드합니다. 로드 전이나 검색 실패 시에는 보이는 도구 전부를 보냅니다. tool_search와 도구 실행 뒤 사후 주입도 보이는 도구 안에서만 합니다. 자세한 내용은 [Tool RAG](./tool-rag.md)를 참고하세요.
+- Tool RAG(`THESEUS_TOOL_RAG_ENABLED`, 기본 켜짐)가 보이는 도구 중 이번 턴에 보낼 도구만 고릅니다(필수 도구 + tool_search + 비용 인지 슬롯, 맞는 도구가 없으면 슬롯을 상위 3개로 줄임). 임베딩은 이미지에 든 multilingual-e5-small ONNX int8이고, 기동 직후 백그라운드 스레드에서 로드합니다. 로드 전이나 검색 실패 시에는 보이는 도구 전부를 보냅니다. tool_search와 도구 실행 뒤 사후 주입도 보이는 도구 안에서만 합니다. 자세한 내용은 [Tool RAG](./tool-rag.md)를 참고하세요.
 
 ### 4.3 PLAN → 승인 → BUILD
 

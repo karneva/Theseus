@@ -18,9 +18,9 @@ v2(`theseus_engine/core/tool_rag`, 현재 저장소 구현)를 같은 정의로 
 | `container_probe.py` | Core 이미지 안에서 `import src.main` → 첫 검색 → 웜 검색의 RSS·시간 측정 |
 | `run.py` | CLI |
 | `_env.py` | 결정성 고정(피드백 로그를 빈 디렉터리로, HF 오프라인, 바이트코드 끔). 패키지 import 시 먼저 실행됩니다. |
-| `results/baseline_{dev,test,all}.json` | v1 베이스라인 결과(f9862e4) |
-| `results/v2_{dev,test,all}.json` | v2 결과(core 레지스트리), `v2_server_{test,all}.json`은 server 레지스트리 |
-| `results/all_visible_{core,server}_{test,all}.json` | v1 서버 동작(검색 없이 보이는 도구 전부) 참조점 |
+| `results/baseline_{dev,test,all}.json` | v1 베이스라인 결과(측정 HEAD 3b9467e, v1 검색기는 f9862e4와 같음) |
+| `results/v2_{dev,test,all}.json` | v2 결과(core 레지스트리), `v2_server_{test,all}.json`은 server, `v2_server_default_{test,all}.json`은 server-default 레지스트리 |
+| `results/all_visible_{core,server,server_default}_{test,all}.json` | v1 서버 동작(검색 없이 보이는 도구 전부) 참조점 |
 | `results/compare_baseline_v2_{dev,test,all}.json` | `compare.py` 출력 |
 | `results/v2_dev_linux_2cpu.json`, `results/container_probe.json` | Linux 컨테이너(2 vCPU, 1.5 GB) 측정 |
 
@@ -33,7 +33,7 @@ v2(`theseus_engine/core/tool_rag`, 현재 저장소 구현)를 같은 정의로 
 
 ## 측정 항목
 
-정의는 동결 베이스라인 벤치(`bench.py`)와 같습니다. 헤드라인 레지스트리는 `core`(ALL_CORE_TOOLS, CLI/TUI/runner와 Remote Workspace 없는 서버)이고, 이때는 `registry == "core"`인 질의 213개만 씁니다. `--registry server`는 Remote Workspace 도구(remote_*)까지 넣은 서버 레지스트리로 236개 전체를 씁니다.
+정의는 동결 베이스라인 벤치(`bench.py`)와 같습니다. 헤드라인 레지스트리는 `core`(ALL_CORE_TOOLS, CLI/TUI/runner와 Remote Workspace 없는 서버)이고, 이때는 `registry == "core"`인 질의 213개만 씁니다. `--registry server`는 Remote Workspace 도구(remote_*)까지 넣은 서버 레지스트리로 236개 전체를 씁니다(가시성은 CLI AGENT 정책이라 엔진 RAG 도구가 보임). `--registry server-default`는 같은 레지스트리에 실제 서버 기본 가시성(엔진 RAG 도구 2개 숨김)을 적용합니다.
 
 | 지표 | 정의 |
 |---|---|
@@ -62,7 +62,7 @@ python -m benchmarks.tool_rag.run --variant baseline --split dev
 python -m benchmarks.tool_rag.run --variant baseline --split all --json benchmarks/tool_rag/results/baseline_all.json
 ```
 
-주요 옵션: `--split dev|test|all`(기본 dev), `--registry core|server`(기본 core), `--json 경로`, `--passes N`(지연 반복, 0이면 생략), `--threads N`(torch 스레드, 기본 4), `--no-per-item`, `--variant-kwargs '{"base_k": 5}'`.
+주요 옵션: `--split dev|test|all`(기본 dev), `--registry core|server|server-default`(기본 core), `--json 경로`, `--passes N`(지연 반복, 0이면 생략), `--threads N`(torch 스레드, 기본 4), `--no-per-item`, `--variant-kwargs '{"base_k": 5}'`.
 
 `--variant`에는 `baseline`, `패키지.모듈:클래스`, 또는 `C:/어딘가/my_variant.py:클래스`(저장소 밖 파일)를 줄 수 있습니다.
 
@@ -148,10 +148,12 @@ python -m benchmarks.tool_rag.run --variant baseline --split all --legacy-demo-t
 
 ## v2 결과 (저장소 구현, core 레지스트리)
 
-커밋 6739df9, Windows 11 / Python 3.11.15 / onnxruntime 1.32.0(4 스레드) / 모델 `e5-small-int8`(sha256 7486bedf…).
-test 분할은 Combine 단계에서 이미 1회 평가한 구성을 저장소 코드로 옮긴 뒤 재현 확인용으로만 다시 돌렸고, 결과를 보고 아무것도 바꾸지 않았습니다.
-Combine 단계 스크래치 구현(`FinalV2`)과 dev·test·all 모든 질의의 상위 8 순위·점수·전달 집합·none 판정이 같았습니다
-(요약 지표 차이는 nDCG@5의 1e-16 부동소수점 합산 순서뿐). Linux 컨테이너(2 vCPU) dev 결과도 질의별로 같았습니다.
+커밋 18c26bb, Windows 11 / Python 3.11.15 / onnxruntime 1.32.0(4 스레드) / 모델 `e5-small-int8`(sha256 7486bedf…).
+처음 저장소 구현(6739df9)은 Combine 단계 스크래치 구현(`FinalV2`)과 dev·test·all 모든 질의의 상위 8 순위·점수·전달 집합·none 판정이
+같았습니다. 이후 코드 리뷰에서 "일부만 보내는 턴에 tool_search가 없다"는 결함을 고쳐 tool_search를 항상 넣었고(전달 집합 변경),
+dev에서 효과를 확인한 뒤 test·all을 다시 평가했습니다. 순위와 none 판정은 그대로이고 전달 집합·토큰만 바뀌었습니다.
+Linux 컨테이너(2 vCPU, 이미지 theseus-core:rag2-18c26bb) dev 결과(`results/v2_dev_linux_2cpu.json`)는 질의 107개 모두 같았습니다.
+baseline 결과의 `meta.commit`은 측정 당시 HEAD 3b9467e입니다(v1 검색기 코드는 f9862e4와 같음).
 
 ```bash
 cd backend/theseus-core-server
@@ -162,12 +164,17 @@ python -m benchmarks.tool_rag.compare benchmarks/tool_rag/results/baseline_test.
 
 | split | n | R@3 | R@3 KO | R@3 EN | R@5 | MRR | Hit@1 | set_recall_delivered | 스키마 토큰 평균 / p95 | none P / R / F1 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| dev | 59 | 0.918 | 0.904 | 0.947 | 0.952 | 0.894 | 0.814 | 0.970 | 1619 / 1823 | 0.765 / 0.722 / 0.743 (in-sample) |
-| test | 70 | 0.895 | 0.894 | 0.899 | 0.952 | 0.864 | 0.786 | 0.938 | 1622 / 1884 | 0.308 / 0.235 / 0.267 |
-| all | 129 | 0.906 | 0.898 | 0.921 | 0.952 | 0.877 | 0.798 | 0.954 | 1620 / 1862 | 0.567 / 0.486 / 0.523 |
+| dev | 59 | 0.918 | 0.904 | 0.947 | 0.952 | 0.894 | 0.814 | 0.970 | 1762 / 1976 | 0.765 / 0.722 / 0.743 (in-sample) |
+| test | 70 | 0.895 | 0.894 | 0.899 | 0.952 | 0.864 | 0.786 | 0.942 | 1770 / 2011 | 0.308 / 0.235 / 0.267 |
+| all | 129 | 0.906 | 0.898 | 0.921 | 0.952 | 0.877 | 0.798 | 0.956 | 1766 / 1983 | 0.567 / 0.486 / 0.523 |
 
 베이스라인 대비 test paired bootstrap(10000회, seed 0): R@3 +0.260 [+0.152, +0.364](23승 2패),
-set_recall +0.123 [+0.062, +0.190], 스키마 토큰 −317 [−374, −261], 전달 도구 수 13.37 → 11.85.
+set_recall +0.126 [+0.066, +0.193], 스키마 토큰 −168 [−224, −113], 전달 도구 수 13.37 → 12.78.
+토큰에는 모든 턴의 tool_search 스키마(176 토큰)가 들어 있습니다(고정 전 test 1622 / 1884).
 
-모델 준비(로컬): `python scripts/provision_tool_rag_model.py --out ~/.theseus/models/e5-small-int8`
-(builder 전용 의존성 `onnx==1.23.2 onnxruntime==1.32.0 huggingface-hub`). 보정 재적합: `python -m benchmarks.tool_rag.calibrate --out <파일>`.
+서버 레지스트리: `--registry server`(엔진 RAG 도구가 보이는 CLI AGENT 정책)와 `--registry server-default`(실제 서버 기본값,
+엔진 RAG 도구 2개 숨김). test 기준 전부 전송 5593 / 5367 토큰, set_recall 0.974 / 0.922, v2는 1753 / 1758 토큰,
+set_recall 0.865 / 0.812입니다.
+
+모델 준비(로컬): `pip install -r requirements-tool-rag-model.txt` 후
+`python scripts/provision_tool_rag_model.py --out ~/.theseus/models/e5-small-int8`. 보정 재적합: `python -m benchmarks.tool_rag.calibrate --out <파일>`.

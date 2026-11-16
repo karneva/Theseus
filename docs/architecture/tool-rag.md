@@ -18,23 +18,29 @@ v2 설계, 평가 프로토콜, 결과, 한계, 그리고 3단계(임베딩 파�
 | R@3 | 0.636 | **0.895** | +0.260 [+0.152, +0.364], 23승 2패 |
 | R@3 한국어 / 영어 | 0.550 / 0.812 | 0.894 / 0.899 | |
 | MRR | 0.608 | 0.864 | |
-| 실제 전달 집합의 정답 재현율(set_recall) | 0.816 | **0.938** | +0.123 [+0.062, +0.190] |
-| 턴당 도구 스키마 토큰 평균 / p95 | 1939 / 2393 | **1622 / 1884** | −317 [−374, −261] |
-| 전달 도구 수 평균 | 13.37 | 11.85 | |
+| 실제 전달 집합의 정답 재현율(set_recall) | 0.816 | **0.942** | +0.126 [+0.066, +0.193] |
+| 턴당 도구 스키마 토큰 평균 / p95 | 1939 / 2393 | **1770 / 2011** | −168 [−224, −113] |
+| 전달 도구 수 평균 | 13.37 | 12.78 | |
 | "맞는 도구 없음" 판정 F1 | 0 (한 번도 발동 안 함) | 0.267 | |
 
-서버 기준으로 보면 v1 서버는 검색을 하지 않고 보이는 도구 44개(5593 토큰)를 매 턴 보냈습니다. v2는 같은 서버 레지스트리에서
-평균 1606 토큰(−71%)을 보내고 정답 재현율은 0.974에서 0.865로 내려갑니다(5.2절).
+v2 토큰에는 일부만 보내는 모든 턴에 고정으로 넣는 `tool_search` 스키마(176 토큰)가 들어 있습니다(4.3절). 슬롯이 정답을 놓친
+턴에서 모델이 나머지 보이는 도구를 찾을 경로라서 비용 예산 밖에 둡니다. 이것을 넣기 전 구성은 test 1622 토큰, set_recall 0.938이었습니다.
+
+서버 기준으로 보면 v1 서버는 검색을 하지 않고 보이는 도구를 전부 매 턴 보냈습니다. 실제 서버 기본 가시성(엔진 RAG 도구 2개 숨김)
+에서는 42개, 5367 토큰이고, v2는 같은 조건에서 평균 1758 토큰(−67%)을 보내며 정답 재현율은 0.922에서 0.812로 내려갑니다(5.2절).
+
+test 수치를 읽을 때 주의할 점이 있습니다. 튜닝 단계에 입력으로 쓴 베이스라인 진단 보고서에 test 질의가 섞여 있었고, 한국어
+용어집 항목 하나(`background → 백그라운드`)가 test R@3 이득의 약 20%를 차지합니다. test 수치는 부분적으로 오염됐을 수 있습니다(6장 2항).
 
 자원(같은 하네스, Windows 4스레드 / Linux 컨테이너 2 vCPU·1.5 GB):
 
 | 항목 | v1 (torch + sentence-transformers) | v2 (ONNX int8 + sentencepiece) |
 |---|---|---|
 | Core 이미지 크기 (`docker image ls`) | 2.46 GB | **1.07 GB** |
-| 임베딩 모델 로드 RSS 증가 | +956 MB | **+187 MB** (Linux 컨테이너 +205 MB) |
-| 컨테이너에서 `import src.main` + 검색 1회 뒤 프로세스 RSS | 1079~1091 MB | **422~423 MB** |
-| 컨테이너 첫 검색(모델 로드·인덱스 포함) | 18.6~20.3 s | **2.1~2.3 s** |
-| 웜 검색 p50 / p95 (하네스, test) | 16.6 / 25.1 ms | **5.9 / 10.1 ms** |
+| 임베딩 모델 로드 RSS 증가(하네스 `rss_delta_mb`, v1은 torch import 뒤 기준점) | +957 MB | **+187 MB** (Linux 컨테이너 +205 MB) |
+| 컨테이너에서 `import src.main` + 검색 1회 뒤 프로세스 RSS | 1079~1091 MB | **419~421 MB** |
+| 컨테이너 첫 검색(모델 로드·인덱스 포함) | 18.6~20.3 s | **1.8~1.9 s** |
+| 웜 검색 p50 / p95 (하네스, test) | 16.6 / 25.1 ms | **6.1 / 11.5 ms** |
 | torch import | 함 | 안 함 |
 
 ## 2. v1의 문제 (측정 근거)
@@ -67,7 +73,12 @@ v1 `ToolRetriever`는 `intfloat/multilingual-e5-small`로 도구마다 "이름: 
 - 동결 평가셋 236개 질의(한국어 69% / 영어 31%, single·multi·none). `eval_set.jsonl`은 sha256으로 고정돼 있고 하네스가
   해시가 다르면 평가를 거부합니다.
 - dev / test를 50:50으로 고정했습니다. **기법 선택과 하이퍼파라미터 튜닝은 dev만** 썼고, test는 최종 구성과 베이스라인에 대해
-  **한 번만** 평가했습니다. 최종 구성 코드는 test 평가 전에 sha256으로 고정했고, test 결과를 본 뒤 아무것도 바꾸지 않았습니다.
+  **한 번만** 평가했습니다. 최종 구성 코드는 test 평가 전에 sha256으로 고정했고, test 결과를 보고 튜닝하지 않았습니다.
+  예외 하나: 코드 리뷰에서 "일부만 보내는 턴에 tool_search가 없다"는 설계 결함이 나와 tool_search를 항상 넣도록 고쳤고, 이는 전달
+  집합을 바꾸므로 dev에서 효과를 확인한 뒤 test·all을 한 번 더 평가했습니다(순위·none 판정은 그대로). 같은 리뷰에서 나온 none 특징
+  정의 변경(보이는 도구 기준)은 dev에서 none F1이 0.743 → 0.667로 떨어져 넣지 않았고 test에서는 재지 않았습니다.
+- **오염 가능성**: 튜닝 단계에 입력으로 쓴 동결 베이스라인 진단 보고서(`report_baseline.md`)는 실패 분석을 dev·test를 합친 213개
+  질의로 계산했고, 원문을 인용한 평가 질의 19개 중 6개가 test 질의였습니다. 영향은 6장 2항에 적었습니다.
 - 저장소 구현(`--variant v2`)은 그 고정 구성을 옮긴 것입니다. dev·test·all 전 질의에서 상위 8 순위·점수·전달 집합·none 판정이
   Combine 단계 구현과 같았습니다(요약 지표 차이는 nDCG@5의 1e-16 부동소수점 합산 순서뿐).
 
@@ -95,7 +106,7 @@ flowchart LR
     A --> N{"none 판정<br/>top1 + 0.0348·cov < 0.8295"}
     C --> N
     V["보이는 도구<br/>(모드·RBAC 필터)"] --> P
-    S --> P["필수 ∩ 보이는 도구<br/>+ 히스토리 도구<br/>+ 비용 인지 슬롯"]
+    S --> P["필수 ∩ 보이는 도구<br/>+ tool_search(보이면 항상)<br/>+ 히스토리 도구<br/>+ 비용 인지 슬롯"]
     N -- 예 --> F["슬롯 상위 3 + tool_search"]
     N -- 아니오 --> P
     P --> OUT[LLM에 보낼 도구 스키마]
@@ -122,16 +133,22 @@ flowchart LR
 
 - 필수 도구 7개(read_file, write_file, edit_file, glob, grep, bash, ask_user) ∩ 보이는 도구. create_tool은 필수에서 뺐고,
   PLAN Executing 단계에서 보일 때 고정 포함합니다.
+- **tool_search 고정**: tool_search가 보이면 필수처럼 비용 예산 밖에서 항상 넣고, system prompt에 "목록에 없는 기능은
+  tool_search로 찾으라"는 안내(46 토큰)를 붙입니다. 처음 구현은 none 판정이나 순위 슬롯으로만 넣어서, 커밋했던 server test 결과에서
+  정답 도구를 다 받지 못한 질의 18개 중 13개가 tool_search도 받지 못했습니다(복구 경로 없음). 고정 후 test·dev 모든 턴에
+  tool_search가 들어가고, 비용은 dev 평균 +143 토큰(스키마 176 토큰, 이미 슬롯에 있던 턴 제외)입니다. 사후 훅 주입에는 넣지 않습니다.
 - 대화 히스토리에서 이미 호출한 도구 ∩ 보이는 도구(ghost tool call 방지, 비용 예산과 별개).
 - **비용 인지 슬롯**: 나머지 후보의 순위 i(1부터)는 `i × cost(tool) ≤ 700`일 때 넣습니다. cost는 스키마 압축 JSON 글자 수 / 4,
   1위는 항상, 상위 12개까지만 봅니다. 순위 사전확률(1/i)을 스키마 비용으로 나눈 값으로 거르는 것과 같아서, 스키마가 큰 도구는
   상위에 있을 때만 들어갑니다. dev에서 C=700은 adaptive k=8 대비 set_recall +0.002에 토큰 −303이었습니다.
-- **none soft fallback**: none으로 판정하면 슬롯을 상위 3개로 줄이고 tool_search를 붙입니다. 슬롯을 비우지 않으므로 오판해도
-  정답이 대부분 그대로 전달됩니다(test 오판 9건 중 7건은 정답 전달).
+- **none soft fallback**: none으로 판정하면 슬롯을 상위 3개로 줄입니다(tool_search는 위 규칙으로 이미 들어 있음). 슬롯을 비우지
+  않으므로 오판해도 정답이 대부분 그대로 전달됩니다(test 오판 9건 중 7건은 정답 전달).
 
 ### 4.4 none 판정 (`calibration.py`, `benchmarks/tool_rag/calibrate.py`)
 
-- 특징 2개: 앵커 코사인 최댓값 top1(tool_search 제외), 질의 토큰 중 도구 카탈로그 어휘에 있는 비율 cov.
+- 특징 2개: 앵커 코사인 최댓값 top1(tool_search 제외), 질의 토큰 중 도구 카탈로그 어휘에 있는 비율 cov. 둘 다 **인덱스 전체 도구**
+  기준이라 모드·RBAC로 숨긴 도구도 들어갑니다. 그래서 "보이는 도구 중에 맞는 것이 없다"가 아니라 "카탈로그 전체에 맞는 것이
+  없다"를 판정합니다(6장 10항).
 - dev 전체로 class-balanced 로지스틱 회귀를 적합하고, 임계값은 "답 있는 질의를 none으로 판정하는 비율 ≤ 5%" 중 F1 최대인
   값으로 잡았습니다. 결과 규칙은 `top1 + 0.0348·cov < 0.8295`이면 none입니다.
 - 보정 파일(`tool_rag/data/toolrag_calibration.e5-small-int8.json`)은 모델 sha256과 레시피 버전이 맞을 때만 적용됩니다. 런타임은 로드할 때 `model.onnx`와 sentencepiece 모델의 실제 sha256을 계산해 `embedder.json` 선언값과 비교하고(약 0.1 s), 다르면 모델을 쓰지 않고 보이는 도구 전부를 보냅니다. 임베더 fingerprint도 계산한 해시로 만듭니다.
@@ -156,14 +173,19 @@ flowchart LR
 - fingerprint = sha256(도구별 이름·설명·example_queries·입력 스키마 + 피드백 버전 + 임베더 + 레시피 버전). v1은 이름 집합만 비교해
   설명이 바뀌어도 재인덱싱하지 않았습니다. 인덱스는 fingerprint 기준 LRU 8개, 질의 벡터는 LRU 256개입니다.
 - 텍스트→벡터 캐시는 키가 sha256(임베더 fingerprint + 텍스트)이라 커스텀 도구가 하나 추가돼도 그 도구만 새로 인코딩합니다.
-  `THESEUS_TOOL_RAG_CACHE_DIR`에 npz로 저장해 재시작 때 인덱스 구축(36개 도구 약 1~1.5 s)을 건너뜁니다.
+  `THESEUS_TOOL_RAG_CACHE_DIR`에 npz로 저장해 재시작 때 인덱스 구축(36개 도구 약 1~1.5 s)을 건너뜁니다. 파일은 임베더당 하나이고
+  저장할 때 기존 벡터와 합치므로(최대 4096개), core와 Remote Workspace 레지스트리가 번갈아 와도 서로의 벡터를 지우지 않습니다.
+- 인덱스에는 이름·벡터·비용만 있고 도구 인스턴스는 없습니다. fingerprint는 인스턴스 상태(Remote Workspace 접속 정보, 매 턴 다시
+  로드한 custom tool 모듈)를 담지 않으므로, 반환할 도구는 항상 이번 요청의 레지스트리에서 이름으로 찾습니다. 처음 구현은 인덱스를
+  만든 첫 레지스트리의 인스턴스를 돌려줘서, 같은 도구 구성의 다른 Remote Workspace 세션이 첫 세션의 SSH 설정에 묶인 remote_* 도구를
+  받을 수 있었습니다(리뷰에서 발견해 수정, 회귀 테스트 `InstanceIsolationTest`).
 
 ### 4.7 런타임 경로와 보안 (`assembly.py`)
 
 | 경로 | 동작 |
 |---|---|
-| 서버 `get_query_engine` | 가시성 정책으로 보이는 도구를 구한 뒤 `select_tools_for_turn`으로 전달 집합을 고릅니다. 모델이 아직 준비되지 않았으면 보이는 도구 전부를 보내고 백그라운드 워밍업을 시작합니다(요청 경로에서 모델 로드를 기다리지 않음). 서버 기동 시에도 워밍업을 시작합니다. |
-| CLI/TUI `setup_engine` | 같은 함수를 스레드에서 실행합니다. |
+| 서버 `get_query_engine` | 가시성 정책으로 보이는 도구를 구한 뒤 `select_tools_for_turn`으로 전달 집합을 고릅니다. 모델이 아직 준비되지 않았으면 보이는 도구 전부를 보내고 백그라운드 워밍업을 시작합니다(요청 경로에서 모델 로드를 기다리지 않음). 서버 기동 시에도 워밍업을 시작합니다. SSE 경로(`stream.py`)는 조립 전체를 `asyncio.to_thread`로 돌려 질의 인코딩·처음 보는 레지스트리의 인덱스 구축(리뷰 측정 253.5 ms)이 이벤트 루프를 막지 않게 합니다. |
+| CLI/TUI `setup_engine` | 같은 함수를 스레드에서 실행합니다. 모델을 못 불러오면 준비 명령을 프로세스당 한 번만 안내합니다. 설치 스크립트(`install-vscode-extension.sh`/`.ps1`)는 모델이 없으면 준비 단계를 실행합니다. `EMBEDDING_PROVIDER=local`인데 sentence-transformers가 없으면 엔진 RAG 도구 2개를 보이는 도구에서 뺍니다. |
 | 폴백 | Tool RAG 끔, 질의 없음, 보이는 도구 12개 이하, 검색 실패이면 **보이는 도구 전부**를 보냅니다. `full_registry`로 폴백하지 않습니다. |
 | tool_search | 후보를 `search_injectable_tool_names`(보이는 도구)로 제한해 공유 인덱스에서 찾고, 임베딩이 안 되면 같은 후보에서 BM25로 찾습니다. |
 | 사후 훅 주입 | 보이는 도구 중 아직 없는 것만 후보로, 예산 400·턴당 6개까지 주입합니다(엔진과 훅 실행기를 턴마다 새로 만들고, 주입한 도구는 호출하지 않으면 다음 턴에 남지 않습니다). 정책 정보가 없으면 주입하지 않습니다. |
@@ -197,54 +219,73 @@ tool_search를 반복해도 bash·write_file·edit_file·remote_run_command가 �
 
 ## 5. 결과
 
-결과 파일은 `backend/theseus-core-server/benchmarks/tool_rag/results/`에 있습니다. v1 수치는 커밋 f9862e4(Python 3.12,
-torch 2.15 CPU 4스레드), v2 수치는 커밋 6739df9(Python 3.11, onnxruntime 1.32.0 4스레드)에서 같은 Windows 노트북으로 쟀습니다.
+결과 파일은 `backend/theseus-core-server/benchmarks/tool_rag/results/`에 있습니다. v1 수치는 측정 당시 HEAD 3b9467e(결과 JSON의
+`meta.commit`, Python 3.12, torch 2.15 CPU 4스레드), v2 수치는 커밋 18c26bb(Python 3.11, onnxruntime 1.32.0 4스레드,
+`engine_src_dirty=false`)에서 같은 Windows 노트북으로 쟀습니다. v1 검색기 코드는 f9862e4와 3b9467e에서 같습니다.
+
+v2 수치는 리뷰 수정(도구 인스턴스 해석, tool_search 고정) 뒤 다시 잰 값입니다. tool_search 고정은 전달 집합을 바꾸므로 dev로
+효과를 확인한 뒤 test와 all을 다시 한 번 평가했습니다. 순위(R@k·MRR)와 none 판정은 바뀌지 않았고, 바뀐 것은 전달 집합·토큰·지연입니다.
 
 ### 5.1 품질 (core 레지스트리)
 
 | split | 구현 | n | R@3 | R@3 KO | R@3 EN | R@5 | R@8 | nDCG@5 | MRR | Hit@1 | set_recall | 토큰 평균 / p95 | 도구 수 | none P / R / F1 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | test | v1 | 70 | 0.636 | 0.550 | 0.812 | 0.681 | 0.773 | 0.576 | 0.608 | 0.486 | 0.816 | 1939 / 2393 | 13.37 | 0 / 0 / 0 |
-| test | **v2** | 70 | **0.895** | **0.894** | **0.899** | 0.952 | 0.960 | 0.858 | 0.864 | 0.786 | **0.938** | **1622 / 1884** | 11.85 | 0.308 / 0.235 / 0.267 |
+| test | **v2** | 70 | **0.895** | **0.894** | **0.899** | 0.952 | 0.960 | 0.858 | 0.864 | 0.786 | **0.942** | **1770 / 2011** | 12.78 | 0.308 / 0.235 / 0.267 |
 | all | v1 | 129 | 0.605 | 0.533 | 0.754 | 0.671 | 0.763 | 0.566 | 0.613 | 0.496 | 0.822 | 1918 / 2417 | 13.24 | 0 / 0 / 0 |
-| all | **v2** | 129 | **0.906** | **0.898** | **0.921** | 0.952 | 0.966 | 0.862 | 0.877 | 0.798 | **0.954** | **1620 / 1862** | 11.80 | 0.567 / 0.486 / 0.523 |
+| all | **v2** | 129 | **0.906** | **0.898** | **0.921** | 0.952 | 0.966 | 0.862 | 0.877 | 0.798 | **0.956** | **1766 / 1983** | 12.69 | 0.567 / 0.486 / 0.523 |
+| dev | v2 | 59 | 0.918 | 0.904 | 0.947 | 0.952 | 0.975 | 0.867 | 0.894 | 0.814 | 0.970 | 1762 / 1976 | 12.61 | 0.765 / 0.722 / 0.743 |
 
 - all 분할은 dev를 포함하므로 none 지표에 dev 적합분이 섞여 있습니다. test 수치를 기준으로 보세요.
+- tool_search 고정 전 v2(커밋 6739df9)는 test set_recall 0.938, 토큰 1622 / 1884, 도구 수 11.85였습니다.
 - paired bootstrap(질의 재표본 10000회, seed 0, `python -m benchmarks.tool_rag.compare`):
-  - test: R@3 +0.260 [+0.152, +0.364](23승 2패), set_recall +0.123 [+0.062, +0.190], 토큰 −317 [−374, −261], 도구 수 −1.52 [−1.91, −1.12]
-  - all: R@3 +0.301 [+0.222, +0.379](47승 2패), set_recall +0.132 [+0.090, +0.178], 토큰 −298 [−341, −252]
+  - test: R@3 +0.260 [+0.152, +0.364](23승 2패), set_recall +0.126 [+0.066, +0.193](15승 0패), 토큰 −168 [−224, −113], 도구 수 −0.58 [−0.98, −0.19]
+  - all: R@3 +0.301 [+0.222, +0.379](47승 2패), set_recall +0.134 [+0.091, +0.180], 토큰 −152 [−195, −109]
+  - dev: R@3 +0.350 [+0.240, +0.463](24승 0패), set_recall +0.141 [+0.080, +0.207], 토큰 −136 [−202, −70]
 - 개선 폭은 한국어가 큽니다(test KO +0.344, EN +0.087).
 
 ### 5.2 턴당 전송 스키마 토큰 (가시성 필터 후, AGENT user_level 5)
 
 | 경로 | 레지스트리 | 평균 토큰/턴 | p95 | 전달 도구 수 | set_recall test | set_recall all |
 |---|---|---|---|---|---|---|
-| v1 서버: 검색 없이 보이는 도구 전부 | server (가시 44) | 5593 | 5593 | 44 | 0.974 | 0.980 |
-| 같은 방식, core만 | core (가시 34) | 4460 | 4460 | 34 | 0.978 | 0.983 |
+| **실제 서버 기본값**: v1, 검색 없이 보이는 도구 전부 | server-default (가시 42) | 5367 | 5367 | 42 | 0.922 | 0.937 |
+| **실제 서버 기본값**: v2 | server-default | **1758** | **1990** | 13.13 | 0.812 | 0.855 |
+| 하네스 server(엔진 RAG 도구 포함, CLI AGENT 정책): 전부 전송 | server (가시 44) | 5593 | 5593 | 44 | 0.974 | 0.980 |
+| 하네스 server: v2 | server | 1753 | 1983 | 13.02 | 0.865 | 0.891 |
+| 같은 방식(전부 전송), core만 | core (가시 34) | 4460 | 4460 | 34 | 0.978 | 0.983 |
 | v1 CLI 검색 | core | 1939 | 2393 | 13.37 | 0.816 | 0.822 |
-| **v2** | core | **1622** | **1884** | 11.85 | **0.938** | **0.954** |
-| **v2** | server | **1606** | **1844** | 12.08 | 0.865 | 0.890 |
+| **v2** | core | **1770** | **2011** | 12.78 | **0.942** | **0.956** |
 
-- v1 서버 대비 v2 서버: 토큰 −71%(5593 → 1606), set_recall −0.109(0.974 → 0.865). 운영 대상 4B 모델(16k 컨텍스트)에서 약 4천
-  토큰을 대화와 도구 결과에 돌려주는 대신 재현율을 일부 내준 트레이드오프입니다. 빠진 도구는 tool_search로 다시 찾을 수 있습니다.
-- 보이는 도구 전부를 보내도 재현율이 1이 아닌 이유는 정답 라벨 중 create_tool, local_write_report가 AGENT 모드 가시성 정책으로
-  숨겨지기 때문입니다.
+- `server-default`는 서버 레지스트리(core + remote_*)에 실제 서버 기본 가시성(`THESEUS_ENABLE_ENGINE_RAG_TOOLS=false`라서
+  search_knowledge_base·ingest_document를 숨김)을 적용한 것입니다. `server`는 같은 레지스트리에 CLI AGENT 정책을 써서 두 도구가
+  보입니다. 처음 문서의 "v1 서버 44개 / 5593 토큰"은 `server` 기준이라 실제 서버 기본 구성이 아니었습니다.
+- 실제 서버 기본값 기준 v1 → v2: 토큰 −67%(5367 → 1758), set_recall −0.110(0.922 → 0.812). 하네스 server 기준은 토큰 −69%(5593 → 1753),
+  set_recall −0.110(0.974 → 0.865). 운영 대상 4B 모델(16k 컨텍스트)에서 약 3.6천 토큰을 대화와 도구 결과에 돌려주는 대신 재현율을
+  일부 내준 트레이드오프입니다. 빠진 도구는 모든 턴에 들어 있는 tool_search로 다시 찾을 수 있습니다(tool_search로 복구한 비율은
+  오프라인 하네스로 재지 못했습니다).
+- 보이는 도구 전부를 보내도 재현율이 1이 아닌 이유는 정답 라벨 중 create_tool, local_write_report(그리고 server-default에서는 엔진
+  RAG 도구 2개)가 가시성 정책으로 숨겨지기 때문입니다.
 
 ### 5.3 자원
 
 | 구현 / 환경 | 콜드 로드 | RSS 증가(로드) | 평가 후 프로세스 RSS | 웜 p50 / p95 | 인덱스 구축 |
 |---|---|---|---|---|---|
 | v1 torch, Windows 4스레드 (test) | 10.7 s | +957 MB | 1270 MB | 16.6 / 25.1 ms | 2.4 s |
-| v2 ONNX int8, Windows 4스레드 (test) | 0.66 s | +187 MB | 333 MB | 5.9 / 10.1 ms | 1.5 s |
-| v2 ONNX int8, Linux 컨테이너 2 vCPU·1.5 GB (dev) | 0.49 s | +205 MB | 363 MB | 6.4 / 10.9 ms | 1.3 s |
+| v2 ONNX int8, Windows 4스레드 (test) | 0.70 s | +187 MB | 333 MB | 6.1 / 11.5 ms | 0.9 s |
+| v2 ONNX int8, Linux 컨테이너 2 vCPU·1.5 GB (dev) | 0.59 s | +202 MB | 361 MB | 5.6 / 8.9 ms | 1.4 s |
+
+- v2 콜드 로드에는 모델 파일 sha256 검증(약 0.1 s)이 들어 있습니다.
+- RSS 증가는 하네스 `rss_delta_mb`입니다. v1(torch) 변형은 torch import·스레드 고정 뒤에 기준점을 잡으므로 torch import 비용이
+  빠져 있고, v2는 load() 안의 onnxruntime import를 포함합니다. 프로세스 전체 비교는 아래 컨테이너 프로브 값을 보세요.
 
 컨테이너 프로브(`benchmarks/tool_rag/container_probe.py`, `--cpus=2 --memory=1.5g`, 3회): `import src.main` 직후 RSS는 두 이미지
-모두 약 186 MB이고, 검색 1회 뒤 v1 1079~1091 MB, v2 422~423 MB였습니다. 첫 검색(모델 로드와 인덱스 구축 포함)은 v1 18.6~20.3 s,
-v2 2.1~2.3 s였습니다. 프로브의 v1 웜 검색은 90~194 ms로 하네스 값보다 훨씬 느렸는데, 프로브는 호출마다 `asyncio.run`을 새로
+모두 약 186 MB이고, 검색 1회 뒤 v1(theseus-core:cd7188f) 1079~1091 MB, v2(theseus-core:rag2-18c26bb) 419~421 MB였습니다.
+첫 검색(모델 로드와 인덱스 구축 포함)은 v1 18.6~20.3 s, v2 1.8~1.9 s였습니다. 프로브의 v1 웜 검색은 90~194 ms로 하네스 값보다 훨씬 느렸는데, 프로브는 호출마다 `asyncio.run`을 새로
 만들고 torch 스레드 수를 고정하지 않기 때문으로 보입니다(원인은 확인하지 않았습니다).
 
-Linux 컨테이너의 v2 dev 결과는 Windows와 질의별 순위·점수·전달 집합까지 같았습니다. Docker 빌드에서 만든 int8 모델도 로컬과
-sha256이 같았습니다(7486bedf…).
+Linux 컨테이너의 v2 dev 결과(`results/v2_dev_linux_2cpu.json`, 이미지 theseus-core:rag2-18c26bb, 소스 커밋 18c26bb를
+`meta.commit`·`meta.image`에 기록)는 Windows `v2_dev.json`과 질의 107개 모두에서 순위·전달 집합·none 판정이 같았습니다.
+Docker 빌드에서 만든 int8 모델도 로컬과 sha256이 같았습니다(7486bedf…).
 
 ## 6. 한계와 주의 사항
 
@@ -253,11 +294,18 @@ sha256이 같았습니다(7486bedf…).
    grep/glob 질의였고, soft fallback 덕분에 9건 중 7건은 정답이 그대로 전달됐습니다. 놓친 none은 구글 캘린더, 카카오톡, 노션,
    PPT 같은 외부 서비스 요청이었습니다. dev·test none이 각각 18·17개뿐이라 표본이 작습니다. 필요하면
    `THESEUS_TOOL_RAG_NONE_MODE=off`로 끕니다(끈 구성은 test에서 평가하지 않았습니다).
-2. **한국어 용어집은 dev 질의를 본 뒤 작성됐습니다.** 항목을 30% 무작위로 지워도 dev R@3 평균 0.882, 50% 지워도 0.856으로
-   용어집을 안 쓰는 최선 조합(0.845) 이상이었고, test KO R@3도 0.894였습니다. 새 코어 도구를 추가할 때는 용어집과 few-shot을
-   같이 갱신해야 합니다.
-3. **서버 레지스트리(Remote Workspace 도구 포함)는 core보다 약합니다**(test R@3 0.778, set_recall 0.865). remote_* 도구에
-   few-shot이 없기 때문입니다. remote 도구에 example_queries를 2~3개씩 다는 것이 다음 개선 후보입니다.
+2. **한국어 용어집은 dev 질의를 본 뒤 작성됐고, test 정보가 일부 섞였을 수 있습니다.** 항목을 30% 무작위로 지워도 dev R@3 평균
+   0.882, 50% 지워도 0.856으로 용어집을 안 쓰는 최선 조합(0.845) 이상이었습니다. 다만 튜닝 입력이던 베이스라인 진단 보고서가
+   dev·test 합산 실패 분석으로 "task_create는 백그라운드 요청에서 거의 안 뽑힌다"고 적었는데, '백그라운드'가 들어간 평가 질의 8개
+   (q023, q024, q026, q096, q097, q109, q114, q128)는 모두 test이고 dev와 few-shot에는 0개입니다(task_create가 1순위 정답인 질의도
+   dev 2개, test 6개). 그래서 용어집 항목 `background → 백그라운드`는 dev로 검증할 수 없는 항목입니다. 이 항목 하나만 뺀 측정
+   (`tool_gloss.GLOSSARY.pop("background")` 뒤 같은 하네스로 dev·test 평가, 현재 코드, 공개용 진단이며 구성은 바꾸지 않음): dev R@3 0.918 → 0.912, MRR
+   0.894 → 0.902, test R@3 0.895 → **0.844**(−0.051, v1 대비 이득 +0.260의 약 20%), test KO R@3 0.894 → 0.839, test set_recall
+   0.942 → 0.913, 해당 8개 질의 R@3 0.812 → 0.490. 영어 설명을 기계적으로 옮긴 자연스러운 항목이라 의도적 test 적합의 증거는
+   아니지만, test 수치는 "부분적으로 오염됐을 수 있음"으로 읽어야 합니다. 3단계에서는 진단 보고서를 dev 전용으로 다시 만들고,
+   dev에 근거가 있는 용어집 항목만으로 구성을 다시 골라야 합니다. 새 코어 도구를 추가할 때는 용어집과 few-shot을 같이 갱신해야 합니다.
+3. **서버 레지스트리(Remote Workspace 도구 포함)는 core보다 약합니다**(test R@3 0.778, set_recall 하네스 server 0.865 / 실제 서버
+   기본값 0.812). remote_* 도구에 few-shot이 없기 때문입니다. remote 도구에 example_queries를 2~3개씩 다는 것이 다음 개선 후보입니다.
 4. 비용 예산 700은 dev에서 골랐고, 토큰은 cl100k 프록시라 로컬 모델 토크나이저와 다릅니다.
 5. int8 동작은 같은 노트북 CPU(AVX2·VNNI 지원)의 Windows와 Linux 컨테이너에서만 확인했습니다. VNNI가 없는 CPU에서는 확인하지 못했습니다.
    순위가 torch와 완전히 같아야 하면 fp32 ONNX(`--quantization fp32`, RSS 약 +517 MB)를 쓰면 됩니다.
@@ -266,6 +314,13 @@ sha256이 같았습니다(7486bedf…).
    `THESEUS_ENABLE_AGENT_HOOK=true`일 때만 씁니다.
 8. 피드백 few-shot이 섞인 운영 환경의 효과와 보정 드리프트는 측정하지 않았습니다(하네스는 피드백을 끄고 평가합니다).
 9. BM25 stem 규칙은 측정한 구성과 같게 고정해서 `files → fil`처럼 어색한 경우가 있습니다. 바꾸면 dev에서 다시 재야 합니다.
+10. **none 특징은 숨긴 도구까지 포함한 인덱스 전체 기준입니다.** ASK 모드처럼 많은 도구가 숨겨진 턴에서는 "보이는 도구 중 맞는
+    것이 없다"를 판정하지 못합니다(리뷰 측정: ASK 가시성으로 core 213개 중 21개 판정이 뒤집힘). 보이는 도구 기준으로 바꾸고 dev로
+    다시 보정해 봤지만 dev none F1이 0.743 → 0.667(교차검증 0.653 → 0.585)로 떨어지고 R@k·set_recall·토큰은 같아서 넣지 않았습니다.
+    평가셋의 none 라벨이 "카탈로그 전체에 맞는 도구 없음"으로 붙어 있어 이 변경의 이득을 잴 수 없는 점도 있습니다. tool_search가
+    모든 턴에 들어가므로 오판 비용은 슬롯이 3개로 줄어드는 정도입니다.
+11. 사후 훅과 tool_search로 들어온 도구는 피드백 few-shot으로 기록하지 않습니다(프롬프트 주입으로 few-shot을 심는 경로 차단).
+    로그는 아직 프로젝트별로 나뉘지 않아 한 CLI 프로젝트의 기록이 다른 프로젝트 검색에도 쓰입니다.
 
 ## 7. 3단계: 임베딩 파인튜닝 모델을 붙이는 방법
 
@@ -286,18 +341,25 @@ sha256이 같았습니다(7486bedf…).
 
 ```bash
 cd backend/theseus-core-server
-# 모델 준비(최초 1회, builder 전용 의존성: onnx==1.23.2 onnxruntime==1.32.0 huggingface-hub)
+# 모델 준비(최초 1회, 고정 버전 준비 전용 의존성)
+pip install -r requirements-tool-rag-model.txt
 python scripts/provision_tool_rag_model.py --out ~/.theseus/models/e5-small-int8
 export PYTHONDONTWRITEBYTECODE=1 PYTHONIOENCODING=utf-8 THESEUS_EMBED_MODEL_DIR=~/.theseus/models/e5-small-int8
 
 python -m benchmarks.tool_rag.run --variant v2 --split test --json benchmarks/tool_rag/results/v2_test.json
 python -m benchmarks.tool_rag.run --variant v2 --registry server --split test --json benchmarks/tool_rag/results/v2_server_test.json
-python -m benchmarks.tool_rag.run --variant all-visible --registry server --split test --passes 0
+python -m benchmarks.tool_rag.run --variant v2 --registry server-default --split test --json benchmarks/tool_rag/results/v2_server_default_test.json
+python -m benchmarks.tool_rag.run --variant all-visible --registry server-default --split test --passes 0
 python -m benchmarks.tool_rag.compare benchmarks/tool_rag/results/baseline_test.json benchmarks/tool_rag/results/v2_test.json
 # v1 베이스라인은 torch가 필요합니다(requirements-torch.txt)
 python -m benchmarks.tool_rag.run --variant baseline --split test
 
-docker build -t theseus-core:rag2 .
+docker build -t theseus-core:rag2-18c26bb .
 docker run --rm --cpus=2 --memory=1.5g -e PYTHONPATH=/app \
-  -v "$PWD/benchmarks/tool_rag:/probe:ro" theseus-core:rag2 python /probe/container_probe.py
+  -v "$PWD/benchmarks/tool_rag:/probe:ro" theseus-core:rag2-18c26bb python /probe/container_probe.py
+# Linux 컨테이너 하네스(이미지에 .git이 없어 커밋·이미지를 환경변수로 넘김, tiktoken·psutil은 임시 설치)
+docker run --rm --cpus=2 --memory=1.5g --user root -v "$PWD/benchmarks:/app/benchmarks:ro" -v "$PWD/out:/out" \
+  -e THESEUS_BENCH_SOURCE_COMMIT=$(git rev-parse HEAD) -e THESEUS_BENCH_IMAGE=theseus-core:rag2-18c26bb -e PYTHONPATH=/tmp/pylib:/app \
+  theseus-core:rag2-18c26bb sh -c "pip install -q --target /tmp/pylib tiktoken==0.14.0 psutil && \
+  python -m benchmarks.tool_rag.run --variant v2 --variant-kwargs '{\"threads\": 2}' --split dev --json /out/v2_dev_linux_2cpu.json"
 ```
