@@ -271,7 +271,10 @@ class FeedbackLoggerTest(unittest.TestCase):
         self.assertFalse(tul.record_tool_call("키 sk-abcdefghijklmnop 확인", "web_fetch", provenance="slot"))
         for i in range(8):
             self.assertTrue(tul.record_tool_call(f"최신 뉴스 검색 {i}", "web_search", provenance="slot"))
-        self.assertTrue(tul.record_tool_call("최신  뉴스 검색 7", "web_search", provenance="hook"))  # 중복(정규화)
+        self.assertTrue(tul.record_tool_call("최신  뉴스 검색 7", "web_search", provenance="slot"))  # 중복(정규화)
+        # 모델이 시작할 수 있는 경로(tool_search, 사후 훅)로 들어온 도구는 기록하지 않습니다.
+        self.assertFalse(tul.record_tool_call("주간 회의록 요약해줘", "brief", provenance="tool_search"))
+        self.assertFalse(tul.record_tool_call("주간 회의록 요약해줘", "brief", provenance="hook"))
         fb, version = tul.load_feedback_queries(5)
         self.assertEqual(len(fb["web_search"]), 5)
         self.assertEqual(fb["web_search"][0], "최신 뉴스 검색 7")
@@ -289,6 +292,17 @@ class FeedbackLoggerTest(unittest.TestCase):
         )
         self.assertEqual(tul.load_feedback_queries(5)[0], {})
 
+    def test_existing_tool_search_records_are_ignored_on_read(self) -> None:
+        from theseus_engine.core import tool_usage_logger as tul
+
+        path = Path(self._tmp.name) / "tool_usage.jsonl"
+        rows = [("웹 검색해줘 최신", "web_search", "tool_search"), ("회의록 정리해줘", "brief", "hook"), ("뉴스 찾아줘", "web_search", "slot")]
+        path.write_text(
+            "".join(json.dumps({"query": q, "tool": t, "provenance": p}, ensure_ascii=False) + "\n" for q, t, p in rows),
+            encoding="utf-8",
+        )
+        self.assertEqual(tul.load_feedback_queries(5)[0], {"web_search": ["뉴스 찾아줘"]})
+
     def test_feedback_reaches_passage_but_not_anchor(self) -> None:
         from theseus_engine.core import tool_usage_logger as tul
 
@@ -297,7 +311,7 @@ class FeedbackLoggerTest(unittest.TestCase):
         reg = core_registry()
         retr = make_retriever(feedback="cli")
         fp_before = retr.get_index(reg).fingerprint
-        tul.record_tool_call("주간 회의록 요약해줘", "brief", provenance="tool_search")
+        tul.record_tool_call("주간 회의록 요약해줘", "brief", provenance="slot")
         self.assertNotEqual(fp_before, retr.get_index(reg).fingerprint)  # 피드백이 바뀌면 재인덱싱
 
         fb, _ = tul.load_feedback_queries(5)

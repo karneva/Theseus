@@ -7,8 +7,11 @@ v1은 ToolExecutionStarted마다 무조건 기록해서 read_file·bash 같은 �
 그 질의가 다시 해당 도구의 few-shot이 되어 허브(아무 질의에나 뜨는 도구)를 키웠습니다. 지금 규칙:
 
 1. 필수 도구와 tool_search는 기록하지 않습니다(검색과 무관하게 항상 보내는 도구).
-2. 이번 턴에 검색이 고른 도구만 기록합니다. ``provenance``는 slot(유사도 슬롯) | tool_search | hook(사후 주입).
-   provenance가 없으면(히스토리 고정, 폴백 전체 전송 등) 기록하지 않습니다.
+2. 이번 턴의 초기 검색이 유사도 슬롯으로 고른 도구(``provenance == "slot"``)만 기록하고 읽습니다.
+   tool_search·hook(사후 주입)으로 들어온 도구는 기록하지 않습니다. 두 경로는 모델이 스스로 시작할 수 있어서,
+   모델이 읽은 파일·웹 페이지의 프롬프트 주입이 "tool_search 후 도구 T 호출"을 유도하면 (질의, T)가 few-shot이 되어
+   이후 모든 프로젝트의 슬롯 선택을 끌어당길 수 있기 때문입니다. provenance가 없으면(히스토리 고정, 폴백 전체 전송 등)
+   기록하지 않습니다. 이미 남아 있는 tool_search·hook 기록도 읽을 때 버립니다.
 3. 성공한 호출만 기록합니다(호출자가 ToolExecutionCompleted에서 is_error가 아닐 때 부릅니다).
 4. 질의는 4~200자만 받고, 경로·URL·키처럼 보이는 토큰이 있으면 버립니다(사용자 데이터가 인덱스로 새지 않게).
 5. 읽을 때 정규화한 (질의, 도구)로 중복을 지우고 도구당 최신 N개(기본 5)만 씁니다.
@@ -34,7 +37,8 @@ from theseus_engine.core.tool_rag.examples import ESSENTIAL_TOOL_NAMES, TOOL_SEA
 
 log = logging.getLogger(__name__)
 
-PROVENANCES = frozenset({"slot", "tool_search", "hook"})
+PROVENANCES = frozenset({"slot", "tool_search", "hook"})  # 조립·주입 경로가 남기는 출처 값
+LOGGED_PROVENANCES = frozenset({"slot"})  # few-shot으로 기록·사용하는 출처(규칙 2)
 NEVER_LOGGED = frozenset(ESSENTIAL_TOOL_NAMES | {TOOL_SEARCH_NAME, "create_tool"})
 MIN_QUERY_CHARS = 4
 MAX_QUERY_CHARS = 200
@@ -65,7 +69,7 @@ def accept_record(user_query: str, tool_name: str, provenance: str | None) -> st
     """기록 가능하면 정규화한 질의를, 아니면 None을 돌려줍니다."""
     if not tool_name or tool_name in NEVER_LOGGED:
         return None
-    if provenance not in PROVENANCES:
+    if provenance not in LOGGED_PROVENANCES:
         return None
     query = normalize_query(user_query)
     if not (MIN_QUERY_CHARS <= len(query) <= MAX_QUERY_CHARS):
