@@ -329,6 +329,24 @@ class FeedbackLoggerTest(unittest.TestCase):
         self.assertTrue((Path(self._tmp.name) / "tool_usage.jsonl.1").exists())
 
 
+class EngineRagVisibilityTest(unittest.TestCase):
+    def test_engine_rag_tools_hidden_without_local_embeddings(self) -> None:
+        from theseus_engine.core import engine_builder as eb
+
+        with patch.dict(os.environ, {"EMBEDDING_PROVIDER": "local"}), patch(
+            "importlib.util.find_spec", return_value=None
+        ):
+            self.assertEqual(eb.unavailable_engine_rag_tools(), {"search_knowledge_base", "ingest_document"})
+        with patch.dict(os.environ, {"EMBEDDING_PROVIDER": "local"}), patch(
+            "importlib.util.find_spec", return_value=object()
+        ):
+            self.assertEqual(eb.unavailable_engine_rag_tools(), frozenset())
+        with patch.dict(os.environ, {"EMBEDDING_PROVIDER": "remote"}), patch(
+            "importlib.util.find_spec", return_value=None
+        ):
+            self.assertEqual(eb.unavailable_engine_rag_tools(), frozenset())
+
+
 class SettingsTest(unittest.TestCase):
     def test_hook_inject_cap_is_per_turn_with_legacy_name(self) -> None:
         from theseus_engine.config import get_tool_rag_settings

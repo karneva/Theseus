@@ -271,6 +271,9 @@ uv pip install torch --index-url https://download.pytorch.org/whl/cpu
 uv pip install -r requirements-torch.txt
 ```
 
+`EMBEDDING_PROVIDER=local`(기본)인데 sentence-transformers가 없으면 로컬 CLI/TUI는 엔진 RAG 도구
+(`search_knowledge_base`, `ingest_document`)를 보이는 도구에서 뺍니다. 호출하면 ImportError가 나기 때문입니다.
+
 `playwright-stealth`처럼 bot-detection 우회 성격의 패키지는 기본/optional
 의존성에 포함하지 않습니다. 필요하면 대상 서비스 약관과 배포 정책을 먼저
 검토한 뒤 별도 프로젝트 의존성으로 관리합니다.

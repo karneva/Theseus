@@ -47,6 +47,28 @@ def _workspace_custom_tool_dirs(cwd: Path) -> list[Path]:
     return workspace_custom_tool_dirs(cwd)
 
 
+ENGINE_RAG_TOOL_NAMES = frozenset({"search_knowledge_base", "ingest_document"})
+
+
+def unavailable_engine_rag_tools() -> frozenset[str]:
+    """로컬 임베딩 의존성이 없어 호출하면 ImportError가 나는 엔진 RAG 도구 이름.
+
+    EMBEDDING_PROVIDER 기본값은 local(sentence-transformers)인데, 이 패키지는 기본 requirements.txt에서 빠지고
+    requirements-torch.txt로 옮겨졌습니다. 그 상태에서 두 도구를 보이게 두면 Tool RAG 슬롯에도 들어가고, 모델이
+    호출하면 실패합니다. 서버는 THESEUS_ENABLE_ENGINE_RAG_TOOLS(기본 false)로 따로 숨깁니다.
+    """
+    import importlib.util
+
+    provider = (os.getenv("EMBEDDING_PROVIDER") or "local").strip().lower()
+    if provider != "local":
+        return frozenset()
+    try:
+        available = importlib.util.find_spec("sentence_transformers") is not None
+    except (ImportError, ValueError):
+        available = False
+    return frozenset() if available else ENGINE_RAG_TOOL_NAMES
+
+
 def _resolve_skill_injection_enabled(value: Optional[bool]) -> bool:
     if value is not None:
         return bool(value)
@@ -182,7 +204,7 @@ async def setup_engine(
         user_level=user_level,
         tool_permissions=project_tool_permissions,
         can_create_tool=can_create_tool,
-        disabled_tools=frozenset(project_disabled_tools or set()),
+        disabled_tools=frozenset(project_disabled_tools or set()) | unavailable_engine_rag_tools(),
     )
     search_injectable_registry = build_visible_registry(
         full_registry,
