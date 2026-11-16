@@ -63,9 +63,6 @@ if (PINNED_SNAPSHOT / "model.safetensors").exists():
 
 if str(SERVER_DIR) not in sys.path:
     sys.path.insert(0, str(SERVER_DIR))
-
-# 실험자가 하네스보다 먼저 theseus_engine을 import했다면 로그 경로가 이미 고정돼 있으므로 덮어씁니다.
-_logger_mod = sys.modules.get("theseus_engine.core.tool_usage_logger")
-if _logger_mod is not None:
-    _logger_mod._LOG_DIR = EMPTY_FEEDBACK_DIR
-    _logger_mod._LOG_FILE = EMPTY_FEEDBACK_DIR / "tool_usage.jsonl"
+# v2 로거(theseus_engine/core/tool_usage_logger.py)는 호출할 때마다 THESEUS_DATA_DIR을 읽으므로
+# 실험자가 하네스보다 먼저 theseus_engine을 import했어도 위 설정이 적용됩니다.
+# v2 어댑터(v2.py)는 여기에 더해 THESEUS_TOOL_RAG_FEEDBACK=off로 피드백 병합 자체를 끕니다.

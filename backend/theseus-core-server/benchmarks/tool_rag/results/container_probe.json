@@ -1,0 +1,73 @@
+{
+  "command": "docker run --rm --cpus=2 --memory=1.5g -e PYTHONPATH=/app -v <repo>/backend/theseus-core-server/benchmarks/tool_rag:/probe:ro <image> python /probe/container_probe.py (v1 이미지는 -v <hf_home>:/hf:ro -e HF_HOME=/hf -e HF_HUB_OFFLINE=1 추가)",
+  "host": "Windows 11 + Docker Desktop(WSL2), 3회 반복",
+  "images": {
+    "theseus-core:rag2 (v2, 이 브랜치)": "1.07GB",
+    "theseus-core:cd7188f (v1, torch)": "2.46GB"
+  },
+  "runs": [
+    {
+      "rss_after_import_src_main_mb": 186.9,
+      "import_s": 2.65,
+      "impl": "v2",
+      "threads": 2,
+      "first_retrieval_s": 2.14,
+      "warm_retrieval_ms": 5.6,
+      "rss_after_retrieval_mb": 422.7,
+      "n_sent": 11,
+      "torch_imported": false
+    },
+    {
+      "rss_after_import_src_main_mb": 187.1,
+      "import_s": 2.82,
+      "impl": "v2",
+      "threads": 2,
+      "first_retrieval_s": 2.06,
+      "warm_retrieval_ms": 6.7,
+      "rss_after_retrieval_mb": 422.7,
+      "n_sent": 11,
+      "torch_imported": false
+    },
+    {
+      "rss_after_import_src_main_mb": 186.8,
+      "import_s": 2.86,
+      "impl": "v2",
+      "threads": 2,
+      "first_retrieval_s": 2.34,
+      "warm_retrieval_ms": 5.4,
+      "rss_after_retrieval_mb": 422.2,
+      "n_sent": 11,
+      "torch_imported": false
+    },
+    {
+      "rss_after_import_src_main_mb": 186.1,
+      "import_s": 2.73,
+      "impl": "v1",
+      "first_retrieval_s": 20.26,
+      "warm_retrieval_ms": 90.3,
+      "rss_after_retrieval_mb": 1079.3,
+      "n_sent": 12,
+      "torch_imported": true
+    },
+    {
+      "rss_after_import_src_main_mb": 186.1,
+      "import_s": 2.58,
+      "impl": "v1",
+      "first_retrieval_s": 18.58,
+      "warm_retrieval_ms": 193.5,
+      "rss_after_retrieval_mb": 1088.4,
+      "n_sent": 12,
+      "torch_imported": true
+    },
+    {
+      "rss_after_import_src_main_mb": 186.1,
+      "import_s": 2.46,
+      "impl": "v1",
+      "first_retrieval_s": 18.73,
+      "warm_retrieval_ms": 190.9,
+      "rss_after_retrieval_mb": 1090.9,
+      "n_sent": 12,
+      "torch_imported": true
+    }
+  ]
+}

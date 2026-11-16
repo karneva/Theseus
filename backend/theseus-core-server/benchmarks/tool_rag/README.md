@@ -1,6 +1,8 @@
 # Tool RAG 평가 하네스
 
-`theseus_engine/core/tool_retriever.py`(도구 검색)를 고정된 평가셋으로 측정하는 오프라인 벤치마크입니다.
+도구 검색(Tool RAG)을 고정된 평가셋으로 측정하는 오프라인 벤치마크입니다. v1(`legacy_v1.py`, 베이스라인)과
+v2(`theseus_engine/core/tool_rag`, 현재 저장소 구현)를 같은 정의로 잽니다. 설계와 결과 해석은
+[docs/architecture/tool-rag.md](../../../../docs/architecture/tool-rag.md)에 있습니다.
 검색 기법을 바꿀 때마다 같은 질의, 같은 지표 정의로 베이스라인과 비교할 수 있게 하는 것이 목적입니다.
 서버 이미지에는 들어가지 않습니다(`.dockerignore`에서 제외).
 
@@ -8,10 +10,19 @@
 |---|---|
 | `eval_set.jsonl` | 동결 평가셋 236개 질의(한국어 164 / 영어 72, single 134 · multi 67 · none 35, dev/test 118/118). 수정 금지. 하네스가 sha256으로 검증합니다. |
 | `harness.py` | `build_registry`, `Retriever` 프로토콜, `evaluate`, 지표 함수 |
-| `baseline.py` | 현재 `ToolRetriever`를 수정 없이 감싼 `BaselineRetriever` |
+| `baseline.py` | v1 `ToolRetriever`(`legacy_v1.py`, f9862e4 동결 사본)를 감싼 `BaselineRetriever`. torch 필요 |
+| `legacy_v1.py` | v1 검색기 코드 사본(키워드 리랭크, 임계값 0.3, adaptive k). 베이스라인 재측정 전용 |
+| `v2.py` | 저장소 v2 구현을 감싼 `V2Retriever`(`--variant v2`)와 v1 서버 동작 참조점 `AllVisibleTools`(`--variant all-visible`) |
+| `calibrate.py` | none 판정 보정: dev 분할만으로 선형 규칙을 적합해 `toolrag_calibration*.json`을 씁니다 |
+| `compare.py` | 두 결과 JSON의 질의 단위 paired bootstrap 비교(95% CI) |
+| `container_probe.py` | Core 이미지 안에서 `import src.main` → 첫 검색 → 웜 검색의 RSS·시간 측정 |
 | `run.py` | CLI |
 | `_env.py` | 결정성 고정(피드백 로그를 빈 디렉터리로, HF 오프라인, 바이트코드 끔). 패키지 import 시 먼저 실행됩니다. |
-| `results/baseline_{dev,test,all}.json` | 현재 저장소 베이스라인 결과 |
+| `results/baseline_{dev,test,all}.json` | v1 베이스라인 결과(f9862e4) |
+| `results/v2_{dev,test,all}.json` | v2 결과(core 레지스트리), `v2_server_{test,all}.json`은 server 레지스트리 |
+| `results/all_visible_{core,server}_{test,all}.json` | v1 서버 동작(검색 없이 보이는 도구 전부) 참조점 |
+| `results/compare_baseline_v2_{dev,test,all}.json` | `compare.py` 출력 |
+| `results/v2_dev_linux_2cpu.json`, `results/container_probe.json` | Linux 컨테이너(2 vCPU, 1.5 GB) 측정 |
 
 ## 평가 프로토콜 (반드시 지킬 것)
 
@@ -134,3 +145,29 @@ python -m benchmarks.tool_rag.run --variant baseline --split all --legacy-demo-t
 ```
 
 새 변형은 현재 저장소 베이스라인(`results/baseline_*.json`)과 비교합니다. `--legacy-demo-tools`는 재현 확인용으로만 씁니다.
+
+## v2 결과 (저장소 구현, core 레지스트리)
+
+커밋 6739df9, Windows 11 / Python 3.11.15 / onnxruntime 1.32.0(4 스레드) / 모델 `e5-small-int8`(sha256 7486bedf…).
+test 분할은 Combine 단계에서 이미 1회 평가한 구성을 저장소 코드로 옮긴 뒤 재현 확인용으로만 다시 돌렸고, 결과를 보고 아무것도 바꾸지 않았습니다.
+Combine 단계 스크래치 구현(`FinalV2`)과 dev·test·all 모든 질의의 상위 8 순위·점수·전달 집합·none 판정이 같았습니다
+(요약 지표 차이는 nDCG@5의 1e-16 부동소수점 합산 순서뿐). Linux 컨테이너(2 vCPU) dev 결과도 질의별로 같았습니다.
+
+```bash
+cd backend/theseus-core-server
+export PYTHONDONTWRITEBYTECODE=1 PYTHONIOENCODING=utf-8 THESEUS_EMBED_MODEL_DIR=<모델 디렉터리>
+python -m benchmarks.tool_rag.run --variant v2 --split {dev,test,all} --json benchmarks/tool_rag/results/v2_{split}.json
+python -m benchmarks.tool_rag.compare benchmarks/tool_rag/results/baseline_test.json benchmarks/tool_rag/results/v2_test.json
+```
+
+| split | n | R@3 | R@3 KO | R@3 EN | R@5 | MRR | Hit@1 | set_recall_delivered | 스키마 토큰 평균 / p95 | none P / R / F1 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| dev | 59 | 0.918 | 0.904 | 0.947 | 0.952 | 0.894 | 0.814 | 0.970 | 1619 / 1823 | 0.765 / 0.722 / 0.743 (in-sample) |
+| test | 70 | 0.895 | 0.894 | 0.899 | 0.952 | 0.864 | 0.786 | 0.938 | 1622 / 1884 | 0.308 / 0.235 / 0.267 |
+| all | 129 | 0.906 | 0.898 | 0.921 | 0.952 | 0.877 | 0.798 | 0.954 | 1620 / 1862 | 0.567 / 0.486 / 0.523 |
+
+베이스라인 대비 test paired bootstrap(10000회, seed 0): R@3 +0.260 [+0.152, +0.364](23승 2패),
+set_recall +0.123 [+0.062, +0.190], 스키마 토큰 −317 [−374, −261], 전달 도구 수 13.37 → 11.85.
+
+모델 준비(로컬): `python scripts/provision_tool_rag_model.py --out ~/.theseus/models/e5-small-int8`
+(builder 전용 의존성 `onnx==1.23.2 onnxruntime==1.32.0 huggingface-hub`). 보정 재적합: `python -m benchmarks.tool_rag.calibrate --out <파일>`.

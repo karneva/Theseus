@@ -3,7 +3,9 @@
     python -m benchmarks.tool_rag.run --variant baseline --split dev [--json out.json]
 
 --variant
-    baseline                      저장소의 현재 ToolRetriever (benchmarks/tool_rag/baseline.py)
+    baseline                      v1 ToolRetriever 동결 사본 (benchmarks/tool_rag/baseline.py, legacy_v1.py)
+    v2                            저장소의 Tool RAG v2 구현 (benchmarks/tool_rag/v2.py)
+    all-visible                   v1 서버 동작 참조점(검색 없이 보이는 도구 전부)
     package.module:ClassName      import 가능한 모듈의 클래스
     C:/path/to/my_variant.py:Cls  저장소 밖 파일의 클래스 (스크래치 실험용)
 --variant-kwargs '{"k": 5}'       클래스 생성자 인자(JSON)
@@ -29,8 +31,16 @@ def load_variant(spec: str, kwargs: dict):
         from .baseline import BaselineRetriever
 
         return BaselineRetriever(**kwargs)
+    if spec == "v2":
+        from .v2 import V2Retriever
+
+        return V2Retriever(**kwargs)
+    if spec == "all-visible":
+        from .v2 import AllVisibleTools
+
+        return AllVisibleTools(**kwargs)
     if ":" not in spec:
-        raise SystemExit(f"--variant는 'baseline', 'module:Class', 'file.py:Class' 중 하나여야 합니다: {spec!r}")
+        raise SystemExit(f"--variant는 'baseline', 'v2', 'module:Class', 'file.py:Class' 중 하나여야 합니다: {spec!r}")
     target, cls_name = spec.rsplit(":", 1)
     if target.endswith(".py"):
         path = Path(target).resolve()
