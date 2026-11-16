@@ -13,7 +13,8 @@ param(
     [switch]$SkipRequirements,
     [switch]$SkipExtension,
     [switch]$SkipSettings,
-    [switch]$InstallPlaywright
+    [switch]$InstallPlaywright,
+    [switch]$SkipToolRagModel
 )
 
 $ErrorActionPreference = "Stop"
@@ -659,6 +660,42 @@ if (-not $SkipRequirements) {
     else {
         & $venvPython -m pip install --upgrade pip
         & $venvPython -m pip install -r $requirementsPath
+    }
+}
+
+# Tool RAG embedding model (one-time). Without it the local CLI sends every visible tool schema each turn.
+if (-not $SkipToolRagModel) {
+    $toolRagModelDir = $env:THESEUS_EMBED_MODEL_DIR
+    if ([string]::IsNullOrWhiteSpace($toolRagModelDir)) {
+        $toolRagModelDir = Join-Path (Join-Path (Join-Path $HOME ".theseus") "models") "e5-small-int8"
+    }
+    $provisionScript = Join-Path (Join-Path $CorePath "scripts") "provision_tool_rag_model.py"
+    if (Test-Path -LiteralPath (Join-Path $toolRagModelDir "model.onnx")) {
+        Write-Host "Tool RAG model already present: $toolRagModelDir"
+    }
+    else {
+        Write-Host "Preparing Tool RAG embedding model (one-time: downloads about 470 MB, peak RAM about 2.4 GB): $toolRagModelDir"
+        $modelRequirementsPath = Join-Path $CorePath "requirements-tool-rag-model.txt"
+        $provisioned = $false
+        try {
+            $uv = Get-Command uv -ErrorAction SilentlyContinue
+            if ($uv) {
+                & $uv.Source pip install -r $modelRequirementsPath --python $venvPython
+            }
+            else {
+                & $venvPython -m pip install -r $modelRequirementsPath
+            }
+            if ($LASTEXITCODE -eq 0) {
+                & $venvPython $provisionScript --out $toolRagModelDir
+                $provisioned = ($LASTEXITCODE -eq 0)
+            }
+        }
+        catch {
+            $provisioned = $false
+        }
+        if (-not $provisioned) {
+            Write-Warning "Tool RAG model preparation failed. The CLI sends all visible tools until you run: $venvPython $provisionScript --out $toolRagModelDir"
+        }
     }
 }
 

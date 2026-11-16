@@ -247,11 +247,13 @@ uv pip install -r requirements.txt
 의존성만 포함합니다. 선택 기능은 아래 파일로 분리합니다.
 
 Tool RAG 임베딩 모델은 한 번 만들어 둡니다(Docker 이미지는 빌드 단계에서 자동으로 만듭니다).
-모델이 없으면 검색 없이 보이는 도구 전부를 보내고 경고를 남깁니다.
+`scripts/install-vscode-extension.sh`/`.ps1`은 `~/.theseus/models/e5-small-int8`에 모델이 없으면 이 단계를
+자동으로 실행합니다(약 470 MB 다운로드, 양자화 peak RAM 약 2.4 GB, 건너뛰려면 `--skip-tool-rag-model`/`-SkipToolRagModel`).
+모델이 없으면 검색 없이 보이는 도구 전부를 보내고, CLI는 준비 명령을 한 번 안내합니다.
 
 ```powershell
-# builder 전용 의존성(양자화 결과를 sha256으로 검증하므로 버전을 고정합니다)
-uv pip install onnx==1.23.2 onnxruntime==1.32.0 huggingface-hub
+# 모델 준비 전용 의존성(양자화 결과를 sha256으로 검증하므로 버전을 고정합니다)
+uv pip install -r requirements-tool-rag-model.txt
 python scripts\provision_tool_rag_model.py --out $HOME\.theseus\models\e5-small-int8
 ```
 
@@ -582,6 +584,7 @@ theseus-core-server/
 ├── requirements-custom-tools.txt # 번들 예시 custom tool optional
 ├── requirements-doc-tools.txt   # 문서/스프레드시트 tool optional
 ├── requirements-torch.txt      # sentence-transformers(torch) optional
+├── requirements-tool-rag-model.txt  # Tool RAG 모델 준비 전용(onnx, 고정 버전)
 ├── benchmarks/tool_rag/         # Tool RAG 평가 하네스, 동결 평가셋, 결과
 └── README.md
 ```

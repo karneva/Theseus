@@ -1,0 +1,15 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Tool RAG 임베딩 모델 준비 전용 의존성(scripts/provision_tool_rag_model.py)
+#
+# 런타임에는 필요 없습니다(런타임은 requirements.txt의 onnxruntime + sentencepiece만 씀).
+# 양자화 결과 model.onnx를 sha256으로 검증하므로 버전을 고정합니다. Dockerfile model 스테이지의
+# TOOL_RAG_*_VERSION ARG와 같은 값이어야 합니다.
+#
+#   pip install -r requirements-tool-rag-model.txt
+#   python scripts/provision_tool_rag_model.py --out ~/.theseus/models/e5-small-int8
+#
+# 설치 스크립트(scripts/install-vscode-extension.sh / .ps1)가 모델이 없을 때 자동으로 실행합니다.
+# ──────────────────────────────────────────────────────────────────────────────
+onnx==1.23.2
+onnxruntime==1.32.0
+huggingface-hub==0.36.2

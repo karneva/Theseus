@@ -35,6 +35,9 @@ log = logging.getLogger(__name__)
 
 PROVENANCE_METADATA_KEY = "tool_rag_provenance"
 
+# 같은 실패(예: 모델 파일 없음)는 get_embedder가 기억해 매 턴 똑같이 실패하므로 경고는 종류별로 한 번만 남깁니다.
+_WARNED_FAILURES: set[str] = set()
+
 
 @dataclass
 class ToolSelection:
@@ -116,8 +119,13 @@ def select_tools_for_turn(
             pinned=pinned,
         )
     except Exception as exc:  # 모델 없음, onnxruntime 오류 등
-        log.warning("[ToolRAG] 도구 검색 실패, 보이는 도구 전부를 보냅니다: %s", exc)
-        return _all_visible(visible_registry, f"error: {type(exc).__name__}")
+        reason = f"error: {type(exc).__name__}"
+        if reason not in _WARNED_FAILURES:
+            _WARNED_FAILURES.add(reason)
+            log.warning("[ToolRAG] 도구 검색 실패, 보이는 도구 전부를 보냅니다: %s", exc)
+        else:
+            log.debug("[ToolRAG] 도구 검색 실패(반복), 보이는 도구 전부를 보냅니다: %s", exc)
+        return _all_visible(visible_registry, reason)
 
     visible_set = set(visible_names)
     leaked = [n for n in result.names if n not in visible_set]

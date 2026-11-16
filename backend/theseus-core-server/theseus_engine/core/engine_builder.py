@@ -47,6 +47,26 @@ def _workspace_custom_tool_dirs(cwd: Path) -> list[Path]:
     return workspace_custom_tool_dirs(cwd)
 
 
+_TOOL_RAG_FAILURES_SHOWN: set[str] = set()
+
+
+def _print_tool_rag_failure_once(reason: str) -> None:
+    """Tool RAG 실패 안내를 종류별로 프로세스당 한 번만 출력합니다(모델 없음은 매 턴 똑같이 실패하므로)."""
+    if reason in _TOOL_RAG_FAILURES_SHOWN:
+        return
+    _TOOL_RAG_FAILURES_SHOWN.add(reason)
+    if reason == "error: EmbedderUnavailableError":
+        core_dir = Path(__file__).resolve().parents[2]
+        print(
+            "⚠️ Tool RAG 임베딩 모델을 불러오지 못해 보이는 도구 전부를 보냅니다(이 안내는 한 번만 표시).\n"
+            "   한 번만 준비하면 됩니다:\n"
+            f"   pip install -r {core_dir / 'requirements-tool-rag-model.txt'}\n"
+            f"   python {core_dir / 'scripts' / 'provision_tool_rag_model.py'} --out ~/.theseus/models/e5-small-int8"
+        )
+    else:
+        print(f"⚠️ 도구 검색 중 오류 발생({reason}). 보이는 도구 전부를 사용합니다.")
+
+
 ENGINE_RAG_TOOL_NAMES = frozenset({"search_knowledge_base", "ingest_document"})
 
 
@@ -236,7 +256,7 @@ async def setup_engine(
         if selection.is_none:
             print("⚠️ 맞는 도구가 없다고 판단 → 상위 일부 + ToolSearchTool로 보냄")
     elif enable_dynamic_tools and user_query and selection.reason.startswith("error"):
-        print("⚠️ 도구 검색 중 오류 발생. 보이는 도구 전부를 사용합니다.")
+        _print_tool_rag_failure_once(selection.reason)
 
     active_tool_names_tuple = active_tool_names(active_registry)
     tool_rag_provenance = dict(selection.provenance)
