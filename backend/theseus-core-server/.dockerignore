@@ -1,5 +1,5 @@
 # Core 이미지 빌드 컨텍스트에서 제외할 항목.
-# 런타임에는 src/, theseus_engine/, requirements.txt만 필요합니다.
+# 런타임에는 src/, theseus_engine/, requirements.txt(그리고 빌드용 scripts/provision_tool_rag_model.py)만 필요합니다.
 .venv/
 venv/
 __pycache__/
@@ -21,7 +21,9 @@ vscode-extension/
 docs/
 scratch/
 tests/
-scripts/
+# scripts/는 빼되, 모델 스테이지가 쓰는 Tool RAG 모델 준비 스크립트만 넣습니다.
+scripts/*
+!scripts/provision_tool_rag_model.py
 benchmarks/
 theseus_cli/
 theseus_cli.py

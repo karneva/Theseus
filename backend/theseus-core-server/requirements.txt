@@ -5,8 +5,8 @@
 # 실제로 mcp 1.12.x + pydantic 2.12 이상 조합에서 `import src.main`이 ImportError로
 # 실패했습니다(mcp가 pydantic 내부 심볼 eval_type_backport에 의존).
 #
-# torch는 sentence-transformers가 끌어옵니다. Docker 이미지에서는 Dockerfile이
-# PyTorch CPU 인덱스에서 torch를 먼저 설치하므로 CUDA 휠이 내려오지 않습니다.
+# torch는 기본 의존성이 아닙니다. Tool RAG 임베딩은 onnxruntime + sentencepiece로 돌고,
+# sentence-transformers(torch)는 requirements-torch.txt에서 선택적으로 설치합니다.
 # ──────────────────────────────────────────────────────────────────────────────
 
 # ── Web Framework ──────────────────────────────────────────────────────────────
@@ -42,7 +42,10 @@ pgvector>=0.2,<1
 
 # ── RAG / Embeddings ───────────────────────────────────────────────────────────
 langchain-openai>=0.1,<2
-sentence-transformers>=2.2,<7
+# Tool RAG 임베딩(theseus_engine/core/tool_rag): multilingual-e5-small ONNX int8 + sentencepiece 토크나이저.
+# 모델 파일은 Docker 빌드 단계에서 만들어 이미지에 넣습니다(scripts/provision_tool_rag_model.py).
+onnxruntime>=1.20,<2
+sentencepiece>=0.2,<0.3
 numpy>=1.26,<3
 
 # ── Observability ──────────────────────────────────────────────────────────────

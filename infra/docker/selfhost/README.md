@@ -39,7 +39,7 @@ RAM 3.8GB 중 컨테이너 상한 합계를 약 3.34GiB로 잡고, 순간적으�
 
 | 서비스 | mem_limit | 설정 근거 |
 |---|---:|---|
-| core | 1536m | torch(CPU)와 sentence-transformers를 로드합니다. 스왑 포함 3g까지 허용 |
+| core | 1536m | Tool RAG 임베딩은 ONNX int8(측정: 컨테이너 2 vCPU/1.5 GB에서 +204 MB, torch는 +565 MB). 스왑 포함 3g까지 허용 |
 | api | 640m | `JAVA_TOOL_OPTIONS=-Xmx384m -XX:+UseSerialGC -XX:MaxMetaspaceSize=160m ...` |
 | kafka | 448m | `KAFKA_HEAP_OPTS=-Xmx256m -Xms256m`, KRaft 단일 노드 |
 | mysql | 384m | buffer pool 128M, performance_schema OFF, max_connections 40 |
