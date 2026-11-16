@@ -15,6 +15,7 @@ RECIPE_VERSION은 위 레시피나 정적 few-shot·용어집이 바뀌면 올�
 보정 파일의 recipe_version과 맞아야 none 규칙이 적용됩니다).
   v2.1: 최초 v2 레시피
   v2.2: remote_* 순위 전용 few-shot(examples.RANKING_ONLY_EXAMPLE_QUERIES)
+  v2.3: 용어집 remote → 원격
 """
 
 from __future__ import annotations
@@ -26,7 +27,7 @@ from typing import Any, Sequence
 from theseus_engine.core.tool_rag.lexical import bm25_tokens
 from theseus_engine.core.tool_rag.tool_gloss import korean_gloss
 
-RECIPE_VERSION = "v2.2"
+RECIPE_VERSION = "v2.3"
 
 
 def split_name(name: str) -> str:

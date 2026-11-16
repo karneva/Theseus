@@ -81,6 +81,15 @@ class TextRecipeTest(unittest.TestCase):
         self.assertEqual(korean_gloss("read_file", "Read a file. Read files."), "읽기 파일")
         self.assertEqual(korean_gloss("zzz"), "")
 
+    def test_glossary_is_deterministic_and_lowercase(self) -> None:
+        from theseus_engine.core.tool_rag.tool_gloss import GLOSSARY
+
+        self.assertTrue(all(k == k.lower() for k in GLOSSARY))  # 대문자 키는 찾을 수 없는 죽은 항목
+        desc = "Read a text file from the selected Remote Workspace with line numbers."
+        first = korean_gloss("remote_read_file", desc)
+        self.assertEqual(first, "원격 읽기 파일 텍스트 작업 공간 줄")
+        self.assertEqual(korean_gloss("remote_read_file", desc), first)
+
     def test_passage_snapshots_for_representative_tools(self) -> None:
         reg = core_registry()
         read = reg.get("read_file")
