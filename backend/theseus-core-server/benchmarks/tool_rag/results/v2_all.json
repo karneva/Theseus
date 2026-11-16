@@ -12,16 +12,16 @@
     "hit1": 0.7984496124031008,
     "r3_ko": 0.8984674329501916,
     "r3_en": 0.9206349206349206,
-    "none_precision": 0.5666666666666667,
-    "none_recall": 0.4857142857142857,
-    "none_f1": 0.523076923076923,
+    "none_precision": 0.0,
+    "none_recall": 0.0,
+    "none_f1": 0.0,
     "set_recall_delivered": 0.9559925093632958,
-    "avg_selected_schema_tokens": 1766.0140845070423,
-    "p95_selected_schema_tokens": 1982.8,
-    "warm_p50_ms": 5.867899977602065,
-    "warm_p95_ms": 11.131900019245224,
-    "cold_load_s": 0.7221479999716394,
-    "rss_delta_mb": 187.54296875
+    "avg_selected_schema_tokens": 1787.3145539906104,
+    "p95_selected_schema_tokens": 1990.0,
+    "warm_p50_ms": 5.118000030051917,
+    "warm_p95_ms": 7.346459990367294,
+    "cold_load_s": 0.7124792999820784,
+    "rss_delta_mb": 186.21875
   },
   "meta": {
     "variant": "v2",
@@ -29,17 +29,17 @@
       "wraps": "theseus_engine.core.tool_rag.ToolRetriever (repo v2)",
       "embedder_fingerprint": "onnx:7486bedf9a52c6bab73586272c5bdc866ac077a77d6aac4ff1d8f3bdb02c7610:spm:512:mean",
       "embed_backend": "onnx",
-      "embed_model_dir": "C:/Users/SSAFY/AppData/Local/Temp/claude/4a21eeadf20438cb/5203cd60-9af0-4744-9c6e-e7bdc6bce09a/scratchpad/tr2-impl/models/e5-small-int8",
+      "embed_model_dir": "C:/Users/SSAFY/.theseus/models/e5-small-int8",
       "threads": 4,
       "bm25_beta": 0.1,
       "cost_budget": 700.0,
       "rank_alpha": 1.0,
       "max_candidates": 12,
-      "none_mode": "soft",
+      "none_mode": "off",
       "none_rule": {
-        "w_top1": -96.1665380086168,
-        "w_cov": -3.350519611540678,
-        "b": 79.77115953481427
+        "w_top1": -84.26264668920324,
+        "w_cov": -5.3430981637257196,
+        "b": 69.78624051002548
       },
       "soft_keep": 3,
       "feedback": "off",
@@ -54,6 +54,7 @@
     "n_tools": 36,
     "legacy_demo_tools": false,
     "eval_set_sha256": "7777d3b30a5b64111dc2d6a3d5efeeb6122ac7d4b8cfe3778347285df7f35713",
+    "eval_set_file": "eval_set.jsonl",
     "frozen_essentials": [
       "ask_user",
       "bash",
@@ -82,9 +83,9 @@
     },
     "feedback_log": "disabled (THESEUS_DATA_DIR -> 빈 임시 디렉터리)",
     "hf_offline": "1",
-    "commit": "18c26bb412b0ab18970df183b2a5cfa8d94582c9",
+    "commit": "63e1e19271468e1a2747598fd1eb73edf3c7ef46",
     "engine_src_dirty": false,
-    "command": "python -m benchmarks.tool_rag.run --variant v2 --split all --json benchmarks/tool_rag/results/v2_all.json"
+    "command": "python -m benchmarks.tool_rag.run --variant v2 --split all --json C:/DEV/Theseus/backend/theseus-core-server/benchmarks/tool_rag/results/v2_all.json"
   },
   "ranking_sim_slots_excl_essentials": {
     "all": {
@@ -220,7 +221,7 @@
       "min": 10.0,
       "p5": 11.0,
       "p50": 13.0,
-      "mean": 12.694835680751174,
+      "mean": 12.967136150234742,
       "p95": 15.0,
       "max": 17.0
     },
@@ -232,14 +233,14 @@
   "none_detection": {
     "definition": "양성 = 정답 type이 none인 질의. 예측 = decide_none(q), 없으면 rag_failed(유사도 도구 0개)",
     "source": "decide_none",
-    "tp": 17,
-    "fp": 13,
-    "fn": 18,
-    "tn": 165,
-    "precision": 0.5666666666666667,
-    "recall": 0.4857142857142857,
-    "f1": 0.523076923076923,
-    "false_trigger_rate_answerable": 0.07303370786516854,
+    "tp": 0,
+    "fp": 0,
+    "fn": 35,
+    "tn": 178,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "false_trigger_rate_answerable": 0.0,
     "rag_failed_rate_all": 0.0
   },
   "prompt_tokens_cl100k": {
@@ -248,50 +249,50 @@
     "essentials_only": 1697,
     "delivered": {
       "n": 213,
-      "min": 1462.0,
-      "p5": 1559.2,
-      "p50": 1743.0,
-      "mean": 1766.0140845070423,
-      "p95": 1982.8,
+      "min": 1483.0,
+      "p5": 1593.0,
+      "p50": 1766.0,
+      "mean": 1787.3145539906104,
+      "p95": 1990.0,
       "max": 2201.0
     },
     "selected": {
       "n": 213,
-      "min": 1462.0,
-      "p5": 1559.2,
-      "p50": 1743.0,
-      "mean": 1766.0140845070423,
-      "p95": 1982.8,
+      "min": 1483.0,
+      "p5": 1593.0,
+      "p50": 1766.0,
+      "mean": 1787.3145539906104,
+      "p95": 1990.0,
       "max": 2201.0
     },
-    "delivered_mean_saving_vs_all": 0.667917622319097
+    "delivered_mean_saving_vs_all": 0.6639122688998476
   },
   "latency": {
     "timed_call": "select",
     "passes": 3,
     "warm_query_ms": {
       "n": 639,
-      "min": 2.613699994981289,
-      "p5": 3.831170016201213,
-      "p50": 5.867899977602065,
-      "mean": 6.404918155389516,
-      "p95": 11.131900019245224,
-      "max": 18.366799980867654
+      "min": 2.2917999885976315,
+      "p5": 3.3771000045817345,
+      "p50": 5.118000030051917,
+      "mean": 5.263724413256602,
+      "p95": 7.346459990367294,
+      "max": 16.635699954349548
     }
   },
   "resources": {
-    "cold_load_s": 0.7221479999716394,
-    "index_build_ms": 1007.9084999742918,
-    "rss_before_load_mb": 116.1328125,
-    "rss_after_load_mb": 303.67578125,
-    "rss_delta_mb": 187.54296875,
-    "rss_after_eval_mb": 334.05859375,
+    "cold_load_s": 0.7124792999820784,
+    "index_build_ms": 1053.2098999829032,
+    "rss_before_load_mb": 118.3984375,
+    "rss_after_load_mb": 304.6171875,
+    "rss_delta_mb": 186.21875,
+    "rss_after_eval_mb": 333.3671875,
     "torch_threads": null
   },
   "hubness_top3_counts": {
-    "tool_search": 41,
     "lsp": 41,
-    "web_fetch": 40,
+    "tool_search": 40,
+    "web_fetch": 39,
     "task_create": 37,
     "enter_worktree": 35,
     "web_search": 33,
@@ -465,8 +466,8 @@
           0.8158
         ],
         [
-          "custom_tool_read_source",
-          0.8129
+          "local_write_report",
+          0.8147
         ]
       ],
       "delivered": [
@@ -510,7 +511,7 @@
         ],
         [
           "local_write_report",
-          0.8516
+          0.8554
         ],
         [
           "agent",
@@ -635,12 +636,12 @@
           0.8885
         ],
         [
-          "exit_worktree",
-          0.8747
+          "local_write_report",
+          0.8775
         ],
         [
-          "local_write_report",
-          0.8727
+          "exit_worktree",
+          0.8747
         ],
         [
           "task_create",
@@ -748,12 +749,12 @@
           0.8294
         ],
         [
-          "task_output",
-          0.8165
+          "local_write_report",
+          0.8213
         ],
         [
-          "local_write_report",
-          0.8162
+          "task_output",
+          0.8165
         ],
         [
           "agent",
@@ -805,7 +806,7 @@
         ],
         [
           "local_write_report",
-          0.8728
+          0.8756
         ],
         [
           "web_search",
@@ -869,7 +870,7 @@
         ],
         [
           "local_write_report",
-          0.8468
+          0.8513
         ],
         [
           "lsp",
@@ -923,7 +924,7 @@
       "pred_sim_top8": [
         [
           "todo_write",
-          0.9222
+          0.9223
         ],
         [
           "task_output",
@@ -931,7 +932,7 @@
         ],
         [
           "search_knowledge_base",
-          0.8666
+          0.8667
         ],
         [
           "exit_worktree",
@@ -1003,7 +1004,7 @@
         ],
         [
           "local_write_report",
-          0.8499
+          0.8537
         ],
         [
           "memory_list",
@@ -1085,10 +1086,11 @@
         "tool_search",
         "memory_list",
         "lsp",
-        "list_mcp_resources"
+        "list_mcp_resources",
+        "memory_read"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q014",
@@ -1102,7 +1104,7 @@
       "pred_sim_top8": [
         [
           "skill_list",
-          0.8554
+          0.8553
         ],
         [
           "memory_list",
@@ -1187,12 +1189,12 @@
           0.8346
         ],
         [
-          "agent",
-          0.8314
+          "local_write_report",
+          0.8341
         ],
         [
-          "local_write_report",
-          0.8289
+          "agent",
+          0.8314
         ]
       ],
       "delivered": [
@@ -1241,16 +1243,16 @@
           0.8535
         ],
         [
+          "local_write_report",
+          0.8514
+        ],
+        [
           "custom_tool_read_source",
           0.8503
         ],
         [
           "enter_worktree",
           0.8483
-        ],
-        [
-          "local_write_report",
-          0.8479
         ],
         [
           "tool_search",
@@ -1268,10 +1270,12 @@
         "tool_search",
         "task_create",
         "search_knowledge_base",
-        "web_search"
+        "web_search",
+        "list_mcp_resources",
+        "skill_list"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q017",
@@ -1327,10 +1331,14 @@
         "tool_search",
         "lsp",
         "skill_read",
-        "brief"
+        "brief",
+        "skill_list",
+        "task_list",
+        "exit_worktree",
+        "list_mcp_resources"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q018",
@@ -1364,7 +1372,7 @@
         ],
         [
           "local_write_report",
-          0.8396
+          0.8433
         ],
         [
           "task_stop",
@@ -1490,12 +1498,12 @@
           0.8193
         ],
         [
-          "agent",
-          0.8176
+          "local_write_report",
+          0.8188
         ],
         [
-          "local_write_report",
-          0.8154
+          "agent",
+          0.8176
         ]
       ],
       "delivered": [
@@ -1525,6 +1533,10 @@
       "gold_ne": [],
       "pred_sim_top8": [
         [
+          "local_write_report",
+          0.8233
+        ],
+        [
           "agent",
           0.8208
         ],
@@ -1535,10 +1547,6 @@
         [
           "web_fetch",
           0.8174
-        ],
-        [
-          "local_write_report",
-          0.8154
         ],
         [
           "enter_worktree",
@@ -1571,7 +1579,7 @@
         "web_fetch"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q022",
@@ -1615,8 +1623,8 @@
           0.8133
         ],
         [
-          "exit_worktree",
-          0.8103
+          "local_write_report",
+          0.8105
         ]
       ],
       "delivered": [
@@ -1671,7 +1679,7 @@
         ],
         [
           "agent",
-          0.8822
+          0.8823
         ],
         [
           "enter_worktree",
@@ -1693,10 +1701,12 @@
         "tool_search",
         "task_list",
         "task_stop",
-        "task_create"
+        "task_create",
+        "task_get",
+        "task_output"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q024",
@@ -1754,10 +1764,13 @@
         "tool_search",
         "task_list",
         "task_stop",
-        "task_output"
+        "task_output",
+        "task_get",
+        "task_create",
+        "skill_list"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q025",
@@ -1865,8 +1878,8 @@
           0.8071
         ],
         [
-          "lsp",
-          0.7924
+          "local_write_report",
+          0.7925
         ]
       ],
       "delivered": [
@@ -1880,10 +1893,13 @@
         "tool_search",
         "task_stop",
         "task_list",
-        "task_output"
+        "task_output",
+        "task_get",
+        "task_create",
+        "exit_worktree"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q027",
@@ -2310,7 +2326,7 @@
         ],
         [
           "task_output",
-          0.8725
+          0.8724
         ]
       ],
       "delivered": [
@@ -2488,7 +2504,7 @@
         ],
         [
           "local_write_report",
-          0.8455
+          0.8457
         ],
         [
           "todo_write",
@@ -2601,7 +2617,7 @@
         ],
         [
           "local_write_report",
-          0.8407
+          0.8436
         ],
         [
           "task_create",
@@ -3055,12 +3071,12 @@
           0.8413
         ],
         [
-          "task_output",
-          0.8299
+          "local_write_report",
+          0.8338
         ],
         [
-          "local_write_report",
-          0.8297
+          "task_output",
+          0.8299
         ],
         [
           "task_get",
@@ -3255,7 +3271,7 @@
         ],
         [
           "local_write_report",
-          0.8487
+          0.8494
         ]
       ],
       "delivered": [
@@ -3318,8 +3334,8 @@
           0.8146
         ],
         [
-          "skill_save",
-          0.8135
+          "local_write_report",
+          0.8137
         ]
       ],
       "delivered": [
@@ -3565,16 +3581,16 @@
           0.8229
         ],
         [
+          "local_write_report",
+          0.8185
+        ],
+        [
           "custom_tool_read_source",
           0.8107
         ],
         [
           "lsp",
           0.8096
-        ],
-        [
-          "local_write_report",
-          0.8093
         ]
       ],
       "delivered": [
@@ -3633,7 +3649,7 @@
         ],
         [
           "local_write_report",
-          0.8511
+          0.855
         ],
         [
           "brief",
@@ -3813,7 +3829,7 @@
         ],
         [
           "agent",
-          0.8652
+          0.8653
         ],
         [
           "custom_tool_read_source",
@@ -3981,7 +3997,7 @@
         ],
         [
           "local_write_report",
-          0.8786
+          0.8788
         ],
         [
           "enter_worktree",
@@ -4080,10 +4096,11 @@
         "tool_search",
         "task_output",
         "exit_worktree",
-        "enter_worktree"
+        "enter_worktree",
+        "task_get"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q062",
@@ -4184,7 +4201,7 @@
         ],
         [
           "local_write_report",
-          0.8671
+          0.8683
         ],
         [
           "web_search",
@@ -4309,7 +4326,7 @@
         ],
         [
           "local_write_report",
-          0.8452
+          0.8478
         ],
         [
           "web_search",
@@ -4362,7 +4379,7 @@
         ],
         [
           "local_write_report",
-          0.8745
+          0.8761
         ],
         [
           "ingest_document",
@@ -4560,12 +4577,12 @@
           0.8664
         ],
         [
-          "lsp",
-          0.8453
+          "local_write_report",
+          0.847
         ],
         [
-          "local_write_report",
-          0.8438
+          "lsp",
+          0.8453
         ],
         [
           "ingest_document",
@@ -4619,7 +4636,7 @@
         ],
         [
           "local_write_report",
-          0.8606
+          0.8595
         ],
         [
           "skill_save",
@@ -4737,7 +4754,7 @@
         ],
         [
           "local_write_report",
-          0.7951
+          0.7997
         ],
         [
           "skill_read",
@@ -4872,6 +4889,10 @@
           0.8065
         ],
         [
+          "local_write_report",
+          0.8063
+        ],
+        [
           "search_knowledge_base",
           0.8061
         ],
@@ -4882,10 +4903,6 @@
         [
           "task_stop",
           0.8048
-        ],
-        [
-          "local_write_report",
-          0.804
         ],
         [
           "todo_write",
@@ -4903,10 +4920,14 @@
         "tool_search",
         "ingest_document",
         "skill_save",
-        "memory_write"
+        "memory_write",
+        "search_knowledge_base",
+        "memory_read",
+        "task_stop",
+        "memory_list"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q075",
@@ -4929,7 +4950,7 @@
         ],
         [
           "local_write_report",
-          0.8604
+          0.8646
         ],
         [
           "tool_search",
@@ -5645,7 +5666,7 @@
         ],
         [
           "agent",
-          0.8817
+          0.8818
         ],
         [
           "enter_worktree",
@@ -5714,12 +5735,12 @@
           0.8969
         ],
         [
-          "exit_worktree",
-          0.8462
+          "local_write_report",
+          0.8465
         ],
         [
-          "local_write_report",
-          0.8439
+          "exit_worktree",
+          0.8462
         ]
       ],
       "delivered": [
@@ -5788,8 +5809,8 @@
           0.8229
         ],
         [
-          "skill_read",
-          0.8166
+          "local_write_report",
+          0.8196
         ]
       ],
       "delivered": [
@@ -5981,7 +6002,7 @@
         ],
         [
           "exit_worktree",
-          0.8323
+          0.8322
         ],
         [
           "task_create",
@@ -6105,16 +6126,16 @@
           0.838
         ],
         [
+          "local_write_report",
+          0.8366
+        ],
+        [
           "search_knowledge_base",
           0.8353
         ],
         [
           "enter_worktree",
           0.8343
-        ],
-        [
-          "task_get",
-          0.8333
         ]
       ],
       "delivered": [
@@ -6165,12 +6186,12 @@
           0.8344
         ],
         [
-          "todo_write",
-          0.8294
+          "local_write_report",
+          0.8305
         ],
         [
-          "local_write_report",
-          0.8264
+          "todo_write",
+          0.8294
         ],
         [
           "task_list",
@@ -6241,8 +6262,8 @@
           0.8204
         ],
         [
-          "agent",
-          0.8169
+          "local_write_report",
+          0.8179
         ]
       ],
       "delivered": [
@@ -6295,12 +6316,12 @@
           0.8759
         ],
         [
-          "skill_list",
-          0.8648
+          "local_write_report",
+          0.8668
         ],
         [
-          "local_write_report",
-          0.8614
+          "skill_list",
+          0.8648
         ],
         [
           "memory_list",
@@ -6358,7 +6379,7 @@
         ],
         [
           "local_write_report",
-          0.8704
+          0.8746
         ],
         [
           "tool_search",
@@ -6422,12 +6443,12 @@
           0.9229
         ],
         [
-          "skill_read",
-          0.9109
+          "local_write_report",
+          0.9128
         ],
         [
-          "local_write_report",
-          0.91
+          "skill_read",
+          0.9109
         ],
         [
           "tool_search",
@@ -6539,7 +6560,7 @@
       "pred_sim_top8": [
         [
           "local_write_report",
-          0.8921
+          0.8945
         ],
         [
           "agent",
@@ -6687,12 +6708,12 @@
           0.8553
         ],
         [
-          "custom_tool_read_source",
-          0.8483
+          "local_write_report",
+          0.8495
         ],
         [
-          "local_write_report",
-          0.8464
+          "custom_tool_read_source",
+          0.8483
         ]
       ],
       "delivered": [
@@ -6871,7 +6892,7 @@
         ],
         [
           "local_write_report",
-          0.8771
+          0.8774
         ],
         [
           "read_mcp_resource",
@@ -7072,19 +7093,19 @@
         ],
         [
           "web_fetch",
-          0.8964
+          0.8965
         ],
         [
           "list_mcp_resources",
           0.8611
         ],
         [
-          "lsp",
-          0.8555
+          "local_write_report",
+          0.8577
         ],
         [
-          "local_write_report",
-          0.8551
+          "lsp",
+          0.8555
         ]
       ],
       "delivered": [
@@ -7185,7 +7206,7 @@
       "pred_sim_top8": [
         [
           "enter_worktree",
-          0.8984
+          0.8983
         ],
         [
           "web_fetch",
@@ -7200,12 +7221,12 @@
           0.8358
         ],
         [
-          "todo_write",
-          0.8336
+          "local_write_report",
+          0.8347
         ],
         [
-          "local_write_report",
-          0.8329
+          "todo_write",
+          0.8336
         ],
         [
           "memory_write",
@@ -7322,15 +7343,15 @@
           0.8718
         ],
         [
+          "local_write_report",
+          0.8639
+        ],
+        [
           "tool_search",
           0.86
         ],
         [
           "custom_tool_read_source",
-          0.8588
-        ],
-        [
-          "local_write_report",
           0.8588
         ],
         [
@@ -7389,7 +7410,7 @@
         ],
         [
           "lsp",
-          0.8421
+          0.8422
         ],
         [
           "memory_list",
@@ -7589,7 +7610,7 @@
         ],
         [
           "skill_list",
-          0.8606
+          0.8605
         ],
         [
           "memory_read",
@@ -7732,7 +7753,7 @@
         ],
         [
           "agent",
-          0.9069
+          0.907
         ],
         [
           "web_fetch",
@@ -8004,8 +8025,8 @@
           0.8244
         ],
         [
-          "memory_write",
-          0.8167
+          "local_write_report",
+          0.82
         ]
       ],
       "delivered": [
@@ -8179,35 +8200,35 @@
       "pred_sim_top8": [
         [
           "local_write_report",
-          0.915
+          0.9186
         ],
         [
           "enter_worktree",
-          0.8785
+          0.8788
         ],
         [
           "exit_worktree",
-          0.8723
+          0.8724
         ],
         [
           "lsp",
-          0.8698
+          0.87
         ],
         [
           "agent",
-          0.8541
+          0.8542
         ],
         [
           "brief",
-          0.8518
+          0.852
         ],
         [
           "task_stop",
-          0.8276
+          0.8277
         ],
         [
           "task_create",
-          0.8268
+          0.8269
         ]
       ],
       "delivered": [
@@ -8286,7 +8307,7 @@
         "web_fetch"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q141",
@@ -8407,10 +8428,11 @@
         "tool_search",
         "skill_list",
         "task_list",
-        "memory_list"
+        "memory_list",
+        "list_mcp_resources"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q143",
@@ -8558,7 +8580,7 @@
         ],
         [
           "local_write_report",
-          0.9044
+          0.9057
         ],
         [
           "web_fetch",
@@ -8660,10 +8682,13 @@
         "tool_search",
         "lsp",
         "skill_read",
-        "task_create"
+        "task_create",
+        "task_list",
+        "task_get",
+        "task_stop"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q147",
@@ -8827,7 +8852,7 @@
         ],
         [
           "local_write_report",
-          0.7967
+          0.8016
         ],
         [
           "agent",
@@ -8849,10 +8874,11 @@
         "tool_search",
         "enter_worktree",
         "lsp",
-        "web_fetch"
+        "web_fetch",
+        "web_search"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q150",
@@ -9007,7 +9033,7 @@
         ],
         [
           "search_knowledge_base",
-          0.8443
+          0.8442
         ],
         [
           "lsp",
@@ -9040,7 +9066,7 @@
         "search_knowledge_base"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q153",
@@ -9081,7 +9107,7 @@
         ],
         [
           "local_write_report",
-          0.796
+          0.798
         ],
         [
           "enter_worktree",
@@ -9099,10 +9125,11 @@
         "tool_search",
         "brief",
         "web_fetch",
-        "memory_write"
+        "memory_write",
+        "todo_write"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q154",
@@ -9183,7 +9210,7 @@
       "pred_sim_top8": [
         [
           "local_write_report",
-          0.9029
+          0.9066
         ],
         [
           "web_fetch",
@@ -9254,7 +9281,7 @@
         ],
         [
           "lsp",
-          0.8211
+          0.8212
         ],
         [
           "skill_save",
@@ -9291,7 +9318,7 @@
         "task_create"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q157",
@@ -9475,10 +9502,12 @@
         "tool_search",
         "ingest_document",
         "task_create",
-        "skill_save"
+        "skill_save",
+        "search_knowledge_base",
+        "todo_write"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q160",
@@ -9494,12 +9523,12 @@
       ],
       "pred_sim_top8": [
         [
-          "local_write_report",
-          0.8428
-        ],
-        [
           "lsp",
           0.8417
+        ],
+        [
+          "local_write_report",
+          0.8413
         ],
         [
           "agent",
@@ -9666,10 +9695,12 @@
         "tool_search",
         "task_list",
         "task_create",
-        "todo_write"
+        "todo_write",
+        "task_get",
+        "task_stop"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q163",
@@ -9728,10 +9759,12 @@
         "tool_search",
         "search_knowledge_base",
         "web_search",
-        "enter_worktree"
+        "enter_worktree",
+        "task_create",
+        "task_stop"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q164",
@@ -9760,7 +9793,7 @@
         ],
         [
           "local_write_report",
-          0.7941
+          0.7946
         ],
         [
           "web_search",
@@ -9790,10 +9823,12 @@
         "tool_search",
         "web_fetch",
         "enter_worktree",
-        "web_search"
+        "web_search",
+        "task_create",
+        "task_stop"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q165",
@@ -9939,7 +9974,7 @@
         ],
         [
           "local_write_report",
-          0.8354
+          0.84
         ],
         [
           "custom_tool_update_source",
@@ -9987,31 +10022,31 @@
       "pred_sim_top8": [
         [
           "local_write_report",
-          0.9146
+          0.9177
         ],
         [
           "todo_write",
-          0.8567
+          0.8569
         ],
         [
           "skill_save",
-          0.842
+          0.8423
         ],
         [
           "search_knowledge_base",
-          0.8194
+          0.8197
         ],
         [
           "list_mcp_resources",
-          0.813
+          0.8132
         ],
         [
           "deep_research",
-          0.8009
+          0.8011
         ],
         [
           "memory_list",
-          0.7974
+          0.7975
         ],
         [
           "ingest_document",
@@ -10071,12 +10106,12 @@
           0.7941
         ],
         [
-          "enter_worktree",
-          0.7887
+          "local_write_report",
+          0.7917
         ],
         [
-          "skill_read",
-          0.7872
+          "enter_worktree",
+          0.7887
         ]
       ],
       "delivered": [
@@ -10218,10 +10253,13 @@
         "tool_search",
         "task_stop",
         "task_list",
-        "task_get"
+        "task_get",
+        "task_create",
+        "task_output",
+        "skill_list"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q172",
@@ -10311,7 +10349,7 @@
         ],
         [
           "task_output",
-          0.8647
+          0.8646
         ],
         [
           "brief",
@@ -10319,7 +10357,7 @@
         ],
         [
           "task_create",
-          0.8259
+          0.8258
         ],
         [
           "task_get",
@@ -10331,7 +10369,7 @@
         ],
         [
           "local_write_report",
-          0.7705
+          0.7746
         ]
       ],
       "delivered": [
@@ -10345,10 +10383,13 @@
         "tool_search",
         "task_stop",
         "task_list",
-        "task_output"
+        "task_output",
+        "brief",
+        "task_create",
+        "task_get"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q174",
@@ -10433,7 +10474,7 @@
         ],
         [
           "local_write_report",
-          0.8746
+          0.8789
         ],
         [
           "lsp",
@@ -10535,10 +10576,15 @@
         "tool_search",
         "deep_research",
         "custom_tool_update_source",
-        "custom_tool_read_source"
+        "custom_tool_read_source",
+        "web_search",
+        "skill_list",
+        "memory_list",
+        "task_get",
+        "list_mcp_resources"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q177",
@@ -10638,12 +10684,12 @@
           0.8244
         ],
         [
-          "task_list",
-          0.8201
+          "local_write_report",
+          0.8216
         ],
         [
-          "local_write_report",
-          0.8189
+          "task_list",
+          0.8201
         ]
       ],
       "delivered": [
@@ -10693,7 +10739,7 @@
         ],
         [
           "local_write_report",
-          0.8247
+          0.8286
         ],
         [
           "lsp",
@@ -10723,10 +10769,12 @@
         "tool_search",
         "custom_tool_read_source",
         "custom_tool_update_source",
-        "ingest_document"
+        "ingest_document",
+        "list_mcp_resources",
+        "skill_list"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q180",
@@ -10882,6 +10930,10 @@
           0.7947
         ],
         [
+          "local_write_report",
+          0.7935
+        ],
+        [
           "read_mcp_resource",
           0.7928
         ],
@@ -10892,10 +10944,6 @@
         [
           "lsp",
           0.7903
-        ],
-        [
-          "deep_research",
-          0.79
         ]
       ],
       "delivered": [
@@ -11262,6 +11310,10 @@
           0.8037
         ],
         [
+          "local_write_report",
+          0.8027
+        ],
+        [
           "task_stop",
           0.8025
         ],
@@ -11272,10 +11324,6 @@
         [
           "skill_save",
           0.8001
-        ],
-        [
-          "task_output",
-          0.7994
         ]
       ],
       "delivered": [
@@ -11334,12 +11382,12 @@
           0.8042
         ],
         [
-          "deep_research",
-          0.7955
+          "local_write_report",
+          0.7964
         ],
         [
-          "local_write_report",
-          0.7891
+          "deep_research",
+          0.7955
         ]
       ],
       "delivered": [
@@ -11380,7 +11428,7 @@
         ],
         [
           "local_write_report",
-          0.8426
+          0.8418
         ],
         [
           "ingest_document",
@@ -11573,16 +11621,16 @@
           0.747
         ],
         [
+          "local_write_report",
+          0.746
+        ],
+        [
           "task_create",
           0.7417
         ],
         [
           "custom_tool_read_source",
           0.7362
-        ],
-        [
-          "local_write_report",
-          0.7358
         ],
         [
           "tool_search",
@@ -11640,7 +11688,7 @@
         ],
         [
           "local_write_report",
-          0.8064
+          0.8131
         ],
         [
           "skill_read",
@@ -11699,7 +11747,7 @@
         ],
         [
           "local_write_report",
-          0.819
+          0.8209
         ],
         [
           "ingest_document",
@@ -11775,7 +11823,7 @@
         ],
         [
           "local_write_report",
-          0.816
+          0.8177
         ]
       ],
       "delivered": [
@@ -11951,19 +11999,19 @@
         ],
         [
           "deep_research",
-          0.8428
+          0.8429
         ],
         [
           "skill_read",
           0.8033
         ],
         [
-          "memory_read",
-          0.7958
+          "local_write_report",
+          0.7971
         ],
         [
-          "local_write_report",
-          0.7946
+          "memory_read",
+          0.7958
         ],
         [
           "custom_tool_update_source",
@@ -12097,7 +12145,7 @@
         ],
         [
           "local_write_report",
-          0.8042
+          0.8081
         ]
       ],
       "delivered": [
@@ -12146,7 +12194,7 @@
         ],
         [
           "web_fetch",
-          0.8479
+          0.8478
         ],
         [
           "task_list",
@@ -12212,7 +12260,7 @@
         ],
         [
           "list_mcp_resources",
-          0.8444
+          0.8443
         ],
         [
           "task_list",
@@ -12361,8 +12409,8 @@
           0.8029
         ],
         [
-          "lsp",
-          0.8022
+          "local_write_report",
+          0.8023
         ]
       ],
       "delivered": [
@@ -12419,7 +12467,7 @@
         ],
         [
           "local_write_report",
-          0.796
+          0.7995
         ],
         [
           "task_create",
@@ -12487,12 +12535,12 @@
           0.853
         ],
         [
-          "memory_read",
-          0.8349
+          "local_write_report",
+          0.8379
         ],
         [
-          "web_fetch",
-          0.8331
+          "memory_read",
+          0.8349
         ]
       ],
       "delivered": [
@@ -12525,7 +12573,7 @@
       "pred_sim_top8": [
         [
           "local_write_report",
-          0.8433
+          0.8501
         ],
         [
           "agent",
@@ -12594,7 +12642,7 @@
         ],
         [
           "local_write_report",
-          0.8956
+          0.9017
         ],
         [
           "todo_write",
@@ -13132,7 +13180,7 @@
         ],
         [
           "local_write_report",
-          0.8156
+          0.8191
         ],
         [
           "ingest_document",
@@ -13191,7 +13239,7 @@
         ],
         [
           "local_write_report",
-          0.8117
+          0.8147
         ],
         [
           "custom_tool_update_source",
@@ -13280,7 +13328,7 @@
         "task_get"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q229",
@@ -13321,7 +13369,7 @@
         ],
         [
           "local_write_report",
-          0.7739
+          0.7759
         ],
         [
           "agent",
@@ -13339,10 +13387,11 @@
         "tool_search",
         "custom_tool_update_source",
         "custom_tool_read_source",
-        "brief"
+        "brief",
+        "task_get"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q230",
@@ -13382,12 +13431,12 @@
           0.7753
         ],
         [
-          "web_search",
-          0.7716
+          "local_write_report",
+          0.7718
         ],
         [
-          "local_write_report",
-          0.7683
+          "web_search",
+          0.7716
         ]
       ],
       "delivered": [
@@ -13401,10 +13450,11 @@
         "tool_search",
         "web_fetch",
         "read_mcp_resource",
-        "ingest_document"
+        "ingest_document",
+        "task_create"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q231",
@@ -13441,7 +13491,7 @@
         ],
         [
           "local_write_report",
-          0.8224
+          0.8237
         ],
         [
           "tool_search",
@@ -13528,10 +13578,13 @@
         "tool_search",
         "ingest_document",
         "custom_tool_update_source",
-        "brief"
+        "brief",
+        "task_list",
+        "task_get",
+        "skill_list"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q233",
@@ -13590,10 +13643,13 @@
         "tool_search",
         "todo_write",
         "task_get",
-        "task_stop"
+        "task_stop",
+        "web_search",
+        "brief",
+        "task_list"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     },
     {
       "id": "q234",
@@ -13761,7 +13817,7 @@
         ],
         [
           "local_write_report",
-          0.7732
+          0.7743
         ],
         [
           "read_mcp_resource",
@@ -13779,10 +13835,13 @@
         "tool_search",
         "deep_research",
         "web_search",
-        "search_knowledge_base"
+        "search_knowledge_base",
+        "task_output",
+        "task_get",
+        "skill_read"
       ],
       "rag_failed": false,
-      "none_pred": true
+      "none_pred": false
     }
   ]
 }

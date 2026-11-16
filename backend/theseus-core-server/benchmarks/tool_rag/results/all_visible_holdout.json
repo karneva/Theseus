@@ -1,0 +1,9496 @@
+{
+  "summary": {
+    "variant": "all-visible(v1 server)",
+    "split": "holdout",
+    "registry": "core",
+    "n_ranking": 67,
+    "r3": 0.08955223880597014,
+    "r5": 0.13432835820895522,
+    "r8": 0.2835820895522388,
+    "ndcg5": 0.09180905783772059,
+    "mrr": 0.145864204245849,
+    "hit1": 0.05970149253731343,
+    "r3_ko": 0.0975609756097561,
+    "r3_en": 0.07692307692307693,
+    "none_precision": 0.0,
+    "none_recall": 0.0,
+    "none_f1": 0.0,
+    "set_recall_delivered": 0.9782608695652174,
+    "avg_selected_schema_tokens": 4460.0,
+    "p95_selected_schema_tokens": 4460.0,
+    "warm_p50_ms": null,
+    "warm_p95_ms": null,
+    "cold_load_s": 1.3999524526298046e-06,
+    "rss_delta_mb": 0.0
+  },
+  "meta": {
+    "variant": "all-visible(v1 server)",
+    "retriever_meta": {},
+    "split": "holdout",
+    "registry": "core",
+    "n_items": 111,
+    "n_answerable": 92,
+    "n_none": 19,
+    "n_tools": 36,
+    "legacy_demo_tools": false,
+    "eval_set_sha256": "29483798f4dc28f2dd4c8509b966b7922d8214ce11739232d20dfb2a7598f9bb",
+    "eval_set_file": "holdout_set.jsonl",
+    "frozen_essentials": [
+      "ask_user",
+      "bash",
+      "create_tool",
+      "edit_file",
+      "glob",
+      "grep",
+      "read_file",
+      "write_file"
+    ],
+    "repo_essentials_equal_frozen": false,
+    "ks": [
+      3,
+      5,
+      8
+    ],
+    "has_select": true,
+    "has_decide_none": false,
+    "python": "3.11.15",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "cpu": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "versions": {
+      "numpy": "2.4.6",
+      "tiktoken": "0.14.0"
+    },
+    "feedback_log": "disabled (THESEUS_DATA_DIR -> 빈 임시 디렉터리)",
+    "hf_offline": "1",
+    "commit": "63e1e19271468e1a2747598fd1eb73edf3c7ef46",
+    "engine_src_dirty": false,
+    "command": "python -m benchmarks.tool_rag.run --variant all-visible --split holdout --registry core --passes 0 --json C:/DEV/Theseus/backend/theseus-core-server/benchmarks/tool_rag/results/all_visible_holdout.json"
+  },
+  "ranking_sim_slots_excl_essentials": {
+    "all": {
+      "n": 67,
+      "recall@3": 0.08955223880597014,
+      "ndcg@3": 0.07448729034960679,
+      "all_gold@3": 0.08955223880597014,
+      "recall@5": 0.13432835820895522,
+      "ndcg@5": 0.09180905783772059,
+      "all_gold@5": 0.13432835820895522,
+      "recall@8": 0.2835820895522388,
+      "ndcg@8": 0.1415177305014069,
+      "all_gold@8": 0.2835820895522388,
+      "mrr": 0.145864204245849,
+      "hit@1": 0.05970149253731343,
+      "primary@1": 0.04477611940298507
+    },
+    "lang=en": {
+      "n": 26,
+      "recall@3": 0.07692307692307693,
+      "ndcg@3": 0.07152764230200757,
+      "all_gold@3": 0.07692307692307693,
+      "recall@5": 0.11538461538461539,
+      "ndcg@5": 0.08640659642641303,
+      "all_gold@5": 0.11538461538461539,
+      "recall@8": 0.23076923076923078,
+      "ndcg@8": 0.12506065016591628,
+      "all_gold@8": 0.23076923076923078,
+      "mrr": 0.14783991175511674,
+      "hit@1": 0.07692307692307693,
+      "primary@1": 0.038461538461538464
+    },
+    "lang=ko": {
+      "n": 41,
+      "recall@3": 0.0975609756097561,
+      "ndcg@3": 0.07636414033101116,
+      "all_gold@3": 0.0975609756097561,
+      "recall@5": 0.14634146341463414,
+      "ndcg@5": 0.09523500897659856,
+      "all_gold@5": 0.14634146341463414,
+      "recall@8": 0.3170731707317073,
+      "ndcg@8": 0.15195392778732777,
+      "all_gold@8": 0.3170731707317073,
+      "mrr": 0.14461131655704507,
+      "hit@1": 0.04878048780487805,
+      "primary@1": 0.04878048780487805
+    },
+    "type=multi": {
+      "n": 18,
+      "recall@3": 0.1111111111111111,
+      "ndcg@3": 0.10331770554734428,
+      "all_gold@3": 0.1111111111111111,
+      "recall@5": 0.16666666666666666,
+      "ndcg@5": 0.12480952817148548,
+      "all_gold@5": 0.16666666666666666,
+      "recall@8": 0.3888888888888889,
+      "ndcg@8": 0.20043244952343586,
+      "all_gold@8": 0.3888888888888889,
+      "mrr": 0.19385667627710823,
+      "hit@1": 0.1111111111111111,
+      "primary@1": 0.05555555555555555
+    },
+    "type=single": {
+      "n": 49,
+      "recall@3": 0.08163265306122448,
+      "ndcg@3": 0.06389652558309097,
+      "all_gold@3": 0.08163265306122448,
+      "recall@5": 0.12244897959183673,
+      "ndcg@5": 0.07968643608246002,
+      "all_gold@5": 0.12244897959183673,
+      "recall@8": 0.24489795918367346,
+      "ndcg@8": 0.11987558881984521,
+      "all_gold@8": 0.24489795918367346,
+      "mrr": 0.12823431656089662,
+      "hit@1": 0.04081632653061224,
+      "primary@1": 0.04081632653061224
+    },
+    "split=holdout": {
+      "n": 67,
+      "recall@3": 0.08955223880597014,
+      "ndcg@3": 0.07448729034960679,
+      "all_gold@3": 0.08955223880597014,
+      "recall@5": 0.13432835820895522,
+      "ndcg@5": 0.09180905783772059,
+      "all_gold@5": 0.13432835820895522,
+      "recall@8": 0.2835820895522388,
+      "ndcg@8": 0.1415177305014069,
+      "all_gold@8": 0.2835820895522388,
+      "mrr": 0.145864204245849,
+      "hit@1": 0.05970149253731343,
+      "primary@1": 0.04477611940298507
+    },
+    "ambiguous=true": {
+      "n": 11,
+      "recall@3": 0.0,
+      "ndcg@3": 0.0,
+      "all_gold@3": 0.0,
+      "recall@5": 0.0,
+      "ndcg@5": 0.0,
+      "all_gold@5": 0.0,
+      "recall@8": 0.45454545454545453,
+      "ndcg@8": 0.1450175309523862,
+      "all_gold@8": 0.45454545454545453,
+      "mrr": 0.08294621367162637,
+      "hit@1": 0.0,
+      "primary@1": 0.0
+    },
+    "n_answerable_skipped_all_gold_essential": 25
+  },
+  "delivered_set": {
+    "definition": "가시성 필터(AGENT, user_level=5) 적용 후 + rag_failed면 tool_search 추가. 정답은 필수 도구 포함 전체 정답",
+    "set_recall": 0.9782608695652174,
+    "set_recall_before_visibility": 1.0,
+    "all_gold_covered": 0.9782608695652174,
+    "nonessential_set_recall": 1.0,
+    "set_size": {
+      "n": 111,
+      "min": 34.0,
+      "p5": 34.0,
+      "p50": 34.0,
+      "mean": 34.0,
+      "p95": 34.0,
+      "max": 34.0
+    },
+    "set_recall_by_lang": {
+      "ko": 0.9830508474576272,
+      "en": 0.9696969696969697
+    }
+  },
+  "none_detection": {
+    "definition": "양성 = 정답 type이 none인 질의. 예측 = decide_none(q), 없으면 rag_failed(유사도 도구 0개)",
+    "source": "rag_failed",
+    "tp": 0,
+    "fp": 0,
+    "fn": 19,
+    "tn": 92,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "false_trigger_rate_answerable": 0.0,
+    "rag_failed_rate_all": 0.0
+  },
+  "prompt_tokens_cl100k": {
+    "note": "tiktoken cl100k_base 프록시, 도구별 to_api_schema 압축 JSON 합",
+    "all_tools": 5318,
+    "essentials_only": 1697,
+    "delivered": {
+      "n": 111,
+      "min": 4460.0,
+      "p5": 4460.0,
+      "p50": 4460.0,
+      "mean": 4460.0,
+      "p95": 4460.0,
+      "max": 4460.0
+    },
+    "selected": {
+      "n": 111,
+      "min": 5318.0,
+      "p5": 5318.0,
+      "p50": 5318.0,
+      "mean": 5318.0,
+      "p95": 5318.0,
+      "max": 5318.0
+    },
+    "delivered_mean_saving_vs_all": 0.16133884919142538
+  },
+  "latency": {
+    "timed_call": "select",
+    "passes": 0,
+    "warm_query_ms": null
+  },
+  "resources": {
+    "cold_load_s": 1.3999524526298046e-06,
+    "index_build_ms": 0.01650000922381878,
+    "rss_before_load_mb": 119.05078125,
+    "rss_after_load_mb": 119.05078125,
+    "rss_delta_mb": 0.0,
+    "rss_after_eval_mb": 119.96875,
+    "torch_threads": null
+  },
+  "hubness_top3_counts": {
+    "custom_tool_read_source": 111,
+    "custom_tool_update_source": 111,
+    "tool_search": 111
+  },
+  "per_item": [
+    {
+      "id": "h001",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "read_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h002",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "glob"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h003",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "grep"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h004",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "bash"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h005",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "write_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h006",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "edit_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h007",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "web_fetch"
+      ],
+      "gold_ne": [
+        "web_fetch"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h008",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "web_search"
+      ],
+      "gold_ne": [
+        "web_search"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h009",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "deep_research"
+      ],
+      "gold_ne": [
+        "deep_research"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h010",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "lsp"
+      ],
+      "gold_ne": [
+        "lsp"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h011",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "lsp"
+      ],
+      "gold_ne": [
+        "lsp"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h012",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "agent"
+      ],
+      "gold_ne": [
+        "agent"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h013",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "task_create"
+      ],
+      "gold_ne": [
+        "task_create"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h014",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "task_list"
+      ],
+      "gold_ne": [
+        "task_list"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h015",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "task_output"
+      ],
+      "gold_ne": [
+        "task_output"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h016",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "task_stop"
+      ],
+      "gold_ne": [
+        "task_stop"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h017",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "task_get"
+      ],
+      "gold_ne": [
+        "task_get"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h018",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "list_mcp_resources"
+      ],
+      "gold_ne": [
+        "list_mcp_resources"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h019",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "read_mcp_resource"
+      ],
+      "gold_ne": [
+        "read_mcp_resource"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h020",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "skill_read"
+      ],
+      "gold_ne": [
+        "skill_read"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h021",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "skill_save"
+      ],
+      "gold_ne": [
+        "skill_save"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h022",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "skill_list"
+      ],
+      "gold_ne": [
+        "skill_list"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h023",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "enter_worktree"
+      ],
+      "gold_ne": [
+        "enter_worktree"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h024",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "exit_worktree"
+      ],
+      "gold_ne": [
+        "exit_worktree"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h025",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "brief"
+      ],
+      "gold_ne": [
+        "brief"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h026",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "search_knowledge_base"
+      ],
+      "gold_ne": [
+        "search_knowledge_base"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h027",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "ingest_document"
+      ],
+      "gold_ne": [
+        "ingest_document"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h028",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "todo_write"
+      ],
+      "gold_ne": [
+        "todo_write"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h029",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "memory_write"
+      ],
+      "gold_ne": [
+        "memory_write"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h030",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "memory_read"
+      ],
+      "gold_ne": [
+        "memory_read"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h031",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "memory_list"
+      ],
+      "gold_ne": [
+        "memory_list"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h032",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "create_tool"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h033",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "custom_tool_read_source"
+      ],
+      "gold_ne": [
+        "custom_tool_read_source"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h034",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "custom_tool_update_source"
+      ],
+      "gold_ne": [
+        "custom_tool_update_source"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h035",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "tool_search"
+      ],
+      "gold_ne": [
+        "tool_search"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h036",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "ask_user"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h047",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "bash"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h048",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "read_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h049",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "glob"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h050",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "grep"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h059",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "grep",
+        "edit_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h060",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "read_file",
+        "edit_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h061",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "glob",
+        "read_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h062",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "bash",
+        "read_file",
+        "edit_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h063",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "web_fetch",
+        "edit_file"
+      ],
+      "gold_ne": [
+        "web_fetch"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h064",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "task_create",
+        "task_output"
+      ],
+      "gold_ne": [
+        "task_create",
+        "task_output"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h065",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "task_list",
+        "task_stop"
+      ],
+      "gold_ne": [
+        "task_list",
+        "task_stop"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h066",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "enter_worktree",
+        "bash"
+      ],
+      "gold_ne": [
+        "enter_worktree"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h067",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "web_search",
+        "read_file",
+        "edit_file"
+      ],
+      "gold_ne": [
+        "web_search"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h068",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "skill_list",
+        "skill_read"
+      ],
+      "gold_ne": [
+        "skill_list",
+        "skill_read"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h069",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "memory_list",
+        "memory_read"
+      ],
+      "gold_ne": [
+        "memory_list",
+        "memory_read"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h070",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "custom_tool_read_source",
+        "custom_tool_update_source"
+      ],
+      "gold_ne": [
+        "custom_tool_read_source",
+        "custom_tool_update_source"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h071",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "search_knowledge_base",
+        "todo_write"
+      ],
+      "gold_ne": [
+        "search_knowledge_base",
+        "todo_write"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h072",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "list_mcp_resources",
+        "read_mcp_resource"
+      ],
+      "gold_ne": [
+        "list_mcp_resources",
+        "read_mcp_resource"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h073",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "read_file",
+        "edit_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h074",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "lsp",
+        "edit_file"
+      ],
+      "gold_ne": [
+        "lsp"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h075",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "deep_research",
+        "write_file"
+      ],
+      "gold_ne": [
+        "deep_research"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h076",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "brief",
+        "memory_write"
+      ],
+      "gold_ne": [
+        "brief",
+        "memory_write"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h077",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "write_file",
+        "bash"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h078",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h079",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h080",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h081",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h082",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h083",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h084",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h085",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h086",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h087",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h088",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h089",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h090",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h091",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "read_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h092",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "bash"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h093",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "lsp"
+      ],
+      "gold_ne": [
+        "lsp"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h094",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "task_list"
+      ],
+      "gold_ne": [
+        "task_list"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h095",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "task_output"
+      ],
+      "gold_ne": [
+        "task_output"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h096",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "task_stop"
+      ],
+      "gold_ne": [
+        "task_stop"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h097",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "task_get"
+      ],
+      "gold_ne": [
+        "task_get"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h098",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "web_fetch"
+      ],
+      "gold_ne": [
+        "web_fetch"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h099",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "deep_research"
+      ],
+      "gold_ne": [
+        "deep_research"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h100",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "agent"
+      ],
+      "gold_ne": [
+        "agent"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h101",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "list_mcp_resources"
+      ],
+      "gold_ne": [
+        "list_mcp_resources"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h102",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "read_mcp_resource"
+      ],
+      "gold_ne": [
+        "read_mcp_resource"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h103",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "skill_list"
+      ],
+      "gold_ne": [
+        "skill_list"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h104",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "skill_save"
+      ],
+      "gold_ne": [
+        "skill_save"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h105",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "enter_worktree"
+      ],
+      "gold_ne": [
+        "enter_worktree"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h106",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "exit_worktree"
+      ],
+      "gold_ne": [
+        "exit_worktree"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h107",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "brief"
+      ],
+      "gold_ne": [
+        "brief"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h108",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "search_knowledge_base"
+      ],
+      "gold_ne": [
+        "search_knowledge_base"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h109",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "ingest_document"
+      ],
+      "gold_ne": [
+        "ingest_document"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h110",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "todo_write"
+      ],
+      "gold_ne": [
+        "todo_write"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h111",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "memory_write"
+      ],
+      "gold_ne": [
+        "memory_write"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h112",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "memory_list"
+      ],
+      "gold_ne": [
+        "memory_list"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h113",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "custom_tool_read_source"
+      ],
+      "gold_ne": [
+        "custom_tool_read_source"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h114",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "create_tool"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h115",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "edit_file",
+        "read_file",
+        "bash"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h116",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "skill_read",
+        "write_file",
+        "bash"
+      ],
+      "gold_ne": [
+        "skill_read"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h117",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "memory_read",
+        "read_file",
+        "edit_file"
+      ],
+      "gold_ne": [
+        "memory_read"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h118",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "custom_tool_update_source",
+        "custom_tool_read_source"
+      ],
+      "gold_ne": [
+        "custom_tool_update_source",
+        "custom_tool_read_source"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h119",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "grep",
+        "edit_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h120",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "glob",
+        "read_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h121",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "web_search",
+        "edit_file"
+      ],
+      "gold_ne": [
+        "web_search"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h122",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "task_create",
+        "task_output"
+      ],
+      "gold_ne": [
+        "task_create",
+        "task_output"
+      ],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h123",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "ask_user",
+        "write_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h135",
+      "lang": "en",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h136",
+      "lang": "en",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h137",
+      "lang": "en",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h138",
+      "lang": "en",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h139",
+      "lang": "en",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h140",
+      "lang": "en",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "custom_tool_read_source",
+          0.0
+        ],
+        [
+          "custom_tool_update_source",
+          0.0
+        ],
+        [
+          "tool_search",
+          0.0
+        ],
+        [
+          "local_write_report",
+          0.0
+        ],
+        [
+          "web_fetch",
+          0.0
+        ],
+        [
+          "web_search",
+          0.0
+        ],
+        [
+          "deep_research",
+          0.0
+        ],
+        [
+          "lsp",
+          0.0
+        ]
+      ],
+      "delivered": [
+        "custom_tool_read_source",
+        "custom_tool_update_source",
+        "tool_search",
+        "read_file",
+        "write_file",
+        "edit_file",
+        "glob",
+        "grep",
+        "web_fetch",
+        "web_search",
+        "deep_research",
+        "bash",
+        "lsp",
+        "agent",
+        "task_create",
+        "task_list",
+        "task_output",
+        "task_stop",
+        "task_get",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "skill_read",
+        "skill_save",
+        "skill_list",
+        "enter_worktree",
+        "exit_worktree",
+        "brief",
+        "ask_user",
+        "search_knowledge_base",
+        "ingest_document",
+        "todo_write",
+        "memory_write",
+        "memory_read",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    }
+  ]
+}

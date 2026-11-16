@@ -1,0 +1,9090 @@
+{
+  "summary": {
+    "variant": "baseline",
+    "split": "holdout",
+    "registry": "server-default",
+    "n_ranking": 96,
+    "r3": 0.3993055555555556,
+    "r5": 0.46527777777777773,
+    "r8": 0.5694444444444444,
+    "ndcg5": 0.4043080156648045,
+    "mrr": 0.44176264712656116,
+    "hit1": 0.34375,
+    "r3_ko": 0.43785310734463273,
+    "r3_en": 0.33783783783783783,
+    "none_precision": 0.0,
+    "none_recall": 0.0,
+    "none_f1": 0.0,
+    "set_recall_delivered": 0.6101928374655647,
+    "avg_selected_schema_tokens": 1879.9071428571428,
+    "p95_selected_schema_tokens": 2307.0,
+    "warm_p50_ms": null,
+    "warm_p95_ms": null,
+    "cold_load_s": 5.931952300015837,
+    "rss_delta_mb": 955.65234375
+  },
+  "meta": {
+    "variant": "baseline",
+    "retriever_meta": {
+      "wraps": "benchmarks.tool_rag.legacy_v1.ToolRetriever (v1 frozen copy of f9862e4 tool_retriever.py)",
+      "model": "intfloat/multilingual-e5-small",
+      "model_revision_expected": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+      "model_revision_cached_main": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+      "pinned_snapshot_cached": true,
+      "similarity_threshold": 0.3,
+      "select": "retrieve_top_k(k=8, adaptive=True)",
+      "verify_rank_vs_retrieve_top_k": true,
+      "verify_mismatches": 0
+    },
+    "split": "holdout",
+    "registry": "server-default",
+    "n_items": 140,
+    "n_answerable": 121,
+    "n_none": 19,
+    "n_tools": 46,
+    "legacy_demo_tools": false,
+    "eval_set_sha256": "29483798f4dc28f2dd4c8509b966b7922d8214ce11739232d20dfb2a7598f9bb",
+    "eval_set_file": "holdout_set.jsonl",
+    "frozen_essentials": [
+      "ask_user",
+      "bash",
+      "create_tool",
+      "edit_file",
+      "glob",
+      "grep",
+      "read_file",
+      "write_file"
+    ],
+    "repo_essentials_equal_frozen": false,
+    "ks": [
+      3,
+      5,
+      8
+    ],
+    "has_select": true,
+    "has_decide_none": false,
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "cpu": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "versions": {
+      "numpy": "2.5.4",
+      "tiktoken": "0.14.0",
+      "torch": "2.15.0+cpu",
+      "sentence_transformers": "6.3.0",
+      "transformers": "5.23.0"
+    },
+    "feedback_log": "disabled (THESEUS_DATA_DIR -> 빈 임시 디렉터리)",
+    "hf_offline": "1",
+    "commit": "63e1e19271468e1a2747598fd1eb73edf3c7ef46",
+    "engine_src_dirty": false,
+    "command": "python -m benchmarks.tool_rag.run --variant baseline --split holdout --registry server-default --passes 0 --json C:/DEV/Theseus/backend/theseus-core-server/benchmarks/tool_rag/results/baseline_holdout_server_default.json"
+  },
+  "ranking_sim_slots_excl_essentials": {
+    "all": {
+      "n": 96,
+      "recall@3": 0.3993055555555556,
+      "ndcg@3": 0.37343466437647765,
+      "all_gold@3": 0.3645833333333333,
+      "recall@5": 0.46527777777777773,
+      "ndcg@5": 0.4043080156648045,
+      "all_gold@5": 0.4166666666666667,
+      "recall@8": 0.5694444444444444,
+      "ndcg@8": 0.4393708434910897,
+      "all_gold@8": 0.53125,
+      "mrr": 0.44176264712656116,
+      "hit@1": 0.34375,
+      "primary@1": 0.3229166666666667
+    },
+    "lang=en": {
+      "n": 37,
+      "recall@3": 0.33783783783783783,
+      "ndcg@3": 0.3348950618109007,
+      "all_gold@3": 0.2972972972972973,
+      "recall@5": 0.4594594594594595,
+      "ndcg@5": 0.3898512518189347,
+      "all_gold@5": 0.40540540540540543,
+      "recall@8": 0.6486486486486487,
+      "ndcg@8": 0.45304455507086994,
+      "all_gold@8": 0.6216216216216216,
+      "mrr": 0.44008795736736916,
+      "hit@1": 0.35135135135135137,
+      "primary@1": 0.2972972972972973
+    },
+    "lang=ko": {
+      "n": 59,
+      "recall@3": 0.43785310734463273,
+      "ndcg@3": 0.39760356768031413,
+      "all_gold@3": 0.4067796610169492,
+      "recall@5": 0.4689265536723164,
+      "ndcg@5": 0.41337412180543476,
+      "all_gold@5": 0.423728813559322,
+      "recall@8": 0.519774011299435,
+      "ndcg@8": 0.4307958040258038,
+      "all_gold@8": 0.4745762711864407,
+      "mrr": 0.44281287629757987,
+      "hit@1": 0.3389830508474576,
+      "primary@1": 0.3389830508474576
+    },
+    "type=multi": {
+      "n": 31,
+      "recall@3": 0.33333333333333337,
+      "ndcg@3": 0.29315704106448204,
+      "all_gold@3": 0.22580645161290322,
+      "recall@5": 0.44086021505376344,
+      "ndcg@5": 0.34850013139667724,
+      "all_gold@5": 0.2903225806451613,
+      "recall@8": 0.5376344086021506,
+      "ndcg@8": 0.3813285812776059,
+      "all_gold@8": 0.41935483870967744,
+      "mrr": 0.4109297625426657,
+      "hit@1": 0.25806451612903225,
+      "primary@1": 0.1935483870967742
+    },
+    "type=single": {
+      "n": 65,
+      "recall@3": 0.4307692307692308,
+      "ndcg@3": 0.4117209154945064,
+      "all_gold@3": 0.4307692307692308,
+      "recall@5": 0.47692307692307695,
+      "ndcg@5": 0.43092408354652684,
+      "all_gold@5": 0.47692307692307695,
+      "recall@8": 0.5846153846153846,
+      "ndcg@8": 0.4670525377775205,
+      "all_gold@8": 0.5846153846153846,
+      "mrr": 0.45646756131272664,
+      "hit@1": 0.38461538461538464,
+      "primary@1": 0.38461538461538464
+    },
+    "split=holdout": {
+      "n": 96,
+      "recall@3": 0.3993055555555556,
+      "ndcg@3": 0.37343466437647765,
+      "all_gold@3": 0.3645833333333333,
+      "recall@5": 0.46527777777777773,
+      "ndcg@5": 0.4043080156648045,
+      "all_gold@5": 0.4166666666666667,
+      "recall@8": 0.5694444444444444,
+      "ndcg@8": 0.4393708434910897,
+      "all_gold@8": 0.53125,
+      "mrr": 0.44176264712656116,
+      "hit@1": 0.34375,
+      "primary@1": 0.3229166666666667
+    },
+    "ambiguous=true": {
+      "n": 12,
+      "recall@3": 0.5416666666666666,
+      "ndcg@3": 0.4901471450355817,
+      "all_gold@3": 0.5,
+      "recall@5": 0.5416666666666666,
+      "ndcg@5": 0.4901471450355817,
+      "all_gold@5": 0.5,
+      "recall@8": 0.625,
+      "ndcg@8": 0.5164358847677258,
+      "all_gold@8": 0.5833333333333334,
+      "mrr": 0.5264142005221446,
+      "hit@1": 0.4166666666666667,
+      "primary@1": 0.3333333333333333
+    },
+    "n_answerable_skipped_all_gold_essential": 25
+  },
+  "delivered_set": {
+    "definition": "가시성 필터(AGENT, user_level=5) 적용 후 + rag_failed면 tool_search 추가. 정답은 필수 도구 포함 전체 정답",
+    "set_recall": 0.6101928374655647,
+    "set_recall_before_visibility": 0.6597796143250688,
+    "all_gold_covered": 0.5537190082644629,
+    "nonessential_set_recall": 0.548611111111111,
+    "set_size": {
+      "n": 140,
+      "min": 10.0,
+      "p5": 10.0,
+      "p50": 14.0,
+      "mean": 13.342857142857143,
+      "p95": 15.0,
+      "max": 15.0
+    },
+    "set_recall_by_lang": {
+      "ko": 0.5735930735930735,
+      "en": 0.6742424242424243
+    }
+  },
+  "none_detection": {
+    "definition": "양성 = 정답 type이 none인 질의. 예측 = decide_none(q), 없으면 rag_failed(유사도 도구 0개)",
+    "source": "rag_failed",
+    "tp": 0,
+    "fp": 0,
+    "fn": 19,
+    "tn": 121,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "false_trigger_rate_answerable": 0.0,
+    "rag_failed_rate_all": 0.0
+  },
+  "prompt_tokens_cl100k": {
+    "note": "tiktoken cl100k_base 프록시, 도구별 to_api_schema 압축 JSON 합",
+    "all_tools": 6451,
+    "essentials_only": 1697,
+    "delivered": {
+      "n": 140,
+      "min": 1278.0,
+      "p5": 1402.5,
+      "p50": 1861.5,
+      "mean": 1879.9071428571428,
+      "p95": 2307.0,
+      "max": 2422.0
+    },
+    "selected": {
+      "n": 140,
+      "min": 1923.0,
+      "p5": 2096.5,
+      "p50": 2572.5,
+      "mean": 2569.35,
+      "p95": 3027.0,
+      "max": 3066.0
+    },
+    "delivered_mean_saving_vs_all": 0.7085867085944593
+  },
+  "latency": {
+    "timed_call": "select",
+    "passes": 0,
+    "warm_query_ms": null
+  },
+  "resources": {
+    "cold_load_s": 5.931952300015837,
+    "index_build_ms": 3061.92840001313,
+    "rss_before_load_mb": 280.5703125,
+    "rss_after_load_mb": 1236.22265625,
+    "rss_delta_mb": 955.65234375,
+    "rss_after_eval_mb": 1253.68359375,
+    "torch_threads": 4
+  },
+  "hubness_top3_counts": {
+    "ingest_document": 44,
+    "web_search": 35,
+    "brief": 28,
+    "exit_worktree": 27,
+    "enter_worktree": 24,
+    "agent": 24,
+    "lsp": 21,
+    "remote_check_memory": 20,
+    "skill_list": 19,
+    "tool_search": 19,
+    "remote_check_cpu": 17,
+    "remote_check_disk": 15
+  },
+  "per_item": [
+    {
+      "id": "h001",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "read_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "web_search",
+          0.8367
+        ],
+        [
+          "skill_list",
+          0.8339
+        ],
+        [
+          "ingest_document",
+          0.832
+        ],
+        [
+          "tool_search",
+          0.8318
+        ],
+        [
+          "brief",
+          0.8318
+        ],
+        [
+          "lsp",
+          0.8273
+        ],
+        [
+          "web_fetch",
+          0.8218
+        ],
+        [
+          "exit_worktree",
+          0.8213
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "web_search",
+        "skill_list",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h002",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "glob"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "lsp",
+          0.8367
+        ],
+        [
+          "exit_worktree",
+          0.8257
+        ],
+        [
+          "web_search",
+          0.8243
+        ],
+        [
+          "agent",
+          0.8227
+        ],
+        [
+          "tool_search",
+          0.82
+        ],
+        [
+          "enter_worktree",
+          0.8197
+        ],
+        [
+          "web_fetch",
+          0.8191
+        ],
+        [
+          "ingest_document",
+          0.8174
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "lsp",
+        "exit_worktree",
+        "web_search",
+        "agent",
+        "tool_search",
+        "enter_worktree",
+        "web_fetch"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h003",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "grep"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "exit_worktree",
+          0.8461
+        ],
+        [
+          "web_search",
+          0.8392
+        ],
+        [
+          "tool_search",
+          0.8338
+        ],
+        [
+          "lsp",
+          0.8314
+        ],
+        [
+          "skill_list",
+          0.8258
+        ],
+        [
+          "todo_write",
+          0.8238
+        ],
+        [
+          "skill_save",
+          0.8207
+        ],
+        [
+          "brief",
+          0.8196
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "exit_worktree",
+        "web_search",
+        "tool_search",
+        "lsp",
+        "skill_list",
+        "todo_write",
+        "skill_save",
+        "brief"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h004",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "bash"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "exit_worktree",
+          0.8364
+        ],
+        [
+          "web_fetch",
+          0.8275
+        ],
+        [
+          "lsp",
+          0.827
+        ],
+        [
+          "tool_search",
+          0.8261
+        ],
+        [
+          "web_search",
+          0.8247
+        ],
+        [
+          "agent",
+          0.8245
+        ],
+        [
+          "brief",
+          0.821
+        ],
+        [
+          "ingest_document",
+          0.8159
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "exit_worktree",
+        "web_fetch",
+        "lsp",
+        "tool_search",
+        "web_search",
+        "agent",
+        "brief"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h005",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "write_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "exit_worktree",
+          0.8521
+        ],
+        [
+          "skill_save",
+          0.8491
+        ],
+        [
+          "enter_worktree",
+          0.836
+        ],
+        [
+          "ingest_document",
+          0.8357
+        ],
+        [
+          "web_search",
+          0.835
+        ],
+        [
+          "tool_search",
+          0.8347
+        ],
+        [
+          "remote_tail_log",
+          0.8311
+        ],
+        [
+          "skill_list",
+          0.8306
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "exit_worktree",
+        "skill_save",
+        "enter_worktree",
+        "web_search",
+        "tool_search",
+        "remote_tail_log",
+        "skill_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h006",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "edit_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "ingest_document",
+          0.8371
+        ],
+        [
+          "enter_worktree",
+          0.8302
+        ],
+        [
+          "web_fetch",
+          0.8216
+        ],
+        [
+          "skill_save",
+          0.8205
+        ],
+        [
+          "tool_search",
+          0.8203
+        ],
+        [
+          "lsp",
+          0.82
+        ],
+        [
+          "web_search",
+          0.8177
+        ],
+        [
+          "brief",
+          0.8167
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "enter_worktree",
+        "web_fetch",
+        "skill_save",
+        "tool_search",
+        "lsp",
+        "web_search",
+        "brief"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h007",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "web_fetch"
+      ],
+      "gold_ne": [
+        "web_fetch"
+      ],
+      "pred_sim_top8": [
+        [
+          "web_search",
+          0.8583
+        ],
+        [
+          "brief",
+          0.8504
+        ],
+        [
+          "ingest_document",
+          0.8485
+        ],
+        [
+          "lsp",
+          0.8485
+        ],
+        [
+          "tool_search",
+          0.8456
+        ],
+        [
+          "web_fetch",
+          0.8452
+        ],
+        [
+          "skill_list",
+          0.8433
+        ],
+        [
+          "exit_worktree",
+          0.8422
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "web_search",
+        "brief",
+        "lsp"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h008",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "web_search"
+      ],
+      "gold_ne": [
+        "web_search"
+      ],
+      "pred_sim_top8": [
+        [
+          "web_search",
+          1.0062
+        ],
+        [
+          "tool_search",
+          0.8536
+        ],
+        [
+          "enter_worktree",
+          0.8461
+        ],
+        [
+          "skill_list",
+          0.8405
+        ],
+        [
+          "lsp",
+          0.8385
+        ],
+        [
+          "exit_worktree",
+          0.8324
+        ],
+        [
+          "ingest_document",
+          0.8303
+        ],
+        [
+          "agent",
+          0.8276
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "web_search",
+        "tool_search",
+        "enter_worktree",
+        "skill_list",
+        "lsp",
+        "exit_worktree",
+        "agent"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h009",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "deep_research"
+      ],
+      "gold_ne": [
+        "deep_research"
+      ],
+      "pred_sim_top8": [
+        [
+          "brief",
+          0.8296
+        ],
+        [
+          "web_search",
+          0.8242
+        ],
+        [
+          "skill_list",
+          0.8229
+        ],
+        [
+          "ingest_document",
+          0.8178
+        ],
+        [
+          "exit_worktree",
+          0.8123
+        ],
+        [
+          "skill_read",
+          0.8114
+        ],
+        [
+          "enter_worktree",
+          0.8064
+        ],
+        [
+          "tool_search",
+          0.8058
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "brief",
+        "web_search",
+        "skill_list",
+        "exit_worktree",
+        "skill_read",
+        "enter_worktree",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h010",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "lsp"
+      ],
+      "gold_ne": [
+        "lsp"
+      ],
+      "pred_sim_top8": [
+        [
+          "lsp",
+          0.8531
+        ],
+        [
+          "web_fetch",
+          0.8329
+        ],
+        [
+          "web_search",
+          0.8322
+        ],
+        [
+          "tool_search",
+          0.8268
+        ],
+        [
+          "skill_list",
+          0.8267
+        ],
+        [
+          "ingest_document",
+          0.8225
+        ],
+        [
+          "exit_worktree",
+          0.8199
+        ],
+        [
+          "agent",
+          0.8156
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "lsp",
+        "web_fetch",
+        "web_search",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h011",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "lsp"
+      ],
+      "gold_ne": [
+        "lsp"
+      ],
+      "pred_sim_top8": [
+        [
+          "skill_list",
+          0.8226
+        ],
+        [
+          "lsp",
+          0.8215
+        ],
+        [
+          "tool_search",
+          0.8181
+        ],
+        [
+          "web_search",
+          0.8148
+        ],
+        [
+          "agent",
+          0.8101
+        ],
+        [
+          "enter_worktree",
+          0.8096
+        ],
+        [
+          "exit_worktree",
+          0.8075
+        ],
+        [
+          "memory_list",
+          0.8064
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "skill_list",
+        "lsp",
+        "tool_search",
+        "web_search",
+        "agent",
+        "enter_worktree",
+        "exit_worktree",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h012",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "agent"
+      ],
+      "gold_ne": [
+        "agent"
+      ],
+      "pred_sim_top8": [
+        [
+          "agent",
+          0.8601
+        ],
+        [
+          "ingest_document",
+          0.8428
+        ],
+        [
+          "enter_worktree",
+          0.8368
+        ],
+        [
+          "skill_list",
+          0.8366
+        ],
+        [
+          "brief",
+          0.8357
+        ],
+        [
+          "tool_search",
+          0.8299
+        ],
+        [
+          "web_search",
+          0.8289
+        ],
+        [
+          "skill_save",
+          0.8281
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "agent",
+        "enter_worktree",
+        "skill_list",
+        "brief",
+        "tool_search",
+        "web_search",
+        "skill_save"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h013",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "task_create"
+      ],
+      "gold_ne": [
+        "task_create"
+      ],
+      "pred_sim_top8": [
+        [
+          "task_stop",
+          0.8348
+        ],
+        [
+          "exit_worktree",
+          0.8337
+        ],
+        [
+          "ingest_document",
+          0.8239
+        ],
+        [
+          "agent",
+          0.8239
+        ],
+        [
+          "web_search",
+          0.818
+        ],
+        [
+          "web_fetch",
+          0.8171
+        ],
+        [
+          "enter_worktree",
+          0.8171
+        ],
+        [
+          "lsp",
+          0.8155
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "task_stop",
+        "exit_worktree",
+        "agent"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h014",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "task_list"
+      ],
+      "gold_ne": [
+        "task_list"
+      ],
+      "pred_sim_top8": [
+        [
+          "enter_worktree",
+          0.8099
+        ],
+        [
+          "exit_worktree",
+          0.8081
+        ],
+        [
+          "agent",
+          0.8075
+        ],
+        [
+          "tool_search",
+          0.807
+        ],
+        [
+          "skill_list",
+          0.8048
+        ],
+        [
+          "skill_read",
+          0.7985
+        ],
+        [
+          "ingest_document",
+          0.7972
+        ],
+        [
+          "web_search",
+          0.796
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "enter_worktree",
+        "exit_worktree",
+        "agent",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h015",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "task_output"
+      ],
+      "gold_ne": [
+        "task_output"
+      ],
+      "pred_sim_top8": [
+        [
+          "web_search",
+          0.8228
+        ],
+        [
+          "skill_list",
+          0.8204
+        ],
+        [
+          "agent",
+          0.8204
+        ],
+        [
+          "ingest_document",
+          0.8152
+        ],
+        [
+          "exit_worktree",
+          0.8141
+        ],
+        [
+          "tool_search",
+          0.8121
+        ],
+        [
+          "lsp",
+          0.8101
+        ],
+        [
+          "web_fetch",
+          0.8058
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "web_search",
+        "skill_list",
+        "agent"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h016",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "task_stop"
+      ],
+      "gold_ne": [
+        "task_stop"
+      ],
+      "pred_sim_top8": [
+        [
+          "exit_worktree",
+          0.8176
+        ],
+        [
+          "web_search",
+          0.815
+        ],
+        [
+          "web_fetch",
+          0.8112
+        ],
+        [
+          "tool_search",
+          0.7986
+        ],
+        [
+          "ingest_document",
+          0.7909
+        ],
+        [
+          "skill_save",
+          0.7887
+        ],
+        [
+          "agent",
+          0.7879
+        ],
+        [
+          "task_stop",
+          0.7874
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "exit_worktree",
+        "web_search",
+        "web_fetch",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h017",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "task_get"
+      ],
+      "gold_ne": [
+        "task_get"
+      ],
+      "pred_sim_top8": [
+        [
+          "exit_worktree",
+          0.8439
+        ],
+        [
+          "enter_worktree",
+          0.8245
+        ],
+        [
+          "lsp",
+          0.8144
+        ],
+        [
+          "ingest_document",
+          0.8133
+        ],
+        [
+          "agent",
+          0.8083
+        ],
+        [
+          "web_search",
+          0.8066
+        ],
+        [
+          "skill_save",
+          0.7985
+        ],
+        [
+          "brief",
+          0.7978
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "exit_worktree",
+        "enter_worktree",
+        "lsp"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h018",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "list_mcp_resources"
+      ],
+      "gold_ne": [
+        "list_mcp_resources"
+      ],
+      "pred_sim_top8": [
+        [
+          "list_mcp_resources",
+          0.8715
+        ],
+        [
+          "read_mcp_resource",
+          0.8448
+        ],
+        [
+          "brief",
+          0.8352
+        ],
+        [
+          "ingest_document",
+          0.8343
+        ],
+        [
+          "lsp",
+          0.8336
+        ],
+        [
+          "skill_list",
+          0.8336
+        ],
+        [
+          "web_search",
+          0.8304
+        ],
+        [
+          "agent",
+          0.8253
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "brief",
+        "lsp",
+        "skill_list",
+        "web_search",
+        "agent"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h019",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "read_mcp_resource"
+      ],
+      "gold_ne": [
+        "read_mcp_resource"
+      ],
+      "pred_sim_top8": [
+        [
+          "read_mcp_resource",
+          0.846
+        ],
+        [
+          "web_search",
+          0.8408
+        ],
+        [
+          "ingest_document",
+          0.8375
+        ],
+        [
+          "lsp",
+          0.8354
+        ],
+        [
+          "brief",
+          0.8331
+        ],
+        [
+          "list_mcp_resources",
+          0.8324
+        ],
+        [
+          "web_fetch",
+          0.8318
+        ],
+        [
+          "skill_list",
+          0.8316
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "read_mcp_resource",
+        "web_search",
+        "lsp"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h020",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "skill_read"
+      ],
+      "gold_ne": [
+        "skill_read"
+      ],
+      "pred_sim_top8": [
+        [
+          "ingest_document",
+          0.8257
+        ],
+        [
+          "agent",
+          0.8196
+        ],
+        [
+          "skill_save",
+          0.8169
+        ],
+        [
+          "exit_worktree",
+          0.8155
+        ],
+        [
+          "brief",
+          0.813
+        ],
+        [
+          "skill_read",
+          0.8108
+        ],
+        [
+          "skill_list",
+          0.8099
+        ],
+        [
+          "enter_worktree",
+          0.8051
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "agent",
+        "skill_save",
+        "exit_worktree",
+        "brief",
+        "skill_read",
+        "skill_list",
+        "enter_worktree"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h021",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "skill_save"
+      ],
+      "gold_ne": [
+        "skill_save"
+      ],
+      "pred_sim_top8": [
+        [
+          "brief",
+          0.8416
+        ],
+        [
+          "ingest_document",
+          0.8352
+        ],
+        [
+          "skill_save",
+          0.8331
+        ],
+        [
+          "tool_search",
+          0.8311
+        ],
+        [
+          "web_search",
+          0.8305
+        ],
+        [
+          "skill_list",
+          0.8287
+        ],
+        [
+          "exit_worktree",
+          0.8194
+        ],
+        [
+          "enter_worktree",
+          0.8167
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "brief",
+        "skill_save",
+        "tool_search",
+        "web_search",
+        "skill_list",
+        "exit_worktree",
+        "enter_worktree"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h022",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "skill_list"
+      ],
+      "gold_ne": [
+        "skill_list"
+      ],
+      "pred_sim_top8": [
+        [
+          "skill_list",
+          0.8534
+        ],
+        [
+          "skill_save",
+          0.8485
+        ],
+        [
+          "skill_read",
+          0.8417
+        ],
+        [
+          "ingest_document",
+          0.8213
+        ],
+        [
+          "brief",
+          0.8151
+        ],
+        [
+          "tool_search",
+          0.8133
+        ],
+        [
+          "enter_worktree",
+          0.8058
+        ],
+        [
+          "exit_worktree",
+          0.8005
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "skill_list",
+        "skill_save",
+        "skill_read"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h023",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "enter_worktree"
+      ],
+      "gold_ne": [
+        "enter_worktree"
+      ],
+      "pred_sim_top8": [
+        [
+          "enter_worktree",
+          0.8809
+        ],
+        [
+          "exit_worktree",
+          0.8646
+        ],
+        [
+          "agent",
+          0.8556
+        ],
+        [
+          "tool_search",
+          0.8504
+        ],
+        [
+          "ingest_document",
+          0.8471
+        ],
+        [
+          "skill_save",
+          0.8439
+        ],
+        [
+          "lsp",
+          0.8419
+        ],
+        [
+          "skill_list",
+          0.8347
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "enter_worktree",
+        "exit_worktree",
+        "agent",
+        "tool_search",
+        "skill_save",
+        "lsp",
+        "skill_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h024",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "exit_worktree"
+      ],
+      "gold_ne": [
+        "exit_worktree"
+      ],
+      "pred_sim_top8": [
+        [
+          "exit_worktree",
+          0.8528
+        ],
+        [
+          "enter_worktree",
+          0.8322
+        ],
+        [
+          "skill_list",
+          0.829
+        ],
+        [
+          "tool_search",
+          0.8262
+        ],
+        [
+          "skill_save",
+          0.8217
+        ],
+        [
+          "ingest_document",
+          0.8213
+        ],
+        [
+          "agent",
+          0.819
+        ],
+        [
+          "brief",
+          0.8183
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "exit_worktree",
+        "enter_worktree",
+        "skill_list",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h025",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "brief"
+      ],
+      "gold_ne": [
+        "brief"
+      ],
+      "pred_sim_top8": [
+        [
+          "brief",
+          0.8739
+        ],
+        [
+          "skill_list",
+          0.8153
+        ],
+        [
+          "ingest_document",
+          0.8106
+        ],
+        [
+          "web_search",
+          0.807
+        ],
+        [
+          "skill_read",
+          0.8037
+        ],
+        [
+          "agent",
+          0.8005
+        ],
+        [
+          "tool_search",
+          0.7971
+        ],
+        [
+          "exit_worktree",
+          0.7963
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "brief",
+        "skill_list",
+        "web_search",
+        "skill_read",
+        "agent",
+        "tool_search",
+        "exit_worktree"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h026",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "search_knowledge_base"
+      ],
+      "gold_ne": [
+        "search_knowledge_base"
+      ],
+      "pred_sim_top8": [
+        [
+          "search_knowledge_base",
+          0.8336
+        ],
+        [
+          "lsp",
+          0.8309
+        ],
+        [
+          "ingest_document",
+          0.8298
+        ],
+        [
+          "web_search",
+          0.8282
+        ],
+        [
+          "skill_save",
+          0.8234
+        ],
+        [
+          "agent",
+          0.82
+        ],
+        [
+          "skill_list",
+          0.8193
+        ],
+        [
+          "exit_worktree",
+          0.8171
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "lsp",
+        "web_search",
+        "skill_save",
+        "agent",
+        "skill_list",
+        "exit_worktree"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h027",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "ingest_document"
+      ],
+      "gold_ne": [
+        "ingest_document"
+      ],
+      "pred_sim_top8": [
+        [
+          "ingest_document",
+          0.8582
+        ],
+        [
+          "skill_list",
+          0.8561
+        ],
+        [
+          "brief",
+          0.8542
+        ],
+        [
+          "skill_save",
+          0.8466
+        ],
+        [
+          "web_search",
+          0.8462
+        ],
+        [
+          "skill_read",
+          0.8444
+        ],
+        [
+          "tool_search",
+          0.8376
+        ],
+        [
+          "web_fetch",
+          0.8344
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "skill_list",
+        "brief",
+        "skill_save",
+        "web_search",
+        "skill_read",
+        "tool_search",
+        "web_fetch"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h028",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "todo_write"
+      ],
+      "gold_ne": [
+        "todo_write"
+      ],
+      "pred_sim_top8": [
+        [
+          "web_search",
+          0.8048
+        ],
+        [
+          "tool_search",
+          0.8028
+        ],
+        [
+          "agent",
+          0.8
+        ],
+        [
+          "skill_list",
+          0.7984
+        ],
+        [
+          "remote_grep",
+          0.7908
+        ],
+        [
+          "exit_worktree",
+          0.79
+        ],
+        [
+          "enter_worktree",
+          0.7887
+        ],
+        [
+          "brief",
+          0.7875
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "web_search",
+        "tool_search",
+        "agent",
+        "skill_list",
+        "remote_grep",
+        "exit_worktree",
+        "enter_worktree",
+        "brief"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h029",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "memory_write"
+      ],
+      "gold_ne": [
+        "memory_write"
+      ],
+      "pred_sim_top8": [
+        [
+          "brief",
+          0.838
+        ],
+        [
+          "ingest_document",
+          0.8336
+        ],
+        [
+          "skill_read",
+          0.8224
+        ],
+        [
+          "web_search",
+          0.8213
+        ],
+        [
+          "skill_save",
+          0.82
+        ],
+        [
+          "lsp",
+          0.8195
+        ],
+        [
+          "enter_worktree",
+          0.817
+        ],
+        [
+          "agent",
+          0.8142
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "brief",
+        "skill_read",
+        "web_search",
+        "skill_save",
+        "lsp",
+        "enter_worktree",
+        "agent"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h030",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "memory_read"
+      ],
+      "gold_ne": [
+        "memory_read"
+      ],
+      "pred_sim_top8": [
+        [
+          "memory_read",
+          0.8437
+        ],
+        [
+          "ingest_document",
+          0.8415
+        ],
+        [
+          "brief",
+          0.8334
+        ],
+        [
+          "memory_list",
+          0.8318
+        ],
+        [
+          "lsp",
+          0.8311
+        ],
+        [
+          "memory_write",
+          0.8278
+        ],
+        [
+          "skill_save",
+          0.8273
+        ],
+        [
+          "remote_check_memory",
+          0.8266
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "memory_read",
+        "brief",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h031",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "memory_list"
+      ],
+      "gold_ne": [
+        "memory_list"
+      ],
+      "pred_sim_top8": [
+        [
+          "memory_list",
+          0.8444
+        ],
+        [
+          "skill_list",
+          0.8351
+        ],
+        [
+          "lsp",
+          0.8298
+        ],
+        [
+          "skill_save",
+          0.8231
+        ],
+        [
+          "memory_read",
+          0.8214
+        ],
+        [
+          "ingest_document",
+          0.819
+        ],
+        [
+          "web_search",
+          0.8154
+        ],
+        [
+          "web_fetch",
+          0.8132
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "memory_list",
+        "skill_list",
+        "lsp",
+        "skill_save",
+        "memory_read",
+        "web_search",
+        "web_fetch"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h032",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "create_tool"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "ingest_document",
+          0.8564
+        ],
+        [
+          "enter_worktree",
+          0.8433
+        ],
+        [
+          "skill_save",
+          0.8429
+        ],
+        [
+          "brief",
+          0.8369
+        ],
+        [
+          "exit_worktree",
+          0.8329
+        ],
+        [
+          "skill_list",
+          0.8324
+        ],
+        [
+          "agent",
+          0.8311
+        ],
+        [
+          "tool_search",
+          0.8288
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "enter_worktree",
+        "skill_save",
+        "brief",
+        "exit_worktree",
+        "skill_list",
+        "agent",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h033",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "custom_tool_read_source"
+      ],
+      "gold_ne": [
+        "custom_tool_read_source"
+      ],
+      "pred_sim_top8": [
+        [
+          "enter_worktree",
+          0.827
+        ],
+        [
+          "tool_search",
+          0.8247
+        ],
+        [
+          "exit_worktree",
+          0.8225
+        ],
+        [
+          "lsp",
+          0.8221
+        ],
+        [
+          "web_search",
+          0.8195
+        ],
+        [
+          "skill_save",
+          0.8192
+        ],
+        [
+          "ingest_document",
+          0.8171
+        ],
+        [
+          "brief",
+          0.817
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "enter_worktree",
+        "tool_search",
+        "exit_worktree",
+        "lsp"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h034",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "custom_tool_update_source"
+      ],
+      "gold_ne": [
+        "custom_tool_update_source"
+      ],
+      "pred_sim_top8": [
+        [
+          "brief",
+          0.8333
+        ],
+        [
+          "tool_search",
+          0.8285
+        ],
+        [
+          "ingest_document",
+          0.8284
+        ],
+        [
+          "skill_save",
+          0.8254
+        ],
+        [
+          "web_search",
+          0.8247
+        ],
+        [
+          "exit_worktree",
+          0.8208
+        ],
+        [
+          "skill_list",
+          0.8172
+        ],
+        [
+          "enter_worktree",
+          0.8142
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "brief",
+        "tool_search",
+        "skill_save",
+        "web_search",
+        "exit_worktree",
+        "skill_list",
+        "enter_worktree"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h035",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "tool_search"
+      ],
+      "gold_ne": [
+        "tool_search"
+      ],
+      "pred_sim_top8": [
+        [
+          "tool_search",
+          0.8505
+        ],
+        [
+          "web_search",
+          0.8345
+        ],
+        [
+          "ingest_document",
+          0.8258
+        ],
+        [
+          "lsp",
+          0.8257
+        ],
+        [
+          "web_fetch",
+          0.8242
+        ],
+        [
+          "brief",
+          0.8231
+        ],
+        [
+          "skill_list",
+          0.8171
+        ],
+        [
+          "skill_save",
+          0.8155
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "tool_search",
+        "web_search",
+        "lsp",
+        "web_fetch",
+        "brief",
+        "skill_list",
+        "skill_save"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h036",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "ask_user"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "web_search",
+          0.8466
+        ],
+        [
+          "ingest_document",
+          0.8438
+        ],
+        [
+          "exit_worktree",
+          0.8357
+        ],
+        [
+          "enter_worktree",
+          0.8337
+        ],
+        [
+          "brief",
+          0.8336
+        ],
+        [
+          "skill_list",
+          0.8329
+        ],
+        [
+          "search_knowledge_base",
+          0.8318
+        ],
+        [
+          "tool_search",
+          0.8307
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "web_search",
+        "exit_worktree",
+        "enter_worktree",
+        "brief",
+        "skill_list",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h037",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "remote_read_file"
+      ],
+      "gold_ne": [
+        "remote_read_file"
+      ],
+      "pred_sim_top8": [
+        [
+          "agent",
+          0.8335
+        ],
+        [
+          "web_search",
+          0.8288
+        ],
+        [
+          "ingest_document",
+          0.8278
+        ],
+        [
+          "tool_search",
+          0.8266
+        ],
+        [
+          "skill_list",
+          0.8265
+        ],
+        [
+          "web_fetch",
+          0.8259
+        ],
+        [
+          "brief",
+          0.8247
+        ],
+        [
+          "lsp",
+          0.8155
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "agent",
+        "web_search",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h038",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "remote_glob"
+      ],
+      "gold_ne": [
+        "remote_glob"
+      ],
+      "pred_sim_top8": [
+        [
+          "web_search",
+          0.8334
+        ],
+        [
+          "lsp",
+          0.818
+        ],
+        [
+          "tool_search",
+          0.8179
+        ],
+        [
+          "web_fetch",
+          0.8151
+        ],
+        [
+          "agent",
+          0.8101
+        ],
+        [
+          "ingest_document",
+          0.8066
+        ],
+        [
+          "enter_worktree",
+          0.8051
+        ],
+        [
+          "skill_list",
+          0.8034
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "web_search",
+        "lsp",
+        "tool_search",
+        "web_fetch",
+        "agent",
+        "enter_worktree",
+        "skill_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h039",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "remote_grep"
+      ],
+      "gold_ne": [
+        "remote_grep"
+      ],
+      "pred_sim_top8": [
+        [
+          "lsp",
+          0.8352
+        ],
+        [
+          "exit_worktree",
+          0.8303
+        ],
+        [
+          "web_search",
+          0.8302
+        ],
+        [
+          "tool_search",
+          0.8234
+        ],
+        [
+          "ingest_document",
+          0.8193
+        ],
+        [
+          "enter_worktree",
+          0.8189
+        ],
+        [
+          "remote_check_memory",
+          0.8182
+        ],
+        [
+          "agent",
+          0.8147
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "lsp",
+        "exit_worktree",
+        "web_search",
+        "tool_search",
+        "enter_worktree",
+        "remote_check_memory",
+        "agent"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h040",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "remote_tail_log"
+      ],
+      "gold_ne": [
+        "remote_tail_log"
+      ],
+      "pred_sim_top8": [
+        [
+          "web_search",
+          0.8321
+        ],
+        [
+          "ingest_document",
+          0.8176
+        ],
+        [
+          "tool_search",
+          0.8135
+        ],
+        [
+          "exit_worktree",
+          0.8116
+        ],
+        [
+          "web_fetch",
+          0.8098
+        ],
+        [
+          "brief",
+          0.8098
+        ],
+        [
+          "agent",
+          0.8076
+        ],
+        [
+          "enter_worktree",
+          0.803
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "web_search",
+        "tool_search",
+        "exit_worktree"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h041",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "remote_check_cpu"
+      ],
+      "gold_ne": [
+        "remote_check_cpu"
+      ],
+      "pred_sim_top8": [
+        [
+          "remote_check_cpu",
+          0.816
+        ],
+        [
+          "web_fetch",
+          0.8085
+        ],
+        [
+          "agent",
+          0.8031
+        ],
+        [
+          "brief",
+          0.8028
+        ],
+        [
+          "tool_search",
+          0.8028
+        ],
+        [
+          "ingest_document",
+          0.7984
+        ],
+        [
+          "web_search",
+          0.7945
+        ],
+        [
+          "skill_read",
+          0.7929
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_check_cpu",
+        "web_fetch",
+        "agent",
+        "brief",
+        "tool_search",
+        "web_search",
+        "skill_read"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h042",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "remote_check_memory"
+      ],
+      "gold_ne": [
+        "remote_check_memory"
+      ],
+      "pred_sim_top8": [
+        [
+          "brief",
+          0.8028
+        ],
+        [
+          "skill_list",
+          0.7912
+        ],
+        [
+          "exit_worktree",
+          0.7905
+        ],
+        [
+          "ingest_document",
+          0.7895
+        ],
+        [
+          "tool_search",
+          0.7889
+        ],
+        [
+          "web_fetch",
+          0.7884
+        ],
+        [
+          "enter_worktree",
+          0.7875
+        ],
+        [
+          "web_search",
+          0.7867
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "brief",
+        "skill_list",
+        "exit_worktree",
+        "tool_search",
+        "web_fetch",
+        "enter_worktree",
+        "web_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h043",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "remote_check_disk"
+      ],
+      "gold_ne": [
+        "remote_check_disk"
+      ],
+      "pred_sim_top8": [
+        [
+          "remote_check_disk",
+          0.8121
+        ],
+        [
+          "exit_worktree",
+          0.8086
+        ],
+        [
+          "web_search",
+          0.808
+        ],
+        [
+          "lsp",
+          0.8037
+        ],
+        [
+          "tool_search",
+          0.8017
+        ],
+        [
+          "remote_check_memory",
+          0.7998
+        ],
+        [
+          "remote_check_cpu",
+          0.7992
+        ],
+        [
+          "brief",
+          0.7989
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_check_disk",
+        "exit_worktree",
+        "web_search",
+        "lsp",
+        "tool_search",
+        "remote_check_memory",
+        "remote_check_cpu",
+        "brief"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h044",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "remote_write_file"
+      ],
+      "gold_ne": [
+        "remote_write_file"
+      ],
+      "pred_sim_top8": [
+        [
+          "web_fetch",
+          0.8297
+        ],
+        [
+          "ingest_document",
+          0.8251
+        ],
+        [
+          "exit_worktree",
+          0.8248
+        ],
+        [
+          "web_search",
+          0.8236
+        ],
+        [
+          "tool_search",
+          0.8222
+        ],
+        [
+          "agent",
+          0.8207
+        ],
+        [
+          "enter_worktree",
+          0.8184
+        ],
+        [
+          "skill_save",
+          0.8181
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "web_fetch",
+        "exit_worktree",
+        "web_search",
+        "tool_search",
+        "agent",
+        "enter_worktree",
+        "skill_save"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h045",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "remote_edit_file"
+      ],
+      "gold_ne": [
+        "remote_edit_file"
+      ],
+      "pred_sim_top8": [
+        [
+          "agent",
+          0.8309
+        ],
+        [
+          "lsp",
+          0.8234
+        ],
+        [
+          "enter_worktree",
+          0.8196
+        ],
+        [
+          "ingest_document",
+          0.8142
+        ],
+        [
+          "exit_worktree",
+          0.8127
+        ],
+        [
+          "web_search",
+          0.812
+        ],
+        [
+          "web_fetch",
+          0.8106
+        ],
+        [
+          "tool_search",
+          0.8078
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "agent",
+        "lsp",
+        "enter_worktree",
+        "exit_worktree",
+        "web_search",
+        "web_fetch",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h046",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "remote_run_command"
+      ],
+      "gold_ne": [
+        "remote_run_command"
+      ],
+      "pred_sim_top8": [
+        [
+          "skill_list",
+          0.8213
+        ],
+        [
+          "agent",
+          0.8181
+        ],
+        [
+          "skill_save",
+          0.8136
+        ],
+        [
+          "web_search",
+          0.8133
+        ],
+        [
+          "tool_search",
+          0.8107
+        ],
+        [
+          "ingest_document",
+          0.808
+        ],
+        [
+          "skill_read",
+          0.8071
+        ],
+        [
+          "web_fetch",
+          0.8056
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "skill_list",
+        "agent",
+        "skill_save",
+        "web_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h047",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "bash"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "enter_worktree",
+          0.8369
+        ],
+        [
+          "exit_worktree",
+          0.8362
+        ],
+        [
+          "skill_list",
+          0.8292
+        ],
+        [
+          "ingest_document",
+          0.8267
+        ],
+        [
+          "brief",
+          0.8218
+        ],
+        [
+          "web_search",
+          0.8211
+        ],
+        [
+          "lsp",
+          0.8208
+        ],
+        [
+          "tool_search",
+          0.8171
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "enter_worktree",
+        "exit_worktree",
+        "skill_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h048",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "read_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "lsp",
+          0.853
+        ],
+        [
+          "skill_list",
+          0.8512
+        ],
+        [
+          "ingest_document",
+          0.8447
+        ],
+        [
+          "tool_search",
+          0.8409
+        ],
+        [
+          "brief",
+          0.8399
+        ],
+        [
+          "web_search",
+          0.8359
+        ],
+        [
+          "agent",
+          0.8354
+        ],
+        [
+          "skill_save",
+          0.8338
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "lsp",
+        "skill_list",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h049",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "glob"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "ingest_document",
+          0.8459
+        ],
+        [
+          "tool_search",
+          0.8298
+        ],
+        [
+          "enter_worktree",
+          0.828
+        ],
+        [
+          "lsp",
+          0.8257
+        ],
+        [
+          "exit_worktree",
+          0.8227
+        ],
+        [
+          "skill_save",
+          0.8208
+        ],
+        [
+          "agent",
+          0.8157
+        ],
+        [
+          "web_search",
+          0.8143
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "tool_search",
+        "enter_worktree",
+        "lsp",
+        "exit_worktree",
+        "skill_save",
+        "agent",
+        "web_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h050",
+      "lang": "ko",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "grep"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "tool_search",
+          0.8428
+        ],
+        [
+          "web_search",
+          0.8397
+        ],
+        [
+          "lsp",
+          0.8379
+        ],
+        [
+          "enter_worktree",
+          0.8342
+        ],
+        [
+          "ingest_document",
+          0.8309
+        ],
+        [
+          "exit_worktree",
+          0.8307
+        ],
+        [
+          "web_fetch",
+          0.822
+        ],
+        [
+          "agent",
+          0.8199
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "tool_search",
+        "web_search",
+        "lsp",
+        "enter_worktree",
+        "exit_worktree",
+        "web_fetch",
+        "agent"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h051",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "remote_tail_log",
+        "remote_read_file"
+      ],
+      "gold_ne": [
+        "remote_tail_log",
+        "remote_read_file"
+      ],
+      "pred_sim_top8": [
+        [
+          "web_search",
+          0.8268
+        ],
+        [
+          "lsp",
+          0.8159
+        ],
+        [
+          "web_fetch",
+          0.8131
+        ],
+        [
+          "tool_search",
+          0.8102
+        ],
+        [
+          "ingest_document",
+          0.8094
+        ],
+        [
+          "exit_worktree",
+          0.8035
+        ],
+        [
+          "enter_worktree",
+          0.8025
+        ],
+        [
+          "agent",
+          0.8002
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "web_search",
+        "lsp",
+        "web_fetch",
+        "tool_search",
+        "exit_worktree",
+        "enter_worktree",
+        "agent"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h052",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "remote_check_cpu",
+        "remote_check_memory"
+      ],
+      "gold_ne": [
+        "remote_check_cpu",
+        "remote_check_memory"
+      ],
+      "pred_sim_top8": [
+        [
+          "remote_check_cpu",
+          0.8325
+        ],
+        [
+          "remote_check_memory",
+          0.8204
+        ],
+        [
+          "brief",
+          0.8194
+        ],
+        [
+          "agent",
+          0.8171
+        ],
+        [
+          "web_search",
+          0.8136
+        ],
+        [
+          "web_fetch",
+          0.8114
+        ],
+        [
+          "tool_search",
+          0.8106
+        ],
+        [
+          "remote_check_disk",
+          0.8032
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_check_cpu",
+        "remote_check_memory",
+        "brief",
+        "agent",
+        "web_search",
+        "web_fetch",
+        "tool_search",
+        "remote_check_disk"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h053",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "remote_check_disk",
+        "remote_run_command"
+      ],
+      "gold_ne": [
+        "remote_check_disk",
+        "remote_run_command"
+      ],
+      "pred_sim_top8": [
+        [
+          "web_search",
+          0.8125
+        ],
+        [
+          "tool_search",
+          0.8091
+        ],
+        [
+          "agent",
+          0.8068
+        ],
+        [
+          "remote_check_disk",
+          0.806
+        ],
+        [
+          "lsp",
+          0.8055
+        ],
+        [
+          "brief",
+          0.8006
+        ],
+        [
+          "exit_worktree",
+          0.7999
+        ],
+        [
+          "ingest_document",
+          0.7992
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "web_search",
+        "tool_search",
+        "agent",
+        "remote_check_disk",
+        "lsp",
+        "brief",
+        "exit_worktree"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h054",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "remote_grep",
+        "local_write_report"
+      ],
+      "gold_ne": [
+        "remote_grep",
+        "local_write_report"
+      ],
+      "pred_sim_top8": [
+        [
+          "web_search",
+          0.8285
+        ],
+        [
+          "tool_search",
+          0.8255
+        ],
+        [
+          "lsp",
+          0.8182
+        ],
+        [
+          "agent",
+          0.8146
+        ],
+        [
+          "ingest_document",
+          0.8144
+        ],
+        [
+          "web_fetch",
+          0.8126
+        ],
+        [
+          "exit_worktree",
+          0.811
+        ],
+        [
+          "skill_save",
+          0.8106
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "web_search",
+        "tool_search",
+        "lsp",
+        "agent",
+        "web_fetch",
+        "exit_worktree",
+        "skill_save"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h055",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "remote_check_cpu",
+        "remote_check_disk",
+        "local_write_report"
+      ],
+      "gold_ne": [
+        "remote_check_cpu",
+        "remote_check_disk",
+        "local_write_report"
+      ],
+      "pred_sim_top8": [
+        [
+          "remote_check_cpu",
+          0.8379
+        ],
+        [
+          "agent",
+          0.8259
+        ],
+        [
+          "skill_save",
+          0.8249
+        ],
+        [
+          "remote_check_disk",
+          0.8245
+        ],
+        [
+          "web_search",
+          0.8232
+        ],
+        [
+          "lsp",
+          0.8218
+        ],
+        [
+          "tool_search",
+          0.821
+        ],
+        [
+          "exit_worktree",
+          0.8207
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_check_cpu",
+        "agent",
+        "skill_save",
+        "remote_check_disk",
+        "web_search",
+        "lsp",
+        "tool_search",
+        "exit_worktree"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h056",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "remote_read_file",
+        "remote_edit_file"
+      ],
+      "gold_ne": [
+        "remote_read_file",
+        "remote_edit_file"
+      ],
+      "pred_sim_top8": [
+        [
+          "agent",
+          0.815
+        ],
+        [
+          "ingest_document",
+          0.8146
+        ],
+        [
+          "skill_save",
+          0.8105
+        ],
+        [
+          "exit_worktree",
+          0.8097
+        ],
+        [
+          "task_stop",
+          0.8094
+        ],
+        [
+          "web_fetch",
+          0.8073
+        ],
+        [
+          "web_search",
+          0.8073
+        ],
+        [
+          "tool_search",
+          0.807
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "agent",
+        "skill_save",
+        "exit_worktree",
+        "task_stop",
+        "web_fetch",
+        "web_search",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h057",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "remote_glob",
+        "remote_read_file"
+      ],
+      "gold_ne": [
+        "remote_glob",
+        "remote_read_file"
+      ],
+      "pred_sim_top8": [
+        [
+          "agent",
+          0.8332
+        ],
+        [
+          "ingest_document",
+          0.8224
+        ],
+        [
+          "skill_list",
+          0.8199
+        ],
+        [
+          "lsp",
+          0.8172
+        ],
+        [
+          "web_search",
+          0.8161
+        ],
+        [
+          "tool_search",
+          0.8102
+        ],
+        [
+          "brief",
+          0.808
+        ],
+        [
+          "search_knowledge_base",
+          0.8066
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "agent",
+        "skill_list",
+        "lsp",
+        "web_search",
+        "tool_search",
+        "brief"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h058",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "remote_edit_file",
+        "remote_run_command"
+      ],
+      "gold_ne": [
+        "remote_edit_file",
+        "remote_run_command"
+      ],
+      "pred_sim_top8": [
+        [
+          "web_fetch",
+          0.8446
+        ],
+        [
+          "enter_worktree",
+          0.839
+        ],
+        [
+          "tool_search",
+          0.835
+        ],
+        [
+          "agent",
+          0.832
+        ],
+        [
+          "lsp",
+          0.8289
+        ],
+        [
+          "exit_worktree",
+          0.828
+        ],
+        [
+          "web_search",
+          0.8202
+        ],
+        [
+          "task_create",
+          0.8188
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "web_fetch",
+        "enter_worktree",
+        "tool_search",
+        "agent",
+        "lsp",
+        "exit_worktree",
+        "web_search",
+        "task_create"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h059",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "grep",
+        "edit_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "web_search",
+          0.8461
+        ],
+        [
+          "agent",
+          0.8456
+        ],
+        [
+          "web_fetch",
+          0.841
+        ],
+        [
+          "exit_worktree",
+          0.8402
+        ],
+        [
+          "enter_worktree",
+          0.8395
+        ],
+        [
+          "ingest_document",
+          0.8395
+        ],
+        [
+          "lsp",
+          0.8384
+        ],
+        [
+          "tool_search",
+          0.8353
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "web_search",
+        "agent",
+        "web_fetch",
+        "exit_worktree",
+        "enter_worktree",
+        "lsp",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h060",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "read_file",
+        "edit_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "ingest_document",
+          0.8326
+        ],
+        [
+          "exit_worktree",
+          0.83
+        ],
+        [
+          "memory_read",
+          0.8283
+        ],
+        [
+          "skill_save",
+          0.8257
+        ],
+        [
+          "lsp",
+          0.8249
+        ],
+        [
+          "skill_read",
+          0.8226
+        ],
+        [
+          "enter_worktree",
+          0.8225
+        ],
+        [
+          "web_fetch",
+          0.8222
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "exit_worktree",
+        "memory_read",
+        "skill_save"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h061",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "glob",
+        "read_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "lsp",
+          0.8526
+        ],
+        [
+          "brief",
+          0.8391
+        ],
+        [
+          "exit_worktree",
+          0.8322
+        ],
+        [
+          "web_fetch",
+          0.8315
+        ],
+        [
+          "enter_worktree",
+          0.8313
+        ],
+        [
+          "web_search",
+          0.8283
+        ],
+        [
+          "agent",
+          0.8243
+        ],
+        [
+          "tool_search",
+          0.8227
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "lsp",
+        "brief",
+        "exit_worktree",
+        "web_fetch",
+        "enter_worktree",
+        "web_search",
+        "agent",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h062",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "bash",
+        "read_file",
+        "edit_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "web_search",
+          0.8426
+        ],
+        [
+          "exit_worktree",
+          0.8337
+        ],
+        [
+          "ingest_document",
+          0.831
+        ],
+        [
+          "tool_search",
+          0.8282
+        ],
+        [
+          "enter_worktree",
+          0.8271
+        ],
+        [
+          "agent",
+          0.8255
+        ],
+        [
+          "web_fetch",
+          0.8233
+        ],
+        [
+          "brief",
+          0.8161
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "web_search",
+        "exit_worktree",
+        "tool_search",
+        "enter_worktree",
+        "agent",
+        "web_fetch",
+        "brief"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h063",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "web_fetch",
+        "edit_file"
+      ],
+      "gold_ne": [
+        "web_fetch"
+      ],
+      "pred_sim_top8": [
+        [
+          "web_search",
+          0.8458
+        ],
+        [
+          "ingest_document",
+          0.8426
+        ],
+        [
+          "enter_worktree",
+          0.8409
+        ],
+        [
+          "tool_search",
+          0.8391
+        ],
+        [
+          "exit_worktree",
+          0.8368
+        ],
+        [
+          "brief",
+          0.8338
+        ],
+        [
+          "memory_read",
+          0.8328
+        ],
+        [
+          "lsp",
+          0.8319
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "web_search",
+        "enter_worktree",
+        "tool_search",
+        "exit_worktree",
+        "brief",
+        "memory_read",
+        "lsp"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h064",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "task_create",
+        "task_output"
+      ],
+      "gold_ne": [
+        "task_create",
+        "task_output"
+      ],
+      "pred_sim_top8": [
+        [
+          "exit_worktree",
+          0.8329
+        ],
+        [
+          "agent",
+          0.8261
+        ],
+        [
+          "web_search",
+          0.8233
+        ],
+        [
+          "enter_worktree",
+          0.8223
+        ],
+        [
+          "task_stop",
+          0.8196
+        ],
+        [
+          "ingest_document",
+          0.8166
+        ],
+        [
+          "tool_search",
+          0.8151
+        ],
+        [
+          "skill_list",
+          0.811
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "exit_worktree",
+        "agent",
+        "web_search",
+        "enter_worktree"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h065",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "task_list",
+        "task_stop"
+      ],
+      "gold_ne": [
+        "task_list",
+        "task_stop"
+      ],
+      "pred_sim_top8": [
+        [
+          "exit_worktree",
+          0.8624
+        ],
+        [
+          "agent",
+          0.8331
+        ],
+        [
+          "web_search",
+          0.8311
+        ],
+        [
+          "task_stop",
+          0.8294
+        ],
+        [
+          "tool_search",
+          0.827
+        ],
+        [
+          "lsp",
+          0.8228
+        ],
+        [
+          "enter_worktree",
+          0.8226
+        ],
+        [
+          "web_fetch",
+          0.8213
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "exit_worktree",
+        "agent",
+        "web_search",
+        "task_stop"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h066",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "enter_worktree",
+        "bash"
+      ],
+      "gold_ne": [
+        "enter_worktree"
+      ],
+      "pred_sim_top8": [
+        [
+          "exit_worktree",
+          0.8812
+        ],
+        [
+          "enter_worktree",
+          0.8732
+        ],
+        [
+          "agent",
+          0.8489
+        ],
+        [
+          "ingest_document",
+          0.8307
+        ],
+        [
+          "skill_save",
+          0.827
+        ],
+        [
+          "brief",
+          0.8245
+        ],
+        [
+          "tool_search",
+          0.821
+        ],
+        [
+          "skill_list",
+          0.8187
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "exit_worktree",
+        "enter_worktree",
+        "agent",
+        "skill_save",
+        "brief",
+        "tool_search",
+        "skill_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h067",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "web_search",
+        "read_file",
+        "edit_file"
+      ],
+      "gold_ne": [
+        "web_search"
+      ],
+      "pred_sim_top8": [
+        [
+          "ingest_document",
+          0.8456
+        ],
+        [
+          "web_search",
+          0.8441
+        ],
+        [
+          "tool_search",
+          0.8411
+        ],
+        [
+          "brief",
+          0.8396
+        ],
+        [
+          "lsp",
+          0.8302
+        ],
+        [
+          "exit_worktree",
+          0.8291
+        ],
+        [
+          "enter_worktree",
+          0.8266
+        ],
+        [
+          "skill_list",
+          0.823
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "web_search",
+        "tool_search",
+        "brief",
+        "lsp",
+        "exit_worktree",
+        "enter_worktree",
+        "skill_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h068",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "skill_list",
+        "skill_read"
+      ],
+      "gold_ne": [
+        "skill_list",
+        "skill_read"
+      ],
+      "pred_sim_top8": [
+        [
+          "skill_list",
+          0.8437
+        ],
+        [
+          "skill_save",
+          0.833
+        ],
+        [
+          "skill_read",
+          0.8271
+        ],
+        [
+          "ingest_document",
+          0.8267
+        ],
+        [
+          "tool_search",
+          0.8095
+        ],
+        [
+          "brief",
+          0.8087
+        ],
+        [
+          "lsp",
+          0.8035
+        ],
+        [
+          "agent",
+          0.8026
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "skill_list",
+        "skill_save",
+        "skill_read",
+        "tool_search",
+        "brief",
+        "lsp",
+        "agent"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h069",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "memory_list",
+        "memory_read"
+      ],
+      "gold_ne": [
+        "memory_list",
+        "memory_read"
+      ],
+      "pred_sim_top8": [
+        [
+          "brief",
+          0.8638
+        ],
+        [
+          "skill_read",
+          0.8563
+        ],
+        [
+          "memory_read",
+          0.856
+        ],
+        [
+          "ingest_document",
+          0.8544
+        ],
+        [
+          "skill_list",
+          0.8428
+        ],
+        [
+          "skill_save",
+          0.8417
+        ],
+        [
+          "enter_worktree",
+          0.8387
+        ],
+        [
+          "remote_check_memory",
+          0.838
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "brief",
+        "skill_read",
+        "memory_read",
+        "skill_list",
+        "skill_save",
+        "enter_worktree",
+        "remote_check_memory"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h070",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "custom_tool_read_source",
+        "custom_tool_update_source"
+      ],
+      "gold_ne": [
+        "custom_tool_read_source",
+        "custom_tool_update_source"
+      ],
+      "pred_sim_top8": [
+        [
+          "brief",
+          0.8294
+        ],
+        [
+          "tool_search",
+          0.8258
+        ],
+        [
+          "web_search",
+          0.8196
+        ],
+        [
+          "ingest_document",
+          0.813
+        ],
+        [
+          "exit_worktree",
+          0.8115
+        ],
+        [
+          "enter_worktree",
+          0.8109
+        ],
+        [
+          "web_fetch",
+          0.8097
+        ],
+        [
+          "agent",
+          0.8047
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "brief",
+        "tool_search",
+        "web_search",
+        "exit_worktree",
+        "enter_worktree",
+        "web_fetch",
+        "agent"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h071",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "search_knowledge_base",
+        "todo_write"
+      ],
+      "gold_ne": [
+        "search_knowledge_base",
+        "todo_write"
+      ],
+      "pred_sim_top8": [
+        [
+          "skill_list",
+          0.8472
+        ],
+        [
+          "todo_write",
+          0.8394
+        ],
+        [
+          "ingest_document",
+          0.8389
+        ],
+        [
+          "lsp",
+          0.8356
+        ],
+        [
+          "search_knowledge_base",
+          0.8324
+        ],
+        [
+          "skill_save",
+          0.831
+        ],
+        [
+          "agent",
+          0.8295
+        ],
+        [
+          "tool_search",
+          0.8282
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "skill_list",
+        "todo_write",
+        "lsp",
+        "skill_save",
+        "agent",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h072",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "list_mcp_resources",
+        "read_mcp_resource"
+      ],
+      "gold_ne": [
+        "list_mcp_resources",
+        "read_mcp_resource"
+      ],
+      "pred_sim_top8": [
+        [
+          "lsp",
+          0.8474
+        ],
+        [
+          "read_mcp_resource",
+          0.8375
+        ],
+        [
+          "list_mcp_resources",
+          0.8357
+        ],
+        [
+          "brief",
+          0.8346
+        ],
+        [
+          "web_search",
+          0.8339
+        ],
+        [
+          "ingest_document",
+          0.8282
+        ],
+        [
+          "search_knowledge_base",
+          0.823
+        ],
+        [
+          "skill_list",
+          0.8203
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "lsp",
+        "read_mcp_resource",
+        "list_mcp_resources",
+        "brief",
+        "web_search",
+        "skill_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h073",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "read_file",
+        "edit_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "ingest_document",
+          0.834
+        ],
+        [
+          "enter_worktree",
+          0.8242
+        ],
+        [
+          "skill_read",
+          0.8236
+        ],
+        [
+          "web_search",
+          0.8221
+        ],
+        [
+          "lsp",
+          0.8213
+        ],
+        [
+          "brief",
+          0.8208
+        ],
+        [
+          "memory_write",
+          0.8203
+        ],
+        [
+          "exit_worktree",
+          0.8193
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "enter_worktree",
+        "skill_read",
+        "web_search",
+        "lsp",
+        "brief",
+        "memory_write",
+        "exit_worktree"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h074",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "lsp",
+        "edit_file"
+      ],
+      "gold_ne": [
+        "lsp"
+      ],
+      "pred_sim_top8": [
+        [
+          "ingest_document",
+          0.8494
+        ],
+        [
+          "lsp",
+          0.8334
+        ],
+        [
+          "web_fetch",
+          0.8291
+        ],
+        [
+          "brief",
+          0.8287
+        ],
+        [
+          "tool_search",
+          0.8261
+        ],
+        [
+          "web_search",
+          0.8248
+        ],
+        [
+          "skill_save",
+          0.8187
+        ],
+        [
+          "exit_worktree",
+          0.8182
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "lsp",
+        "web_fetch",
+        "brief",
+        "tool_search",
+        "web_search",
+        "skill_save",
+        "exit_worktree"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h075",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "deep_research",
+        "write_file"
+      ],
+      "gold_ne": [
+        "deep_research"
+      ],
+      "pred_sim_top8": [
+        [
+          "skill_list",
+          0.8521
+        ],
+        [
+          "ingest_document",
+          0.8518
+        ],
+        [
+          "web_search",
+          0.8474
+        ],
+        [
+          "lsp",
+          0.8426
+        ],
+        [
+          "brief",
+          0.8416
+        ],
+        [
+          "skill_save",
+          0.8362
+        ],
+        [
+          "tool_search",
+          0.8357
+        ],
+        [
+          "search_knowledge_base",
+          0.8342
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "skill_list",
+        "web_search",
+        "lsp",
+        "brief",
+        "skill_save",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h076",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "brief",
+        "memory_write"
+      ],
+      "gold_ne": [
+        "brief",
+        "memory_write"
+      ],
+      "pred_sim_top8": [
+        [
+          "brief",
+          0.8619
+        ],
+        [
+          "ingest_document",
+          0.8477
+        ],
+        [
+          "exit_worktree",
+          0.84
+        ],
+        [
+          "skill_list",
+          0.8399
+        ],
+        [
+          "skill_save",
+          0.8367
+        ],
+        [
+          "web_search",
+          0.8361
+        ],
+        [
+          "agent",
+          0.836
+        ],
+        [
+          "tool_search",
+          0.8315
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "brief",
+        "exit_worktree",
+        "skill_list",
+        "skill_save",
+        "web_search",
+        "agent",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h077",
+      "lang": "ko",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "write_file",
+        "bash"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "enter_worktree",
+          0.8553
+        ],
+        [
+          "ingest_document",
+          0.8501
+        ],
+        [
+          "lsp",
+          0.847
+        ],
+        [
+          "exit_worktree",
+          0.8436
+        ],
+        [
+          "tool_search",
+          0.842
+        ],
+        [
+          "web_search",
+          0.84
+        ],
+        [
+          "skill_save",
+          0.8328
+        ],
+        [
+          "web_fetch",
+          0.8255
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "enter_worktree",
+        "lsp",
+        "exit_worktree",
+        "tool_search",
+        "web_search",
+        "skill_save",
+        "web_fetch"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h078",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "agent",
+          0.8295
+        ],
+        [
+          "enter_worktree",
+          0.8251
+        ],
+        [
+          "exit_worktree",
+          0.8241
+        ],
+        [
+          "web_fetch",
+          0.822
+        ],
+        [
+          "web_search",
+          0.8186
+        ],
+        [
+          "skill_save",
+          0.8174
+        ],
+        [
+          "tool_search",
+          0.8164
+        ],
+        [
+          "ingest_document",
+          0.8135
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "agent",
+        "enter_worktree",
+        "exit_worktree",
+        "web_fetch",
+        "web_search",
+        "skill_save",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h079",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "web_search",
+          0.9752
+        ],
+        [
+          "lsp",
+          0.801
+        ],
+        [
+          "enter_worktree",
+          0.801
+        ],
+        [
+          "exit_worktree",
+          0.7997
+        ],
+        [
+          "tool_search",
+          0.7969
+        ],
+        [
+          "web_fetch",
+          0.7961
+        ],
+        [
+          "ingest_document",
+          0.7891
+        ],
+        [
+          "agent",
+          0.7891
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "web_search",
+        "lsp",
+        "enter_worktree",
+        "exit_worktree",
+        "tool_search",
+        "web_fetch",
+        "agent"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h080",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "enter_worktree",
+          0.788
+        ],
+        [
+          "exit_worktree",
+          0.7854
+        ],
+        [
+          "agent",
+          0.7852
+        ],
+        [
+          "web_fetch",
+          0.7754
+        ],
+        [
+          "ingest_document",
+          0.7699
+        ],
+        [
+          "web_search",
+          0.766
+        ],
+        [
+          "brief",
+          0.7647
+        ],
+        [
+          "search_knowledge_base",
+          0.7645
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "enter_worktree",
+        "exit_worktree",
+        "agent",
+        "web_fetch"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h081",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "web_fetch",
+          0.8275
+        ],
+        [
+          "tool_search",
+          0.8141
+        ],
+        [
+          "web_search",
+          0.8123
+        ],
+        [
+          "ingest_document",
+          0.8099
+        ],
+        [
+          "exit_worktree",
+          0.8095
+        ],
+        [
+          "enter_worktree",
+          0.8076
+        ],
+        [
+          "brief",
+          0.8064
+        ],
+        [
+          "agent",
+          0.8059
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "web_fetch",
+        "tool_search",
+        "web_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h082",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "lsp",
+          0.8122
+        ],
+        [
+          "enter_worktree",
+          0.8122
+        ],
+        [
+          "web_fetch",
+          0.8075
+        ],
+        [
+          "agent",
+          0.8045
+        ],
+        [
+          "skill_list",
+          0.8038
+        ],
+        [
+          "skill_read",
+          0.8007
+        ],
+        [
+          "tool_search",
+          0.8005
+        ],
+        [
+          "skill_save",
+          0.7997
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "lsp",
+        "enter_worktree",
+        "web_fetch",
+        "agent"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h083",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "brief",
+          0.8485
+        ],
+        [
+          "skill_list",
+          0.8339
+        ],
+        [
+          "ingest_document",
+          0.8199
+        ],
+        [
+          "web_search",
+          0.8178
+        ],
+        [
+          "skill_save",
+          0.8163
+        ],
+        [
+          "agent",
+          0.8149
+        ],
+        [
+          "skill_read",
+          0.8067
+        ],
+        [
+          "tool_search",
+          0.8045
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "brief",
+        "skill_list",
+        "web_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h084",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "lsp",
+          0.8063
+        ],
+        [
+          "agent",
+          0.804
+        ],
+        [
+          "brief",
+          0.8026
+        ],
+        [
+          "ingest_document",
+          0.8021
+        ],
+        [
+          "enter_worktree",
+          0.8011
+        ],
+        [
+          "exit_worktree",
+          0.8004
+        ],
+        [
+          "tool_search",
+          0.7993
+        ],
+        [
+          "web_search",
+          0.7988
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "lsp",
+        "agent",
+        "brief",
+        "enter_worktree",
+        "exit_worktree",
+        "tool_search",
+        "web_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h085",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "enter_worktree",
+          0.8124
+        ],
+        [
+          "exit_worktree",
+          0.8116
+        ],
+        [
+          "ingest_document",
+          0.8024
+        ],
+        [
+          "agent",
+          0.8018
+        ],
+        [
+          "web_search",
+          0.8012
+        ],
+        [
+          "remote_run_command",
+          0.7989
+        ],
+        [
+          "remote_check_disk",
+          0.797
+        ],
+        [
+          "remote_check_cpu",
+          0.795
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "enter_worktree",
+        "exit_worktree",
+        "agent",
+        "web_search",
+        "remote_run_command",
+        "remote_check_disk",
+        "remote_check_cpu"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h086",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "brief",
+          0.8118
+        ],
+        [
+          "ingest_document",
+          0.807
+        ],
+        [
+          "web_search",
+          0.8007
+        ],
+        [
+          "tool_search",
+          0.7968
+        ],
+        [
+          "web_fetch",
+          0.7951
+        ],
+        [
+          "agent",
+          0.7944
+        ],
+        [
+          "skill_read",
+          0.7912
+        ],
+        [
+          "skill_list",
+          0.7901
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "brief",
+        "web_search",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h087",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "enter_worktree",
+          0.7974
+        ],
+        [
+          "agent",
+          0.7971
+        ],
+        [
+          "brief",
+          0.7926
+        ],
+        [
+          "lsp",
+          0.7876
+        ],
+        [
+          "exit_worktree",
+          0.784
+        ],
+        [
+          "tool_search",
+          0.7832
+        ],
+        [
+          "skill_list",
+          0.7832
+        ],
+        [
+          "ingest_document",
+          0.7804
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "enter_worktree",
+        "agent",
+        "brief",
+        "lsp",
+        "exit_worktree",
+        "tool_search",
+        "skill_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h088",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "brief",
+          0.81
+        ],
+        [
+          "ingest_document",
+          0.7904
+        ],
+        [
+          "agent",
+          0.7858
+        ],
+        [
+          "web_fetch",
+          0.7832
+        ],
+        [
+          "exit_worktree",
+          0.7828
+        ],
+        [
+          "web_search",
+          0.7788
+        ],
+        [
+          "skill_save",
+          0.7783
+        ],
+        [
+          "skill_read",
+          0.7765
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "brief",
+        "agent",
+        "web_fetch"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h089",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "brief",
+          0.8309
+        ],
+        [
+          "ingest_document",
+          0.8145
+        ],
+        [
+          "tool_search",
+          0.8041
+        ],
+        [
+          "web_search",
+          0.8015
+        ],
+        [
+          "skill_save",
+          0.8011
+        ],
+        [
+          "skill_list",
+          0.7977
+        ],
+        [
+          "enter_worktree",
+          0.7968
+        ],
+        [
+          "web_fetch",
+          0.7963
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "brief",
+        "tool_search",
+        "web_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h090",
+      "lang": "ko",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "brief",
+          0.8299
+        ],
+        [
+          "skill_list",
+          0.8251
+        ],
+        [
+          "ingest_document",
+          0.8224
+        ],
+        [
+          "skill_save",
+          0.8176
+        ],
+        [
+          "web_search",
+          0.8101
+        ],
+        [
+          "tool_search",
+          0.8086
+        ],
+        [
+          "enter_worktree",
+          0.8056
+        ],
+        [
+          "skill_read",
+          0.8038
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "brief",
+        "skill_list",
+        "skill_save",
+        "web_search",
+        "tool_search",
+        "enter_worktree",
+        "skill_read"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h091",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "read_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "list_mcp_resources",
+          0.8472
+        ],
+        [
+          "remote_check_memory",
+          0.8472
+        ],
+        [
+          "read_mcp_resource",
+          0.8459
+        ],
+        [
+          "remote_check_disk",
+          0.8445
+        ],
+        [
+          "remote_check_cpu",
+          0.8418
+        ],
+        [
+          "custom_tool_read_source",
+          0.8377
+        ],
+        [
+          "memory_read",
+          0.8362
+        ],
+        [
+          "task_get",
+          0.828
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "list_mcp_resources",
+        "remote_check_memory",
+        "read_mcp_resource",
+        "remote_check_disk",
+        "remote_check_cpu",
+        "custom_tool_read_source",
+        "memory_read",
+        "task_get"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h092",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "bash"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "task_stop",
+          0.8217
+        ],
+        [
+          "remote_glob",
+          0.8175
+        ],
+        [
+          "task_output",
+          0.8175
+        ],
+        [
+          "remote_check_memory",
+          0.8118
+        ],
+        [
+          "remote_grep",
+          0.8103
+        ],
+        [
+          "remote_check_cpu",
+          0.81
+        ],
+        [
+          "todo_write",
+          0.8096
+        ],
+        [
+          "lsp",
+          0.8092
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "task_stop",
+        "remote_glob",
+        "task_output",
+        "remote_check_memory"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h093",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "lsp"
+      ],
+      "gold_ne": [
+        "lsp"
+      ],
+      "pred_sim_top8": [
+        [
+          "memory_read",
+          0.8366
+        ],
+        [
+          "task_create",
+          0.8347
+        ],
+        [
+          "remote_check_memory",
+          0.8303
+        ],
+        [
+          "task_stop",
+          0.8283
+        ],
+        [
+          "remote_run_command",
+          0.8283
+        ],
+        [
+          "memory_list",
+          0.8275
+        ],
+        [
+          "remote_check_disk",
+          0.8258
+        ],
+        [
+          "task_get",
+          0.8227
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "memory_read",
+        "task_create",
+        "remote_check_memory",
+        "task_stop",
+        "remote_run_command",
+        "memory_list",
+        "remote_check_disk",
+        "task_get"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h094",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "task_list"
+      ],
+      "gold_ne": [
+        "task_list"
+      ],
+      "pred_sim_top8": [
+        [
+          "task_stop",
+          0.8236
+        ],
+        [
+          "task_get",
+          0.8156
+        ],
+        [
+          "task_output",
+          0.8145
+        ],
+        [
+          "remote_run_command",
+          0.8131
+        ],
+        [
+          "task_create",
+          0.8119
+        ],
+        [
+          "remote_grep",
+          0.804
+        ],
+        [
+          "task_list",
+          0.8031
+        ],
+        [
+          "local_write_report",
+          0.8026
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "task_stop",
+        "task_get",
+        "task_output",
+        "remote_run_command",
+        "task_create",
+        "remote_grep",
+        "task_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h095",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "task_output"
+      ],
+      "gold_ne": [
+        "task_output"
+      ],
+      "pred_sim_top8": [
+        [
+          "task_create",
+          0.8237
+        ],
+        [
+          "ingest_document",
+          0.8058
+        ],
+        [
+          "memory_read",
+          0.8045
+        ],
+        [
+          "todo_write",
+          0.8035
+        ],
+        [
+          "brief",
+          0.8023
+        ],
+        [
+          "remote_grep",
+          0.8021
+        ],
+        [
+          "web_search",
+          0.8011
+        ],
+        [
+          "memory_list",
+          0.7993
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "task_create",
+        "memory_read",
+        "todo_write",
+        "brief",
+        "remote_grep",
+        "web_search",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h096",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "task_stop"
+      ],
+      "gold_ne": [
+        "task_stop"
+      ],
+      "pred_sim_top8": [
+        [
+          "task_stop",
+          0.8348
+        ],
+        [
+          "remote_run_command",
+          0.8222
+        ],
+        [
+          "task_get",
+          0.819
+        ],
+        [
+          "task_output",
+          0.8177
+        ],
+        [
+          "task_create",
+          0.8137
+        ],
+        [
+          "exit_worktree",
+          0.8124
+        ],
+        [
+          "memory_read",
+          0.8123
+        ],
+        [
+          "remote_check_memory",
+          0.8067
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "task_stop",
+        "remote_run_command",
+        "task_get",
+        "task_output",
+        "task_create",
+        "exit_worktree",
+        "memory_read",
+        "remote_check_memory"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h097",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "task_get"
+      ],
+      "gold_ne": [
+        "task_get"
+      ],
+      "pred_sim_top8": [
+        [
+          "task_stop",
+          0.8332
+        ],
+        [
+          "task_create",
+          0.8314
+        ],
+        [
+          "task_output",
+          0.8296
+        ],
+        [
+          "task_get",
+          0.8148
+        ],
+        [
+          "task_list",
+          0.8116
+        ],
+        [
+          "exit_worktree",
+          0.8039
+        ],
+        [
+          "local_write_report",
+          0.7998
+        ],
+        [
+          "memory_read",
+          0.7993
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "task_stop",
+        "task_create",
+        "task_output",
+        "task_get",
+        "task_list",
+        "exit_worktree",
+        "memory_read"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h098",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "web_fetch"
+      ],
+      "gold_ne": [
+        "web_fetch"
+      ],
+      "pred_sim_top8": [
+        [
+          "memory_read",
+          0.8471
+        ],
+        [
+          "ingest_document",
+          0.8415
+        ],
+        [
+          "task_get",
+          0.8367
+        ],
+        [
+          "remote_check_memory",
+          0.8315
+        ],
+        [
+          "brief",
+          0.8298
+        ],
+        [
+          "custom_tool_read_source",
+          0.8262
+        ],
+        [
+          "memory_write",
+          0.8243
+        ],
+        [
+          "memory_list",
+          0.8243
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "memory_read",
+        "task_get",
+        "remote_check_memory"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h099",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "deep_research"
+      ],
+      "gold_ne": [
+        "deep_research"
+      ],
+      "pred_sim_top8": [
+        [
+          "brief",
+          0.8241
+        ],
+        [
+          "local_write_report",
+          0.8211
+        ],
+        [
+          "remote_grep",
+          0.8191
+        ],
+        [
+          "task_get",
+          0.8189
+        ],
+        [
+          "custom_tool_read_source",
+          0.8136
+        ],
+        [
+          "tool_search",
+          0.8134
+        ],
+        [
+          "todo_write",
+          0.8131
+        ],
+        [
+          "deep_research",
+          0.8087
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "brief",
+        "remote_grep",
+        "task_get",
+        "custom_tool_read_source",
+        "tool_search",
+        "todo_write",
+        "deep_research"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h100",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "agent"
+      ],
+      "gold_ne": [
+        "agent"
+      ],
+      "pred_sim_top8": [
+        [
+          "local_write_report",
+          0.8343
+        ],
+        [
+          "remote_check_memory",
+          0.8303
+        ],
+        [
+          "remote_write_file",
+          0.8297
+        ],
+        [
+          "remote_check_disk",
+          0.8296
+        ],
+        [
+          "remote_grep",
+          0.8293
+        ],
+        [
+          "todo_write",
+          0.8271
+        ],
+        [
+          "remote_run_command",
+          0.8266
+        ],
+        [
+          "remote_check_cpu",
+          0.8239
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_check_memory",
+        "remote_write_file",
+        "remote_check_disk",
+        "remote_grep",
+        "todo_write",
+        "remote_run_command",
+        "remote_check_cpu"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h101",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "list_mcp_resources"
+      ],
+      "gold_ne": [
+        "list_mcp_resources"
+      ],
+      "pred_sim_top8": [
+        [
+          "list_mcp_resources",
+          0.9112
+        ],
+        [
+          "read_mcp_resource",
+          0.8767
+        ],
+        [
+          "remote_check_cpu",
+          0.8325
+        ],
+        [
+          "remote_check_disk",
+          0.8236
+        ],
+        [
+          "memory_list",
+          0.8218
+        ],
+        [
+          "memory_read",
+          0.8201
+        ],
+        [
+          "remote_check_memory",
+          0.8194
+        ],
+        [
+          "remote_tail_log",
+          0.8189
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "remote_check_cpu",
+        "remote_check_disk",
+        "memory_list",
+        "memory_read",
+        "remote_check_memory",
+        "remote_tail_log"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h102",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "read_mcp_resource"
+      ],
+      "gold_ne": [
+        "read_mcp_resource"
+      ],
+      "pred_sim_top8": [
+        [
+          "read_mcp_resource",
+          0.8246
+        ],
+        [
+          "list_mcp_resources",
+          0.8239
+        ],
+        [
+          "task_create",
+          0.7946
+        ],
+        [
+          "task_get",
+          0.7857
+        ],
+        [
+          "memory_write",
+          0.7838
+        ],
+        [
+          "todo_write",
+          0.7836
+        ],
+        [
+          "memory_read",
+          0.7822
+        ],
+        [
+          "remote_run_command",
+          0.7819
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "read_mcp_resource",
+        "list_mcp_resources",
+        "task_create",
+        "task_get",
+        "memory_write",
+        "todo_write",
+        "memory_read",
+        "remote_run_command"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h103",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "skill_list"
+      ],
+      "gold_ne": [
+        "skill_list"
+      ],
+      "pred_sim_top8": [
+        [
+          "task_create",
+          0.8401
+        ],
+        [
+          "memory_list",
+          0.84
+        ],
+        [
+          "skill_save",
+          0.8386
+        ],
+        [
+          "memory_read",
+          0.8359
+        ],
+        [
+          "remote_run_command",
+          0.8347
+        ],
+        [
+          "remote_check_memory",
+          0.8322
+        ],
+        [
+          "remote_write_file",
+          0.8308
+        ],
+        [
+          "remote_check_disk",
+          0.8289
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "task_create",
+        "memory_list",
+        "skill_save",
+        "memory_read",
+        "remote_run_command",
+        "remote_check_memory",
+        "remote_write_file",
+        "remote_check_disk"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h104",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "skill_save"
+      ],
+      "gold_ne": [
+        "skill_save"
+      ],
+      "pred_sim_top8": [
+        [
+          "todo_write",
+          0.8125
+        ],
+        [
+          "remote_tail_log",
+          0.8117
+        ],
+        [
+          "list_mcp_resources",
+          0.8053
+        ],
+        [
+          "memory_read",
+          0.8036
+        ],
+        [
+          "local_write_report",
+          0.802
+        ],
+        [
+          "remote_grep",
+          0.8017
+        ],
+        [
+          "remote_run_command",
+          0.7991
+        ],
+        [
+          "memory_list",
+          0.7984
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "todo_write",
+        "remote_tail_log",
+        "list_mcp_resources",
+        "memory_read",
+        "remote_grep",
+        "remote_run_command",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h105",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "enter_worktree"
+      ],
+      "gold_ne": [
+        "enter_worktree"
+      ],
+      "pred_sim_top8": [
+        [
+          "remote_check_memory",
+          0.8343
+        ],
+        [
+          "remote_check_disk",
+          0.8333
+        ],
+        [
+          "memory_read",
+          0.8223
+        ],
+        [
+          "task_stop",
+          0.822
+        ],
+        [
+          "custom_tool_read_source",
+          0.8213
+        ],
+        [
+          "task_output",
+          0.8204
+        ],
+        [
+          "remote_check_cpu",
+          0.8197
+        ],
+        [
+          "task_get",
+          0.819
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_check_memory",
+        "remote_check_disk",
+        "memory_read",
+        "task_stop",
+        "custom_tool_read_source",
+        "task_output",
+        "remote_check_cpu",
+        "task_get"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h106",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "exit_worktree"
+      ],
+      "gold_ne": [
+        "exit_worktree"
+      ],
+      "pred_sim_top8": [
+        [
+          "remote_check_cpu",
+          0.84
+        ],
+        [
+          "remote_check_disk",
+          0.839
+        ],
+        [
+          "remote_check_memory",
+          0.8383
+        ],
+        [
+          "exit_worktree",
+          0.8354
+        ],
+        [
+          "task_stop",
+          0.8299
+        ],
+        [
+          "remote_write_file",
+          0.8267
+        ],
+        [
+          "memory_read",
+          0.8252
+        ],
+        [
+          "remote_grep",
+          0.8228
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_check_cpu",
+        "remote_check_disk",
+        "remote_check_memory",
+        "exit_worktree",
+        "task_stop",
+        "remote_write_file",
+        "memory_read",
+        "remote_grep"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h107",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "brief"
+      ],
+      "gold_ne": [
+        "brief"
+      ],
+      "pred_sim_top8": [
+        [
+          "brief",
+          0.8532
+        ],
+        [
+          "task_get",
+          0.8227
+        ],
+        [
+          "memory_read",
+          0.8171
+        ],
+        [
+          "task_output",
+          0.8142
+        ],
+        [
+          "remote_check_cpu",
+          0.8126
+        ],
+        [
+          "task_list",
+          0.8113
+        ],
+        [
+          "task_stop",
+          0.8109
+        ],
+        [
+          "remote_grep",
+          0.8105
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "brief",
+        "task_get",
+        "memory_read",
+        "task_output",
+        "remote_check_cpu",
+        "task_list",
+        "task_stop",
+        "remote_grep"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h108",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "search_knowledge_base"
+      ],
+      "gold_ne": [
+        "search_knowledge_base"
+      ],
+      "pred_sim_top8": [
+        [
+          "ingest_document",
+          0.8244
+        ],
+        [
+          "brief",
+          0.8233
+        ],
+        [
+          "list_mcp_resources",
+          0.815
+        ],
+        [
+          "read_mcp_resource",
+          0.8113
+        ],
+        [
+          "todo_write",
+          0.8102
+        ],
+        [
+          "task_get",
+          0.8095
+        ],
+        [
+          "custom_tool_read_source",
+          0.809
+        ],
+        [
+          "remote_grep",
+          0.8082
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "brief",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "todo_write",
+        "task_get",
+        "custom_tool_read_source",
+        "remote_grep"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h109",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "ingest_document"
+      ],
+      "gold_ne": [
+        "ingest_document"
+      ],
+      "pred_sim_top8": [
+        [
+          "task_get",
+          0.8317
+        ],
+        [
+          "task_stop",
+          0.8288
+        ],
+        [
+          "remote_check_disk",
+          0.8281
+        ],
+        [
+          "task_list",
+          0.8261
+        ],
+        [
+          "remote_check_memory",
+          0.8246
+        ],
+        [
+          "task_output",
+          0.8221
+        ],
+        [
+          "remote_check_cpu",
+          0.8106
+        ],
+        [
+          "ingest_document",
+          0.8095
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "task_get",
+        "task_stop",
+        "remote_check_disk",
+        "task_list",
+        "remote_check_memory",
+        "task_output",
+        "remote_check_cpu"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h110",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "todo_write"
+      ],
+      "gold_ne": [
+        "todo_write"
+      ],
+      "pred_sim_top8": [
+        [
+          "todo_write",
+          0.8703
+        ],
+        [
+          "remote_check_cpu",
+          0.8186
+        ],
+        [
+          "memory_list",
+          0.8173
+        ],
+        [
+          "memory_read",
+          0.8166
+        ],
+        [
+          "memory_write",
+          0.8164
+        ],
+        [
+          "remote_check_memory",
+          0.8121
+        ],
+        [
+          "remote_check_disk",
+          0.8078
+        ],
+        [
+          "remote_run_command",
+          0.805
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "todo_write",
+        "remote_check_cpu",
+        "memory_list",
+        "memory_read",
+        "memory_write",
+        "remote_check_memory",
+        "remote_check_disk",
+        "remote_run_command"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h111",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "memory_write"
+      ],
+      "gold_ne": [
+        "memory_write"
+      ],
+      "pred_sim_top8": [
+        [
+          "brief",
+          0.8255
+        ],
+        [
+          "task_output",
+          0.8237
+        ],
+        [
+          "remote_grep",
+          0.8156
+        ],
+        [
+          "task_get",
+          0.8147
+        ],
+        [
+          "remote_read_file",
+          0.8139
+        ],
+        [
+          "remote_check_memory",
+          0.8098
+        ],
+        [
+          "ingest_document",
+          0.8097
+        ],
+        [
+          "task_list",
+          0.8083
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "brief",
+        "task_output",
+        "remote_grep",
+        "task_get",
+        "remote_read_file",
+        "remote_check_memory",
+        "task_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h112",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "memory_list"
+      ],
+      "gold_ne": [
+        "memory_list"
+      ],
+      "pred_sim_top8": [
+        [
+          "memory_list",
+          0.8407
+        ],
+        [
+          "memory_read",
+          0.8367
+        ],
+        [
+          "todo_write",
+          0.8309
+        ],
+        [
+          "memory_write",
+          0.8288
+        ],
+        [
+          "custom_tool_read_source",
+          0.8274
+        ],
+        [
+          "task_list",
+          0.8248
+        ],
+        [
+          "task_get",
+          0.822
+        ],
+        [
+          "list_mcp_resources",
+          0.8219
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "memory_list",
+        "memory_read",
+        "todo_write",
+        "memory_write",
+        "custom_tool_read_source",
+        "task_list",
+        "task_get",
+        "list_mcp_resources"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h113",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "custom_tool_read_source"
+      ],
+      "gold_ne": [
+        "custom_tool_read_source"
+      ],
+      "pred_sim_top8": [
+        [
+          "remote_check_cpu",
+          0.8332
+        ],
+        [
+          "remote_glob",
+          0.8319
+        ],
+        [
+          "remote_check_disk",
+          0.8239
+        ],
+        [
+          "remote_check_memory",
+          0.8227
+        ],
+        [
+          "remote_grep",
+          0.8222
+        ],
+        [
+          "custom_tool_read_source",
+          0.8214
+        ],
+        [
+          "remote_tail_log",
+          0.817
+        ],
+        [
+          "remote_run_command",
+          0.817
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_check_cpu",
+        "remote_glob",
+        "remote_check_disk",
+        "remote_check_memory",
+        "remote_grep",
+        "custom_tool_read_source",
+        "remote_tail_log",
+        "remote_run_command"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h114",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "create_tool"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "tool_search",
+          0.825
+        ],
+        [
+          "remote_run_command",
+          0.8233
+        ],
+        [
+          "remote_grep",
+          0.8232
+        ],
+        [
+          "todo_write",
+          0.8194
+        ],
+        [
+          "custom_tool_read_source",
+          0.8178
+        ],
+        [
+          "remote_edit_file",
+          0.8167
+        ],
+        [
+          "memory_read",
+          0.8164
+        ],
+        [
+          "remote_glob",
+          0.8155
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "tool_search",
+        "remote_run_command",
+        "remote_grep",
+        "todo_write",
+        "custom_tool_read_source",
+        "remote_edit_file",
+        "memory_read",
+        "remote_glob"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h115",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "edit_file",
+        "read_file",
+        "bash"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "task_stop",
+          0.8435
+        ],
+        [
+          "task_output",
+          0.8371
+        ],
+        [
+          "remote_check_memory",
+          0.8323
+        ],
+        [
+          "memory_read",
+          0.8322
+        ],
+        [
+          "remote_check_cpu",
+          0.8322
+        ],
+        [
+          "remote_run_command",
+          0.8291
+        ],
+        [
+          "web_fetch",
+          0.8291
+        ],
+        [
+          "todo_write",
+          0.8289
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "task_stop",
+        "task_output",
+        "remote_check_memory",
+        "memory_read",
+        "remote_check_cpu",
+        "remote_run_command",
+        "web_fetch",
+        "todo_write"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h116",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "skill_read",
+        "write_file",
+        "bash"
+      ],
+      "gold_ne": [
+        "skill_read"
+      ],
+      "pred_sim_top8": [
+        [
+          "memory_write",
+          0.8336
+        ],
+        [
+          "todo_write",
+          0.8169
+        ],
+        [
+          "ingest_document",
+          0.8124
+        ],
+        [
+          "task_create",
+          0.8117
+        ],
+        [
+          "local_write_report",
+          0.8087
+        ],
+        [
+          "memory_list",
+          0.8069
+        ],
+        [
+          "memory_read",
+          0.8033
+        ],
+        [
+          "tool_search",
+          0.7999
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "memory_write",
+        "todo_write",
+        "task_create",
+        "memory_list",
+        "memory_read",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h117",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "memory_read",
+        "read_file",
+        "edit_file"
+      ],
+      "gold_ne": [
+        "memory_read"
+      ],
+      "pred_sim_top8": [
+        [
+          "remote_check_cpu",
+          0.8603
+        ],
+        [
+          "remote_check_memory",
+          0.8577
+        ],
+        [
+          "remote_check_disk",
+          0.8527
+        ],
+        [
+          "remote_glob",
+          0.8497
+        ],
+        [
+          "remote_run_command",
+          0.8475
+        ],
+        [
+          "memory_read",
+          0.8427
+        ],
+        [
+          "memory_list",
+          0.8376
+        ],
+        [
+          "remote_grep",
+          0.8375
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_check_cpu",
+        "remote_check_memory",
+        "remote_check_disk",
+        "remote_glob",
+        "remote_run_command",
+        "memory_read",
+        "memory_list",
+        "remote_grep"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h118",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "custom_tool_update_source",
+        "custom_tool_read_source"
+      ],
+      "gold_ne": [
+        "custom_tool_update_source",
+        "custom_tool_read_source"
+      ],
+      "pred_sim_top8": [
+        [
+          "task_stop",
+          0.8406
+        ],
+        [
+          "task_output",
+          0.8304
+        ],
+        [
+          "remote_check_memory",
+          0.8285
+        ],
+        [
+          "remote_grep",
+          0.8281
+        ],
+        [
+          "brief",
+          0.8249
+        ],
+        [
+          "remote_run_command",
+          0.8235
+        ],
+        [
+          "tool_search",
+          0.8232
+        ],
+        [
+          "custom_tool_read_source",
+          0.823
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "task_stop",
+        "task_output",
+        "remote_check_memory",
+        "remote_grep",
+        "brief",
+        "remote_run_command",
+        "tool_search",
+        "custom_tool_read_source"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h119",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "grep",
+        "edit_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "task_stop",
+          0.8072
+        ],
+        [
+          "memory_list",
+          0.8068
+        ],
+        [
+          "list_mcp_resources",
+          0.806
+        ],
+        [
+          "task_output",
+          0.804
+        ],
+        [
+          "memory_read",
+          0.8035
+        ],
+        [
+          "remote_check_memory",
+          0.8027
+        ],
+        [
+          "memory_write",
+          0.8025
+        ],
+        [
+          "remote_grep",
+          0.8024
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "task_stop",
+        "memory_list",
+        "list_mcp_resources",
+        "task_output",
+        "memory_read",
+        "remote_check_memory",
+        "memory_write",
+        "remote_grep"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h120",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "glob",
+        "read_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "list_mcp_resources",
+          0.837
+        ],
+        [
+          "remote_glob",
+          0.8255
+        ],
+        [
+          "remote_grep",
+          0.8255
+        ],
+        [
+          "memory_list",
+          0.8253
+        ],
+        [
+          "memory_read",
+          0.8219
+        ],
+        [
+          "remote_check_cpu",
+          0.8203
+        ],
+        [
+          "remote_check_memory",
+          0.8188
+        ],
+        [
+          "remote_run_command",
+          0.8171
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "list_mcp_resources",
+        "remote_glob",
+        "remote_grep",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h121",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "web_search",
+        "edit_file"
+      ],
+      "gold_ne": [
+        "web_search"
+      ],
+      "pred_sim_top8": [
+        [
+          "remote_check_memory",
+          0.8176
+        ],
+        [
+          "memory_read",
+          0.8165
+        ],
+        [
+          "remote_check_disk",
+          0.8094
+        ],
+        [
+          "task_get",
+          0.8073
+        ],
+        [
+          "ingest_document",
+          0.8064
+        ],
+        [
+          "remote_grep",
+          0.8043
+        ],
+        [
+          "remote_check_cpu",
+          0.804
+        ],
+        [
+          "task_stop",
+          0.8014
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_check_memory",
+        "memory_read",
+        "remote_check_disk",
+        "task_get",
+        "remote_grep",
+        "remote_check_cpu",
+        "task_stop"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h122",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "task_create",
+        "task_output"
+      ],
+      "gold_ne": [
+        "task_create",
+        "task_output"
+      ],
+      "pred_sim_top8": [
+        [
+          "task_create",
+          0.8448
+        ],
+        [
+          "task_stop",
+          0.8318
+        ],
+        [
+          "remote_run_command",
+          0.8313
+        ],
+        [
+          "memory_read",
+          0.8289
+        ],
+        [
+          "task_get",
+          0.827
+        ],
+        [
+          "task_output",
+          0.827
+        ],
+        [
+          "task_list",
+          0.813
+        ],
+        [
+          "remote_check_memory",
+          0.8111
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "task_create",
+        "task_stop",
+        "remote_run_command",
+        "memory_read",
+        "task_get",
+        "task_output",
+        "task_list",
+        "remote_check_memory"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h123",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "ask_user",
+        "write_file"
+      ],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "remote_check_cpu",
+          0.8327
+        ],
+        [
+          "remote_glob",
+          0.831
+        ],
+        [
+          "remote_grep",
+          0.8301
+        ],
+        [
+          "remote_write_file",
+          0.8295
+        ],
+        [
+          "remote_run_command",
+          0.8292
+        ],
+        [
+          "memory_read",
+          0.8227
+        ],
+        [
+          "remote_check_memory",
+          0.8175
+        ],
+        [
+          "custom_tool_read_source",
+          0.817
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_check_cpu",
+        "remote_glob",
+        "remote_grep",
+        "remote_write_file",
+        "remote_run_command",
+        "memory_read",
+        "remote_check_memory",
+        "custom_tool_read_source"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h124",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "remote_check_cpu"
+      ],
+      "gold_ne": [
+        "remote_check_cpu"
+      ],
+      "pred_sim_top8": [
+        [
+          "remote_check_cpu",
+          0.871
+        ],
+        [
+          "remote_check_memory",
+          0.8523
+        ],
+        [
+          "remote_run_command",
+          0.8469
+        ],
+        [
+          "remote_check_disk",
+          0.8434
+        ],
+        [
+          "remote_tail_log",
+          0.8413
+        ],
+        [
+          "remote_glob",
+          0.8388
+        ],
+        [
+          "remote_grep",
+          0.835
+        ],
+        [
+          "remote_edit_file",
+          0.8311
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_check_cpu",
+        "remote_check_memory",
+        "remote_run_command",
+        "remote_check_disk",
+        "remote_tail_log",
+        "remote_glob",
+        "remote_grep",
+        "remote_edit_file"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h125",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "remote_check_disk"
+      ],
+      "gold_ne": [
+        "remote_check_disk"
+      ],
+      "pred_sim_top8": [
+        [
+          "list_mcp_resources",
+          0.8133
+        ],
+        [
+          "remote_check_memory",
+          0.8081
+        ],
+        [
+          "remote_check_cpu",
+          0.8062
+        ],
+        [
+          "memory_read",
+          0.8055
+        ],
+        [
+          "remote_check_disk",
+          0.8053
+        ],
+        [
+          "task_create",
+          0.8043
+        ],
+        [
+          "remote_grep",
+          0.8017
+        ],
+        [
+          "memory_list",
+          0.7985
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "list_mcp_resources",
+        "remote_check_memory",
+        "remote_check_cpu",
+        "memory_read",
+        "remote_check_disk",
+        "task_create",
+        "remote_grep",
+        "memory_list"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h126",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "remote_read_file"
+      ],
+      "gold_ne": [
+        "remote_read_file"
+      ],
+      "pred_sim_top8": [
+        [
+          "remote_run_command",
+          0.8543
+        ],
+        [
+          "remote_check_disk",
+          0.8528
+        ],
+        [
+          "remote_check_memory",
+          0.8479
+        ],
+        [
+          "remote_check_cpu",
+          0.8464
+        ],
+        [
+          "remote_write_file",
+          0.8365
+        ],
+        [
+          "remote_grep",
+          0.8365
+        ],
+        [
+          "remote_glob",
+          0.8357
+        ],
+        [
+          "remote_tail_log",
+          0.8311
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_run_command",
+        "remote_check_disk",
+        "remote_check_memory",
+        "remote_check_cpu"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h127",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "remote_grep"
+      ],
+      "gold_ne": [
+        "remote_grep"
+      ],
+      "pred_sim_top8": [
+        [
+          "web_search",
+          0.9863
+        ],
+        [
+          "remote_grep",
+          0.8852
+        ],
+        [
+          "remote_check_disk",
+          0.8839
+        ],
+        [
+          "remote_run_command",
+          0.8821
+        ],
+        [
+          "remote_check_memory",
+          0.8797
+        ],
+        [
+          "remote_read_file",
+          0.8795
+        ],
+        [
+          "remote_glob",
+          0.8789
+        ],
+        [
+          "remote_check_cpu",
+          0.8778
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "web_search",
+        "remote_grep",
+        "remote_check_disk",
+        "remote_run_command",
+        "remote_check_memory",
+        "remote_read_file",
+        "remote_glob",
+        "remote_check_cpu"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h128",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "remote_run_command"
+      ],
+      "gold_ne": [
+        "remote_run_command"
+      ],
+      "pred_sim_top8": [
+        [
+          "remote_run_command",
+          0.8637
+        ],
+        [
+          "remote_check_cpu",
+          0.8448
+        ],
+        [
+          "remote_check_disk",
+          0.8415
+        ],
+        [
+          "remote_check_memory",
+          0.841
+        ],
+        [
+          "remote_glob",
+          0.8405
+        ],
+        [
+          "remote_tail_log",
+          0.8321
+        ],
+        [
+          "remote_grep",
+          0.8316
+        ],
+        [
+          "list_mcp_resources",
+          0.8261
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_run_command",
+        "remote_check_cpu",
+        "remote_check_disk",
+        "remote_check_memory",
+        "remote_glob",
+        "remote_tail_log",
+        "remote_grep",
+        "list_mcp_resources"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h129",
+      "lang": "en",
+      "type": "single",
+      "split": "holdout",
+      "gold_full": [
+        "remote_tail_log"
+      ],
+      "gold_ne": [
+        "remote_tail_log"
+      ],
+      "pred_sim_top8": [
+        [
+          "remote_tail_log",
+          0.8738
+        ],
+        [
+          "remote_check_memory",
+          0.8561
+        ],
+        [
+          "remote_check_cpu",
+          0.8516
+        ],
+        [
+          "remote_run_command",
+          0.8488
+        ],
+        [
+          "remote_check_disk",
+          0.8476
+        ],
+        [
+          "remote_read_file",
+          0.8407
+        ],
+        [
+          "task_output",
+          0.8383
+        ],
+        [
+          "remote_glob",
+          0.8378
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_tail_log",
+        "remote_check_memory",
+        "remote_check_cpu",
+        "remote_run_command",
+        "remote_check_disk",
+        "remote_read_file",
+        "task_output",
+        "remote_glob"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h130",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "remote_glob",
+        "remote_read_file"
+      ],
+      "gold_ne": [
+        "remote_glob",
+        "remote_read_file"
+      ],
+      "pred_sim_top8": [
+        [
+          "remote_check_memory",
+          0.8479
+        ],
+        [
+          "list_mcp_resources",
+          0.8465
+        ],
+        [
+          "remote_check_cpu",
+          0.8444
+        ],
+        [
+          "remote_glob",
+          0.8428
+        ],
+        [
+          "remote_grep",
+          0.8421
+        ],
+        [
+          "remote_check_disk",
+          0.8416
+        ],
+        [
+          "remote_run_command",
+          0.8386
+        ],
+        [
+          "memory_read",
+          0.8374
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_check_memory",
+        "list_mcp_resources",
+        "remote_check_cpu",
+        "remote_glob",
+        "remote_grep",
+        "remote_check_disk",
+        "remote_run_command",
+        "memory_read"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h131",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "remote_check_memory",
+        "remote_tail_log"
+      ],
+      "gold_ne": [
+        "remote_check_memory",
+        "remote_tail_log"
+      ],
+      "pred_sim_top8": [
+        [
+          "remote_check_memory",
+          0.8924
+        ],
+        [
+          "remote_check_disk",
+          0.8719
+        ],
+        [
+          "remote_check_cpu",
+          0.8621
+        ],
+        [
+          "remote_run_command",
+          0.8541
+        ],
+        [
+          "memory_read",
+          0.8493
+        ],
+        [
+          "remote_tail_log",
+          0.8463
+        ],
+        [
+          "remote_grep",
+          0.8437
+        ],
+        [
+          "remote_write_file",
+          0.8397
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_check_memory",
+        "remote_check_disk",
+        "remote_check_cpu",
+        "remote_run_command",
+        "memory_read",
+        "remote_tail_log",
+        "remote_grep",
+        "remote_write_file"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h132",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "remote_edit_file",
+        "remote_run_command"
+      ],
+      "gold_ne": [
+        "remote_edit_file",
+        "remote_run_command"
+      ],
+      "pred_sim_top8": [
+        [
+          "remote_check_memory",
+          0.8478
+        ],
+        [
+          "remote_check_disk",
+          0.8429
+        ],
+        [
+          "remote_check_cpu",
+          0.8379
+        ],
+        [
+          "remote_run_command",
+          0.8328
+        ],
+        [
+          "remote_write_file",
+          0.821
+        ],
+        [
+          "remote_edit_file",
+          0.8199
+        ],
+        [
+          "remote_grep",
+          0.8192
+        ],
+        [
+          "memory_read",
+          0.8179
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_check_memory",
+        "remote_check_disk",
+        "remote_check_cpu",
+        "remote_run_command",
+        "remote_write_file",
+        "remote_edit_file",
+        "remote_grep",
+        "memory_read"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h133",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "remote_write_file",
+        "remote_run_command"
+      ],
+      "gold_ne": [
+        "remote_write_file",
+        "remote_run_command"
+      ],
+      "pred_sim_top8": [
+        [
+          "remote_run_command",
+          0.8532
+        ],
+        [
+          "task_create",
+          0.844
+        ],
+        [
+          "remote_check_disk",
+          0.8426
+        ],
+        [
+          "remote_check_memory",
+          0.8423
+        ],
+        [
+          "remote_write_file",
+          0.8406
+        ],
+        [
+          "remote_glob",
+          0.8399
+        ],
+        [
+          "remote_check_cpu",
+          0.8373
+        ],
+        [
+          "remote_grep",
+          0.8279
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_run_command",
+        "task_create",
+        "remote_check_disk",
+        "remote_check_memory",
+        "remote_write_file",
+        "remote_glob",
+        "remote_check_cpu",
+        "remote_grep"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h134",
+      "lang": "en",
+      "type": "multi",
+      "split": "holdout",
+      "gold_full": [
+        "remote_tail_log",
+        "local_write_report"
+      ],
+      "gold_ne": [
+        "remote_tail_log",
+        "local_write_report"
+      ],
+      "pred_sim_top8": [
+        [
+          "local_write_report",
+          0.8793
+        ],
+        [
+          "remote_tail_log",
+          0.8526
+        ],
+        [
+          "remote_check_memory",
+          0.8483
+        ],
+        [
+          "remote_check_disk",
+          0.8441
+        ],
+        [
+          "remote_write_file",
+          0.844
+        ],
+        [
+          "remote_edit_file",
+          0.8432
+        ],
+        [
+          "remote_run_command",
+          0.8407
+        ],
+        [
+          "todo_write",
+          0.8378
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_tail_log",
+        "remote_check_memory",
+        "remote_check_disk",
+        "remote_write_file",
+        "remote_edit_file",
+        "remote_run_command",
+        "todo_write"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h135",
+      "lang": "en",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "remote_check_memory",
+          0.7843
+        ],
+        [
+          "remote_check_disk",
+          0.7724
+        ],
+        [
+          "remote_check_cpu",
+          0.7718
+        ],
+        [
+          "todo_write",
+          0.7707
+        ],
+        [
+          "remote_grep",
+          0.7707
+        ],
+        [
+          "remote_write_file",
+          0.7699
+        ],
+        [
+          "remote_glob",
+          0.7685
+        ],
+        [
+          "remote_tail_log",
+          0.7662
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_check_memory",
+        "remote_check_disk",
+        "remote_check_cpu",
+        "todo_write",
+        "remote_grep",
+        "remote_write_file",
+        "remote_glob",
+        "remote_tail_log"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h136",
+      "lang": "en",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "memory_write",
+          0.7944
+        ],
+        [
+          "todo_write",
+          0.7915
+        ],
+        [
+          "custom_tool_read_source",
+          0.7904
+        ],
+        [
+          "agent",
+          0.7863
+        ],
+        [
+          "brief",
+          0.7846
+        ],
+        [
+          "local_write_report",
+          0.7842
+        ],
+        [
+          "memory_read",
+          0.7831
+        ],
+        [
+          "remote_glob",
+          0.7827
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "memory_write",
+        "todo_write",
+        "custom_tool_read_source",
+        "agent"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h137",
+      "lang": "en",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "task_create",
+          0.8394
+        ],
+        [
+          "agent",
+          0.8219
+        ],
+        [
+          "remote_run_command",
+          0.8169
+        ],
+        [
+          "todo_write",
+          0.81
+        ],
+        [
+          "task_get",
+          0.8093
+        ],
+        [
+          "remote_check_cpu",
+          0.8081
+        ],
+        [
+          "task_output",
+          0.8077
+        ],
+        [
+          "memory_read",
+          0.8074
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "task_create",
+        "agent",
+        "remote_run_command",
+        "todo_write",
+        "task_get",
+        "remote_check_cpu",
+        "task_output",
+        "memory_read"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h138",
+      "lang": "en",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "remote_check_memory",
+          0.8074
+        ],
+        [
+          "brief",
+          0.8049
+        ],
+        [
+          "remote_check_disk",
+          0.8022
+        ],
+        [
+          "remote_grep",
+          0.8007
+        ],
+        [
+          "memory_read",
+          0.8006
+        ],
+        [
+          "todo_write",
+          0.7971
+        ],
+        [
+          "memory_write",
+          0.7949
+        ],
+        [
+          "remote_check_cpu",
+          0.7949
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "remote_check_memory",
+        "brief",
+        "remote_check_disk",
+        "remote_grep",
+        "memory_read",
+        "todo_write",
+        "memory_write",
+        "remote_check_cpu"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h139",
+      "lang": "en",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "brief",
+          0.7829
+        ],
+        [
+          "web_search",
+          0.7744
+        ],
+        [
+          "task_list",
+          0.7739
+        ],
+        [
+          "tool_search",
+          0.7735
+        ],
+        [
+          "web_fetch",
+          0.7723
+        ],
+        [
+          "list_mcp_resources",
+          0.7698
+        ],
+        [
+          "ingest_document",
+          0.7679
+        ],
+        [
+          "task_get",
+          0.7665
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "brief",
+        "web_search",
+        "task_list",
+        "tool_search"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    },
+    {
+      "id": "h140",
+      "lang": "en",
+      "type": "none",
+      "split": "holdout",
+      "gold_full": [],
+      "gold_ne": [],
+      "pred_sim_top8": [
+        [
+          "list_mcp_resources",
+          0.8451
+        ],
+        [
+          "read_mcp_resource",
+          0.835
+        ],
+        [
+          "custom_tool_read_source",
+          0.8145
+        ],
+        [
+          "remote_grep",
+          0.8119
+        ],
+        [
+          "remote_read_file",
+          0.8101
+        ],
+        [
+          "memory_write",
+          0.81
+        ],
+        [
+          "task_create",
+          0.8091
+        ],
+        [
+          "ingest_document",
+          0.8068
+        ]
+      ],
+      "delivered": [
+        "ask_user",
+        "bash",
+        "edit_file",
+        "write_file",
+        "glob",
+        "read_file",
+        "grep",
+        "list_mcp_resources",
+        "read_mcp_resource",
+        "custom_tool_read_source",
+        "remote_grep"
+      ],
+      "rag_failed": false,
+      "none_pred": false
+    }
+  ]
+}

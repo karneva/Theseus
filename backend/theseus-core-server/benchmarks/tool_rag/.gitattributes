@@ -1,2 +1,4 @@
 # 동결 평가셋은 바이트 그대로 유지합니다(체크아웃 시 CRLF 변환 금지).
 eval_set.jsonl -text
+holdout_set.jsonl -text
+calibration_set.jsonl -text
