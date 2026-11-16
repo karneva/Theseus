@@ -1,4 +1,4 @@
-"""현재 저장소의 ToolRetriever를 수정 없이 감싸는 베이스라인 어댑터.
+"""v1 ToolRetriever(legacy_v1.py, f9862e4 동결 사본)를 수정 없이 감싸는 베이스라인 어댑터.
 
 rank()   : retrieve_top_k와 같은 점수(E5 코사인 + _rerank_by_keyword)로 전체 도구를 정렬하고,
            SIMILARITY_THRESHOLD 미만에서 끊습니다(동결 벤치 rank_from_scores와 동일).
@@ -36,7 +36,7 @@ class BaselineRetriever:
 
     # --- 하네스 훅 ---------------------------------------------------
     def load(self) -> None:
-        from theseus_engine.core.tool_retriever import TOOL_EXAMPLE_QUERIES, ToolRetriever
+        from .legacy_v1 import TOOL_EXAMPLE_QUERIES, ToolRetriever
         from theseus_engine.tools.core.base_tools import ToolRegistry
 
         if self._retr is not None:
@@ -54,7 +54,7 @@ class BaselineRetriever:
         self._run(self._retr._ensure_indexed())
 
     def rank(self, query: str) -> list[tuple[str, float]]:
-        from theseus_engine.core.tool_retriever import ESSENTIAL_TOOL_NAMES, SIMILARITY_THRESHOLD
+        from .legacy_v1 import ESSENTIAL_TOOL_NAMES, SIMILARITY_THRESHOLD
 
         r = self._retr
         qv = r._get_cached_query_vec(f"query: {query}")
@@ -84,10 +84,10 @@ class BaselineRetriever:
         self._retr._query_cache_order.clear()
 
     def meta(self) -> dict:
-        from theseus_engine.core.tool_retriever import SIMILARITY_THRESHOLD
+        from .legacy_v1 import SIMILARITY_THRESHOLD
 
         return {
-            "wraps": "theseus_engine.core.tool_retriever.ToolRetriever (unchanged)",
+            "wraps": "benchmarks.tool_rag.legacy_v1.ToolRetriever (v1 frozen copy of f9862e4 tool_retriever.py)",
             "model": _env.MODEL_NAME,
             "model_revision_expected": _env.MODEL_REVISION,
             "model_revision_cached_main": _env.cached_main_revision(),

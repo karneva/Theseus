@@ -1,0 +1,32 @@
+{
+  "embedder_fingerprint": "onnx:7486bedf9a52c6bab73586272c5bdc866ac077a77d6aac4ff1d8f3bdb02c7610:spm:512:mean",
+  "recipe_version": "v2.1",
+  "none_rule": {
+    "w_top1": -96.1665380086168,
+    "w_cov": -3.350519611540678,
+    "b": 79.77115953481427
+  },
+  "equivalent": "top1 + 0.0348*cov < 0.82951 -> none",
+  "fit": {
+    "split": "dev",
+    "registry": "core",
+    "n": 107,
+    "n_none": 18,
+    "method": "class-balanced L2 logistic regression [top1, cov] + threshold (false-none <= cap, max F1)",
+    "cap": 0.05,
+    "in_sample": {
+      "tp": 13,
+      "fp": 4,
+      "fn": 5
+    },
+    "cv_5fold_x20": {
+      "precision": 0.7472982042467335,
+      "recall": 0.5833333333333333,
+      "f1": 0.6534351446362748,
+      "f1_sd": 0.0321858829253779,
+      "false_none": 0.04044943820224719
+    },
+    "eval_set_sha256": "7777d3b30a5b64111dc2d6a3d5efeeb6122ac7d4b8cfe3778347285df7f35713",
+    "date": "2026-11-16"
+  }
+}

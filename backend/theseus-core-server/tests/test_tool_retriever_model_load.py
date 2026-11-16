@@ -1,7 +1,7 @@
-"""ToolRetriever의 임베딩 모델 첫 로드가 이벤트 루프를 막지 않는지 검증합니다.
+"""Tool RAG 검색기의 첫 모델 로드·인덱스 구축이 이벤트 루프를 막지 않는지 검증합니다.
 
-첫 로드(torch import, 모델 다운로드, 가중치 로드)는 수십 초가 걸립니다. 이벤트 루프에서 바로 돌리면
-같은 루프의 Kafka consumer heartbeat가 끊겨 group에서 빠지고 /health와 다른 스트림도 멈춥니다.
+첫 로드를 이벤트 루프에서 바로 돌리면 같은 루프의 Kafka consumer heartbeat가 끊겨 group에서 빠지고
+/health와 다른 스트림도 멈춥니다. v2에서는 retrieve()가 retrieve_sync를 스레드에서 돌립니다.
 """
 
 import asyncio
@@ -10,47 +10,47 @@ import time
 import unittest
 from unittest.mock import patch
 
-import numpy as np
-
-from theseus_engine.core.tool_retriever import ToolRetriever
-
-
-class _FakeTool:
-    def __init__(self, name: str) -> None:
-        self.name = name
-        self.description = f"{name} description"
+from tests.fixtures.tool_rag_fakes import FakeEmbedder, fake_settings
+from theseus_engine.core.tool_rag import embedding
+from theseus_engine.core.tool_rag.cache import EmbeddingCache
+from theseus_engine.core.tool_rag.retriever import ToolRetriever
+from theseus_engine.tools.core import ALL_CORE_TOOLS
+from theseus_engine.tools.core.base_tools import ToolRegistry
 
 
-class _FakeRegistry:
-    def __init__(self, names: list[str]) -> None:
-        self._tools = [_FakeTool(n) for n in names]
+def _registry() -> ToolRegistry:
+    reg = ToolRegistry()
+    for cls in ALL_CORE_TOOLS[:6]:
+        reg.register(cls())
+    return reg
 
-    def list_tools(self):
-        return list(self._tools)
 
+class _SlowEmbedder(FakeEmbedder):
+    instances = 0
+    init_threads: list[int] = []
 
-class _FakeModel:
-    def encode(self, texts, **_kwargs):
-        return np.ones((len(texts), 4))
+    def __init__(self) -> None:
+        super().__init__()
+        type(self).instances += 1
+        type(self).init_threads.append(threading.get_ident())
+        time.sleep(0.3)
 
 
 class ToolRetrieverModelLoadTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        ToolRetriever._instance = None
+        embedding.reset_embedders()
+        _SlowEmbedder.instances = 0
+        _SlowEmbedder.init_threads = []
+        self._patch = patch.object(embedding, "OnnxE5Embedder", lambda *a, **k: _SlowEmbedder())
+        self._patch.start()
+        self.retriever = ToolRetriever(settings=fake_settings(none_mode="off"), cache=EmbeddingCache(None))
 
     def tearDown(self) -> None:
-        ToolRetriever._instance = None
+        self._patch.stop()
+        embedding.reset_embedders()
 
     async def test_first_model_load_runs_off_the_event_loop(self) -> None:
-        retriever = ToolRetriever(_FakeRegistry(["glob", "grep"]))
         loop_thread = threading.get_ident()
-        load_threads: list[int] = []
-
-        def slow_load(self_: ToolRetriever) -> None:
-            load_threads.append(threading.get_ident())
-            time.sleep(0.3)
-            self_._model = _FakeModel()
-
         ticks = 0
 
         async def ticker() -> None:
@@ -59,48 +59,36 @@ class ToolRetrieverModelLoadTest(unittest.IsolatedAsyncioTestCase):
                 await asyncio.sleep(0.02)
                 ticks += 1
 
-        with patch.object(ToolRetriever, "_load_model", slow_load):
-            ticker_task = asyncio.create_task(ticker())
-            try:
-                await retriever._ensure_indexed()
-            finally:
-                ticker_task.cancel()
+        ticker_task = asyncio.create_task(ticker())
+        try:
+            result = await self.retriever.retrieve("파일 읽어줘", _registry())
+        finally:
+            ticker_task.cancel()
 
-        self.assertEqual(len(load_threads), 1)
-        self.assertNotEqual(load_threads[0], loop_thread)
+        self.assertEqual(_SlowEmbedder.instances, 1)
+        self.assertNotEqual(_SlowEmbedder.init_threads[0], loop_thread)
         # 로드하는 0.3초 동안 루프가 계속 돌았어야 합니다(막혔다면 0~1회).
         self.assertGreaterEqual(ticks, 5)
-        self.assertEqual(retriever._tool_names, ["glob", "grep"])
-        self.assertEqual(retriever._tool_embeddings.shape, (2, 4))
+        self.assertTrue(result.names)
 
-    async def test_concurrent_first_calls_load_model_once(self) -> None:
-        retriever = ToolRetriever(_FakeRegistry(["glob"]))
-        calls = 0
+    async def test_concurrent_first_calls_load_model_and_build_index_once(self) -> None:
+        reg = _registry()
+        await asyncio.gather(*(self.retriever.retrieve(f"질의 {i}", reg) for i in range(4)))
+        self.assertEqual(_SlowEmbedder.instances, 1)
+        self.assertEqual(len(self.retriever._indexes), 1)
 
-        def slow_load(self_: ToolRetriever) -> None:
-            nonlocal calls
-            calls += 1
-            time.sleep(0.1)
-            self_._model = _FakeModel()
+    async def test_model_failure_is_remembered(self) -> None:
+        embedding.reset_embedders()
 
-        with patch.object(ToolRetriever, "_load_model", slow_load):
-            await asyncio.gather(retriever._ensure_indexed(), retriever._ensure_indexed())
+        def boom(*_a, **_k):
+            raise embedding.EmbedderUnavailableError("no model")
 
-        self.assertEqual(calls, 1)
-
-    async def test_unbound_lock_is_reused_and_foreign_loop_lock_is_replaced(self) -> None:
-        retriever = ToolRetriever(_FakeRegistry(["glob"]))
-        first = retriever._get_index_lock()
-        # 아직 경합한 적 없는 락은 _loop가 None이어도 같은 락을 돌려줘야 합니다.
-        self.assertIs(retriever._get_index_lock(), first)
-
-        other_loop = asyncio.new_event_loop()
-        try:
-            first._loop = other_loop  # 다른 루프에서 경합해 바인딩된 상태를 흉내 냅니다.
-            replaced = retriever._get_index_lock()
-        finally:
-            other_loop.close()
-        self.assertIsNot(replaced, first)
+        with patch.object(embedding, "OnnxE5Embedder", boom) as _:
+            with self.assertRaises(embedding.EmbedderUnavailableError):
+                self.retriever.retrieve_sync("x", _registry())
+            self.assertFalse(self.retriever.is_ready())
+            with self.assertRaises(embedding.EmbedderUnavailableError):
+                self.retriever.retrieve_sync("x", _registry())
 
 
 if __name__ == "__main__":
