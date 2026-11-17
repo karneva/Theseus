@@ -1,7 +1,7 @@
 # API 서버 이미지입니다. 테스트는 Testcontainers(Docker)가 필요하므로 이미지 빌드에서는 제외하고 CI에서 별도로 실행합니다.
 
 # Build stage: Java 21 + Gradle wrapper
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM eclipse-temurin:25-jdk-alpine AS builder
 
 WORKDIR /build
 
@@ -17,7 +17,7 @@ RUN --mount=type=cache,target=/root/.gradle \
     ./gradlew bootJar -x test --no-daemon
 
 # Runtime stage: JRE만 포함하고 비root 사용자로 실행합니다.
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 
 RUN apk add --no-cache tzdata \
     && addgroup -S theseus \
