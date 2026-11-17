@@ -24,7 +24,7 @@ RUN npm run build
 # 가벼운 Nginx 이미지를 사용하여 빌드된 정적 리소스를 제공합니다.
 # ─────────────────────────────────────────────────────────────
 # 태그를 고정해 재빌드마다 런타임이 바뀌지 않게 한다(infra/docker/selfhost/nginx와 같은 태그).
-FROM nginx:1.27.5-alpine
+FROM nginx:1.31.8-alpine
 
 # 프로젝트 루트에서 생성한 사용자 정의 nginx.conf 복사 (SPA 라우팅 지원)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
