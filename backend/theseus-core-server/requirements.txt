@@ -15,7 +15,8 @@ uvicorn[standard]==0.54.0
 sse-starlette>=3.7.0,<4
 
 # ── Data Validation ────────────────────────────────────────────────────────────
-# mcp 1.12.x는 pydantic 2.12에서 제거된 내부 심볼을 import하므로 2.12 미만으로 고정합니다.
+# mcp 1.21.0 이하는 pydantic 2.12에서 제거된 내부 심볼을 import해서 pydantic을 2.12 미만에 두었다가,
+# mcp를 1.30으로 올리면서 함께 올렸습니다. pydantic과 mcp는 같이 올리고 검증합니다.
 pydantic>=2.14.3,<2.15
 pydantic-settings>=2.16.3,<3
 
@@ -53,8 +54,9 @@ numpy>=1.26,<3
 langsmith>=0.14.17,<1
 
 # ── MCP (Model Context Protocol) ──────────────────────────────────────────────
-# mcp>=1.13이 요구하는 uvicorn>=0.31.1은 이제 충족하지만, 1.13 이상은 위 pydantic 고정과 함께 검증하지 않아 1.12.x에 머뭅니다.
-mcp>=1.0.0,<1.13
+# 1.21.0 이하는 pydantic 2.12 이상에서 import가 실패합니다(eval_type_backport). 하한은 검증한 1.30입니다.
+# 2.x는 클라이언트 API가 바뀌어 theseus_engine/mcp/client.py 마이그레이션이 필요하므로 1.x에 머뭅니다.
+mcp>=1.30,<2
 
 # ── TUI / CLI (theseus_engine/tui, lsp_tool) ──────────────────────────────────
 textual>=0.80.0,<9

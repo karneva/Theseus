@@ -40,7 +40,7 @@ updates:
       # numpy 2.5부터 Python 3.12 이상만 지원합니다. Core Python을 3.12로 올릴 때(docker python 규칙과 함께) 지웁니다.
       - dependency-name: "numpy"
         versions: [">=2.5"]
-      # mcp 2.x는 pydantic 2.12 이상과 httpx2를 요구하고 클라이언트 API가 바뀌어
+      # mcp 2.x는 httpx2를 요구하고 클라이언트 API가 바뀌어
       # theseus_engine/mcp/client.py 마이그레이션이 필요합니다. 마이그레이션할 때 지웁니다.
       - dependency-name: "mcp"
         versions: [">=2"]
