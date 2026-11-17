@@ -17,8 +17,19 @@ from . import _env  # noqa: F401  # 반드시 theseus_engine보다 먼저
 
 import dataclasses
 import sys
+from pathlib import Path
 from typing import Any
 
+
+def _display_path(path: str | None) -> str | None:
+    """결과 JSON에 개인 로컬 경로가 남지 않도록 홈 디렉터리 아래 경로는 ~/... 로 기록합니다."""
+    if not path:
+        return path
+    try:
+        rel = Path(path).expanduser().resolve().relative_to(Path.home().resolve())
+    except (ValueError, OSError):
+        return path
+    return "~/" + rel.as_posix()
 
 class V2Retriever:
     name = "v2"
@@ -90,7 +101,7 @@ class V2Retriever:
             "wraps": "theseus_engine.core.tool_rag.ToolRetriever (repo v2)",
             "embedder_fingerprint": emb.fingerprint,
             "embed_backend": s.embed_backend,
-            "embed_model_dir": s.embed_model_dir if s.embed_backend == "onnx" else None,
+            "embed_model_dir": _display_path(s.embed_model_dir) if s.embed_backend == "onnx" else None,
             "threads": s.embed_threads,
             "bm25_beta": s.bm25_beta,
             "cost_budget": s.cost_budget,

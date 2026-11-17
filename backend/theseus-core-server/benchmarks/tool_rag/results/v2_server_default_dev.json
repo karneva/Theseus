@@ -29,7 +29,7 @@
       "wraps": "theseus_engine.core.tool_rag.ToolRetriever (repo v2)",
       "embedder_fingerprint": "onnx:7486bedf9a52c6bab73586272c5bdc866ac077a77d6aac4ff1d8f3bdb02c7610:spm:512:mean",
       "embed_backend": "onnx",
-      "embed_model_dir": "C:/Users/SSAFY/.theseus/models/e5-small-int8",
+      "embed_model_dir": "~/.theseus/models/e5-small-int8",
       "threads": 4,
       "bm25_beta": 0.1,
       "cost_budget": 700.0,
