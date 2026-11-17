@@ -582,7 +582,10 @@ class EditorRuntime:
             ),
         )
         if hasattr(self.engine, "set_tool_registry"):
-            self.engine.set_tool_registry(active_registry)
+            self.engine.set_tool_registry(
+                active_registry,
+                injectable_names=tuple(t.name for t in active_registry.list_tools()),
+            )
         else:
             self.engine._tool_registry = active_registry
             self.engine.tool_metadata["active_registry"] = active_registry

@@ -1,19 +1,21 @@
 """ToolSearchTool: Runtime tool discovery and injection for RAG fallback.
 
-Activated when RAG (Top-K) search fails to find suitable tools.
-When invoked, performs semantic search on full_registry and injects
-matched tools into active_registry for immediate use from the next turn.
+Tool RAG가 일부 도구만 보낸 턴에 모델이 필요한 도구를 직접 찾게 하는 메타 도구입니다.
+검색은 공용 ToolRetriever(같은 인덱스)로 하되 후보는 ``search_injectable_tool_names``(가시성·RBAC 통과)로
+제한하고, 찾은 도구는 inject_visible_tool()로만 active_registry에 등록합니다.
+임베딩을 쓸 수 없으면 같은 후보에서 BM25 어휘 검색으로 폴백합니다.
 """
 
 from __future__ import annotations
 
-import json
+import asyncio
 import logging
 import re
 from typing import Any
 
 from pydantic import BaseModel, Field
 
+from theseus_engine.core.tool_rag.assembly import PROVENANCE_METADATA_KEY, inject_visible_tool
 from theseus_engine.tools.core.base_tools import BaseTool, ToolExecutionContext, ToolResult
 
 log = logging.getLogger(__name__)
@@ -96,18 +98,15 @@ class ToolSearchTool(BaseTool):
                 is_error=True,
             )
 
-        # ToolRetriever로 시맨틱 검색 수행. 임베딩 모델 캐시/권한 문제로
-        # 실패하면 이름/설명/example query 기반 fallback으로 검색한다.
+        # 공용 ToolRetriever로 시맨틱 검색(후보 = 보이는 도구). 임베딩 모델 캐시/권한 문제로
+        # 실패하면 같은 후보에서 BM25 어휘 검색으로 폴백한다.
         search_mode = "semantic"
         try:
-            from theseus_engine.core.tool_retriever import ToolRetriever
-
-            retriever = ToolRetriever(search_registry)
-            matched_tools = await retriever.retrieve_top_k(
-                arguments.query,
+            matched_tools = await _semantic_search(
                 search_registry,
-                k=arguments.top_k,
-                adaptive=False,
+                arguments.query,
+                top_k=arguments.top_k,
+                candidates=injectable_tool_names,
             )
         except Exception as e:
             log.warning("[ToolSearchTool] Semantic search failed; using lexical fallback: %s", e)
@@ -116,6 +115,7 @@ class ToolSearchTool(BaseTool):
                 search_registry,
                 arguments.query,
                 top_k=arguments.top_k,
+                candidates=injectable_tool_names,
             )
 
         inventory_matches = self._lexical_search_inventory(
@@ -160,7 +160,17 @@ class ToolSearchTool(BaseTool):
                             reason,
                         )
                         continue
-                    active_registry.register(tool)
+                    if not inject_visible_tool(
+                        active_registry,
+                        tool,
+                        injectable_tool_names,
+                        provenance=context.metadata.get(PROVENANCE_METADATA_KEY),
+                        source="tool_search",
+                    ):
+                        not_injectable[tool.name] = (
+                            "not visible in the current mode, plan phase, or RBAC policy"
+                        )
+                        continue
                     injected.append(tool.name)
                     log.info(
                         "[ToolSearchTool] Injected tool '%s' into active_registry.",
@@ -263,31 +273,29 @@ class ToolSearchTool(BaseTool):
         return ToolResult(output="\n".join(lines))
 
     @staticmethod
-    def _lexical_search(registry: Any, query: str, *, top_k: int) -> list[BaseTool]:
-        query_tokens = _tokenize_tool_search_text(query)
-        scored: list[tuple[int, str, BaseTool]] = []
-        for tool in registry.list_tools():
-            haystack_parts = [
-                getattr(tool, "name", ""),
-                getattr(tool, "description", ""),
-            ]
-            examples = getattr(tool, "example_queries", None)
-            if isinstance(examples, (list, tuple)):
-                haystack_parts.extend(str(item) for item in examples)
-            haystack = " ".join(haystack_parts)
-            haystack_tokens = _tokenize_tool_search_text(haystack)
-            overlap = len(query_tokens & haystack_tokens)
-            substring_bonus = 2 if query.strip().lower() in haystack.lower() else 0
-            name_bonus = (
-                3
-                if any(token in str(getattr(tool, "name", "")).lower() for token in query_tokens)
-                else 0
-            )
-            score = overlap + substring_bonus + name_bonus
-            if score > 0:
-                scored.append((score, getattr(tool, "name", ""), tool))
-        scored.sort(key=lambda item: (-item[0], item[1]))
-        return [tool for _, _, tool in scored[:top_k]]
+    def _lexical_search(
+        registry: Any,
+        query: str,
+        *,
+        top_k: int,
+        candidates: set[str] | None = None,
+    ) -> list[BaseTool]:
+        """임베딩 없이 Tool RAG와 같은 BM25 문서(이름·설명·용어집·파라미터·few-shot)로 검색합니다."""
+        from theseus_engine.core.tool_rag.index import merged_examples
+        from theseus_engine.core.tool_rag.lexical import BM25
+        from theseus_engine.core.tool_rag.text import bm25_document, tool_input_schema
+
+        tools = [
+            tool
+            for tool in registry.list_tools()
+            if candidates is None or getattr(tool, "name", None) in candidates
+        ]
+        if not tools:
+            return []
+        docs = [bm25_document(t, merged_examples(t, {}), tool_input_schema(t)) for t in tools]
+        scores = BM25(docs).normalized_scores(query)
+        order = sorted(range(len(tools)), key=lambda i: (-scores[i], i))
+        return [tools[i] for i in order[:top_k] if scores[i] > 0]
 
     @staticmethod
     def _lexical_search_unavailable_inventory(
@@ -366,6 +374,22 @@ class ToolSearchTool(BaseTool):
                 )
         scored.sort(key=lambda value: (-value[0], value[1]))
         return [item for _, _, item in scored[:top_k]]
+
+
+async def _semantic_search(
+    registry: Any,
+    query: str,
+    *,
+    top_k: int,
+    candidates: set[str] | None,
+) -> list[BaseTool]:
+    """공용 ToolRetriever 순위에서 후보 안의 상위 top_k개 도구."""
+    from theseus_engine.core.tool_rag.retriever import get_tool_retriever
+
+    retriever = get_tool_retriever()
+    ranked = await asyncio.to_thread(retriever.rank, query, registry, candidates)
+    tools = [registry.get(name) for name, _ in ranked[:top_k]]
+    return [tool for tool in tools if tool is not None]
 
 
 def _tokenize_tool_search_text(text: str) -> set[str]:

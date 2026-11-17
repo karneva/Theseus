@@ -149,7 +149,7 @@ E2E 환경에서는 `up` 후 57초 만에 상시 서비스 10개가 모두 healt
 
 - **최초 관리자**: SUPER_ADMIN이 한 명도 없을 때 `INITIAL_ADMIN_*` 값으로 한 번 생성됩니다. 로그인 ID는 사번(`INITIAL_ADMIN_EMPLOYEE_NUMBER`) 또는 이메일입니다. 로그인을 확인한 뒤 env 파일에서 `INITIAL_ADMIN_PASSWORD`를 지우고 `deploy.sh`를 다시 실행합니다.
 - **sandbox 이미지**: `SANDBOX_STARTUP_STRICT=true`(selfhost 기본)라 `SANDBOX_IMAGE`가 서버에 없으면 core가 기동하지 않습니다.
-- **임베딩 모델**: 첫 AGENT/PLAN 요청 때 Core가 `intfloat/multilingual-e5-small`(약 470MB)을 huggingface.co에서 받아 `theseus-hf-cache` 볼륨에 저장합니다. Core에서 외부로 나가는 HTTPS가 필요하고, 첫 요청만 느립니다.
+- **임베딩 모델**: Tool RAG 모델(`intfloat/multilingual-e5-small` ONNX int8, 약 113 MiB)은 이미지 빌드 때 만들어 이미지에 들어 있습니다(`/opt/models/e5-small-int8`). Core는 런타임에 모델을 내려받지 않고, 기동 직후 백그라운드에서 약 1~2초 동안 로드합니다. 로드가 끝나기 전의 요청은 보이는 도구 전부를 받습니다. `theseus-hf-cache` 볼륨은 선택 기능(`requirements-torch.txt`)용입니다. 자세한 내용은 [Tool RAG](../architecture/tool-rag.md)를 참고하세요.
 
 ## 6. TLS(Let's Encrypt)
 
@@ -455,6 +455,7 @@ docker stats --no-stream --format 'table {{.Name}}\t{{.MemUsage}}\t{{.CPUPerc}}'
 
 - 일회성 서비스: kafka-init 256m, core-permissions 32m(기동 시 잠깐). sandbox 컨테이너는 BUILD 검증마다 `SANDBOX_MEMORY_LIMIT`(기본 128m)로 1초 남짓 실행됩니다. `ops` 프로필 kafka-ui(384m)는 예산 밖입니다.
 - core는 첫 AGENT/PLAN 요청 때 임베딩 모델을 올리면서 약 900MiB로 늘고 그 뒤로 유지됩니다(cgroup `memory.peak` 1156M).
+- 위 core 수치는 Tool RAG v1(torch, sentence-transformers) 이미지로 잰 값입니다. v2 이미지(ONNX int8, torch 없음)는 같은 조건의 전체 스택 E2E를 다시 재지 않았습니다. 대신 컨테이너 프로브(`--cpus=2 --memory=1.5g`, `import src.main` 뒤 검색 1회)에서 core 프로세스 RSS가 v1 이미지 1079~1091MiB, v2 이미지 419~421MiB였습니다([Tool RAG 결과](../architecture/tool-rag.md#53-자원)).
 - E2E 동안 OOM kill과 재시작은 없었습니다. 3.8GB 서버에서 OS 몫(약 0.3~0.4GB)을 빼면 페이지 캐시와 sandbox에 약 1.2GB가 남습니다.
 - **kafka가 가장 빠듯합니다.** 브로커 자체는 283~297MiB(anon)이지만, 30초마다 healthcheck가 같은 cgroup 안에서 JVM(`kafka-broker-api-versions`, `-Xmx64m`)을 띄워 1.3초 동안 71~81MB를 더 씁니다. 그래서 cgroup이 448M에 자주 닿고 페이지 캐시를 회수합니다(`memory.events max` 약 20분에 2504회). OOM은 아니지만 서버에서 스왑이나 지연이 보이면 TCP healthcheck로 바꾸거나 `mem_limit`을 512m로 올립니다.
 - frontend/nginx는 `worker_processes auto`라 CPU 수만큼 worker를 띄웁니다. 22코어 노트북에서 frontend `memory.peak`가 31M/32M이었고, 2 vCPU 서버에서는 더 적게 씁니다.
@@ -471,7 +472,7 @@ docker stats --no-stream --format 'table {{.Name}}\t{{.MemUsage}}\t{{.CPUPerc}}'
 | 채팅이 `exceeds the available context size`로 실패 | 노트북 Ollama 컨텍스트가 4096. `OLLAMA_CONTEXT_LENGTH=16384` 설정 후 Ollama 재시작([7.1](#71-노트북-ollama-설정)) |
 | 채팅·PLAN이 LLM 연결 오류 | 터널 끊김. 서버에서 `curl http://172.17.0.1:11434/api/tags`, 노트북의 `llm-tunnel` 로그 확인 |
 | 터널이 바로 끊기고 재시도만 반복 | 이전 세션이 서버 포트를 잡고 있음(`ExitOnForwardFailure`). 잠시 기다리거나 서버에서 남은 sshd 세션 종료. docker0 IP와 `PermitListen` 주소 불일치도 확인 |
-| 첫 AGENT/PLAN 요청만 느림 | 임베딩 모델(약 470MB) 첫 다운로드와 로드. 이후 요청은 빠름. Core에서 huggingface.co로 나가는 HTTPS 필요 |
+| 기동 직후 첫 요청에 도구가 전부 붙음 | Tool RAG 모델 백그라운드 로드(약 1~2초) 전이라 보이는 도구 전부를 보냄. 로그 `[ToolRAG] 워밍업 완료`가 나온 뒤에는 일부만 보냄. 워밍업 실패 경고가 있으면 `THESEUS_EMBED_MODEL_DIR`와 이미지 빌드 로그 확인 |
 | PLAN이 2분 가까이 걸림 | 작은 로컬 모델의 구조화 생성 시간(E2E 111~117초). `THESEUS_LLM_TIMEOUT_SECONDS`(300)와 API Run 타임아웃(30분) 안이면 정상 |
 | HTTP 단계에서 1시간마다 로그아웃 | prod 프로필 refresh 쿠키가 `Secure`. HTTPS 적용 또는 시험용으로만 `JWT_REFRESH_TOKEN_COOKIE_SECURE=false` |
 | nginx가 인증서 오류로 기동 실패 | `NGINX_TLS_MODE=http`로 임시 우회 후 `issue-cert.sh` 재실행 |

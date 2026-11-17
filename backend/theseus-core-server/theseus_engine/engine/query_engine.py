@@ -19,7 +19,7 @@ import re
 import time
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any, AsyncGenerator, AsyncIterator, Awaitable, Callable
+from typing import Any, AsyncGenerator, AsyncIterator, Awaitable, Callable, Iterable
 from uuid import uuid4
 
 from theseus_engine.config import llm_max_output_tokens
@@ -1486,12 +1486,27 @@ class QueryEngine:
     def set_permission_checker(self, checker: Any) -> None:
         self._permission_checker = checker
 
-    def set_tool_registry(self, registry: ToolRegistry) -> None:
-        """Replace the active tool registry after mode/phase changes."""
+    def set_tool_registry(
+        self,
+        registry: ToolRegistry,
+        *,
+        injectable_names: Iterable[str] | None = None,
+    ) -> None:
+        """Replace the active tool registry after mode/phase changes.
+
+        ``injectable_names``를 주면 tool_search와 사후 훅이 주입할 수 있는 도구(보이는 도구) 집합도 함께 바꿉니다.
+        모드가 바뀌었는데 이전 모드의 집합이 남아 있으면 tool_search가 새 모드에서 숨겨야 할 도구를 주입할 수 있습니다.
+        """
         self._tool_registry = registry
         self._tool_metadata["active_registry"] = registry
         if self._hook_executor is not None and hasattr(self._hook_executor, "_active_registry"):
             self._hook_executor._active_registry = registry
+        if injectable_names is not None:
+            names = tuple(injectable_names)
+            self._tool_metadata["search_injectable_tool_names"] = names
+            setter = getattr(self._hook_executor, "set_injectable_names", None)
+            if callable(setter):
+                setter(names)
 
     def set_plan_drafting(self, value: bool) -> None:
         """PLAN DRAFTING 단계 여부를 설정합니다.

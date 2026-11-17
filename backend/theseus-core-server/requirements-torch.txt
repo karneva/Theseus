@@ -1,0 +1,15 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# 선택 의존성: sentence-transformers(torch)
+#
+# 기본 Core 이미지에는 들어가지 않습니다. 다음 경우에만 설치합니다.
+#   * THESEUS_EMBED_BACKEND=sentence-transformers  (Tool RAG를 torch로 돌려 ONNX와 비교할 때)
+#   * THESEUS_ENABLE_ENGINE_RAG_TOOLS=true 이고 EMBEDDING_PROVIDER=local
+#     (theseus_engine/rag LocalEmbeddingProvider: search_knowledge_base / ingest_document)
+#   * tests/의 torch 파리티 테스트
+#
+# torch는 기본이 CUDA 빌드(수 GB)이므로 CPU 빌드를 먼저 설치합니다.
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+#   pip install -r requirements-torch.txt
+# ──────────────────────────────────────────────────────────────────────────────
+-r requirements.txt
+sentence-transformers>=2.2,<7

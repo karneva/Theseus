@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from theseus_engine.config import llm_max_output_tokens
+from theseus_engine.config import get_tool_rag_settings, llm_max_output_tokens
 from theseus_engine.validators.execution_validator import (
     ExecutionValidator,
 )
@@ -29,7 +29,8 @@ from theseus_engine.validators.query_validator import (
 from theseus_engine.observability.tracer import (
     theseus_traceable,
 )
-from theseus_engine.core.tool_retriever import ToolRetriever
+from theseus_engine.core.tool_rag.assembly import inject_visible_tool
+from theseus_engine.core.tool_rag.retriever import get_tool_retriever
 from theseus_engine.observability.stats import SessionStats
 
 log = logging.getLogger(__name__)
@@ -108,6 +109,8 @@ class TheseusHookExecutor:
         *,
         active_registry: Any | None = None,
         full_registry: Any | None = None,
+        injectable_names: Any | None = None,
+        provenance: dict[str, str] | None = None,
         enable_dynamic_tools: bool = True,
         permission_prompt: Any | None = None,
         llm_client: Any | None = None,
@@ -115,6 +118,12 @@ class TheseusHookExecutor:
     ) -> None:
         self._active_registry = active_registry
         self._full_registry = full_registry
+        # 사후 주입은 가시성·RBAC를 통과한 도구(injectable_names) 안에서만 합니다. None이면 주입하지 않습니다.
+        self._injectable_names: frozenset[str] | None = (
+            frozenset(injectable_names) if injectable_names is not None else None
+        )
+        self._provenance = provenance if provenance is not None else {}
+        self._injected_this_turn = 0  # 이 실행기는 턴마다 새로 만들어집니다
         self._enable_dynamic_tools = enable_dynamic_tools
         self._permission_prompt = permission_prompt
         self._llm_client = llm_client
@@ -123,11 +132,13 @@ class TheseusHookExecutor:
             "edit_file",
             "local_write_report",
         }
-        self._retriever = (
-            ToolRetriever(full_registry) if full_registry and enable_dynamic_tools else None
-        )
+        self._retriever = get_tool_retriever() if full_registry and enable_dynamic_tools else None
         self._always_allow: set[str] = set()
         self._last_failed_call: tuple[str, str] | None = None
+
+    def set_injectable_names(self, names: Any) -> None:
+        """모드 전환 등으로 보이는 도구가 바뀌면 주입 가능 집합도 바꿉니다."""
+        self._injectable_names = frozenset(names) if names is not None else None
 
     @theseus_traceable(
         run_type="chain",
@@ -658,12 +669,29 @@ class TheseusHookExecutor:
             log.warning(combined)
 
     async def _discover_and_inject_tools(self, payload: dict[str, Any]) -> None:
-        """도구 실행 결과를 바탕으로 새로운 연관 도구를 찾아 레지스트리에 주입합니다."""
+        """도구 실행 결과로 연관 도구를 찾아 현재 세션에 주입합니다.
+
+        후보는 보이는 도구(injectable_names) 중 아직 없는 것뿐이고, 비용 예산(THESEUS_TOOL_RAG_HOOK_BUDGET)과
+        턴당 상한(THESEUS_TOOL_RAG_HOOK_MAX_INJECT_PER_TURN)을 지킵니다. 이 실행기는 턴(서버 요청, CLI 입력)마다
+        새로 만들어지므로 카운터도 턴 단위입니다. v1은 full_registry 전체에서
+        골라 ASK 모드나 낮은 user_level에서도 bash·write_file 등을 주입했습니다(가시성/RBAC 우회).
+        """
         if not self._active_registry or not self._retriever or not self._full_registry:
+            return
+        if self._injectable_names is None:
+            return
+        settings = get_tool_rag_settings()
+        remaining = settings.hook_max_inject - self._injected_this_turn
+        if remaining <= 0:
             return
 
         tool_output = str(payload.get("tool_output", ""))
         if not tool_output or len(tool_output) < 5:
+            return
+
+        active = {t.name for t in self._active_registry.list_tools()}
+        candidates = self._injectable_names - active
+        if not candidates:
             return
 
         tool_name = payload.get("tool_name", "")
@@ -671,32 +699,37 @@ class TheseusHookExecutor:
         search_query = self._build_injection_query(tool_name, tool_input, tool_output)
 
         try:
-            new_tools = await self._retriever.retrieve_top_k(
+            result = await self._retriever.retrieve(
                 search_query,
                 self._full_registry,
-                k=3,
-                adaptive=False,
+                candidates=candidates,
+                budget=settings.hook_budget,
+                none_mode="off",
+                include_essentials=False,
             )
-
-            # 순회 중 레지스트리 변경(RuntimeError) 방지: 주입 대상을 먼저 확정한 뒤 일괄 등록
-            to_inject = [tool for tool in new_tools if self._active_registry.get(tool.name) is None]
-            injected_count = 0
-            for tool in to_inject:
-                self._active_registry.register(tool)
-                injected_count += 1
-                log.info(
-                    "[DynamicDiscovery] 새로운 도구 '%s'를 주입했습니다. (쿼리: '%s')",
-                    tool.name,
-                    search_query,
-                )
-
-            if injected_count > 0:
-                log.info(
-                    "[DynamicDiscovery] 총 %d개의 도구가 현재 세션에 추가되었습니다.",
-                    injected_count,
-                )
         except Exception as e:
             log.debug("[DynamicDiscovery] 도구 검색 중 오류 발생: %s", e)
+            return
+
+        injected: list[str] = []
+        for name in result.slot_names[:remaining]:
+            tool = self._full_registry.get(name)  # 이번 요청의 인스턴스(검색 결과 객체를 그대로 쓰지 않음)
+            if tool is not None and inject_visible_tool(
+                self._active_registry,
+                tool,
+                self._injectable_names,
+                provenance=self._provenance,
+                source="hook",
+            ):
+                injected.append(name)
+        if injected:
+            self._injected_this_turn += len(injected)
+            log.info(
+                "[DynamicDiscovery] 도구 %d개 주입: %s (쿼리: '%s')",
+                len(injected),
+                ", ".join(injected),
+                search_query,
+            )
 
     @staticmethod
     def _build_injection_query(

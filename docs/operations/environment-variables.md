@@ -144,8 +144,31 @@ compose가 값을 고정해 넘기는 항목(env 파일에서 바꾸지 않음):
 | `SANDBOX_STARTUP_CHECK` / `SANDBOX_STARTUP_STRICT` / `SANDBOX_PULL_ON_STARTUP` / `SANDBOX_KEEP_FAILED_CONTAINERS` | | `true` / `false` / `false` / `false` | 기동 검사와 디버깅 |
 | `THESEUS_DATA_DIR` | | 이미지: `/home/appuser/.theseus/data` | 엔진 런타임 데이터 |
 | `THESEUS_CUSTOM_TOOLS_DIR` / `THESEUS_PROJECT_CUSTOM_TOOLS_DIR` / `THESEUS_CUSTOM_TOOLS_HOST_DIR` | | (패키지 내부 custom_tools) | 생성 Tool 저장 경로 |
-| `HF_HOME` | | 이미지: `/home/appuser/.cache/huggingface` | 임베딩 모델 캐시(named volume 권장) |
+| `HF_HOME` | | 이미지: `/home/appuser/.cache/huggingface` | 선택 기능(`requirements-torch.txt`의 sentence-transformers)용 모델 캐시. Tool RAG 모델은 이미지에 들어 있어 쓰지 않음 |
 | `THESEUS_TRACING_ENABLED` / `LANGCHAIN_TRACING_V2` / `LANGCHAIN_API_KEY` / `LANGCHAIN_PROJECT` | | `false` / `false` / (빈 값) / `Theseus-Core-Server`(`.env.example`은 `theseus-core`) | LangSmith tracing. 대화 내용이 외부로 나가므로 명시적으로만 켬 |
+
+### Tool RAG
+
+도구 검색([설계와 측정](../architecture/tool-rag.md)) 설정입니다. 모두 `theseus_engine/config.py`의 `get_tool_rag_settings()` 한 곳에서 읽고,
+기본값은 평가셋 dev 분할에서 고른 값입니다. Core 서버와 CLI/TUI가 같은 값을 씁니다.
+
+| 이름 | 기본값 | 용도 |
+| --- | --- | --- |
+| `THESEUS_TOOL_RAG_ENABLED` | `true`(구 `THESEUS_DYNAMIC_TOOL_RETRIEVAL`도 읽음) | 끄면 보이는 도구 전부를 보냄 |
+| `THESEUS_SERVER_TOOL_RAG` | `true` | 서버 조립(`get_query_engine`)에서만 검색을 끄는 스위치 |
+| `THESEUS_EMBED_BACKEND` | `onnx` | `onnx` 또는 `sentence-transformers`(비교용, `requirements-torch.txt` 필요) |
+| `THESEUS_EMBED_MODEL_DIR` | 이미지: `/opt/models/e5-small-int8`. 미설정 시 그 경로 → `~/.theseus/models/e5-small-int8` 순으로 찾음 | ONNX 모델 디렉터리(`model.onnx`, `sentencepiece.bpe.model`, `embedder.json`). 파인튜닝 모델로 바꿀 때 이 값만 바꿉니다 |
+| `THESEUS_EMBED_MODEL_ID` / `THESEUS_EMBED_MODEL_REVISION` | `intfloat/multilingual-e5-small` / `614241f6…` | sentence-transformers 백엔드용 모델과 리비전 |
+| `THESEUS_EMBED_THREADS` | `min(2, CPU 수)` | onnxruntime intra-op 스레드 |
+| `THESEUS_EMBED_MAX_LENGTH` | `512` | 토큰 최대 길이 |
+| `THESEUS_TOOL_RAG_CALIBRATION_FILE` | (빈 값) | none 판정 보정 파일 경로(`THESEUS_TOOL_RAG_NONE_MODE=soft`일 때만 읽음). 비우면 모델 디렉터리 → 패키지 동봉 파일 순. 모델 sha256이나 레시피 버전이 다르면 none 판정을 끔 |
+| `THESEUS_TOOL_RAG_BM25_BETA` | `0.10` | 순위 점수의 BM25 가중치(0이면 dense만) |
+| `THESEUS_TOOL_RAG_COST_BUDGET` / `THESEUS_TOOL_RAG_RANK_ALPHA` / `THESEUS_TOOL_RAG_MAX_CANDIDATES` | `700` / `1.0` / `12` | 비용 인지 슬롯: 순위 i의 후보는 `i^alpha × 스키마 글자수/4 ≤ budget`이면 포함(1위는 항상), 상위 max개까지 |
+| `THESEUS_TOOL_RAG_NONE_MODE` / `THESEUS_TOOL_RAG_SOFT_KEEP` | `off` / `3` | `off`(기본): "맞는 도구 없음" 판정 안 함. `soft`: 판정되면 슬롯을 상위 N개로 줄임(tool_search는 일부만 보내는 턴에 항상 들어감). 판정이 다른 작성자의 질의로 전이되지 않아 기본으로 끕니다([Tool RAG 문서 4.4절](../architecture/tool-rag.md)) |
+| `THESEUS_TOOL_RAG_SMALL_SET` | `12` | 보이는 도구가 이 수 이하이면 검색하지 않고 전부 보냄 |
+| `THESEUS_TOOL_RAG_HOOK_BUDGET` / `THESEUS_TOOL_RAG_HOOK_MAX_INJECT_PER_TURN` | `400` / `6` | 도구 실행 뒤 사후 훅이 보이는 도구 중에서 주입할 때의 비용 예산과 턴(서버 요청·CLI 입력 1회)당 상한(측정하지 않은 제안값). 구 이름 `..._PER_SESSION`도 읽습니다. |
+| `THESEUS_TOOL_RAG_CACHE_DIR` | `${THESEUS_DATA_DIR}/tool_rag_cache` | 도구 벡터 디스크 캐시(npz). 빈 값이면 끔 |
+| `THESEUS_TOOL_RAG_FEEDBACK` / `THESEUS_TOOL_RAG_FEEDBACK_MAX_PER_TOOL` | `cli`(이미지: `off`) / `5` | 사용 이력 few-shot 보강. 서버는 멀티테넌트 격리를 위해 끔 |
 
 ## 4. Frontend(Vite)
 

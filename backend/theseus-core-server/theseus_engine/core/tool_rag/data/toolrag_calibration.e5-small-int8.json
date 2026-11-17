@@ -1,0 +1,107 @@
+{
+  "embedder_fingerprint": "onnx:7486bedf9a52c6bab73586272c5bdc866ac077a77d6aac4ff1d8f3bdb02c7610:spm:512:mean",
+  "recipe_version": "v2.3",
+  "none_rule": {
+    "w_top1": -84.26264668920324,
+    "w_cov": -5.3430981637257196,
+    "b": 69.78624051002548
+  },
+  "equivalent": "top1 + 0.0634*cov < 0.82820 -> none",
+  "fit": {
+    "data": {
+      "dev": {
+        "source": "eval_set.jsonl split=dev registry=core",
+        "n": 107,
+        "n_none": 18,
+        "sha256": "7777d3b30a5b64111dc2d6a3d5efeeb6122ac7d4b8cfe3778347285df7f35713"
+      },
+      "calibration_set": {
+        "source": "calibration_set.jsonl registry=core",
+        "n": 184,
+        "n_none": 86,
+        "sha256": "6745784ec5916d936ee4cf96d54e097e634b204d5274de6b989da951d67cb1d3"
+      }
+    },
+    "registry": "core",
+    "n": 291,
+    "n_none": 104,
+    "method": "class-balanced L2 logistic regression [top1, cov] on pooled dev + calibration_set, threshold = max F1 with false-none <= cap",
+    "cap": 0.05,
+    "in_sample": {
+      "dev": {
+        "tp": 8,
+        "fp": 2,
+        "fn": 10,
+        "precision": 0.8,
+        "recall": 0.4444444444444444,
+        "f1": 0.5714285714285714,
+        "false_none": 0.02247191011235955
+      },
+      "calibration_set": {
+        "tp": 56,
+        "fp": 7,
+        "fn": 30,
+        "precision": 0.8888888888888888,
+        "recall": 0.6511627906976745,
+        "f1": 0.7516778523489932,
+        "false_none": 0.07142857142857142
+      },
+      "pooled": {
+        "tp": 64,
+        "fp": 9,
+        "fn": 40,
+        "precision": 0.8767123287671232,
+        "recall": 0.6153846153846154,
+        "f1": 0.7231638418079096,
+        "false_none": 0.0481283422459893
+      }
+    },
+    "cv_5fold_x20_pooled": {
+      "precision": 0.8595457049400614,
+      "recall": 0.5586538461538462,
+      "f1": 0.6768211208679425,
+      "f1_sd": 0.020263860732007248,
+      "false_none": 0.05080213903743315
+    },
+    "transfer": {
+      "calibration_set_to_dev": {
+        "rule": {
+          "w_top1": -68.73704128940678,
+          "w_cov": -5.458132123732595,
+          "b": 56.455628985714476
+        },
+        "tp": 2,
+        "fp": 1,
+        "fn": 16,
+        "precision": 0.6666666666666666,
+        "recall": 0.1111111111111111,
+        "f1": 0.1904761904761905,
+        "false_none": 0.011235955056179775
+      },
+      "dev_to_calibration_set": {
+        "rule": {
+          "w_top1": -96.1665380086168,
+          "w_cov": -3.350519611540678,
+          "b": 79.77115953481427
+        },
+        "tp": 68,
+        "fp": 12,
+        "fn": 18,
+        "precision": 0.85,
+        "recall": 0.7906976744186046,
+        "f1": 0.8192771084337349,
+        "false_none": 0.12244897959183673
+      }
+    },
+    "decision": {
+      "target": {
+        "min_f1": 0.5,
+        "max_false_none": 0.05
+      },
+      "target_met_both_directions": false,
+      "runtime_default": "off",
+      "note": "THESEUS_TOOL_RAG_NONE_MODE 기본값은 off. 이 규칙은 soft로 켤 때만 쓰입니다."
+    },
+    "date": "2026-11-16"
+  }
+}

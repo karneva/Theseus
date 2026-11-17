@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import uuid
@@ -116,15 +117,20 @@ async def stream_agent_response(
     )
 
     try:
-        assembly = get_query_engine(engine_context)
+        # 조립(도구 검색의 질의 인코딩, 처음 보는 레지스트리의 인덱스 구축, custom tool 로드)은 동기 CPU 작업이라
+        # 워커 스레드에서 돌립니다. 이벤트 루프에서 돌리면 그동안 다른 SSE 스트림이 모두 멈춥니다.
+        assembly = await asyncio.to_thread(get_query_engine, engine_context)
         usage_data.model_name = assembly.model_name
 
         logger.info(
-            "Starting Theseus stream for user=%s project=%s mode=%s tools=%s",
+            "Starting Theseus stream for user=%s project=%s mode=%s tools=%s (sent %d/%d, %s)",
             session.user_id,
             session.project_id,
             engine_context.mode.name,
-            ",".join(assembly.allowed_tools),
+            ",".join(assembly.sent_tools or assembly.allowed_tools),
+            len(assembly.sent_tools),
+            len(assembly.allowed_tools),
+            assembly.tool_selection_mode,
         )
 
         async for event in assembly.engine.submit_message(prompt):

@@ -84,10 +84,9 @@ class LocalEmbeddingProvider(BaseEmbeddingProvider):
             )
         except ImportError as e:
             raise ImportError(
-                "sentence-transformers 패키지가 "
-                "설치되어 있지 않습니다. "
-                "`pip install sentence-transformers`를 "
-                "실행하세요."
+                "로컬 임베딩(EMBEDDING_PROVIDER=local)에는 sentence-transformers(torch)가 필요합니다. "
+                "기본 의존성에는 들어 있지 않으니 `pip install -r requirements-torch.txt`로 설치하거나 "
+                "EMBEDDING_PROVIDER=remote를 쓰세요."
             ) from e
 
     def embed_text(self, text: str) -> List[float]:

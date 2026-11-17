@@ -1,0 +1,81 @@
+{
+  "command": "docker run --rm --cpus=2 --memory=1.5g -e PYTHONPATH=/app -v <repo>/backend/theseus-core-server/benchmarks/tool_rag:/probe:ro <image> python /probe/container_probe.py (v1 이미지는 -v <hf_home>:/hf:ro -e HF_HOME=/hf -e HF_HUB_OFFLINE=1 추가)",
+  "host": "Windows 11 + Docker Desktop(WSL2), 3회 반복",
+  "images": {
+    "theseus-core:rag2 (v2, 이 브랜치)": "1.07GB",
+    "theseus-core:cd7188f (v1, torch)": "2.46GB",
+    "theseus-core:rag2-18c26bb (v2, 18c26bb: 인스턴스 해석·tool_search 고정·sha 검증)": "1.07GB"
+  },
+  "runs": [
+    {
+      "rss_after_import_src_main_mb": 186.1,
+      "import_s": 2.73,
+      "impl": "v1",
+      "first_retrieval_s": 20.26,
+      "warm_retrieval_ms": 90.3,
+      "rss_after_retrieval_mb": 1079.3,
+      "n_sent": 12,
+      "torch_imported": true,
+      "image": "theseus-core:cd7188f (v1)"
+    },
+    {
+      "rss_after_import_src_main_mb": 186.1,
+      "import_s": 2.58,
+      "impl": "v1",
+      "first_retrieval_s": 18.58,
+      "warm_retrieval_ms": 193.5,
+      "rss_after_retrieval_mb": 1088.4,
+      "n_sent": 12,
+      "torch_imported": true,
+      "image": "theseus-core:cd7188f (v1)"
+    },
+    {
+      "rss_after_import_src_main_mb": 186.1,
+      "import_s": 2.46,
+      "impl": "v1",
+      "first_retrieval_s": 18.73,
+      "warm_retrieval_ms": 190.9,
+      "rss_after_retrieval_mb": 1090.9,
+      "n_sent": 12,
+      "torch_imported": true,
+      "image": "theseus-core:cd7188f (v1)"
+    },
+    {
+      "rss_after_import_src_main_mb": 186.5,
+      "import_s": 3.08,
+      "impl": "v2",
+      "threads": 2,
+      "first_retrieval_s": 1.81,
+      "warm_retrieval_ms": 24.3,
+      "rss_after_retrieval_mb": 420.0,
+      "n_sent": 12,
+      "torch_imported": false,
+      "image": "theseus-core:rag2-18c26bb"
+    },
+    {
+      "rss_after_import_src_main_mb": 186.8,
+      "import_s": 2.24,
+      "impl": "v2",
+      "threads": 2,
+      "first_retrieval_s": 1.89,
+      "warm_retrieval_ms": 4.8,
+      "rss_after_retrieval_mb": 419.4,
+      "n_sent": 12,
+      "torch_imported": false,
+      "image": "theseus-core:rag2-18c26bb"
+    },
+    {
+      "rss_after_import_src_main_mb": 186.8,
+      "import_s": 2.24,
+      "impl": "v2",
+      "threads": 2,
+      "first_retrieval_s": 1.86,
+      "warm_retrieval_ms": 5.5,
+      "rss_after_retrieval_mb": 420.6,
+      "n_sent": 12,
+      "torch_imported": false,
+      "image": "theseus-core:rag2-18c26bb"
+    }
+  ],
+  "superseded_v2_runs": "theseus-core:rag2(6739df9) v2 3회: 검색 1회 뒤 RSS 422.2~422.7 MB, 첫 검색 2.06~2.34 s, n_sent 11 (tool_search 고정 전)"
+}

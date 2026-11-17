@@ -27,6 +27,11 @@ from theseus_engine.engine.stream_events import (
 from theseus_engine.models.modes import AgentMode, PlanPhase
 from theseus_engine.models.rbac import TheseusPermissionChecker, TheseusPermissionSettings
 from theseus_engine.core.mode_context import build_mode_runtime_reminders
+from theseus_engine.core.tool_rag.assembly import (
+    PROVENANCE_METADATA_KEY,
+    ToolSelection,
+    select_tools_for_turn,
+)
 from theseus_engine.core.tool_visibility import (
     ToolVisibilityPolicy,
     build_visible_registry,
@@ -76,7 +81,11 @@ class EngineBuildContext:
 
 @dataclass(slots=True)
 class EngineAssembly:
-    """Server-safe QueryEngine bundle."""
+    """Server-safe QueryEngine bundle.
+
+    allowed_tools: 가시성·RBAC를 통과한 도구(tool_search·사후 훅이 넓힐 수 있는 최대 범위).
+    sent_tools: 이번 턴에 LLM에 실제로 보낸 도구(Tool RAG 선택 결과, allowed_tools의 부분집합).
+    """
 
     engine: Any
     model_name: str
@@ -85,6 +94,8 @@ class EngineAssembly:
     tool_execution_started_type: type
     tool_execution_completed_type: type
     error_event_type: type
+    sent_tools: tuple[str, ...] = ()
+    tool_selection_mode: str = "all_visible"
 
 
 def _infer_registry_permissions(full_registry: Any) -> dict[str, int]:
@@ -241,6 +252,23 @@ def _coerce_context(
     )
 
 
+def start_tool_rag_warmup() -> bool:
+    """서버 기동 시 Tool RAG 모델 로드와 코어 도구 인덱스 구축을 백그라운드 스레드에서 시작합니다.
+
+    준비되기 전에 들어온 요청은 보이는 도구 전부를 받습니다(요청 경로에서 모델 로드를 기다리지 않음).
+    """
+    from theseus_engine.config import get_tool_rag_settings
+    from theseus_engine.core.tool_rag import start_background_warmup
+
+    rag = get_tool_rag_settings()
+    if not (rag.enabled and rag.server_enabled):
+        return False
+    registry = ToolRegistry()
+    for tool_cls in ALL_CORE_TOOLS:
+        registry.register(tool_cls())
+    return start_background_warmup(registry)
+
+
 def get_query_engine(
     context: EngineBuildContext | SessionContext,
 ) -> EngineAssembly:
@@ -337,17 +365,40 @@ def get_query_engine(
     if not allowed_tools and build_context.mode != AgentMode.ASK:
         raise EngineInitializationError("No tools are available for the current server session.")
 
+    # 보이는 도구 중 이번 턴에 보낼 도구만 고릅니다(Tool RAG v2). 검색이 꺼졌거나 실패하면 보이는 도구 전부.
+    # tool_search와 사후 훅은 allowed_tools 안에서만 넓힐 수 있습니다.
+    selection: ToolSelection = select_tools_for_turn(
+        full_registry=full_registry,
+        visible_registry=active_registry,
+        user_query=build_context.user_query,
+        history_messages=build_context.history_messages,
+        pinned=("create_tool",) if can_create_tool else (),
+        server=True,
+        wait_for_model=False,
+    )
+    sent_registry = selection.registry
+    sent_tools = selection.names
+    logger.info(
+        "Tool selection for session %s: mode=%s reason=%s sent=%d/%d",
+        build_context.session_id,
+        selection.mode,
+        selection.reason,
+        len(sent_tools),
+        len(allowed_tools),
+    )
+
     system_prompt = build_theseus_system_prompt(
         mode=build_context.mode,
         plan_phase=plan_phase,
         plan_content=build_context.plan_content,
-        available_tools=allowed_tools,
+        available_tools=sent_tools,
         runtime_reminders=build_mode_runtime_reminders(
             build_context.mode,
             plan_phase=plan_phase,
             source="server_stream",
             explicit_selection=True,
-        ),
+        )
+        + selection.runtime_reminders(),
     )
     permission_checker = TheseusPermissionChecker(
         settings=TheseusPermissionSettings(),
@@ -356,9 +407,12 @@ def get_query_engine(
         require_human_confirm=_server_requires_sensitive_tool_confirmation(build_context),
     )
 
+    tool_rag_provenance = dict(selection.provenance)
     base_hook_executor = TheseusHookExecutor(
-        active_registry=active_registry,
+        active_registry=sent_registry,
         full_registry=full_registry,
+        injectable_names=allowed_tools,
+        provenance=tool_rag_provenance,
         llm_client=api_client,
     )
     hook_executor = ServerHookExecutor(
@@ -368,7 +422,7 @@ def get_query_engine(
 
     engine = QueryEngine(
         api_client=api_client,
-        tool_registry=active_registry,
+        tool_registry=sent_registry,
         permission_checker=permission_checker,
         hook_executor=hook_executor,
         cwd=Path.cwd(),
@@ -379,8 +433,9 @@ def get_query_engine(
         permission_prompt=_deny_permission_prompt,
         tool_metadata={
             "tool_registry": full_registry,
-            "active_registry": active_registry,
+            "active_registry": sent_registry,
             "search_injectable_tool_names": allowed_tools,
+            PROVENANCE_METADATA_KEY: tool_rag_provenance,
             "tool_permissions": tool_permissions,
             "custom_tool_inventory": custom_tool_inventory,
             "llm_client": api_client,
@@ -418,4 +473,6 @@ def get_query_engine(
         tool_execution_started_type=ToolExecutionStarted,
         tool_execution_completed_type=ToolExecutionCompleted,
         error_event_type=ErrorEvent,
+        sent_tools=sent_tools,
+        tool_selection_mode=selection.mode,
     )

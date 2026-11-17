@@ -25,6 +25,7 @@ from theseus_engine.engine.stream_events import (
     ErrorEvent,
 )
 from theseus_engine.core.engine_builder import setup_engine
+from theseus_engine.core.tool_rag.assembly import PROVENANCE_METADATA_KEY
 from theseus_engine.core.tool_usage_logger import record_tool_call_async as record_tool_call
 from theseus_engine.core.context_compressor import maybe_compress
 from theseus_engine.models.modes import AgentMode, PlanPhase
@@ -265,9 +266,14 @@ async def run_cli():
                 elif isinstance(event, ToolExecutionStarted):
                     tool_called_this_turn = True
                     print(f"\n[*] Executing tool: {event.tool_name}...", flush=True)
-                    await record_tool_call(line, event.tool_name)
                 elif isinstance(event, ToolExecutionCompleted):
                     print(f"[*] Tool '{event.tool_name}' result received.", flush=True)
+                    if not event.is_error:
+                        # Tool RAG 피드백: 검색이 고른 도구가 성공했을 때만 (질의, 도구)를 남깁니다.
+                        provenance = ctx.engine._tool_metadata.get(PROVENANCE_METADATA_KEY) or {}
+                        await record_tool_call(
+                            line, event.tool_name, provenance=provenance.get(event.tool_name)
+                        )
                     if event.is_error:
                         tool_error_occurred = True
                     elif event.tool_name == "create_tool":

@@ -127,8 +127,9 @@ class ToolSearchInjectionTest(unittest.IsolatedAsyncioTestCase):
                 "project_id": "test-project",
             },
         )
+        # 검색기가 후보 밖 도구를 돌려주는 상황(계약 위반)을 흉내 내 주입 단계의 방어를 확인합니다.
         with patch(
-            "theseus_engine.core.tool_retriever.ToolRetriever.retrieve_top_k",
+            "theseus_engine.tools.core.tool_search_tool._semantic_search",
             new=AsyncMock(return_value=matched_tools),
         ):
             result = await tool.execute(
@@ -138,6 +139,58 @@ class ToolSearchInjectionTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertFalse(result.is_error)
         return str(result.output)
+
+
+class ToolSearchCandidateFilterTest(unittest.IsolatedAsyncioTestCase):
+    """실제 검색 경로(가짜 임베더): 후보(search_injectable_tool_names) 밖 도구는 찾지도 주입하지도 않습니다."""
+
+    async def asyncSetUp(self) -> None:
+        from tests.fixtures.tool_rag_fakes import make_retriever
+        from theseus_engine.core.tool_rag import set_tool_retriever
+
+        set_tool_retriever(make_retriever())
+
+    async def asyncTearDown(self) -> None:
+        from theseus_engine.core.tool_rag import set_tool_retriever
+
+        set_tool_retriever(None)
+
+    async def _search(self, query: str, injectable: tuple[str, ...], *, break_semantic: bool = False):
+        full_registry = ToolRegistry()
+        for name, desc in (
+            ("bash", "Run a shell command in the terminal."),
+            ("web_search", "Search the web for information."),
+            ("web_fetch", "Fetch a web page by URL."),
+        ):
+            full_registry.register(_DummyTool(name, desc))
+        active_registry = ToolRegistry()
+        metadata = {
+            "tool_registry": full_registry,
+            "active_registry": active_registry,
+            "agent_mode": AgentMode.ASK.value,
+            "search_injectable_tool_names": injectable,
+        }
+        ctx = ToolExecutionContext(cwd=Path.cwd(), metadata=metadata)
+        if break_semantic:
+            with patch(
+                "theseus_engine.tools.core.tool_search_tool._semantic_search",
+                new=AsyncMock(side_effect=RuntimeError("no model")),
+            ):
+                result = await ToolSearchTool().execute(ToolSearchInput(query=query), ctx)
+        else:
+            result = await ToolSearchTool().execute(ToolSearchInput(query=query), ctx)
+        return str(result.output), {t.name for t in active_registry.list_tools()}
+
+    async def test_semantic_search_respects_candidates(self) -> None:
+        output, injected = await self._search("run a shell command", ("web_search", "web_fetch"))
+        self.assertNotIn("bash", output)
+        self.assertTrue(injected <= {"web_search", "web_fetch"})
+
+    async def test_lexical_fallback_respects_candidates(self) -> None:
+        output, injected = await self._search("shell command web", ("web_search",), break_semantic=True)
+        self.assertIn("lexical_fallback", output)
+        self.assertNotIn("bash", output)
+        self.assertEqual(injected, {"web_search"})
 
 
 if __name__ == "__main__":

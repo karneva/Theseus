@@ -20,6 +20,8 @@ SKIP_REQUIREMENTS=0
 SKIP_EXTENSION=0
 SKIP_SETTINGS=0
 INSTALL_PLAYWRIGHT=0
+SKIP_TOOL_RAG_MODEL=0
+TOOL_RAG_MODEL_DIR="${THESEUS_EMBED_MODEL_DIR:-$HOME/.theseus/models/e5-small-int8}"
 
 lowercase() {
   local value="${1:-}"
@@ -163,7 +165,8 @@ usage() {
     "  --skip-extension        Do not install the VSIX package" \
     "  --skip-settings         Do not write IDE settings.json" \
     "  --install-playwright    Install Chromium browser binaries for Playwright tools" \
-    "  -h, --help              Show this help"
+    "  --skip-tool-rag-model   Do not prepare the Tool RAG embedding model (default dir: ~/.theseus/models/e5-small-int8)" \
+    "  -h, --help             Show this help"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -218,6 +221,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --install-playwright)
       INSTALL_PLAYWRIGHT=1
+      shift
+      ;;
+    --skip-tool-rag-model)
+      SKIP_TOOL_RAG_MODEL=1
       shift
       ;;
     -h|--help)
@@ -765,6 +772,29 @@ if [[ "$SKIP_REQUIREMENTS" -eq 0 ]]; then
   else
     "$VENV_PYTHON" -m pip install --upgrade pip
     "$VENV_PYTHON" -m pip install -r "$CORE_PATH/requirements.txt"
+  fi
+fi
+
+# Tool RAG embedding model (one-time). Without it the local CLI sends every visible tool schema each turn.
+provision_tool_rag_model() {
+  local model_reqs="$CORE_PATH/requirements-tool-rag-model.txt"
+  if command -v uv >/dev/null 2>&1; then
+    uv pip install -r "$model_reqs" --python "$VENV_PYTHON" || return 1
+  else
+    "$VENV_PYTHON" -m pip install -r "$model_reqs" || return 1
+  fi
+  "$VENV_PYTHON" "$CORE_PATH/scripts/provision_tool_rag_model.py" --out "$TOOL_RAG_MODEL_DIR"
+}
+
+if [[ "$SKIP_TOOL_RAG_MODEL" -eq 0 ]]; then
+  if [[ -f "$TOOL_RAG_MODEL_DIR/model.onnx" ]]; then
+    echo "Tool RAG model already present: $TOOL_RAG_MODEL_DIR"
+  else
+    echo "Preparing Tool RAG embedding model (one-time: downloads about 470 MB, peak RAM about 2.4 GB): $TOOL_RAG_MODEL_DIR"
+    if ! provision_tool_rag_model; then
+      echo "WARNING: Tool RAG model preparation failed. The CLI sends all visible tools until you run:" >&2
+      echo "  $VENV_PYTHON $CORE_PATH/scripts/provision_tool_rag_model.py --out $TOOL_RAG_MODEL_DIR" >&2
+    fi
   fi
 fi
 

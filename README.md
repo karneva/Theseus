@@ -35,7 +35,7 @@
 - [ERD 및 산출물](#documents)
 - [저장소 구조](#repository-structure)
 - [변경 이력 / 리팩토링](#changelog)
-- [고도화 결과(작성 예정)](#roadmap-results)
+- [고도화 결과](#roadmap-results)
 - [팀](#team)
 - [프로젝트 성과](#achievements)
 - [추가 정보](#additional-info)
@@ -340,7 +340,7 @@ flowchart TB
 | --- | --- |
 | **Frontend** | TypeScript, React 19, Vite, Tailwind CSS v4, Zustand, Axios, React Hook Form, Zod, Vitest |
 | **Backend** | Java 21, Spring Boot 3.5, Spring Security, Spring Data JPA, Flyway, JWT, Swagger / OpenAPI, Testcontainers |
-| **AI Core** | Python 3.11, FastAPI, Theseus Engine, sentence-transformers, OpenAI 호환 LLM 연동(Ollama, vLLM, OpenAI, Anthropic, Gemini, DeepSeek) |
+| **AI Core** | Python 3.11, FastAPI, Theseus Engine, ONNX Runtime(multilingual-e5-small int8, Tool RAG), OpenAI 호환 LLM 연동(Ollama, vLLM, OpenAI, Anthropic, Gemini, DeepSeek) |
 | **Data** | MySQL 8.4, PostgreSQL 16, pgvector, Redis 7.4 |
 | **Messaging / Streaming** | Kafka(KRaft), SSE |
 | **Remote / Sandbox** | SSH, Paramiko, Docker, docker-socket-proxy |
@@ -537,7 +537,7 @@ API·Core까지 컨테이너로 띄워 통합 확인하려면 `docker-compose.in
 | 영역 | 명령 | 현재 결과 |
 | --- | --- | --- |
 | API Server | `cd backend/theseus-api-server && ./gradlew test`(Testcontainers, Docker 필요) | 197개 통과 |
-| Core Server | `cd backend/theseus-core-server && python -m pytest -q`(DB·Kafka·Docker 불필요) | 131개 통과 |
+| Core Server | `cd backend/theseus-core-server && python -m pytest -q`(DB·Kafka·Docker 불필요) | 193개 중 192개 통과·1개 건너뜀(테스트 전용 `THESEUS_TEST_TOKENIZER_JSON`이 없을 때). Tool RAG ONNX 모델이 없으면 8개를 더 건너뜀 |
 | Frontend | `cd frontend && npm run lint && npm test -- --run && npm run build` | 38개 통과 |
 
 <a id="deploy"></a>
@@ -592,7 +592,7 @@ bash scripts/llm-tunnel.sh --local-port 11435 <서버별칭>
 | Job | 내용 |
 | --- | --- |
 | API | JDK 21, `./gradlew test`(Testcontainers) |
-| Core | Python 3.11, CPU torch, `import src.main` 스모크, `pytest` |
+| Core | Python 3.11(torch 없음), `import src.main` 스모크, `pytest` |
 | Frontend | Node(`.nvmrc`), `npm ci`, lint, `npm test -- --run`, build |
 | Infra | selfhost compose, local compose(3개 파일 함께) `config` 검증 |
 | Secret scan | gitleaks |
@@ -644,6 +644,7 @@ Pop-Location
 | [환경 변수](./docs/operations/environment-variables.md) | 서비스별 환경 변수의 필수 여부, 기본값, 용도 |
 | [VS Code 익스텐션 안내](./docs/vscode-extension.md) | VSIX 빌드, 로컬 설치, LLM 설정, 소스·Runner 배포 및 오류 해결 |
 | [시스템 아키텍처](./docs/architecture/system-architecture.md) | 서비스 구성, 네트워크, 데이터 저장 책임, 요청 흐름 |
+| [Tool RAG](./docs/architecture/tool-rag.md) | 도구 검색 v1 문제 측정, v2 설계, 평가 프로토콜, 결과, 한계 |
 | [API 개요](./docs/api/api-overview.md) | API 구성과 주요 기능 흐름 |
 | [인증 API](./docs/api/auth-api.md) | 계정, 로그인, 토큰 정책 |
 | [Tool API](./docs/api/tool-api.md) | ToolPlan 생성, 피드백, 승인, 도구 생성 |
@@ -709,16 +710,32 @@ SSAFY 프로젝트 종료 후 저장소를 정리해 **서버 한 대에서 직�
 
 <a id="roadmap-results"></a>
 
-## 🧪 고도화 결과 (작성 예정)
+## 🧪 고도화 결과
 
 > [!NOTE]
-> 아래 두 항목은 진행 중인 작업의 결과를 정리할 자리입니다. 측정이 끝나면 실험 조건, 지표, 결과를 채웁니다. 현재 수치는 없습니다.
+> 프로젝트 종료 후 진행한 고도화의 측정 결과입니다. Tool RAG는 완료했고, 로컬 LLM 파인튜닝·양자화는 진행 중입니다.
 
 ### Tool RAG 고도화
 
-<!-- TODO: 도구 검색(ToolRetriever) 개선 방법, 평가 데이터, 지표(예: Recall@k), 개선 전후 비교 -->
+에이전트가 매 턴 모든 도구 스키마를 보내면 그것만으로 5천 토큰이 넘고, 운영 대상인 4B 로컬 모델(16k 컨텍스트)은 도구가 많을수록 고르는 정확도도 떨어집니다. Tool RAG(김선교 설계)를 평가셋으로 다시 재고 v2로 고도화했습니다.
 
-_작성 예정_
+- **평가**: 동결 평가셋 236개 질의(한국어 69%, "맞는 도구 없음" 35개 포함)를 dev/test 50:50으로 고정하고, 기법 선택과 튜닝은 dev에서만 했습니다. 최종 수치는 따로 만든 **홀드아웃** 140개 질의로 냅니다. 평가셋·용어집·few-shot을 본 적 없는 작성자가 도구 카탈로그만 보고 썼고, 다른 주석자가 독립으로 라벨링했으며(135개 일치), 개발 전에 해시를 고정한 뒤 최종 구성과 비교 대상을 한 번만 평가했습니다.
+- **v1에서 측정한 문제**: 한국어 R@3 0.533(영어 0.754), 유사도 임계값이 한 번도 걸리지 않아 "도구 없음" 판정 불가, 키워드 리랭크 효과 미미(MRR +0.024), 서버는 검색 없이 보이는 도구 전부 전송, 사후 훅이 가시성·RBAC를 무시하고 bash 등을 주입(보안 버그), torch 때문에 이미지 2.46 GB·모델 로드 +950 MB
+- **v2**: dense(e5-small) + BM25(한글 bigram) 융합 점수, 영어 도구 설명에 붙인 한국어 용어집, 스키마 크기를 반영한 비용 인지 슬롯 선택, "도구 없음" 판정(상위 3개 + tool_search로 soft fallback, 다른 작성자의 질의로 전이되지 않아 기본은 꺼짐), ONNX int8 임베딩(torch 제거). 서버 조립·tool_search·사후 훅 주입을 모두 보이는 도구 안으로 제한했습니다.
+
+| 홀드아웃 (core, 순위 n=67) | v1 | v2 |
+| --- | ---: | ---: |
+| R@3 (한국어 / 영어) | 0.493 (0.549 / 0.404) | **0.806** (0.841 / 0.750) |
+| MRR | 0.497 | **0.752** |
+| 실제 전달 집합의 정답 재현율 | 0.708 | **0.899** |
+| 턴당 도구 스키마 토큰 평균 / p95 | 1968 / 2417 | **1771 / 1999** |
+
+- 홀드아웃 paired bootstrap 95% CI: R@3 **+0.313** [+0.201, +0.433](24승 1패), 정답 재현율 +0.190 [+0.118, +0.268], 토큰 −197 [−256, −139]. 토큰에는 일부만 보내는 모든 턴에 고정으로 넣는 tool_search 스키마(176 토큰)가 들어 있습니다. 평가셋 test(n=70)에서는 R@3 0.636 → 0.895(+0.260 [+0.152, +0.364])였지만, test는 두 번 평가했고 튜닝 입력에 섞였을 수 있어 보조 지표로만 봅니다.
+- **서버 토큰**: 실제 서버 기본 구성(Remote Workspace 도구 포함, 엔진 RAG 도구 2개 숨김)에서 검색 없이 보이는 도구 42개를 보내던 서버(5367 토큰/턴) 대비 v2는 1769 토큰/턴(**약 −67%**, 홀드아웃)입니다. 정답 재현율은 0.935 → 0.842로 내려가는 트레이드오프이고, 빠진 도구는 매 턴 들어 있는 tool_search로 찾습니다. 같은 조건의 홀드아웃 R@3는 v1 검색기 0.399, 개선 전 v2 0.684, v2 **0.818**입니다(개선 전 대비 +0.134 [+0.075, +0.203]).
+- **자원**: Core 이미지 2.46 GB → **1.07 GB**, 컨테이너(2 vCPU·1.5 GB)에서 검색 1회 뒤 프로세스 RSS 약 1.08 GB → **약 0.42 GB**, 첫 검색(모델 로드 포함) 약 19 s → **약 1.9 s**, 웜 검색 p50 18.9 ms → **5.9 ms**(홀드아웃)
+- **한계**: 홀드아웃도 LLM이 쓴 질의라 실제 사용자 질의보다 깨끗할 수 있고, 라벨 일치도 같은 편향일 수 있습니다. 순위 지표 n=67이라 신뢰구간이 넓고, 영어 R@3(0.750)가 한국어(0.841)보다 낮습니다. 홀드아웃 R@3(0.806)는 평가셋 test(0.895)보다 낮은데, v1도 같이 내려가(0.636 → 0.493) 홀드아웃이 더 어려운 것으로 보입니다. "도구 없음" 판정은 다른 작성자가 쓴 보정용 질의 세트와의 전이에서 미리 정한 기준(양방향 F1 ≥ 0.5, 오판 ≤ 5%)을 넘지 못해 기본으로 꺼 두었습니다(`THESEUS_TOOL_RAG_NONE_MODE=soft`로 켬). 홀드아웃에서는 옛 판정 규칙이 F1 0.606으로 괜찮았지만, 결정 뒤에 본 사후 관찰이고 none 질의가 19개뿐이라 기본값은 바꾸지 않았습니다.
+
+측정 조건, 설계 근거, 버린 기법, 재현 명령, 3단계 임베딩 파인튜닝을 붙이는 방법은 [Tool RAG 문서](./docs/architecture/tool-rag.md)에 있습니다.
 
 ### 로컬 LLM 파인튜닝·양자화
 
@@ -738,7 +755,7 @@ _작성 예정_
 | 조원혁 | Full Stack | 프로젝트·채팅 화면, ToolPlan 생성·승인 UI, Remote Workspace 관리 화면, 랜딩 페이지, 프론트엔드 API 연동 |
 | 김대연 | Full Stack | API Server 기능 구현, 프로젝트·Tool API, 관리자 설정과 Tool 관리, 프론트엔드·백엔드 연동, 발표 자료와 시연 영상 |
 | 권대일 | AI | Theseus Agent Engine(QueryEngine, Context Compressor, 자체 TUI), LLM 기반 ToolPlan 생성과 structured output, Tool 실행 오케스트레이션, Top-K 동적 도구 검색·ToolSearchTool 구현, Custom Tool Registry, ToolBuild 샌드박스 안정화, VS Code Extension |
-| 김선교 | AI / BE | AI Core Server(FastAPI) 구축, Docker Sandbox 구현, Core 측 Kafka 비동기 처리, Tool RAG 설계, RAG·Vector DB 인프라, 과금 Outbox. 프로젝트 종료 후 오픈소스화 리팩토링·셀프호스팅·고도화 |
+| 김선교 | AI / BE | AI Core Server(FastAPI) 구축, Docker Sandbox 구현, Core 측 Kafka 비동기 처리, Tool RAG 설계 + v2 고도화, RAG·Vector DB 인프라, 과금 Outbox. 프로젝트 종료 후 오픈소스화 리팩토링·셀프호스팅·고도화 |
 
 <details>
 <summary>김선교 담당 작업 상세</summary>
@@ -748,7 +765,7 @@ _작성 예정_
 | AI Core Server 구축 | FastAPI 프로젝트 초기화와 계층형 구조, 설정·인증·세션/히스토리 연동, Core Direct SSE 스트리밍, 엔진 서버 스트리밍 연동, Plan·create_tool 서버 이관 | `ecdf3b1`, `cf675cf`, `dfc67c7`, `281ae57`, `1ad89f6`, `171c2e3`, `c2e8324` |
 | Docker Sandbox | 샌드박스 인프라 설정, Docker 기반 실행기 통합, 샌드박스 강제·영속화, 실행 경로 안정성과 진단, 생성 Tool 문법 검증 | `289b887`, `542cb15`, `45dddff`, `ebf2d1f`, `6f636aa` |
 | Kafka 비동기 처리(Core) | Kafka 응답 설정, ToolPlan consumer, ToolBuild consumer·publisher·processor, Tool 빌드 고정·취약점 강화 | `fa137b3`, `80ba357`, `09f845a`, `869722d` |
-| Tool RAG | 동적 도구 검색 구조 설계. 이후 평가셋 기반 v2 고도화(하이브리드 검색·경량화)를 단독 진행 | [고도화 결과](#roadmap-results) |
+| Tool RAG | 동적 도구 검색 구조 설계. 이후 평가셋 기반 v2 고도화(하이브리드 검색, 비용 인지 선택, ONNX 경량화, 주입 경로 보안 수정)를 단독 진행 | [고도화 결과](#roadmap-results), [Tool RAG 문서](./docs/architecture/tool-rag.md) |
 | 데이터·과금 | RAG·Vector DB(pgvector) 인프라 세팅, 과금 데이터 유실 방지 Outbox 패턴 | `42db844`, `51812ba` |
 | 오픈소스화·셀프호스팅 (2026.07~) | 민감정보·하드코딩 제거, 보안 강화, 설정 외부화, 테스트 정상화, 단일 서버 배포 구성 | [변경 이력](#changelog) |
 

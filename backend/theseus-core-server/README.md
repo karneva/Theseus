@@ -83,6 +83,10 @@ stdio fallback으로 실행할 수 있습니다.
   VSCode WebView 같은 클라이언트가 표시할 수 있게 합니다.
 - `theseus_engine.core.tool_visibility`가 ASK/PLAN/AGENT/COORDINATOR mode별
   active tool registry를 공통 계산합니다.
+- `theseus_engine.core.tool_rag`(Tool RAG v2)가 보이는 도구 중 이번 턴에 보낼 도구를 고릅니다.
+  multilingual-e5-small ONNX int8 임베딩 + BM25, 필수 도구 + tool_search(보이면 항상) + 비용 인지 슬롯,
+  "맞는 도구 없음"이면 슬롯을 상위 3개로 줄임. 서버 조립과 CLI/TUI가 같은 규칙을 쓰고, tool_search와 사후 훅은 보이는 도구 안에서만
+  주입합니다. 설계와 측정은 [docs/architecture/tool-rag.md](../../docs/architecture/tool-rag.md)를 참고하세요.
 - `theseus_engine.tools.tool_repair`는 CLI/TUI/Extension/Server ToolBuild가
   공유하는 custom tool repair 정책과 실패 분류를 제공합니다.
 - LLM debug dump는 사용할 수 있는 tool schema와 실제 history의
@@ -242,6 +246,17 @@ uv pip install -r requirements.txt
 기본 `requirements.txt`는 Core Server와 공통 runtime이 직접 import하는
 의존성만 포함합니다. 선택 기능은 아래 파일로 분리합니다.
 
+Tool RAG 임베딩 모델은 한 번 만들어 둡니다(Docker 이미지는 빌드 단계에서 자동으로 만듭니다).
+`scripts/install-vscode-extension.sh`/`.ps1`은 `~/.theseus/models/e5-small-int8`에 모델이 없으면 이 단계를
+자동으로 실행합니다(약 470 MB 다운로드, 양자화 peak RAM 약 2.4 GB, 건너뛰려면 `--skip-tool-rag-model`/`-SkipToolRagModel`).
+모델이 없으면 검색 없이 보이는 도구 전부를 보내고, CLI는 준비 명령을 한 번 안내합니다.
+
+```powershell
+# 모델 준비 전용 의존성(양자화 결과를 sha256으로 검증하므로 버전을 고정합니다)
+uv pip install -r requirements-tool-rag-model.txt
+python scripts\provision_tool_rag_model.py --out $HOME\.theseus\models\e5-small-int8
+```
+
 ```powershell
 # 저장소에 포함된 예시 custom tool 전체 실행용
 uv pip install -r requirements-custom-tools.txt
@@ -252,7 +267,14 @@ python -m playwright install chromium
 
 # PDF/Word/Excel 분석 도구를 활성화할 때
 uv pip install -r requirements-doc-tools.txt
+
+# sentence-transformers(torch)가 필요한 선택 기능: 엔진 RAG 로컬 임베딩, Tool RAG torch 백엔드 비교
+uv pip install torch --index-url https://download.pytorch.org/whl/cpu
+uv pip install -r requirements-torch.txt
 ```
+
+`EMBEDDING_PROVIDER=local`(기본)인데 sentence-transformers가 없으면 로컬 CLI/TUI는 엔진 RAG 도구
+(`search_knowledge_base`, `ingest_document`)를 보이는 도구에서 뺍니다. 호출하면 ImportError가 나기 때문입니다.
 
 `playwright-stealth`처럼 bot-detection 우회 성격의 패키지는 기본/optional
 의존성에 포함하지 않습니다. 필요하면 대상 서비스 약관과 배포 정책을 먼저
@@ -283,7 +305,8 @@ Copy-Item .env.example .env
 | `SANDBOX_*` | Docker sandbox 이미지, 리소스 제한, startup check, shared workdir |
 | `SANDBOX_HOST_TEMP_ROOT`, `SANDBOX_CONTAINER_TEMP_ROOT` | Docker socket/Core 컨테이너 경로 mismatch 방지를 위한 sandbox shared temp root |
 | `LANGCHAIN_*`, `THESEUS_TRACING_ENABLED` | LangSmith tracing(기본 비활성, 명시적 opt-in) |
-| `THESEUS_DYNAMIC_TOOL_RETRIEVAL` | 질의별 top-k tool retrieval 활성화 |
+| `THESEUS_TOOL_RAG_ENABLED`, `THESEUS_SERVER_TOOL_RAG` | 질의별 도구 선택(Tool RAG) 활성화. 구 이름 `THESEUS_DYNAMIC_TOOL_RETRIEVAL`도 읽음 |
+| `THESEUS_EMBED_MODEL_DIR` | Tool RAG ONNX 모델 디렉터리(이미지 `/opt/models/e5-small-int8`). 나머지 `THESEUS_EMBED_*`, `THESEUS_TOOL_RAG_*`는 [환경 변수 문서](../../docs/operations/environment-variables.md#tool-rag) |
 | `THESEUS_ENABLE_ENGINE_RAG_TOOLS` | 서버 registry에서 standalone engine RAG tool을 명시적으로 활성화 |
 | `THESEUS_ENABLE_AGENT_HOOK` | 파일 작업 AuditLLM/hook 활성화 |
 | `THESEUS_SERVER_SENSITIVE_TOOL_POLICY` | 서버 `/stream`에서 `bash` 등 민감 도구를 승인 없이 자동 허용할지 제어. 기본값은 `reject`, 내부/데모 환경에서만 `allow` 사용 |
@@ -509,6 +532,11 @@ python -c "import src.main"
 pytest -q
 ```
 
+ONNX 모델이 필요한 테스트(임베더 골든 벡터·결정성, v2 회귀)는 모델 디렉터리가 없으면 건너뜁니다.
+`THESEUS_EMBED_MODEL_DIR`을 지정하면 함께 돕니다. 토크나이저 일치 테스트 1개는 추가로 `THESEUS_TEST_TOKENIZER_JSON`
+(`intfloat/multilingual-e5-small`의 tokenizer.json 경로, 테스트 전용)이 있어야 돌고, 없으면 건너뜁니다.
+현재 186개: 모델 없음 178 통과·8 건너뜀, 모델만 있음 185 통과·1 건너뜀, 둘 다 있음 186 통과. Tool RAG 평가 하네스는 [benchmarks/tool_rag](benchmarks/tool_rag/README.md)에 있습니다.
+
 VSCode Extension 변경 검증은 `vscode-extension`에서 실행합니다.
 
 ```powershell
@@ -534,7 +562,7 @@ theseus-core-server/
 │   ├── tool_plan/               # 신규 tool plan Kafka worker
 │   └── tool_build/              # 신규 tool build Kafka worker
 ├── theseus_engine/              # 에이전트 실행 코어
-│   ├── core/                    # engine_builder, plan_flow, tool_retriever
+│   ├── core/                    # engine_builder, plan_flow, tool_visibility, tool_rag(도구 검색)
 │   ├── engine/                  # QueryEngine, StreamEvent, usage/cost
 │   ├── memory/                  # scoped memory
 │   ├── models/                  # modes, state machine façade, RBAC
@@ -557,6 +585,9 @@ theseus-core-server/
 ├── requirements-browser.txt     # Playwright optional
 ├── requirements-custom-tools.txt # 번들 예시 custom tool optional
 ├── requirements-doc-tools.txt   # 문서/스프레드시트 tool optional
+├── requirements-torch.txt      # sentence-transformers(torch) optional
+├── requirements-tool-rag-model.txt  # Tool RAG 모델 준비 전용(onnx, 고정 버전)
+├── benchmarks/tool_rag/         # Tool RAG 평가 하네스, 동결 평가셋, 결과
 └── README.md
 ```
 
