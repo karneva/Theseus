@@ -47,7 +47,7 @@ langchain-openai>=0.1,<2
 # 모델 파일은 Docker 빌드 단계에서 만들어 이미지에 넣습니다(scripts/provision_tool_rag_model.py).
 onnxruntime>=1.20,<2
 sentencepiece>=0.2,<0.3
-numpy>=1.26,<3
+numpy>=2.5.4,<3
 
 # ── Observability ──────────────────────────────────────────────────────────────
 langsmith>=0.14.17,<1
