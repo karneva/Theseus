@@ -6,7 +6,7 @@
 # Core는 실행 시 user=65534, cap_drop=ALL, read_only 등을 추가로 강제합니다
 # (src/sandbox/docker_executor.py hardened_container_options).
 
-FROM python:3.11-slim AS builder
+FROM python:3.15-slim AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -22,7 +22,7 @@ COPY requirements-sandbox.txt /sandbox/requirements/
 RUN pip install -r /sandbox/requirements/requirements-sandbox.txt \
     && pip check
 
-FROM python:3.11-slim AS runtime
+FROM python:3.15-slim AS runtime
 
 ENV PATH=/opt/venv/bin:$PATH \
     PYTHONDONTWRITEBYTECODE=1 \

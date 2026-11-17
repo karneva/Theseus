@@ -6,7 +6,7 @@
 # - runtime: venv, 모델, 소스만 복사하고 non-root(appuser)로 실행합니다. 런타임에 모델을 내려받지 않습니다.
 
 # ── 빌드 스테이지 ─────────────────────────────────────────────────────────────
-FROM python:3.11-slim AS builder
+FROM python:3.15-slim AS builder
 
 # 휠이 없는 패키지가 섞일 때를 대비한 빌드 도구입니다. 런타임 이미지에는 들어가지 않습니다.
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -31,7 +31,7 @@ RUN pip install -r requirements.txt \
 # 고정 리비전의 공식 ONNX(fp32)를 받아 동적 int8로 양자화합니다. 양자화 peak 메모리가 약 2.4 GB라서
 # 3.8 GB 서버의 런타임이 아니라 빌드 단계에서만 합니다. onnx/onnxruntime 버전을 고정해야 결과 파일이
 # 바이트 단위로 같아지고(sha256 검증), 동봉한 none 판정 보정값(theseus_engine/core/tool_rag/data)이 적용됩니다.
-FROM python:3.11-slim AS model
+FROM python:3.15-slim AS model
 
 ENV PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
@@ -49,7 +49,7 @@ RUN python /build/provision_tool_rag_model.py --out /opt/models/e5-small-int8 \
     && rm -rf /root/.cache/huggingface
 
 # ── 런타임 스테이지 ───────────────────────────────────────────────────────────
-FROM python:3.11-slim AS runtime
+FROM python:3.15-slim AS runtime
 
 ARG APP_UID=999
 ARG APP_GID=999
