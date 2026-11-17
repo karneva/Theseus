@@ -17,7 +17,7 @@ RUN --mount=type=cache,target=/root/.gradle \
     ./gradlew bootJar -x test --no-daemon
 
 # Runtime stage: JRE만 포함하고 비root 사용자로 실행합니다.
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 
 RUN apk add --no-cache tzdata \
     && addgroup -S theseus \

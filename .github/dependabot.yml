@@ -14,6 +14,13 @@ updates:
       gradle-minor-patch:
         patterns: ["*"]
         update-types: [minor, patch]
+    # Spring Boot 4는 별도 마이그레이션(Kafka 자동 설정 패키지 이동, Jackson 3, 테스트 패키지 변경)이 필요하고,
+    # springdoc 3.x는 Boot 4 전용입니다. 마이그레이션할 때 이 규칙을 지웁니다.
+    ignore:
+      - dependency-name: "org.springframework.boot"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.springdoc:*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: pip
     directory: /backend/theseus-core-server
@@ -40,6 +47,13 @@ updates:
       npm-minor-patch:
         patterns: ["*"]
         update-types: [minor, patch]
+    ignore:
+      # TypeScript 7은 typescript-eslint가 아직 지원하지 않습니다(peer typescript <6.1). 지원되면 지웁니다.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      # @types/node는 런타임 Node 버전(.nvmrc, CI)과 같은 메이저로 맞춰 수동으로 올립니다.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
@@ -51,6 +65,10 @@ updates:
     groups:
       github-actions:
         patterns: ["*"]
+    ignore:
+      # gradle/actions v6부터 캐시가 독점 구성 요소이고 Gradle 이용약관 동의가 필요합니다. 약관을 받아들이기로 하면 지웁니다.
+      - dependency-name: "gradle/actions"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: docker
     directories:
@@ -60,6 +78,11 @@ updates:
       - /infra/docker/selfhost/nginx
     schedule:
       interval: weekly
+    ignore:
+      # Core Python 버전은 CI(setup-python)·Dockerfile.sandbox와 함께 수동으로 올립니다.
+      # 3.15는 onnxruntime cp315 휠이 아직 없어 이미지 빌드가 실패합니다.
+      - dependency-name: "python"
+        versions: [">=3.12"]
     commit-message:
       prefix: build
       include: scope

@@ -42,7 +42,7 @@ jobs:
       tag: ${{ steps.meta.outputs.tag }}
       registry: ${{ steps.meta.outputs.registry }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # ref 입력(브랜치, 짧은 SHA)을 직접 풀고 dev 포함 여부를 확인하려면 전체 이력이 필요합니다.
           fetch-depth: 0
@@ -109,13 +109,13 @@ jobs:
       IMAGE: ${{ needs.plan.outputs.registry }}theseus-${{ matrix.component }}
       TAG: ${{ needs.plan.outputs.tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.plan.outputs.sha }}
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
-      - uses: docker/login-action@v3
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -134,7 +134,7 @@ jobs:
 
       # 레이어 캐시는 GHCR의 :buildcache 태그에 둡니다(GitHub Actions 캐시 10GB 한도와 무관, core 이미지가 큼).
       # revision 라벨은 서버(ci-deploy.sh)가 pull한 이미지가 요청한 커밋으로 빌드됐는지 확인하는 데 씁니다.
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: steps.exists.outputs.skip != 'true'
         with:
           context: ${{ matrix.context }}
@@ -175,7 +175,7 @@ jobs:
       SSH_USER: ${{ vars.DEPLOY_SSH_USER }}
       DOMAIN: ${{ vars.DEPLOY_DOMAIN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.plan.outputs.sha }}
           # 서버에서 실행 중인 커밋과 비교하려면 이력이 필요합니다.

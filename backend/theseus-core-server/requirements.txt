@@ -10,9 +10,9 @@
 # ──────────────────────────────────────────────────────────────────────────────
 
 # ── Web Framework ──────────────────────────────────────────────────────────────
-fastapi==0.109.0
-uvicorn[standard]==0.27.0
-sse-starlette>=1.6.0,<4
+fastapi==0.162.7
+uvicorn[standard]==0.54.0
+sse-starlette>=3.7.0,<4
 
 # ── Data Validation ────────────────────────────────────────────────────────────
 # mcp 1.12.x는 pydantic 2.12에서 제거된 내부 심볼을 import하므로 2.12 미만으로 고정합니다.
@@ -24,8 +24,9 @@ anthropic>=0.40.0,<3
 openai>=1.0.0,<4
 
 # ── HTTP / Async I/O ───────────────────────────────────────────────────────────
-# starlette 0.35(fastapi 0.109)의 TestClient가 httpx 0.28에서 제거된 `app=` 인자를 쓰므로 0.28 미만으로 둡니다.
-httpx>=0.27.0,<0.28
+# starlette 0.35(fastapi 0.109)의 TestClient가 httpx 0.28에서 제거된 `app=` 인자를 써서 0.28 미만으로 두었다가,
+# fastapi 0.162(starlette 1.x)로 올리면서 0.28로 올렸습니다.
+httpx>=0.28.1,<0.29
 # Core 코드는 직접 import하지 않지만, Core 프로세스에서 로드되는 생성 Tool이
 # 흔히 import하므로 sandbox 의존성(requirements-sandbox.txt)과 맞춰 유지합니다.
 requests>=2.31,<3
@@ -36,7 +37,7 @@ python-dotenv>=1.0.0,<2
 # ── Database (PostgreSQL + pgvector) ──────────────────────────────────────────
 # psycopg(v3)는 SQLAlchemy(src/db), psycopg2는 엔진 RAG(theseus_engine/rag)가 씁니다.
 sqlalchemy>=2.0.0,<3
-psycopg[binary]>=3.1,<4
+psycopg[binary]>=3.3.9,<4
 psycopg2-binary>=2.9,<3
 pgvector>=0.2,<1
 
@@ -49,10 +50,10 @@ sentencepiece>=0.2,<0.3
 numpy>=1.26,<3
 
 # ── Observability ──────────────────────────────────────────────────────────────
-langsmith>=0.1.0,<1
+langsmith>=0.14.17,<1
 
 # ── MCP (Model Context Protocol) ──────────────────────────────────────────────
-# mcp>=1.13은 uvicorn>=0.31.1을 요구하므로 uvicorn 고정과 함께 1.12.x에 머뭅니다.
+# mcp>=1.13이 요구하는 uvicorn>=0.31.1은 이제 충족하지만, 1.13 이상은 위 pydantic 고정과 함께 검증하지 않아 1.12.x에 머뭅니다.
 mcp>=1.0.0,<1.13
 
 # ── TUI / CLI (theseus_engine/tui, lsp_tool) ──────────────────────────────────
@@ -71,9 +72,9 @@ psutil
 nvidia-ml-py
 
 # ── Infrastructure ────────────────────────────────────────────────────────────
-docker==7.1.0
+docker==7.2.0
 aiokafka>=0.10,<1
-apscheduler==3.10.4
+apscheduler==3.11.3
 paramiko<3.0.0
 
 # ── 기타 유틸 ─────────────────────────────────────────────────────────────────
