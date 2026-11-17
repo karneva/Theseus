@@ -34,7 +34,9 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      - uses: gradle/actions/setup-gradle@v6
+      # v6부터 캐시가 독점 구성 요소(gradle-actions-caching)로 바뀌고 Gradle 이용약관 동의가 필요해서,
+      # 약관을 검토하기 전까지 MIT 라이선스인 v5에 머뭅니다.
+      - uses: gradle/actions/setup-gradle@v5
 
       # gradlew는 저장소에 실행 비트(100755)로 등록되어 있어 chmod 없이 실행합니다.
       # Testcontainers는 ubuntu 러너의 Docker를 그대로 사용합니다.
