@@ -5,6 +5,7 @@
 #   3) docker.sock 그룹 ID 기록, 배포 사용자를 docker 그룹에 추가
 #   4) ufw: SSH, 80, 443 허용 + 컨테이너 -> 호스트 LLM 터널 포트 허용
 #   5) sshd: 노트북 Ollama reverse tunnel을 docker0 IP에 바인딩할 수 있게 설정
+# --only-ci-deploy: 위 단계는 건너뛰고 GitHub Actions 자동 배포용 forced command 스크립트만 설치합니다.
 set -euo pipefail
 
 usage() {
@@ -19,6 +20,7 @@ usage() {
   --llm-port PORT     LLM 터널 포트(기본: 11434)
   --no-ufw            ufw 설정을 건너뜁니다
   --no-llm-tunnel     sshd/ufw의 LLM 터널 설정을 건너뜁니다
+  --only-ci-deploy    다른 단계 없이 GitHub Actions 자동 배포용 scripts/ci-deploy.sh만 <root>/bin에 설치·갱신
   -h, --help          도움말
 EOF
 }
@@ -34,6 +36,7 @@ ssh_port=""
 llm_port="11434"
 setup_ufw=true
 setup_tunnel=true
+only_ci_deploy=false
 # Core 이미지의 appuser uid/gid입니다(backend/theseus-core-server/Dockerfile의 APP_UID/APP_GID).
 core_uid=999
 core_gid=999
@@ -48,6 +51,7 @@ while [[ $# -gt 0 ]]; do
         --llm-port) llm_port="${2:?}"; shift 2 ;;
         --no-ufw) setup_ufw=false; shift ;;
         --no-llm-tunnel) setup_tunnel=false; shift ;;
+        --only-ci-deploy) only_ci_deploy=true; shift ;;
         -h|--help) usage; exit 0 ;;
         *) usage; die "알 수 없는 인자: $1" ;;
     esac
@@ -55,6 +59,22 @@ done
 
 [[ "$(id -u)" -eq 0 ]] || die "root로 실행하세요(sudo)."
 command -v docker >/dev/null 2>&1 || die "Docker가 설치되어 있지 않습니다."
+
+# ── 자동 배포 진입점만 설치(--only-ci-deploy) ────────────────────────────────
+# 배포 키의 forced command로 쓰는 스크립트는 배포 때 교체되는 $root_dir/app 밖에 root 소유로 둡니다.
+# 배포 사용자가 고칠 수 없어야 배포 키로 실행되는 범위가 이 스크립트로 고정됩니다.
+# 원본은 이 bootstrap 스크립트와 같은 디렉터리의 ci-deploy.sh입니다(검토한 저장소 사본에서 실행하세요).
+if [[ "$only_ci_deploy" == true ]]; then
+    src="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/ci-deploy.sh"
+    [[ -f "$src" ]] || die "ci-deploy.sh를 찾지 못했습니다: $src"
+    for cmd in git rsync flock gzip; do
+        command -v "$cmd" >/dev/null 2>&1 || die "'$cmd'가 필요합니다(apt install $cmd)."
+    done
+    install -d -m 0755 -o root -g root "$root_dir/bin"
+    install -m 0755 -o root -g root "$src" "$root_dir/bin/ci-deploy.sh"
+    log "자동 배포 스크립트 설치: $root_dir/bin/ci-deploy.sh (authorized_keys 등록은 셀프호스팅 가이드 10.1 참고)"
+    exit 0
+fi
 
 # ── 1. 스왑 ──────────────────────────────────────────────────────────────────
 # RAM 3.8GB에서 컨테이너 상한 합계가 약 3.4GB라, 순간 피크를 스왑이 받아야 OOM kill을 피합니다.

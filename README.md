@@ -28,7 +28,7 @@
 - [프로젝트 개요](#overview)
 - [서비스 사용 흐름](#workflow)
 - [주요 기능](#features)
-- [시스템 아키텍처](#architecture)
+- [시스템 아키텍처](#architecture): [팀 프로젝트 당시](#team-setup) · [개인 서버](#self-hosted-setup)
 - [기술 스택](#tech-stack)
 - [핵심 기술 상세](#technical-details)
 - [시작하기](#getting-started): [로컬 개발](#local-dev) · [배포](#deploy) · [VS Code 익스텐션](#vscode-porting)
@@ -242,7 +242,43 @@ VS Code의 Theseus 사이드바에서 프로젝트 코드를 살펴보고, AI와
 
 ## 🏗️ 시스템 아키텍처
 
-Theseus는 사용자 화면, 서비스 API, AI 실행 서버를 분리합니다. API Server는 사용자·프로젝트·권한·승인 정보를 관리하고, Core Server는 AI 응답과 도구 생성·실행을 담당합니다.
+Theseus는 사용자 화면, 서비스 API, AI 실행 서버를 분리합니다. API Server는 사용자·프로젝트·권한·승인 정보를 관리하고, Core Server는 AI 응답과 도구 생성·실행을 담당합니다. 이 구조는 팀 프로젝트 당시와 지금의 개인 서버에서 같고, **어디에 어떻게 띄우는지만 다릅니다.**
+
+| 구성 요소 | 주요 책임 |
+| --- | --- |
+| Nginx | TLS, 정적 화면과 `/api` 라우팅, SSE 무버퍼링, 내부 경로 차단, 로그인 요청 제한 |
+| Frontend | 프로젝트, 채팅, 도구, 관리자 설정 화면 |
+| API Server | 인증, 프로젝트 멤버, 권한 판단, 승인, 도구 메타데이터와 이력 |
+| Core Server | 에이전트 실행, ToolPlan 작성, 도구 생성·검증, 원격 작업 |
+| Kafka | API Server와 Core Server 간 도구 생성 요청·진행 이벤트 전달 |
+| Redis | refresh 토큰과 작업 진행 상태 저장, SSE 재연결 시 상태 조회 |
+| MySQL | 사용자에게 제공하는 서비스 기준 데이터와 최종 상태 저장 |
+| PostgreSQL / pgvector | Core 실행 데이터와 지식 검색용 데이터 저장 |
+| Docker Sandbox | BUILD 단계에서 생성 코드를 네트워크가 차단된 컨테이너로 검증 |
+| Remote Workspace | SSH로 연결하는 외부 프로젝트 및 서버 환경 |
+
+네트워크, 포트, 데이터 저장 책임과 요청 흐름은 [시스템 아키텍처 문서](./docs/architecture/system-architecture.md)를 참고하세요.
+
+<a id="team-setup"></a>
+
+### 팀 프로젝트 당시 구성 (SSAFY, 2026.03~06)
+
+프로젝트 기간에는 SSAFY에서 제공한 관리형 인프라 위에서 영역(Zone)별로 나눠 운영했습니다.
+
+| Zone | 구성 요소 | 설명 |
+| --- | --- | --- |
+| Theseus Service Zone | React, Vite, Nginx, API Server, SSE Stream | 사용자 화면, API 요청 처리, 실시간 상태 스트리밍 |
+| AI Core Zone | Kafka, Core Server, Docker Sandbox, Access/Secret Control | ToolPlan 생성, Tool 실행, 비동기 이벤트 처리, 실행 격리 |
+| SSAFY SuperApp Infra | RDS MySQL, RDS PostgreSQL, ElastiCache Redis | 서비스 데이터, AI Core 데이터, 상태 캐싱 |
+| External Project Zone | Remote Workspace(시연용 외부 프로젝트 서버) | 외부 운영 서버의 로그·설정·배포 상태 점검 |
+| CI/CD | GitLab Webhook → Jenkins → Docker Compose 재배포 → Health Check | 관련 파일은 [`docs/archive/ssafy/`](./docs/archive/ssafy/)에 보관 |
+| LLM | SSAFY 제공 LLM API, GPU 서버의 로컬 LLM(vLLM) | 팀 공용 GPU 서버에서 서빙 |
+
+<a id="self-hosted-setup"></a>
+
+### 개인 서버 구성 (셀프호스팅, 2026.11~)
+
+프로젝트 종료 후 같은 서비스를 **개인 서버 한 대(2 vCPU / 3.8GB RAM)의 docker compose**로 옮겼습니다. 관리형 DB·캐시와 GPU 서버 없이 모든 구성 요소를 한 대에 올리고, 외부에는 Nginx의 80/443만 엽니다. LLM은 서버에 두지 않고 개발 노트북의 Ollama를 reverse SSH tunnel로 연결합니다.
 
 ```mermaid
 flowchart TB
@@ -261,34 +297,36 @@ flowchart TB
     CORE -->|SSH| REMOTE[Remote Workspace]
 ```
 
-| 구성 요소 | 주요 책임 |
-| --- | --- |
-| Nginx | TLS(Let's Encrypt), 정적 화면과 `/api` 라우팅, SSE 무버퍼링, 내부 경로 차단, 로그인 요청 제한 |
-| Frontend | 프로젝트, 채팅, 도구, 관리자 설정 화면 |
-| API Server | 인증, 프로젝트 멤버, 권한 판단, 승인, 도구 메타데이터와 이력 |
-| Core Server | 에이전트 실행, ToolPlan 작성, 도구 생성·검증, 원격 작업 |
-| Kafka | API Server와 Core Server 간 도구 생성 요청·진행 이벤트 전달 |
-| Redis | refresh 토큰과 작업 진행 상태 저장, SSE 재연결 시 상태 조회 |
-| MySQL | 사용자에게 제공하는 서비스 기준 데이터와 최종 상태 저장 |
-| PostgreSQL / pgvector | Core 실행 데이터와 지식 검색용 데이터 저장 |
-| Docker Sandbox | BUILD 단계에서 생성 코드를 네트워크가 차단된 컨테이너로 검증 |
-| Remote Workspace | SSH로 연결하는 외부 프로젝트 및 서버 환경 |
-
-모든 구성 요소는 **서버 한 대의 docker compose**로 함께 실행합니다. 외부에는 Nginx의 80/443만 열고, API·Core·DB·Kafka는 내부 네트워크에만 둡니다. LLM은 서버에 두지 않고 개발 노트북의 Ollama를 reverse SSH tunnel로 연결합니다. 네트워크, 포트, 데이터 저장 책임과 요청 흐름은 [시스템 아키텍처 문서](./docs/architecture/system-architecture.md)를 참고하세요.
+| 항목 | 팀 프로젝트 당시 | 개인 서버 |
+| --- | --- | --- |
+| 서버 | SSAFY 제공 EC2 + 관리형 서비스 | 서버 한 대(Ubuntu 24.04, 2 vCPU, 3.8GB RAM) |
+| DB·캐시 | RDS MySQL·PostgreSQL, ElastiCache Redis | 같은 compose 안의 MySQL·PostgreSQL·Redis 컨테이너 |
+| LLM | SSAFY LLM API, GPU 서버 vLLM | 노트북 Ollama(GPU) + reverse SSH tunnel |
+| CI | Jenkins | GitHub Actions(테스트, compose 검증, gitleaks) |
+| CD | GitLab Webhook → Jenkins 빌드 → Docker Compose 재배포 → Health Check | `dev` push → GitHub Actions 빌드 → GHCR → 서버는 pull만(실패 시 자동 롤백) |
 
 <details>
-<summary>SSAFY 개발 당시(2026.03~06) 운영 구성</summary>
+<summary>개인 서버에 올리기 위한 경량화 내용</summary>
 
-프로젝트 기간에는 SSAFY에서 제공한 관리형 인프라 위에서 운영했습니다. 현재 저장소는 이를 단일 서버 compose로 옮긴 구성입니다.
+<br />
 
-| Zone | 구성 요소 | 설명 |
-| --- | --- | --- |
-| Theseus Service Zone | React, Vite, Nginx, API Server, SSE Stream | 사용자 화면, API 요청 처리, 실시간 상태 스트리밍 |
-| AI Core Zone | Kafka, Core Server, Docker Sandbox, Access/Secret Control | ToolPlan 생성, Tool 실행, 비동기 이벤트 처리, 실행 격리 |
-| SSAFY SuperApp Infra | RDS MySQL, RDS PostgreSQL, ElastiCache Redis | 서비스 데이터, AI Core 데이터, 상태 캐싱 |
-| External Project Zone | Remote Workspace(시연용 외부 프로젝트 서버) | 외부 운영 서버의 로그·설정·배포 상태 점검 |
-| CI/CD | GitLab Webhook → Jenkins → Docker Compose 재배포 → Health Check | 관련 파일은 [`docs/archive/ssafy/`](./docs/archive/ssafy/)에 보관 |
-| LLM | SSAFY 제공 LLM API, GPU 서버의 로컬 LLM(vLLM) | 현재는 노트북 Ollama 또는 외부 Provider |
+팀 프로젝트 때는 여러 서버와 관리형 서비스에 나뉘어 있던 스택을 RAM 3.8GB 서버 한 대에 넣기 위해 다음을 조정했습니다.
+
+| 영역 | 조정 내용 |
+| --- | --- |
+| 메모리 상한 | 상시 서비스 10개에 `mem_limit`을 걸어 합계 3424MiB(약 3.34GiB)로 맞추고, 순간 초과분은 4GB 스왑이 받도록 구성 |
+| API(JVM) | 고정 힙 `-Xmx384m`, SerialGC(2 vCPU에 유리), metaspace 160m, OOM 시 즉시 종료 → 640m |
+| Kafka | KRaft 단일 노드(ZooKeeper 없음), 힙 256m, 네트워크·IO 스레드 2개 → 448m |
+| MySQL | buffer pool 128M, performance_schema OFF → 384m |
+| PostgreSQL | shared_buffers 64MB, max_connections 40 → 160m |
+| Redis | maxmemory 48mb(volatile-lru) → 64m |
+| Core | 임베딩 모델 로드 순간에도 OOM kill 대신 스왑으로 버티도록 `memswap_limit` 3g |
+| 빌드·배포 | 서버에서 빌드하지 않음. GitHub Actions 러너가 이미지를 빌드해 GHCR에 올리고, 서버는 바뀐 레이어만 pull. 서버에 Jenkins를 두지 않아 JVM 하나(약 0.5~1GB)를 아낌 |
+| LLM | 서버에 GPU·모델을 두지 않고 노트북 Ollama를 터널로 연결. 터널 쪽에는 `/v1/models`, `/v1/chat/completions`만 통과시키는 nginx 필터를 둠 |
+| 운영 도구 | Kafka UI는 필요할 때만 켜는 `ops` 프로필로 분리 |
+| Sandbox | BUILD 검증 컨테이너마다 128m, 실행이 끝나면 바로 삭제 |
+
+**실측(E2E 전체 흐름):** 기동 직후 약 1.3GiB, PLAN·BUILD 중 동시 최대 약 2.2GiB였고 OOM kill과 재시작은 없었습니다. 서비스별 수치와 근거는 [셀프호스팅 가이드의 메모리 예산](./docs/operations/self-hosting.md#12-메모리-예산)에 있습니다.
 
 </details>
 
@@ -306,7 +344,7 @@ flowchart TB
 | **Data** | MySQL 8.4, PostgreSQL 16, pgvector, Redis 7.4 |
 | **Messaging / Streaming** | Kafka(KRaft), SSE |
 | **Remote / Sandbox** | SSH, Paramiko, Docker, docker-socket-proxy |
-| **Infra / CI** | Docker Compose, Nginx, Let's Encrypt(certbot), GitHub Actions, Dependabot, gitleaks |
+| **Infra / CI·CD (개인 서버)** | Docker Compose, Nginx, Let's Encrypt(certbot), GitHub Actions, GHCR, Dependabot, gitleaks |
 | **개발 당시 Infra** | Jenkins, GitLab Webhook, AWS EC2, RDS(MySQL·PostgreSQL), ElastiCache, S3 |
 | **협업** | GitLab, Jira, Notion, Mattermost |
 
@@ -506,7 +544,11 @@ API·Core까지 컨테이너로 띄워 통합 확인하려면 `docker-compose.in
 
 ### 배포(셀프호스팅)
 
-운영 배포는 **서버 한 대(Ubuntu 24.04, 2 vCPU, 3.8GB RAM + 스왑 4GB)에 docker compose로 전체 스택**을 올리는 구성입니다. 이미지는 노트북에서 빌드해 SSH로 옮기고, LLM은 노트북의 Ollama를 reverse SSH tunnel로 연결합니다.
+운영 배포는 **서버 한 대(Ubuntu 24.04, 2 vCPU, 3.8GB RAM + 스왑 4GB)에 docker compose로 전체 스택**을 올리는 구성입니다. 서버는 이미지를 빌드하지 않고, LLM은 노트북의 Ollama를 reverse SSH tunnel로 연결합니다.
+
+**자동 배포(CD)**: `dev`에 push하고 CI가 통과하면 [Deploy 워크플로](./.github/workflows/deploy.yml)가 이미지를 빌드해 GHCR에 올리고, 배포 전용 SSH 키로 서버의 [`ci-deploy.sh`](./scripts/ci-deploy.sh)에 커밋 SHA만 넘깁니다. 서버는 그 커밋이 `dev`에 있는지 확인하고 설정과 이미지를 직접 받아 `deploy.sh`로 갱신하며, healthy가 되지 않으면 직전 버전으로 롤백합니다. 이전 커밋을 수동 실행하면 롤백으로 쓸 수 있습니다. 1회 설정은 [셀프호스팅 가이드 10.1](./docs/operations/self-hosting.md#101-자동-배포github-actions)에 있습니다.
+
+**수동 배포**는 노트북에서 빌드해 SSH로 옮깁니다.
 
 ```bash
 # 노트북
@@ -545,7 +587,7 @@ bash scripts/llm-tunnel.sh --local-port 11435 <서버별칭>
 
 ### CI
 
-[GitHub Actions](./.github/workflows/ci.yml)가 PR과 `dev`/`main` push마다 다음을 검사합니다. 배포는 하지 않습니다.
+[GitHub Actions](./.github/workflows/ci.yml)가 PR과 `dev`/`main` push마다 다음을 검사합니다. `dev` push에서 모두 통과하면 [자동 배포](#deploy)로 이어집니다.
 
 | Job | 내용 |
 | --- | --- |
@@ -554,6 +596,7 @@ bash scripts/llm-tunnel.sh --local-port 11435 <서버별칭>
 | Frontend | Node(`.nvmrc`), `npm ci`, lint, `npm test -- --run`, build |
 | Infra | selfhost compose, local compose(3개 파일 함께) `config` 검증 |
 | Secret scan | gitleaks |
+| Deploy | `dev` push 한정. 이미지 빌드·GHCR push → 서버 배포 → 외부 `/healthz` 확인 |
 
 의존성 갱신은 [Dependabot](./.github/dependabot.yml)이 매주 PR로 올립니다.
 
@@ -649,8 +692,8 @@ SSAFY 프로젝트 종료 후 저장소를 정리해 **서버 한 대에서 직�
 | 보안 강화 | `web_fetch`·`deep_research`의 SSRF 차단(사설망·메타데이터 대역, 리다이렉트 재검사), 내부 API를 `INTERNAL_API_KEY` 고정 시간 비교로 통일, nginx에서 `/api/internal`·Swagger·Actuator 차단, 로그인 rate limit, prod CORS off·`*` 거부, refresh 쿠키 Secure, 비활성 사용자 토큰 차단, JSON 401/403 응답, sandbox 컨테이너 하드닝(네트워크 차단, uid 65534, cap_drop, read-only)과 docker socket proxy, 토큰을 브라우저 저장소에 두지 않음 |
 | 설정 외부화 | API는 `application.yaml` + `local`/`prod` 프로필과 Flyway 마이그레이션, Core는 base URL 하나(`SPRING_BOOT_INTERNAL_URL`)와 provider 접두사 모델 라우팅, Kafka 토픽 이름을 `KAFKA_TOPIC_*`로 공유, 실행 환경별 env 템플릿 정리 |
 | 안정성 | Kafka 결과 consumer 재시도와 DLT, Run 타임아웃 실패 처리, ToolRetriever 임베딩 모델 로드를 이벤트 루프 밖으로 이동 |
-| 테스트와 CI | API 197개(Testcontainers), Core 131개, Frontend 38개(Vitest) 모두 통과(정리 전: API 159개 중 32개 실패, Core import 실패, Frontend `npm ci` 실패). GitHub Actions(테스트, compose 검증, gitleaks)와 Dependabot 추가 |
-| 경량 셀프호스팅 | 2 vCPU / 3.8GB 서버용 compose(상시 서비스 mem_limit 합계 3424m), 노트북 빌드·SSH 전송 배포 스크립트, Let's Encrypt 자동 갱신, 백업 스크립트, 노트북 Ollama reverse tunnel. E2E에서 PLAN·BUILD 중 동시 메모리 최대 2.2GiB |
+| 테스트와 CI | API 197개(Testcontainers), Core 131개, Frontend 38개(Vitest) 모두 통과(정리 전: API 159개 중 32개 실패, Core import 실패, Frontend `npm ci` 실패). GitHub Actions(테스트, compose 검증, gitleaks, `dev` 자동 배포)와 Dependabot 추가 |
+| 경량 셀프호스팅 | 2 vCPU / 3.8GB 서버용 compose, 노트북 빌드·SSH 전송 배포 스크립트, Let's Encrypt 자동 갱신, 백업 스크립트, 노트북 Ollama reverse tunnel. 경량화 내용은 [개인 서버 구성](#self-hosted-setup) 참고 |
 | 정리 | 미사용 모듈·의존성·데모 도구 삭제, VS Code 확장 wrapper를 `scripts/vscode-extension/`으로 이동, 커밋된 빌드 산출물 제거, 문서 갱신 |
 
 <a id="known-limitations"></a>

@@ -24,7 +24,10 @@
 | `TZ` | | `Asia/Seoul` | 모든 컨테이너 시간대, JDBC `serverTimezone` |
 | `THESEUS_HOST_ROOT` | | `/opt/theseus` | 호스트 bind 루트. Core의 `SANDBOX_HOST_TEMP_ROOT`, `THESEUS_CUSTOM_TOOLS_HOST_DIR`를 여기서 만듭니다 |
 | `IMAGE_TAG` | ✅ | | api/core/frontend/nginx 이미지 태그 |
-| `IMAGE_REGISTRY` | | (빈 값) | 레지스트리 접두사(끝에 `/`). 비우면 로컬 이미지 이름 |
+| `IMAGE_REGISTRY` | | (빈 값) | 레지스트리 접두사(끝에 `/`). 비우면 로컬 이미지 이름. 자동 배포를 쓰면 비워 둡니다 |
+| `DEPLOY_PULL_REGISTRY` | 자동 배포 시 ✅ | (빈 값) | `ci-deploy.sh`가 pull할 레지스트리(끝에 `/`, 예: `ghcr.io/<owner>/`). CI 입력이 아니라 서버에서 정합니다 |
+| `DEPLOY_GIT_URL` | 자동 배포 시 ✅ | (빈 값) | 배포 설정(compose, scripts)을 가져올 저장소 https URL. 서버가 직접 fetch하고 `dev`에 포함된 커밋만 배포합니다 |
+| `DEPLOY_KEEP_TAGS` | | `3` | 자동 배포 후 구성 요소별로 남길 최근 이미지 태그 수(현재·직전 태그는 항상 남김) |
 | `SANDBOX_IMAGE` | | `theseus-sandbox:py311-tools` | Core sandbox 이미지 |
 | `JWT_SECRET` | ✅ 비밀값 | | API JWT HMAC 키(32바이트 이상) |
 | `INTERNAL_API_KEY` | ✅ 비밀값 | | API·Core 공유 키 |
