@@ -2,7 +2,7 @@
 # 1. Build Stage
 # Node 환경에서 패키지를 설치하고 React+Vite 앱을 정적 파일로 빌드합니다.
 # ─────────────────────────────────────────────────────────────
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 
 WORKDIR /app
 
