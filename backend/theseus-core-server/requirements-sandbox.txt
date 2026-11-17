@@ -1,6 +1,6 @@
 # Theseus sandbox gate dependencies.
 # Keep this broad enough for generated-tool compile/import/structure validation.
-pydantic>=2.0.0
+pydantic>=2.14.3
 psutil
 nvidia-ml-py
 markdownify>=1.2.2
