@@ -12,7 +12,7 @@
 # ── Web Framework ──────────────────────────────────────────────────────────────
 fastapi==0.162.7
 uvicorn[standard]==0.54.0
-sse-starlette>=1.6.0,<4
+sse-starlette>=3.7.0,<4
 
 # ── Data Validation ────────────────────────────────────────────────────────────
 # mcp 1.12.x는 pydantic 2.12에서 제거된 내부 심볼을 import하므로 2.12 미만으로 고정합니다.
@@ -24,7 +24,8 @@ anthropic>=0.40.0,<3
 openai>=1.0.0,<4
 
 # ── HTTP / Async I/O ───────────────────────────────────────────────────────────
-# starlette 0.35(fastapi 0.109)의 TestClient가 httpx 0.28에서 제거된 `app=` 인자를 쓰므로 0.28 미만으로 둡니다.
+# starlette 0.35(fastapi 0.109)의 TestClient가 httpx 0.28에서 제거된 `app=` 인자를 써서 0.28 미만으로 두었다가,
+# fastapi 0.162(starlette 1.x)로 올리면서 0.28로 올렸습니다.
 httpx>=0.28.1,<0.29
 # Core 코드는 직접 import하지 않지만, Core 프로세스에서 로드되는 생성 Tool이
 # 흔히 import하므로 sandbox 의존성(requirements-sandbox.txt)과 맞춰 유지합니다.
@@ -52,7 +53,7 @@ numpy>=1.26,<3
 langsmith>=0.14.17,<1
 
 # ── MCP (Model Context Protocol) ──────────────────────────────────────────────
-# mcp>=1.13은 uvicorn>=0.31.1을 요구하므로 uvicorn 고정과 함께 1.12.x에 머뭅니다.
+# mcp>=1.13이 요구하는 uvicorn>=0.31.1은 이제 충족하지만, 1.13 이상은 위 pydantic 고정과 함께 검증하지 않아 1.12.x에 머뭅니다.
 mcp>=1.0.0,<1.13
 
 # ── TUI / CLI (theseus_engine/tui, lsp_tool) ──────────────────────────────────
