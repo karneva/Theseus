@@ -10,7 +10,7 @@
 # ──────────────────────────────────────────────────────────────────────────────
 
 # ── Web Framework ──────────────────────────────────────────────────────────────
-fastapi==0.163.0
+fastapi==0.163.2
 uvicorn[standard]==0.54.0
 sse-starlette>=3.7.0,<4
 
@@ -77,7 +77,10 @@ nvidia-ml-py
 docker==7.2.0
 aiokafka>=0.10,<1
 apscheduler==3.11.3
-paramiko<6.0.0
+# Remote Workspace SSH(src/remote_workspace/ssh_connector.py)가 씁니다. 2.x는 Terrapin(CVE-2023-48795)이 고쳐지지 않아 5.x로 올렸습니다.
+# 4.0에서 DSA 키(DSSKey)가 제거되어 키 로더에서 뺐습니다. 5.0부터 SHA-1 kex와 ssh-rsa(SHA-1) 서명을 쓰지 않으므로,
+# rsa-sha2를 지원하지 않는 서버(OpenSSH 7.2 미만)에는 RSA 키로 인증할 수 없고, SHA-1 kex만 제공하는 서버에는 접속할 수 없습니다.
+paramiko>=5.1.0,<6
 
 # ── 기타 유틸 ─────────────────────────────────────────────────────────────────
 pyyaml>=6.0,<7

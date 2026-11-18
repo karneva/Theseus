@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 import os
+import tempfile
 import unittest
 from pathlib import Path
 
+import paramiko
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ed25519, rsa
 from pydantic import ValidationError
 
 from src.remote_workspace.read_primitives import (
@@ -19,6 +23,7 @@ from src.remote_workspace.runtime import (
     register_remote_workspace_config,
 )
 from src.remote_workspace.schemas import RemoteWorkspaceConnectionConfig
+from src.remote_workspace.ssh_connector import SshRemoteWorkspaceConnector
 from src.remote_workspace.write_primitives import (
     REMOTE_WRITE_EXECUTION_TOOL_NAMES,
     RemoteRunCommandTool,
@@ -212,6 +217,46 @@ class RemoteWorkspaceCoreOnlySmokeTest(unittest.TestCase):
             tool.validate_guarded_command("cat /srv/app/../secrets.txt") or "",
         )
         self.assertIsNone(tool.validate_guarded_command("cat logs/app.log"))
+
+
+
+class RemoteWorkspacePrivateKeyLoadTest(unittest.TestCase):
+    """실제 키 파일을 paramiko로 읽습니다.
+
+    다른 테스트는 가짜 SSH 클라이언트를 써서, paramiko가 키 클래스를 제거해도(4.0의 DSSKey)
+    잡지 못합니다. 이 테스트는 그런 변경에서 키 인증이 깨지는 것을 막습니다.
+    """
+
+    def _load(self, key_bytes: bytes, *, password: str | None = None) -> paramiko.PKey | None:
+        with tempfile.TemporaryDirectory() as tmp:
+            key_path = Path(tmp) / "id_test"
+            key_path.write_bytes(key_bytes)
+            config = RemoteWorkspaceConnectionConfig.model_validate(
+                {
+                    "host": "example.internal",
+                    "username": "ubuntu",
+                    "password": password,
+                    "privateKeyPath": str(key_path),
+                    "basePath": "/srv/app",
+                }
+            )
+            return SshRemoteWorkspaceConnector(config)._load_private_key()
+
+    def test_loads_openssh_ed25519_key(self) -> None:
+        key_bytes = ed25519.Ed25519PrivateKey.generate().private_bytes(
+            serialization.Encoding.PEM,
+            serialization.PrivateFormat.OpenSSH,
+            serialization.NoEncryption(),
+        )
+        self.assertIsInstance(self._load(key_bytes), paramiko.Ed25519Key)
+
+    def test_loads_encrypted_pem_rsa_key(self) -> None:
+        key_bytes = rsa.generate_private_key(public_exponent=65537, key_size=2048).private_bytes(
+            serialization.Encoding.PEM,
+            serialization.PrivateFormat.TraditionalOpenSSL,
+            serialization.BestAvailableEncryption(b"key-passphrase"),
+        )
+        self.assertIsInstance(self._load(key_bytes, password="key-passphrase"), paramiko.RSAKey)
 
 
 if __name__ == "__main__":

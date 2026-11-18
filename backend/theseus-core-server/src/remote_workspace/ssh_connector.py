@@ -164,7 +164,6 @@ class SshRemoteWorkspaceConnector:
             paramiko.RSAKey.from_private_key_file,
             paramiko.ECDSAKey.from_private_key_file,
             paramiko.Ed25519Key.from_private_key_file,
-            paramiko.DSSKey.from_private_key_file,
         )
         last_error: Exception | None = None
         for loader in key_loaders:
