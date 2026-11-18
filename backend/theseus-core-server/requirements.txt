@@ -61,7 +61,7 @@ mcp>=1.30,<2
 # ── TUI / CLI (theseus_engine/tui, lsp_tool) ──────────────────────────────────
 textual>=0.80.0,<9
 rich>=13.0.0,<15
-jedi>=0.19.0,<1
+jedi>=0.20.1,<1
 
 # ── Web Scraping / Markdown ────────────────────────────────────────────────────
 markdownify>=1.2.2,<2
