@@ -42,6 +42,7 @@ class SecurityApprovalModalTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(await self._result_for(key="escape"), ["deny"])
 
     async def test_buttons_return_decisions(self) -> None:
+        self.assertEqual(await self._result_for(button="btn-approve"), ["approve"])
         self.assertEqual(await self._result_for(button="btn-approve-all"), ["approve_all"])
         self.assertEqual(await self._result_for(button="btn-deny"), ["deny"])
 

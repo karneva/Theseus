@@ -197,29 +197,46 @@ class McpClientManager:
         mcp 전송 계층(anyio task group)이 실패하면 이 task는 원인 예외가 아니라 CancelledError로
         깨어나고, 실제 원인(예: 401, 연결 거부)은 stack을 닫을 때 예외 그룹으로 올라옵니다.
         예전에는 except Exception만 있어서 이 경우 상태 기록과 정리를 모두 건너뛰고 서버가
-        pending으로 남았습니다. 바깥에서 들어온 취소는 기록만 하고 그대로 다시 던집니다.
+        pending으로 남았습니다.
+
+        바깥에서 들어온 취소(타임아웃, task.cancel())는 정리 도중에 들어와도 잃지 않도록,
+        예외 종류가 아니라 task의 취소 요청 수(cancelling())로 판단해 다시 던집니다.
+        anyio는 자기 cancel scope에서 낸 취소를 scope를 빠져나올 때 거둬들이므로(uncancel),
+        stack을 닫은 뒤에도 남아 있는 취소 요청은 바깥에서 온 것입니다.
         """
-        cause: BaseException = exc
+        close_exc: BaseException | None = None
         try:
             await stack.aclose()
-        except BaseException as close_exc:  # noqa: BLE001 - 정리 실패가 연결 결과를 바꾸면 안 됩니다.
-            if isinstance(exc, asyncio.CancelledError):
-                cause = close_exc
-            logger.debug("MCP server '%s' cleanup after failed connect raised: %r", name, close_exc)
+        except BaseException as cleanup_exc:  # noqa: BLE001 - 정리 실패가 연결 결과를 바꾸면 안 됩니다.
+            close_exc = cleanup_exc
+            logger.debug("MCP server '%s' cleanup after failed connect raised: %r", name, cleanup_exc)
+
+        task = asyncio.current_task()
+        cancelled_from_outside = task is not None and task.cancelling() > 0
+        if cancelled_from_outside:
+            detail = "connection cancelled or timed out"
+        elif isinstance(exc, asyncio.CancelledError) and close_exc is not None:
+            detail = _describe_error(close_exc)
+        else:
+            detail = _describe_error(exc)
 
         self._statuses[name] = McpConnectionStatus(
             name=name,
             state="failed",
             transport=getattr(config, "type", "unknown"),
-            detail=_describe_error(cause),
+            detail=detail,
         )
 
-        task = asyncio.current_task()
-        if isinstance(exc, asyncio.CancelledError):
-            if task is not None and task.cancelling():
+        if cancelled_from_outside:
+            if isinstance(exc, asyncio.CancelledError):
                 raise exc
-        elif not isinstance(exc, Exception):
-            raise exc
+            if isinstance(close_exc, asyncio.CancelledError):
+                raise close_exc
+            raise asyncio.CancelledError()
+        for err in (exc, close_exc):
+            # KeyboardInterrupt, SystemExit 같은 예외는 기록만 하고 그대로 전달합니다.
+            if err is not None and not isinstance(err, (Exception, asyncio.CancelledError)):
+                raise err
 
     async def _register_connected_session(
         self,
@@ -276,7 +293,9 @@ def _describe_error(exc: BaseException) -> str:
     """anyio task group이 감싼 예외 그룹을 풀어 실제 원인을 보여줍니다."""
     while isinstance(exc, BaseExceptionGroup) and exc.exceptions:
         exc = exc.exceptions[0]
-    return str(exc) or type(exc).__name__
+    # httpx 상태 오류처럼 여러 줄인 메시지는 첫 줄(원인)만 남깁니다.
+    message = str(exc).strip().splitlines()
+    return message[0] if message else type(exc).__name__
 
 
 # --- Singleton for Theseus ---
