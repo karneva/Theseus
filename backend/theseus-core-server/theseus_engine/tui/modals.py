@@ -77,10 +77,6 @@ class SecurityApprovalModal(ModalScreen[str]):
         margin: 0 1;
         min-width: 16;
     }
-
-    #btn-approve    { variant: success; }
-    #btn-approve-all { variant: warning; }
-    #btn-deny       { variant: error; }
     """
 
     def __init__(self, tool_name: str, tool_input: dict) -> None:
