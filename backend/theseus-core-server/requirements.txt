@@ -65,7 +65,7 @@ jedi>=0.20.1,<1
 
 # ── Web Scraping / Markdown ────────────────────────────────────────────────────
 markdownify>=1.2.2,<2
-beautifulsoup4>=4.12.0,<5
+beautifulsoup4>=4.15.0,<5
 
 # ── System Metrics (생성 Tool 호환용) ─────────────────────────────────────────
 # Core 코드는 import하지 않지만 생성 Tool이 Core 프로세스에서 로드되므로,
