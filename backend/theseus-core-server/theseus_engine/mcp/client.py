@@ -8,10 +8,10 @@ import logging
 from contextlib import AsyncExitStack
 from typing import Any, Dict, List, Optional
 
-import httpx
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
-from mcp.client.streamable_http import streamablehttp_client
+from mcp.client.streamable_http import streamable_http_client
+from mcp.shared._httpx_utils import create_mcp_http_client
 from mcp.types import CallToolResult, ReadResourceResult
 
 from theseus_engine.mcp.types import (
@@ -163,23 +163,20 @@ class McpClientManager:
                 write_stream=write_stream,
                 auth_configured=bool(config.env),
             )
-        except Exception as exc:
-            await stack.aclose()
-            self._statuses[name] = McpConnectionStatus(
-                name=name,
-                state="failed",
-                transport=config.type,
-                detail=str(exc),
-            )
+        except BaseException as exc:  # noqa: BLE001 - 전송 실패는 CancelledError로 올 수 있습니다(_mark_failed 참고).
+            await self._mark_failed(name, config, stack, exc)
 
     async def _connect_http(self, name: str, config: McpHttpServerConfig) -> None:
         stack = AsyncExitStack()
         try:
+            # streamablehttp_client는 http_client 인자를 받지 않아 연결이 항상 TypeError로 실패했습니다.
+            # 헤더를 넣은 클라이언트는 streamable_http_client에 넘기고, 타임아웃은 mcp 기본값
+            # (연결 30초, 스트림 읽기 300초)을 쓰도록 create_mcp_http_client로 만듭니다.
             http_client = await stack.enter_async_context(
-                httpx.AsyncClient(headers=config.headers or None)
+                create_mcp_http_client(headers=config.headers or None)
             )
             read_stream, write_stream, _ = await stack.enter_async_context(
-                streamablehttp_client(config.url, http_client=http_client)
+                streamable_http_client(config.url, http_client=http_client)
             )
             await self._register_connected_session(
                 name=name,
@@ -189,14 +186,40 @@ class McpClientManager:
                 write_stream=write_stream,
                 auth_configured=bool(config.headers),
             )
-        except Exception as exc:
+        except BaseException as exc:  # noqa: BLE001 - 전송 실패는 CancelledError로 올 수 있습니다(_mark_failed 참고).
+            await self._mark_failed(name, config, stack, exc)
+
+    async def _mark_failed(
+        self, name: str, config: Any, stack: AsyncExitStack, exc: BaseException
+    ) -> None:
+        """연결 실패를 기록하고 열린 자원을 닫습니다.
+
+        mcp 전송 계층(anyio task group)이 실패하면 이 task는 원인 예외가 아니라 CancelledError로
+        깨어나고, 실제 원인(예: 401, 연결 거부)은 stack을 닫을 때 예외 그룹으로 올라옵니다.
+        예전에는 except Exception만 있어서 이 경우 상태 기록과 정리를 모두 건너뛰고 서버가
+        pending으로 남았습니다. 바깥에서 들어온 취소는 기록만 하고 그대로 다시 던집니다.
+        """
+        cause: BaseException = exc
+        try:
             await stack.aclose()
-            self._statuses[name] = McpConnectionStatus(
-                name=name,
-                state="failed",
-                transport=config.type,
-                detail=str(exc),
-            )
+        except BaseException as close_exc:  # noqa: BLE001 - 정리 실패가 연결 결과를 바꾸면 안 됩니다.
+            if isinstance(exc, asyncio.CancelledError):
+                cause = close_exc
+            logger.debug("MCP server '%s' cleanup after failed connect raised: %r", name, close_exc)
+
+        self._statuses[name] = McpConnectionStatus(
+            name=name,
+            state="failed",
+            transport=getattr(config, "type", "unknown"),
+            detail=_describe_error(cause),
+        )
+
+        task = asyncio.current_task()
+        if isinstance(exc, asyncio.CancelledError):
+            if task is not None and task.cancelling():
+                raise exc
+        elif not isinstance(exc, Exception):
+            raise exc
 
     async def _register_connected_session(
         self,
@@ -247,6 +270,13 @@ class McpClientManager:
             tools=tools,
             resources=resources,
         )
+
+
+def _describe_error(exc: BaseException) -> str:
+    """anyio task group이 감싼 예외 그룹을 풀어 실제 원인을 보여줍니다."""
+    while isinstance(exc, BaseExceptionGroup) and exc.exceptions:
+        exc = exc.exceptions[0]
+    return str(exc) or type(exc).__name__
 
 
 # --- Singleton for Theseus ---
