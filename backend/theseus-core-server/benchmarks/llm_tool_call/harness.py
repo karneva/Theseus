@@ -69,6 +69,40 @@ SAFE_TOOLS = frozenset(
 )
 # 정답이 none(맞는 도구 없음)인 질의에서 허용하는 행동: 커스텀 도구 탐색/생성.
 NONE_OK_TOOLS = frozenset({"tool_search", "create_tool"})
+# 되묻기: 서버(웹 채팅)에서는 ask_user가 사용자에게 닿지 않으므로(이슈 #59) 본문으로 되묻는 것도 정답으로 칩니다.
+CLARIFY_TOOLS = frozenset({"ask_user"})
+_CLARIFY_TEXT = re.compile(
+    r"\?|알려\s*주|말씀해\s*주|공유해\s*주|첨부해\s*주|붙여\s*주|보내\s*주|올려\s*주|제공해\s*주|지정해\s*주|정해\s*주|선택해\s*주|"
+    r"확인해\s*주시|주시겠|주실\s*수|"
+    r"please (provide|share|confirm|clarify|specify|send|attach|let me know|choose|tell)|could you|which (one|option)",
+    re.IGNORECASE,
+)
+
+
+def is_clarifying_text(text: str) -> bool:
+    """도구 호출 없이 사용자에게 필요한 정보를 되묻는 본문인지(물음표나 요청형 표현)."""
+    return bool(text and text.strip() and _CLARIFY_TEXT.search(text))
+
+
+def apply_clarify_rule(item: dict) -> dict:
+    """정답에 ask_user가 있는 질의에서, 도구 없이 되묻는 본문으로 끝난 경우를 성공으로 칩니다(score_case와 같은 규칙).
+
+    이미 저장된 결과(per_item)를 다시 채점할 때도 씁니다. 저장된 본문은 400자로 잘려 있지만 판정에는 충분합니다.
+    """
+    rel = set(item.get("relevant") or [])
+    item["clarify_text"] = False
+    if item["type"] == "none" or not (rel & CLARIFY_TOOLS) or item.get("error") is not None:
+        return item
+    turns = item["turns"]
+    if turns and not turns[0]["calls"] and is_clarifying_text(turns[0]["text"]):
+        item["success_at_1"] = True
+        item["clarify_text"] = True
+    if item["stop"] == "text_answer" and turns and not turns[-1]["calls"] and is_clarifying_text(turns[-1]["text"]):
+        item["success_at_k"] = item["success_at_k_valid"] = True
+        item["clarify_text"] = True
+    return item
+
+
 _TEXT_TOOL_CALL = re.compile(r"<tool_call>|\"(name|function)\"\s*:\s*\"[a-z_]+\"\s*,\s*\"(arguments|parameters)\"")
 
 
@@ -320,7 +354,7 @@ def score_case(case: dict, ep: Episode, registry: Any, sent_tools: list[str], se
     if ep.error is not None:
         s1 = sk = sk_valid = False
     first_text = turns[0].text if turns else ""
-    return {
+    return apply_clarify_rule({
         "id": case["id"],
         "lang": case["lang"],
         "type": case["type"],
@@ -348,7 +382,7 @@ def score_case(case: dict, ep: Episode, registry: Any, sent_tools: list[str], se
         "latency_first_s": turns[0].latency_s if turns else None,
         "latency_total_s": sum(t.latency_s or 0 for t in turns) if turns else None,
         "error": ep.error,
-    }
+    })
 
 
 def _validate_args(registry: Any, call: dict) -> tuple[bool, str | None]:

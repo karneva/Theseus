@@ -38,6 +38,7 @@ grep, lsp, tool_search, memory/skill/task 조회 등)만 부르면 엔진이 fix
 | `success_at_1` | 답이 있는 질의(type ≠ none)에서 첫 턴 호출 중 하나가 정답 도구인 비율. 환경(fixture)의 영향을 받지 않는 **주 지표** |
 | `success_at_k` | k턴 안에 정답 도구를 부른 비율. `_valid`는 그 호출의 인자가 스키마 검증을 통과한 경우만 |
 | `success_at_k_retrievable` | Tool RAG가 정답 도구를 보낸 질의만 본 `success_at_k`(검색 실패를 뺀 LLM 몫) |
+| 되묻기 | 정답에 `ask_user`가 있는 질의는 도구 없이 되묻는 본문(물음표·요청형 표현)으로 끝나도 성공으로 칩니다. 서버에서는 `ask_user`가 사용자에게 닿지 않기 때문입니다(#59). 결과 항목의 `clarify_text`가 그 경우이고, 저장된 결과는 `--rescore`로 다시 집계합니다 |
 | `none_at_1`, `none_at_k` | 정답이 none인 질의에서, 도구를 안 부르거나 `tool_search`/`create_tool`만 부른 비율(k턴은 탐색 도구 허용) |
 | `wrong_action_rate` | 정답이 아닌 작업 도구를 불러 멈춘 비율 |
 | `text_answer_rate`, `max_turns_rate` | 도구 없이 답하고 끝난 비율, 탐색만 하다 턴이 끝난 비율 |
@@ -80,3 +81,36 @@ docker run --rm --user root --network theseus-llm_default \
 - `--user root`: 질의에 나온 파일의 자리표시를 `/app`에 쓰기 위해서입니다(컨테이너는 실행 후 지워짐).
 - 하네스 코드는 `/src`(읽기 전용)에서 import하고, 작업 디렉터리만 `/app`으로 바꿉니다.
 - 호스트 venv에서 `--fixture-dir` 없이 돌리면 git 스냅샷을 임시 fixture로 씁니다. 빠른 점검용이고 결과에는 쓰지 않습니다.
+
+## 학습 데이터 생성 (`datagen.py`)
+
+3단계 SFT 데이터를 만듭니다. 교사 모델(OpenAI `gpt-6.1-sol`)이 질의를 만들고, 운영 엔진을 그대로 조립한 뒤 LLM 백엔드만
+교사로 바꿔 최대 3턴 궤적을 만듭니다. 탐색용 읽기 전용 도구는 `/app`에서 실제로 실행하고, 목표 도구나 다른 작업 도구는 실행하지
+않고 멈춥니다(위 에피소드 규칙과 같음). 단계와 규칙은 `datagen.py` 맨 위 설명에 있습니다.
+
+| 단계 | 하는 일 | 비용 |
+|---|---|---|
+| `catalog` | 운영 엔진이 보이는 도구, `/app` 파일 목록 | 무료 |
+| `queries` | 범주별 질의. 코드가 뽑은 스타일 카드(언어·길이·말투·단서)와 `/app`의 실제 코드 조각을 근거로 생성. 경로·인용 검증 | 유료 |
+| `dedup` | 평가 세트(eval + holdout)와 근접 중복, 같은 범주·언어 안의 근접 중복 제거 | 무료 |
+| `stats` | 질의 분포를 목표 범위와 비교 | 무료 |
+| `episodes` | 운영 엔진 + 교사 백엔드로 궤적 생성. 턴마다 운영이 보낸 요청 그대로 기록 | 유료 |
+| `validate` | 범주별 규칙과 운영 기준으로 검증하고, 통과한 궤적의 턴마다 SFT 예제를 씀 | 무료 |
+
+- 평가 세트 질의는 교사에게 보여주지 않습니다. 스타일 목표는 dev 분할의 집계 경향만 참고했습니다.
+- `--budget-usd` 안에서만 호출합니다. 호출마다 최악 비용을 먼저 예약하고, 모든 호출을 `--spend-log`에 남깁니다. 가격을 모르는 모델은 거부합니다.
+- 결과는 한 건씩 덧붙이고, 다시 실행하면 끝난 id는 건너뜁니다. 교사 요청은 `store=False`입니다. API 키는 환경 변수로만 받습니다.
+- `episodes`는 운영과 같은 `THESEUS_DATA_DIR`(`/home/appuser/.theseus/data`)를 쓰고, 에피소드마다 데이터 경로와 `/app`을 시작 상태로 되돌립니다. 메모리 범주는 질의와 함께 만든 메모를 미리 심습니다.
+- 한 프로세스는 `/app` 하나를 쓰므로 순차로 돌립니다. 병렬로 돌리려면 컨테이너 여러 개에 `--shard k/n`을 줍니다.
+- 생성 데이터(`data/`)는 저장소에 넣지 않습니다.
+
+```bash
+# backend/theseus-core-server에서. OPENAI_API_KEY는 환경 변수로만 넘깁니다(값을 출력하지 않음).
+D="docker run --rm --user root -e OPENAI_API_KEY -v $PWD:/src:ro -v $PWD/benchmarks/llm_tool_call/data:/data -w /src theseus-core:phase3-eval python -m benchmarks.llm_tool_call.datagen"
+$D catalog  --out /data/run/catalog.json
+$D queries  --catalog /data/run/catalog.json --budget-usd 5 --spend-log /data/run/spend.jsonl --out /data/run/queries.jsonl
+$D dedup    --inp /data/run/queries.jsonl --out /data/run/queries.dedup.jsonl
+$D stats    --inp /data/run/queries.dedup.jsonl
+$D episodes --inp /data/run/queries.dedup.jsonl --budget-usd 20 --spend-log /data/run/spend.jsonl --out /data/run/episodes.jsonl
+$D validate --inp /data/run/episodes.jsonl --out /data/run/sft.jsonl
+```

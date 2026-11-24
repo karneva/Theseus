@@ -31,7 +31,7 @@ SPLITS = ("dev", "test", "holdout", "final", "all")
 def _parse() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--split", choices=SPLITS, default="dev", help="final = test + holdout")
-    p.add_argument("--model", required=True, help="Ollama 모델 이름(THESEUS_MODEL의 ollama/ 뒤)")
+    p.add_argument("--model", required=False, help="Ollama 모델 이름(THESEUS_MODEL의 ollama/ 뒤)")
     p.add_argument("--base-url", default="http://127.0.0.1:11435/v1", help="OpenAI 호환 엔드포인트(OLLAMA_BASE_URL)")
     p.add_argument("--samples", type=int, default=3, help="질의당 반복 횟수(seed = seed_base + i)")
     p.add_argument("--seed-base", type=int, default=1)
@@ -43,7 +43,24 @@ def _parse() -> argparse.Namespace:
     p.add_argument("--fixture-dir", default=None, help="이 디렉터리를 fixture로 그대로 씀(컨테이너에서 /app). 없으면 git 스냅샷을 임시로 만듦")
     p.add_argument("--tag", default="", help="결과 meta에 남길 설명(예: base-q4km)")
     p.add_argument("--out", required=True)
+    p.add_argument("--rescore", default=None, help="LLM을 부르지 않고 이 결과 JSON의 per_item을 현재 채점 규칙으로 다시 집계해 --out에 씀")
     return p.parse_args()
+
+
+def rescore(src: Path, out: Path) -> None:
+    """저장된 결과를 현재 채점 규칙(되묻는 본문 인정)으로 다시 집계합니다. per_item 원본 호출·본문은 그대로입니다."""
+    from benchmarks.llm_tool_call import harness
+
+    old = json.loads(src.read_text(encoding="utf-8"))
+    items = [harness.apply_clarify_rule(dict(r)) for r in old["per_item"]]
+    per_sample: dict[int, list[dict]] = defaultdict(list)
+    for r in items:
+        per_sample[r["sample"]].append(r)
+    result = aggregate([per_sample[k] for k in sorted(per_sample)])
+    result["meta"] = {**old["meta"], "rescored_from": src.name, "scoring": "clarify_text_accepted"}
+    result["per_item"] = items
+    out.write_text(json.dumps(result, ensure_ascii=False, indent=1), encoding="utf-8")
+    print(json.dumps(result["summary"], ensure_ascii=False, indent=1))
 
 
 def _configure_env(args: argparse.Namespace) -> None:
@@ -217,6 +234,7 @@ async def _evaluate(args: argparse.Namespace, cases: list[dict], stubs: list[str
         "seed_base": args.seed_base,
         "temperature": args.temperature,
         "max_turns": args.max_turns,
+        "scoring": "clarify_text_accepted",
         "fixture_stub_files": stubs,
         "tool_rag_warmup_s": round(warm_s, 2),
         "wall_s": round(time.perf_counter() - t0, 1),
@@ -231,6 +249,11 @@ async def _evaluate(args: argparse.Namespace, cases: list[dict], stubs: list[str
 def main() -> None:
     args = _parse()
     args.out = str(Path(args.out).resolve())  # 실행 중 fixture로 chdir하므로 먼저 절대 경로로
+    if args.rescore:
+        rescore(Path(args.rescore), Path(args.out))
+        return
+    if not args.model:
+        raise SystemExit("--model이 필요합니다")
     _configure_env(args)
     result = asyncio.run(_main(args))
     out = Path(args.out)

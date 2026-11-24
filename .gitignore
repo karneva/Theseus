@@ -76,3 +76,6 @@ output/
 # VSCode 확장 패키지
 # VSIX는 소스에서 빌드하는 산출물이므로 저장소에 넣지 않습니다.
 *.vsix
+
+# 3단계 학습 데이터 생성 산출물(교사 응답·운영 프롬프트 사본, 용량 큼)
+backend/theseus-core-server/benchmarks/llm_tool_call/data/
