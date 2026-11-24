@@ -79,3 +79,5 @@ output/
 
 # 3단계 학습 데이터 생성 산출물(교사 응답·운영 프롬프트 사본, 용량 큼)
 backend/theseus-core-server/benchmarks/llm_tool_call/data/
+# Unsloth가 학습 실행 디렉터리에 만드는 컴파일 캐시
+unsloth_compiled_cache/
