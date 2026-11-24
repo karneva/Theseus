@@ -41,14 +41,29 @@ grep, lsp, tool_search, memory/skill/task 조회 등)만 부르면 엔진이 fix
 | 되묻기 | 정답에 `ask_user`가 있는 질의는 도구 없이 되묻는 본문(물음표·요청형 표현)으로 끝나도 성공으로 칩니다. 서버에서는 `ask_user`가 사용자에게 닿지 않기 때문입니다(#59). 결과 항목의 `clarify_text`가 그 경우이고, 저장된 결과는 `--rescore`로 다시 집계합니다 |
 | `none_at_1`, `none_at_k` | 정답이 none인 질의에서, 도구를 안 부르거나 `tool_search`/`create_tool`만 부른 비율(k턴은 탐색 도구 허용) |
 | `wrong_action_rate` | 정답이 아닌 작업 도구를 불러 멈춘 비율 |
+| `harmful_action_rate` | 모든 실행(성공 포함, none 포함) 중 라벨에 없는 상태 변경 도구(`harness.STATE_CHANGING_TOOLS`: 운영 rbac `SENSITIVE_TOOLS` + 메모리·스킬 저장, 작업·워크트리, 원격 쓰기)를 한 번이라도 부른 비율. 인자 내용은 보지 않습니다(읽기 전용 bash도 셈) |
+| `ask_user_rate` | 모든 실행 중 `ask_user`를 부른 비율. 운영 서버에서는 사용자에게 닿지 않으므로(#59) 낮을수록 좋습니다 |
 | `text_answer_rate`, `max_turns_rate` | 도구 없이 답하고 끝난 비율, 탐색만 하다 턴이 끝난 비율 |
 | `call_args_valid` | 모든 호출 중 인자가 운영과 같은 기준(`input_model.model_validate`, JSON 파싱 오류 없음)을 통과한 비율 |
 | `not_offered_call_rate` | 그 턴에 보내지 않은 도구 이름을 부른 질의 비율 |
 | `text_tool_call_leak_rate` | `tool_calls` 없이 본문에 도구 호출처럼 보이는 텍스트를 쓴 비율(운영 파서는 이를 버림) |
 | 지연 | 첫 턴 지연 p50/p95, 에피소드 전체 지연 p50 |
 
+### 라벨 보정 (`label_adjust.json`)
+
+`eval_set.jsonl`은 동결(해시 검증)이라 고치지 않고, 이 평가에서만 쓰는 보정을 `label_adjust.json`에 둡니다. 결과 JSON의 `summary`는
+원래 라벨, `adjusted.summary`는 보정을 적용한 값입니다(둘 다 보고). 보정은 run1 오류 분석에서 찾은 라벨 불일치와 풀 수 없는 문항만
+넣었습니다.
+
+| 종류 | 뜻 | 문항 |
+|---|---|---|
+| `accept_also` | 첫 턴·k턴 모두 정답으로 인정할 도구 추가 | q198(같은 뜻의 q081과 맞춰 bash) |
+| `accept_also_k` | k턴 성공으로만 인정(탐색 뒤 대안 경로). 탐색 도구면 다른 작업 도구로 끝나지 않았을 때만 | q028, q175(lsp 대신 grep으로 찾고 정의 파일 읽기) |
+| `hidden_tools` | 서버가 숨기는 도구. 단일 질의는 정답이 모두 이 도구일 때, 복합 질의는 하나라도 있을 때 모든 분할에서 뺌 | `search_knowledge_base`, `ingest_document`(서버 기본값 `THESEUS_ENABLE_ENGINE_RAG_TOOLS=false`). dev에서는 q101, q126, q134, q182, q220 |
+
 `--samples` 회 반복(seed = `seed_base + i`)한 샘플별 지표의 평균과 표준편차를 `summary`에, 질의별 평균 성공률로 낸 언어·유형·
-분할·레지스트리별 값을 `breakdown`에, 샘플 사이에 결과가 갈린 질의를 `unstable_cases`에 씁니다.
+분할·레지스트리별 값을 `breakdown`에, 샘플 사이에 결과가 갈린 질의를 `unstable_cases`에 씁니다. 기본은 5회입니다(3회는 질의별
+해상도가 0.33이라 한 샘플 차이를 잡음과 구분하기 어려움).
 
 운영 요청은 도구가 있으면 `stream_options.include_usage`를 빼므로 Ollama가 토큰 수를 돌려주지 않습니다. 그래서 토큰 지표는 없습니다.
 
@@ -75,7 +90,7 @@ docker run --rm --user root --network theseus-llm_default \
   -e BENCH_COMMIT="$(git rev-parse --short=12 HEAD)" -e BENCH_RUNTIME=core-image \
   theseus-core:phase3-eval python -m benchmarks.llm_tool_call.run \
     --split dev --model qwen3:4b-instruct-2507-q4_K_M --base-url http://llm-filter:8080/v1 \
-    --fixture-dir /app --samples 3 --out /out/base_q4km_dev.json
+    --fixture-dir /app --samples 5 --out /out/base_q4km_dev.json
 ```
 
 - `--user root`: 질의에 나온 파일의 자리표시를 `/app`에 쓰기 위해서입니다(컨테이너는 실행 후 지워짐).
@@ -103,6 +118,15 @@ docker run --rm --user root --network theseus-llm_default \
 - `episodes`는 운영과 같은 `THESEUS_DATA_DIR`(`/home/appuser/.theseus/data`)를 쓰고, 에피소드마다 데이터 경로와 `/app`을 시작 상태로 되돌립니다. 메모리 범주는 질의와 함께 만든 메모를 미리 심습니다.
 - 한 프로세스는 `/app` 하나를 쓰므로 순차로 돌립니다. 병렬로 돌리려면 컨테이너 여러 개에 `--shard k/n`을 줍니다.
 - 생성 데이터(`data/`)는 저장소에 넣지 않습니다.
+
+run2 규칙(run1 오류 분석 반영). run1 에피소드는 아래 규칙으로 다시 검증해 재사용하고, 새 범주만 새로 만듭니다(`--plan run2`).
+
+- 운영 서버에서 `ask_user`는 사용자에게 닿지 않으므로(#59) 교사에게 보내지 않고, `ask_user`를 부른 궤적은 버립니다. 되묻기는 본문으로만.
+- `tool_search`는 목표 도구를 보내지 않았고, 보낸 짝 도구(예: `memory_list`)도 이미 써 본 뒤에만 허용합니다. none은 `tool_search` 없이 바로 못 한다고 답해도 됩니다.
+- 새 범주: `none_direct`(교사에게 `tool_search`를 숨겨 바로 답하는 예), `web`(web_search·deep_research·web_fetch), `skill`(스킬을 `/app/skills`에 심고 읽기), `memory_save`·`skill_save`(질의에 담긴 내용을 저장, 저장 내용이 질의와 겹치는지 검사), `task`(오래 도는 명령은 task_create), `memory_empty`(메모가 없을 때 정직하게 답하거나 스킬 찾기), `bash_dev`(설치·린트 같은 일회성 개발 명령), clarify 추가분.
+- 셸 명령 검사: 자리표시 인자(`your-service-name`, `<path>` 등), 끝나지 않는 명령(`tail -f`, `uvicorn`, `--reload` 등 → task_create), git(운영에 없음).
+- 파일럿에서 뺀 범주: brief(교사가 도구 대신 직접 요약), worktree(운영에 git 없음), lsp(교사가 grep을 고집), write_new·act_not_ask(탐색이 길거나 루트 전체 glob부터 함).
+- 학습 세트는 `sft_build.py --inp <run1 재검증분> <run2> --cap-episodes '{"memory": 30}'`처럼 합치고 범주별 상한을 둡니다.
 
 ```bash
 # backend/theseus-core-server에서. OPENAI_API_KEY는 환경 변수로만 넘깁니다(값을 출력하지 않음).

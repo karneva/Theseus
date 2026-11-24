@@ -89,13 +89,16 @@ CATEGORIES: dict[str, dict[str, Any]] = {  # 각 항목에 name이 아래에서 
     "memory": {
         "target": "memory_read",
         "via": ("memory_list",),
+        "family": ("memory_list", "memory_read"),
         "gloss": "recall something the user or team saved earlier in the agent's memory notes (user/project/local scope)",
         "anchors": {"memory_name": 0.4, "none": 0.6},
         "snippets": False,
         "memory_seed": True,
     },
+    # 되묻기는 본문으로만(운영 서버에서 ask_user는 사용자에게 닿지 않음, #59). 교사에게는 ask_user를 보내지 않습니다.
     "clarify": {
-        "target": "ask_user",
+        "target": None,
+        "final": "clarify_text",
         "via": ("read_file", "grep", "glob"),
         "gloss": "a request the agent cannot carry out correctly without first asking the user: a required value, choice, or attachment is missing or contradictory. Sometimes it names a real file, sometimes not",
         "anchors": {"none": 0.5, "path": 0.5},
@@ -103,12 +106,101 @@ CATEGORIES: dict[str, dict[str, Any]] = {  # 각 항목에 name이 아래에서 
     },
     "none": {
         "target": None,
+        "final": "text",
         "via": ("tool_search",),
         "gloss": "an ordinary work request that needs an outside service or capability the agent does not have (chat/issue trackers, calendars, email, design tools, image generation/OCR, cloud consoles, phone, payments). Just ask for the action; never ask whether an integration exists",
         "anchors": {"none": 1.0},
         "snippets": False,
     },
+    # ── run2에서 더한 범주(run1 오류 분석: 학습 정답에 한 번도 없던 도구, 묻지 말고 해야 할 요청 등) ──
+    "none_direct": {  # none과 같은 요청이지만 tool_search 없이 바로 못 한다고 답하는 예(교사에게 tool_search를 숨김)
+        "target": None,
+        "final": "text",
+        "via": (),
+        "teacher_hide": ("tool_search",),
+        "gloss": "an ordinary work request that needs an outside service or capability the agent does not have (chat/issue trackers, calendars, email, design tools, image generation/OCR, cloud consoles, phone, payments). Just ask for the action; never ask whether an integration exists",
+        "anchors": {"none": 1.0},
+        "snippets": False,
+    },
+    "web": {
+        "target": ("web_search", "deep_research", "web_fetch"),
+        "via": (),
+        "gloss": "something that needs the public internet: the latest version, changelog, or release date of a public library or tool; official docs of a public API; searching an error message or a CVE; comparing libraries (a deeper multi-source research request); or reading a web page whose URL the user pasted",
+        "anchors": {"none": 0.75, "url": 0.25},
+        "snippets": False,
+        "max_turns": 4,
+    },
+    "skill": {
+        "target": "skill_read",
+        "via": ("skill_list",),
+        "family": ("skill_list", "skill_read"),
+        "gloss": "reuse a recipe, workflow, or know-how the team saved earlier as an agent skill (e.g. how we release, how we set up a service, our review checklist). Sound like asking for saved know-how, not for code",
+        "anchors": {"memory_name": 0.4, "none": 0.6},
+        "snippets": False,
+        "skill_seed": True,
+    },
+    "memory_save": {
+        "target": "memory_write",
+        "via": (),
+        "family": ("memory_write",),
+        "gloss": "tell the agent to remember a preference, rule, or fact for later (the request itself contains the exact thing to remember)",
+        "anchors": {"content": 1.0},
+        "snippets": False,
+        "grounded_arg": ("content", 0.35),
+    },
+    "skill_save": {
+        "target": "skill_save",
+        "via": (),
+        "family": ("skill_save",),
+        "gloss": "tell the agent to save a short procedure or checklist as a reusable skill (the request itself contains the steps, 2-5 short steps inline)",
+        "anchors": {"content": 1.0},
+        "snippets": False,
+        "grounded_arg": ("content", 0.35),
+        "length_override": {"ko": (50, 220), "en": (90, 360)},
+    },
+    "task": {
+        "target": "task_create",
+        "via": (),
+        "gloss": "start a long-running or continuous command that should keep running in the background: a dev server, a file watcher, a long build or test run, a log follower. The command should fit the /app Python project",
+        "anchors": {"none": 0.6, "path": 0.4},
+        "snippets": False,
+        "max_turns": 4,
+    },
+    "memory_empty": {  # 메모가 하나도 없는 상태의 회상 요청: 목록을 보고 없다고 정직하게 답하거나 스킬을 찾아봄
+        "target": ("skill_list", "skill_read"),
+        "final": "call_or_text",
+        "via": ("memory_list",),
+        "family": ("memory_list", "memory_read"),
+        "gloss": "recall something the user or team saved earlier in the agent's memory notes (user/project/local scope)",
+        "anchors": {"none": 1.0},
+        "snippets": False,
+    },
+    "bash_dev": {
+        "target": "bash",
+        "via": (),
+        "gloss": "run a one-shot development command that finishes quickly in the /app Python project: install or upgrade one package with pip, run a linter or formatter check (ruff, black --check, pyflakes), compile all files, run one module's quick self-check with python -m or python -c, list outdated packages. Not a long-running server or watcher. The server has no git",
+        "anchors": {"none": 0.7, "path": 0.3},
+        "snippets": False,
+    },
 }
+
+# 운영 서버(웹 채팅)에서 ask_user는 사용자에게 닿지 않으므로(#59) 교사에게 보내지 않습니다. 학생 예제의 도구 목록은 운영 그대로입니다.
+TEACHER_HIDE_ALWAYS = ("ask_user",)
+
+
+def targets_of(cat: dict) -> frozenset[str]:
+    t = cat.get("target")
+    if t is None:
+        return frozenset()
+    return frozenset((t,) if isinstance(t, str) else t)
+
+
+def family_of(cat: dict) -> frozenset[str]:
+    """이 도구 중 보낸 것을 아직 안 써 봤으면 tool_search로 찾을 이유가 없음(run1 회귀: 보낸 도구를 두고 tool_search부터 부름).
+
+    family를 적은 범주는 그것만(memory_empty는 대안인 skill_*가 아니라 memory_*가 기준), 아니면 목표 도구입니다.
+    """
+    return frozenset(cat["family"]) if "family" in cat else targets_of(cat)
 
 # 짧은 질의가 서로 비슷해지기 쉬운 범주는 카드마다 다른 주제를 줍니다(근접 중복 제거로 많이 빠지는 것을 막음).
 TOPICS = {
@@ -122,12 +214,38 @@ TOPICS = {
     "memory": ["coding style preference", "deployment checklist", "incident postmortem notes", "API naming rules", "review conventions", "environment setup steps",
                "a decision and its reason", "a known bug workaround", "test data locations", "release schedule", "on-call rules", "performance tuning notes",
                "prompt writing guidelines", "database migration notes", "security review notes", "customer requirements summary"],
+    "web": ["latest released version of a public Python package", "changelog or breaking changes of a library major version", "official docs for one function of a public library",
+            "searching a specific error message", "a CVE or security advisory for a dependency", "release date or EOL of a Python version", "rate limits of a public API",
+            "compare two libraries in depth (research)", "best practices for a technique, gathered from several sources (research)", "read a docs page at a URL the user pasted",
+            "read a GitHub issue or release page at a URL the user pasted", "a migration guide between two framework versions (research)", "a standard or RFC detail",
+            "install instructions of a CLI tool", "pricing or limits of a public cloud service tier"],
+    "skill": ["release procedure", "new service setup recipe", "code review checklist", "incident response runbook", "local dev environment setup", "database backup steps",
+              "API versioning workflow", "performance profiling method", "onboarding checklist", "dependency upgrade routine", "log investigation method", "prompt tuning workflow"],
+    "memory_save": ["commit message language and style", "preferred test command", "code style rule", "which branch to deploy from", "a teammate's area of ownership",
+                    "an API naming convention", "timezone for reports", "a known flaky module", "preferred logging format", "a decision and its reason",
+                    "the staging server name", "max line length", "how to name feature flags", "the default reviewer", "a library we must not use"],
+    "skill_save": ["hotfix procedure", "how to add a new tool", "release checklist", "rotating an API key", "adding a DB migration", "triaging a bug report",
+                   "setting up a new venv", "profiling a slow endpoint", "writing a changelog entry", "reviewing a PR"],
+    "task": ["a FastAPI/uvicorn dev server with reload", "a file watcher that re-runs a check", "a long full-project lint or compile run", "following a log file",
+             "a long-running python script", "a local http.server for static files", "a periodic health check loop", "a background benchmark run"],
+    "bash_dev": ["install one package with pip", "upgrade one package", "ruff check on a directory", "black --check on a file", "compileall on a package",
+                 "pyflakes on a module", "pip list --outdated", "python -m a module's self-test", "python -c a quick import timing", "pip check for broken requirements"],
 }
+
+TOPICS["none_direct"] = TOPICS["none"]
+TOPICS["memory_empty"] = TOPICS["memory"]
 
 for _name, _cat in CATEGORIES.items():
     _cat["name"] = _name
 
 PILOT2_PLAN = {"read_direct": 4, "read_loose": 4, "edit": 8, "grep": 4, "bash": 5, "memory": 6, "clarify": 5, "none": 4}
+# run2: run1 에피소드(기존 8개 범주)는 새 규칙으로 다시 검증해 재사용하고, 아래만 새로 만듭니다(수락률 약 2/3을 감안한 질의 수).
+# 파일럿(2차까지)에서 뺀 범주: brief(교사가 앞뒤 줄 자르기 도구 대신 직접 요약), worktree(운영은 git이 없어 실패),
+# lsp(교사가 grep을 고집하고, 숨기면 tool_search로 grep을 찾음), write_new·act_not_ask(교사가 탐색을 길게 하거나 루트 전체 glob부터 함).
+RUN2_NEW = ("none_direct", "web", "skill", "memory_save", "skill_save", "task", "memory_empty", "bash_dev", "clarify")
+RUN2_PILOT_PLAN = {c: 3 for c in RUN2_NEW}
+# 파일럿 수락률로 정한 질의 수(목표 수락 에피소드 약 127개: web 30, clarify 20, skill 15, memory_save·task·none_direct 12, skill_save·bash_dev 10, memory_empty 6).
+RUN2_PLAN = {"web": 55, "skill": 33, "memory_save": 40, "skill_save": 33, "task": 33, "memory_empty": 20, "none_direct": 20, "bash_dev": 17, "clarify": 66}
 
 # 스타일 카드 분포(운영 채팅에서 기대하는 모습: 한국어 위주, 한 문장, 짧은 반말 지시가 많고 단서 문구는 드묾).
 KO_RATIO = 0.7
@@ -331,7 +449,10 @@ How to write:
   terms and identifiers mixed into Korean as developers do. A typo or missing space now and then is fine.
 - Anchor: "path" = mention one real file path from the material; "identifier" = mention a real function/class/variable name
   from the material but no path; "directory" = mention only a directory; "error_text" = quote a short real message string
-  from the material; "memory_name" = mention the saved note by its name; "none" = describe the target loosely, no names.
+  from the material; "memory_name" = mention the saved note or skill by its name; "url" = include one realistic public
+  https URL (official docs, a GitHub issue/release page, a PyPI page) that the request is about; "content" = the message
+  itself contains the exact rule, fact, or steps to save; "pasted_text" = the message contains the long text itself
+  (several lines) after a short instruction; "none" = describe the target loosely, no names.
 - Hedge flag off (the default): do NOT add clauses that restrict the agent ("don't modify", "only", "just show", "no need to
   ...", "without running"), method hints, line counts, or flags unless they are the point of the request.
 - Never mention the agent's tool names. Never copy sentences from the material or from the task description.
@@ -351,7 +472,8 @@ def _style_cards(rng: random.Random, cat: dict, n: int) -> list[dict]:
     cards = []
     for i, lang in enumerate(langs):
         bucket = _weighted(rng, LENGTH_WEIGHTS)
-        lo, hi = LENGTH_BUCKETS[lang][bucket]
+        override = cat.get("length_override")  # 내용을 질의에 담아야 하는 범주(저장할 절차, 붙여 넣은 로그)는 더 깁니다
+        lo, hi = override[lang] if override else LENGTH_BUCKETS[lang][bucket]
         cards.append(
             {
                 "card": i,
@@ -409,7 +531,7 @@ _REQ_SCHEMA = {
                         "path": {"type": "string", "description": "the real /app-relative file path the request is about, or empty"},
                         "memory_notes": {
                             "type": "array",
-                            "description": "memory category only: 3-5 saved notes that exist before the request (one is the note the request is about); empty otherwise",
+                            "description": "memory and skill categories only: 3-5 saved notes (or skills) that exist before the request (one is the one the request is about); empty otherwise",
                             "items": {
                                 "type": "object",
                                 "additionalProperties": False,
@@ -434,8 +556,23 @@ _REQ_SCHEMA = {
 
 def _gen_prompt(cat_name: str, cat: dict, cards: list[dict], snippets: list[dict], tools: list[dict], files: list[str], rng: random.Random) -> str:
     parts = [f"Task category: {cat['gloss']}."]
-    if cat_name == "none":
+    if cat_name in ("none", "none_direct"):
         parts.append("What the agent CAN do (so your requests must need something outside this list):\n" + _tool_brief(tools))
+    extra = {
+        "skill": (
+            "For each request, also invent 3-5 saved skills in memory_notes (scope \"project\", kebab-case name ending in .md, "
+            "content = a 2-6 line recipe). Exactly one is_target=true: the skill the request is about. If the card anchor is "
+            "memory_name, the request names that skill (it may drop the .md); if none, the request describes the topic only. "
+            "Other skills should be on different topics."
+        ),
+        "memory_empty": "Nothing has been saved yet (leave memory_notes empty), but write the request as if the user believes it was saved earlier.",
+        "web": "These requests are about public, external information, not about the code in /app. Name the public library, tool, or service explicitly (e.g. FastAPI, httpx, Pydantic, uv); never say \"our framework\". If the card anchor is url, the request is to read or summarize that page.",
+        "memory_save": "Each request contains the exact rule, preference, or fact to remember (one short sentence of content), plus a phrase like remember/기억해/메모해 둬.",
+        "skill_save": "Each request contains the procedure itself (2-5 short steps written inline) and asks to save it as a reusable skill/recipe.",
+        "task": "Each request is about starting something that keeps running; the agent should not wait for it to finish. /app is a FastAPI backend (src/) plus the agent engine (theseus_engine/).",
+    }.get(cat_name)
+    if extra:
+        parts.append(extra)
     if cat_name == "memory":
         parts.append(
             "For each request, also invent 3-5 saved memory notes (scope, kebab-case name, 1-4 line content) that exist before "
@@ -462,6 +599,7 @@ def _gen_prompt(cat_name: str, cat: dict, cards: list[dict], snippets: list[dict
 
 
 _QUOTED = re.compile(r"`([^`]{3,80})`|'([^'\s][^']{2,60})'|\"([^\"\s][^\"]{2,60})\"")
+_URL = re.compile(r"https?://[^\s<>\"'`)\]가-힣]+")  # 한글 조사·백틱이 바로 붙어도 끊음
 
 
 def _check_query(row: dict, files: set[str], root: Path) -> str | None:
@@ -473,6 +611,7 @@ def _check_query(row: dict, files: set[str], root: Path) -> str | None:
     if row["lang"] == "en" and hangul:
         return "lang_mismatch"
     path = row.get("path") or ""
+    cat = CATEGORIES[row["category"]]
     if path:
         path = path.lstrip("./")
         if path.startswith("app/"):
@@ -480,16 +619,18 @@ def _check_query(row: dict, files: set[str], root: Path) -> str | None:
         row["path"] = path
         if path not in files:
             return "path_not_in_app"
-    for m in _QUOTED.finditer(q):
+    for m in (_QUOTED.finditer(q) if cat["snippets"] else ()):  # 코드 조각 없는 범주(bash_dev·task)의 인용은 셸 명령
         frag = next(g for g in m.groups() if g)
         if "/" in frag or frag.endswith(".py") or frag.endswith(".md"):
             continue
         if path and frag not in (root / path).read_text(encoding="utf-8", errors="replace"):
             return "quoted_text_not_in_file"
-    if row["category"] == "memory":
+    if cat.get("memory_seed") or cat.get("skill_seed"):
         notes = row.get("memory_notes") or []
-        if sum(1 for n in notes if n["is_target"]) != 1 or not 2 <= len(notes) <= 6:
+        if sum(1 for n in notes if n["is_target"]) != 1 or not 2 <= len(notes) <= 6 or any(not n["content"].strip() for n in notes):
             return "bad_memory_notes"
+    if row["category"] == "web" and row["card"].get("anchor") == "url" and not _URL.search(q):
+        return "url_missing"
     return None
 
 
@@ -501,7 +642,8 @@ async def cmd_queries(args: argparse.Namespace) -> None:
     done_batches = {r["batch"] for r in read_jsonl(out_path)} | {r["batch"] for r in read_jsonl(out_path.with_suffix(".rejected.jsonl"))}
     client = _openai_client()
     ledger = Ledger(args.model, args.budget_usd, Path(args.spend_log), "queries")
-    plan = json.loads(args.plan) if args.plan else PILOT2_PLAN
+    named = {"pilot2": PILOT2_PLAN, "run2-pilot": RUN2_PILOT_PLAN, "run2": RUN2_PLAN}
+    plan = named[args.plan] if args.plan in named else (json.loads(args.plan) if args.plan else PILOT2_PLAN)
     per_call = args.per_call
     errors = 0
     try:
@@ -561,9 +703,9 @@ async def cmd_queries(args: argparse.Namespace) -> None:
                         "path": item["path"],
                         "card": card,
                         "registry": "server",
-                        "type": "none" if cat_name == "none" else "single",
-                        "relevant": [cat["target"]] if cat["target"] else [],
-                        "memory_notes": item["memory_notes"] if cat.get("memory_seed") else [],
+                        "type": "none" if cat_name in ("none", "none_direct") else "single",
+                        "relevant": sorted(targets_of(cat)),
+                        "memory_notes": item["memory_notes"] if (cat.get("memory_seed") or cat.get("skill_seed")) else [],
                         "source_snippets": [s["path"] for s in snippets],
                     }
                     reason = _check_query(row, set(files), root)
@@ -734,8 +876,10 @@ class TeacherBackend:
             raise _StopEpisode("max turns")
         messages = _convert_messages_to_openai(request.messages, request.system_prompt)
         tools = _convert_tools_to_openai(request.tools)
-        tool_key = hashlib.sha1(",".join(sorted(t["function"]["name"] for t in tools)).encode()).hexdigest()[:16]
-        reserve = self.ledger.worst_case(_est_tokens(messages) + _est_tokens(tools), self.max_output_tokens)
+        hide = set(TEACHER_HIDE_ALWAYS) | set(self.cat.get("teacher_hide", ()))
+        teacher_tools = [t for t in tools if t["function"]["name"] not in hide]  # 기록(request.tools)은 운영 그대로
+        tool_key = hashlib.sha1(",".join(sorted(t["function"]["name"] for t in teacher_tools)).encode()).hexdigest()[:16]
+        reserve = self.ledger.worst_case(_est_tokens(messages) + _est_tokens(teacher_tools), self.max_output_tokens)
         try:
             await self.ledger.reserve(reserve)
         except BudgetExceeded as exc:
@@ -751,7 +895,7 @@ class TeacherBackend:
             resp = await self.client.responses.create(
                 model=self.model,
                 input=_to_responses_input(messages),
-                tools=_to_responses_tools(tools),
+                tools=_to_responses_tools(teacher_tools),
                 max_output_tokens=self.max_output_tokens,
                 store=False,
                 prompt_cache_key=f"theseus-sft-{tool_key}",
@@ -776,6 +920,7 @@ class TeacherBackend:
                         refusal = getattr(c, "refusal", "refusal")
         turn = {
             "request": {"messages": messages, "tools": tools},
+            "teacher_hidden": sorted(hide & {t["function"]["name"] for t in tools}),
             "teacher": {"content": "".join(texts) or None, "tool_calls": calls, "status": resp.status, "refusal": refusal},
             "usage": usage,
             "cost_usd": round(cost, 6),
@@ -783,14 +928,13 @@ class TeacherBackend:
         }
         self.turns.append(turn)
         names = [c["name"] for c in calls]
-        target = self.cat["target"]
         if resp.status != "completed" or refusal:
             self.stop = f"status_{resp.status}" if resp.status != "completed" else "refusal"
             raise _StopEpisode(self.stop)
         if not names:
             self.stop = "text_answer"
             raise _StopEpisode("text")
-        if target and target in names:
+        if targets_of(self.cat) & set(names):
             self.stop = "target_call"
             raise _StopEpisode("target")
         if any(n not in SAFE_TOOLS for n in names):
@@ -830,6 +974,26 @@ def _seed_memory(row: dict, app: Path) -> list[Path]:
     return made
 
 
+def _seed_skills(row: dict, app: Path) -> list[Path]:
+    """skill 범주: 질의와 함께 만든 스킬을 운영 저장 형식(/app/skills/<이름>/SKILL.md, YAML 앞머리)으로 심습니다.
+
+    /app 아래라 에피소드 뒤 _reset_dir(app)가 지웁니다.
+    """
+    import yaml
+
+    made = []
+    for note in row.get("memory_notes") or []:
+        name = Path(note["name"]).name.removesuffix(".md")
+        folder = app / "skills" / name.lower().replace(" ", "-")
+        folder.mkdir(parents=True, exist_ok=True)
+        body = note["content"].strip() or name
+        meta = yaml.safe_dump({"name": name, "description": body.splitlines()[0][:120]}, allow_unicode=True, sort_keys=False).strip()
+        p = folder / "SKILL.md"
+        p.write_text(f"---\n{meta}\n---\n\n{body}\n", encoding="utf-8")
+        made.append(p)
+    return made
+
+
 def _clear_memory(app: Path) -> None:
     for scope in ("user", "project", "local"):
         shutil.rmtree(_memory_dir(scope, app), ignore_errors=True)
@@ -851,7 +1015,10 @@ def _reset_dir(d: Path, keep: set[Path]) -> None:
             p.unlink(missing_ok=True)
 
 
-EFFORT_BY_CATEGORY = {"clarify": "low", "none": "low", "bash": "low", "read_loose": "low"}
+EFFORT_BY_CATEGORY = {
+    "clarify": "low", "none": "low", "bash": "low", "read_loose": "low",
+    "none_direct": "low", "skill_save": "low", "memory_empty": "low", "bash_dev": "low",
+}  # 나머지는 교사 기본값(파일럿에서 low로는 skill·memory_save·web·task가 보낸 도구를 두고 헤맴)
 
 
 async def cmd_episodes(args: argparse.Namespace) -> None:
@@ -885,13 +1052,17 @@ async def cmd_episodes(args: argparse.Namespace) -> None:
                 continue
             cat = CATEGORIES[r["category"]]
             _clear_memory(app)
-            _seed_memory(r, app)
+            if cat.get("memory_seed"):
+                _seed_memory(r, app)
+            if cat.get("skill_seed"):
+                _seed_skills(r, app)
             assembly = _build_assembly(r["query"], remote=r["registry"] == "server_remote", session=f"datagen:{r['id']}")
             llm = assembly.engine.api_client
             if not hasattr(llm, "_backend"):
                 raise SystemExit(f"unexpected api client {type(llm).__name__}")
             effort = args.reasoning_effort or EFFORT_BY_CATEGORY.get(r["category"])
-            backend = TeacherBackend(client, ledger, row=r, cat=cat, model=args.model, effort=effort, max_output_tokens=args.max_output_tokens, max_turns=args.max_turns)
+            max_turns = cat.get("max_turns", args.max_turns)
+            backend = TeacherBackend(client, ledger, row=r, cat=cat, model=args.model, effort=effort, max_output_tokens=args.max_output_tokens, max_turns=max_turns)
             llm._backend = backend
             llm._initialize_backend = lambda *_a, _b=backend, **_k: _b  # 라우팅이 백엔드를 다시 만들어도 교사 유지
             started = time.perf_counter()
@@ -990,6 +1161,35 @@ def _check_edit(call_args: dict, app: Path) -> str | None:
     return None
 
 
+# 자리표시 인자(교사가 값을 지어낸 흔적)와 끝나지 않는 셸 명령(운영 bash는 타임아웃까지 막힘, 백그라운드는 task_create).
+_PLACEHOLDER = re.compile(r"your[-_ ]?(service|app|file|package|module|project|name|host|branch|path)|<[A-Za-z][A-Za-z_-]{1,29}>|\bYOUR_[A-Z_]+|example\.com|\bfoo\b|\bxxx\b", re.IGNORECASE)
+_BLOCKING = re.compile(r"\btail\s+(-\S*\s+)*-[a-zA-Z]*f|\bwatch\s|--reload\b|(?:^|[;&|(]\s*|\bpython3?\s+-m\s+)uvicorn\s+(?!--(?:help|version)\b)\S|\bflask\s+run\b|\bhttp\.server\b|\bnpm\s+run\s+(dev|start|watch)\b|\bsleep\s+\d{3,}|\bwhile\s+true\b")
+
+
+def _overlap(value: str, query: str, n: int = 3) -> float:
+    """value의 문자 n-gram 중 질의에도 있는 비율(공백·대소문자 무시). 저장·요약 인자가 질의에 근거하는지 봅니다."""
+    v, q = _grams(value, n), _grams(query, n)
+    return len(v & q) / len(v) if v else 0.0
+
+
+def _check_write(call_args: dict, app: Path) -> str | None:
+    path = call_args.get("path")
+    content = call_args.get("content")
+    if not isinstance(path, str) or not isinstance(content, str) or not content.strip():
+        return "write_missing_fields"
+    rel = path.lstrip("./")
+    if path.startswith("/") or ".." in Path(rel).parts:
+        return "write_path_outside_app"
+    if call_args.get("allow_overwrite") or (app / rel).exists():
+        return "write_overwrites_existing"
+    if rel.endswith(".py"):
+        try:
+            ast.parse(content)
+        except SyntaxError:
+            return "write_breaks_syntax"
+    return None
+
+
 def validate_episode(ep: dict, registry: Any, app: Path) -> tuple[bool, list[str], list[list[dict]]]:
     """궤적 하나를 검증합니다. (통과 여부, 문제 목록, 턴별 정규화된 호출)을 돌려줍니다."""
     from benchmarks.llm_tool_call.harness import _validate_args, is_clarifying_text
@@ -1001,6 +1201,7 @@ def validate_episode(ep: dict, registry: Any, app: Path) -> tuple[bool, list[str
     if ep.get("error") or not turns:
         return False, [f"episode_error:{ep.get('stop')}"], []
     seen_calls: set[str] = set()
+    called_before: set[str] = set()
     normalized: list[list[dict]] = []
     read_paths: set[str] = set()
     for i, t in enumerate(turns):
@@ -1032,28 +1233,38 @@ def validate_episode(ep: dict, registry: Any, app: Path) -> tuple[bool, list[str
         normalized.append(calls)
         last = i == len(turns) - 1
         names = [c["name"] for c in calls]
+        if "ask_user" in names:
+            problems.append(f"t{i}:ask_user_not_in_server")  # 운영 서버에서 사용자에게 닿지 않음(#59): 되묻기는 본문으로
         if not last:
-            # Tool RAG가 목표 도구를 보내지 않은 턴에서는 tool_search로 찾는 것이 운영에서 맞는 행동입니다.
-            discover_ok = cat["target"] is not None and cat["target"] not in offered
+            # tool_search는 목표 도구를 보내지 않았고, 보낸 짝 도구(memory_list 등)도 이미 써 본 뒤에만 맞는 행동입니다.
+            discover_ok = bool(targets_of(cat)) and not ((family_of(cat) & offered) - called_before)
             bad = [n for n in names if n not in cat["via"] and not (n == "tool_search" and discover_ok)]
             if bad:
                 problems.append(f"t{i}:detour:{'+'.join(bad)}")
             if any(res.startswith("[TOOL EXECUTION ERROR]") for res in _tool_results_after(turns, i)):
                 problems.append(f"t{i}:tool_error")
+        called_before |= set(names)
     final = normalized[-1] if normalized else []
     final_names = [c["name"] for c in final]
     final_text = (turns[-1]["teacher"]["content"] or "").strip()
     category = row["category"]
     stop = ep["stop"]
-    if category == "none":
+    targets = targets_of(cat)
+    kind = cat.get("final", "call" if targets else "text")
+    final_is_call = stop == "target_call" and bool(final_names) and set(final_names) <= targets
+    probe_names = {n for calls in normalized[:-1] for n in (c["name"] for c in calls)}
+    if kind == "text":
         if stop != "text_answer" or not final_text:
-            problems.append(f"final:none_needs_text:{stop}")
-    elif category == "clarify":
-        if not (final_names and set(final_names) == {"ask_user"}) and not (stop == "text_answer" and is_clarifying_text(final_text)):
+            problems.append(f"final:{category}_needs_text:{stop}")
+    elif kind == "clarify_text":
+        if not (stop == "text_answer" and is_clarifying_text(final_text)):
             problems.append(f"final:clarify:{'+'.join(final_names) or 'TEXT'}")
-    else:
-        if stop != "target_call" or set(final_names) != {cat["target"]}:
+    elif kind == "call_or_text":
+        text_ok = stop == "text_answer" and bool(final_text)
+        if not ((final_is_call or text_ok) and "memory_list" in probe_names):  # 어느 쪽이든 메모 목록부터 확인
             problems.append(f"final:{'+'.join(final_names) or 'TEXT'}:{stop}")
+    elif not final_is_call:
+        problems.append(f"final:{'+'.join(final_names) or 'TEXT'}:{stop}")
     if final_text and row["lang"] == "ko" and not final_names and hangul_ratio(final_text) < 0.3:
         problems.append("final:text_not_korean")
     # 질의가 경로를 직접 말했을 때만 그 파일이어야 합니다. 느슨한 질의는 교사가 실제 정의를 다른 파일에서 찾을 수 있습니다.
@@ -1074,13 +1285,37 @@ def validate_episode(ep: dict, registry: Any, app: Path) -> tuple[bool, list[str
         reads = [(str(c["arguments"].get("filename", "")).removesuffix(".md"), c["arguments"].get("scope", "local")) for c in final if c["name"] == "memory_read"]
         if reads and not any(got == want and (note is None or scope == note["scope"]) for got, scope in reads):
             problems.append("final:memory_wrong_note")  # 후보 여러 개를 함께 읽는 것은 괜찮지만 목표 메모는 들어 있어야 함
-    if category == "none" and not any(n == "tool_search" for calls in normalized[:-1] for n in (c["name"] for c in calls)):
-        problems.append("final:none_without_search")
-    if category == "bash":
+    # run2: none도 tool_search 없이 바로 못 한다고 답해도 됩니다(run1은 tool_search를 강제해 보낸 도구를 두고 검색부터 하는 습관이 생김).
+    if category == "skill":
+        note = next((n for n in row.get("memory_notes") or [] if n["is_target"]), None)
+        want = Path(note["name"]).name.removesuffix(".md").lower() if note else ""  # _seed_skills가 앞머리에 쓴 이름(운영 레지스트리 키)
+        reads = [str(c["arguments"].get("name", "")).lower() for c in final if c["name"] == "skill_read"]  # 운영처럼 정규화 없이
+        if reads and want not in reads:
+            problems.append("final:skill_wrong_name")
+    grounded = cat.get("grounded_arg")
+    if grounded and final_is_call:
+        key, threshold = grounded
         for c in final:
-            if c["name"] == "bash" and _GIT_CMD.search(" " + str(c["arguments"].get("command", ""))):
+            value = c["arguments"].get(key)
+            if not isinstance(value, str) or _overlap(value, row["query"]) < threshold:
+                problems.append(f"final:ungrounded_{key}")  # 질의에 없는 내용을 저장·요약(run1 튜닝본이 사실 아닌 메모를 씀)
+    for c in final:
+        a = c["arguments"]
+        if c["name"] == "web_fetch" and str(a.get("url", "")).rstrip("/") not in {u.rstrip("/.,?!:;") for u in _URL.findall(row["query"])}:
+            problems.append("final:web_fetch_url_not_in_query")
+        if c["name"] in ("bash", "task_create"):
+            command = str(a.get("command", ""))
+            if _GIT_CMD.search(" " + command):
                 problems.append("final:git_unavailable_in_prod")
-    if category == "edit" and stop == "target_call":
+            if _PLACEHOLDER.search(command):
+                problems.append(f"final:{c['name']}_placeholder")
+            if c["name"] == "bash" and _BLOCKING.search(command):
+                problems.append("final:bash_blocking")  # 끝나지 않는 명령은 task_create로
+        if c["name"] == "write_file":
+            err = _check_write(a, app)
+            if err:
+                problems.append(f"final:{err}")
+    if stop == "target_call":  # 어느 범주든 마지막 edit_file은 같은 기준
         for c in final:
             if c["name"] == "edit_file":
                 p = (c["arguments"].get("path") or "").lstrip("./")
@@ -1131,13 +1366,13 @@ def _habit_problems(category: str, normalized: list[list[dict]], final_text: str
     if category == "clarify":
         if any(c["name"] == "glob" for calls in probes for c in calls) or len(probes) > 1:
             out.append("final:clarify_over_probe")  # 첨부·결정 같은 빠진 정보는 탐색으로 못 찾음: 바로 또는 한 번 읽고 묻기
-    if category == "none" and final_text:
+    if category in ("none", "none_direct") and final_text:
         first = next((s for s in _FIRST_SENTENCE.split(final_text.strip()) if s.strip()), "")
         if "?" in first or is_clarifying_text(first):
             out.append("final:none_asks_first")  # 할 수 없다는 말보다 질문이 먼저 나옴
     if category == "read_loose" and sum(1 for c in (normalized[-1] if normalized else []) if c["name"] == "read_file") > 2:
         out.append("final:over_read")
-    if category == "bash":
+    if category in ("bash", "bash_dev"):
         for c in normalized[-1] if normalized else []:
             if c["name"] == "bash" and len(str(c["arguments"].get("command", ""))) > 300:
                 out.append("final:bash_too_long")
@@ -1256,7 +1491,7 @@ def main() -> None:
     paid(sp, 6000)
     sp.add_argument("--catalog", required=True)
     sp.add_argument("--fixture-dir", default="/app")
-    sp.add_argument("--plan", default=None, help='JSON {"범주": 개수}. 없으면 PILOT2_PLAN')
+    sp.add_argument("--plan", default=None, help='pilot2 | run2-pilot | run2 | JSON {"범주": 개수}. 없으면 PILOT2_PLAN')
     sp.add_argument("--per-call", type=int, default=8)
     sp.add_argument("--seed", type=int, default=2)
     sp.add_argument("--out", required=True)

@@ -23,8 +23,9 @@ from benchmarks.llm_tool_call.ollama_render import reduce_messages, reduce_tool
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--inp", required=True)
+    p.add_argument("--inp", required=True, nargs="+", help="validate가 쓴 sft.jsonl(여러 개면 합침, 예: run1 재검증분 + run2 신규)")
     p.add_argument("--exclude", default=None, help="뺄 에피소드 id JSON 목록(사람·에이전트 검수에서 틀린 것)")
+    p.add_argument("--cap-episodes", default=None, help='범주별 최대 에피소드 수 JSON(예: {"memory": 30}). 넘으면 seed로 무작위 추림')
     p.add_argument("--tokenizer", required=True)
     p.add_argument("--max-tokens", type=int, default=10240)
     p.add_argument("--val-frac", type=float, default=0.1)
@@ -36,9 +37,17 @@ def main() -> None:
 
     tok = AutoTokenizer.from_pretrained(args.tokenizer)
     exclude = set(json.loads(Path(args.exclude).read_text(encoding="utf-8"))) if args.exclude else set()
-    rows = [json.loads(line) for line in Path(args.inp).open(encoding="utf-8") if line.strip()]
-    episodes = sorted({r["episode"] for r in rows if r["episode"] not in exclude})
+    rows = [json.loads(line) for inp in args.inp for line in Path(inp).open(encoding="utf-8") if line.strip()]
+    ids = [r["id"] for r in rows]
+    assert len(ids) == len(set(ids)), "duplicate example ids across inputs"
     rng = random.Random(args.seed)
+    capped: list[str] = []
+    for cat, cap in (json.loads(args.cap_episodes) if args.cap_episodes else {}).items():
+        eps = sorted({r["episode"] for r in rows if r["category"] == cat and r["episode"] not in exclude})
+        if len(eps) > cap:
+            capped += sorted(set(eps) - set(rng.sample(eps, cap)))
+    exclude |= set(capped)
+    episodes = sorted({r["episode"] for r in rows if r["episode"] not in exclude})
     val_eps = set(rng.sample(episodes, max(1, round(len(episodes) * args.val_frac))))
     out, dropped = [], {"excluded": 0, "too_long": 0}
     for r in rows:
@@ -81,7 +90,8 @@ def main() -> None:
                 "examples": len(out),
                 "train": sum(r["split"] == "train" for r in out),
                 "val": sum(r["split"] == "val" for r in out),
-                "dropped": dropped,
+                "dropped": {**dropped, "capped_episodes": len(capped)},
+                "episodes_by_category": {c: len({r["episode"] for r in out if r["category"] == c}) for c in sorted({r["category"] for r in out})},
                 "tokens_p50_p90_max": [lens[len(lens) // 2], lens[int(0.9 * (len(lens) - 1))], lens[-1]] if lens else None,
                 "target_tokens_mean": round(statistics.fmean(r["n_target"] for r in out), 1) if out else None,
                 "train_target_tokens_total": sum(r["n_target"] for r in out if r["split"] == "train"),
