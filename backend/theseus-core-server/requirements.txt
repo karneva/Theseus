@@ -64,7 +64,7 @@ rich>=15.0.0,<16
 jedi>=0.20.1,<1
 
 # ── Web Scraping / Markdown ────────────────────────────────────────────────────
-markdownify>=1.2.2,<2
+markdownify>=1.2.4,<2
 beautifulsoup4>=4.15.0,<5
 
 # ── System Metrics (생성 Tool 호환용) ─────────────────────────────────────────
