@@ -33,7 +33,7 @@ httpx>=0.28.1,<0.29
 requests>=2.31,<3
 
 # ── Environment & Config ───────────────────────────────────────────────────────
-python-dotenv>=1.0.0,<2
+python-dotenv>=1.2.4,<2
 
 # ── Database (PostgreSQL + pgvector) ──────────────────────────────────────────
 # psycopg(v3)는 SQLAlchemy(src/db), psycopg2는 엔진 RAG(theseus_engine/rag)가 씁니다.
