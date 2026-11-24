@@ -50,7 +50,7 @@ APP_DIRS = ("src", "theseus_engine")  # Core 이미지가 /app에 복사하는 �
 # target: 궤적이 끝나야 하는 도구(clarify는 ask_user 또는 되묻는 본문, none은 본문).
 # via: 목표 전에 허용하는 탐색 도구(SAFE_TOOLS의 부분집합). 빈 튜플이면 첫 턴에 목표를 불러야 합니다.
 # anchors: 스타일 카드의 단서 종류와 비율. snippets: 실제 코드 조각을 근거로 줄지.
-CATEGORIES: dict[str, dict[str, Any]] = {
+CATEGORIES: dict[str, dict[str, Any]] = {  # 각 항목에 name이 아래에서 채워짐
     "read_direct": {
         "target": "read_file",
         "via": (),
@@ -109,6 +109,23 @@ CATEGORIES: dict[str, dict[str, Any]] = {
         "snippets": False,
     },
 }
+
+# 짧은 질의가 서로 비슷해지기 쉬운 범주는 카드마다 다른 주제를 줍니다(근접 중복 제거로 많이 빠지는 것을 막음).
+TOPICS = {
+    "bash": ["installed version of one specific package", "python version and venv path", "disk usage of a directory", "free memory", "top processes by CPU or memory",
+             "listening ports", "an environment variable value", "server uptime and load", "timezone/locale/date", "CPU count and model",
+             "line or file counts under a directory", "syntax-check one python file", "import check of a module with python -c", "a localhost HTTP health request",
+             "DNS resolution of a host", "open file limits", "size of the largest files", "python path / site-packages location", "current user and permissions of a path", "kernel and OS release"],
+    "none": ["team chat message", "issue tracker ticket", "calendar event", "email", "design tool comment", "image generation", "OCR of an image", "cloud console change",
+             "phone call or SMS", "payment or invoice", "spreadsheet in a cloud drive", "wiki page edit", "CI/CD pipeline button in an external system", "video meeting",
+             "translation of a PDF attachment", "customer support ticket", "monitoring dashboard alert silence", "VPN/SSO account change", "app store release", "printing a document"],
+    "memory": ["coding style preference", "deployment checklist", "incident postmortem notes", "API naming rules", "review conventions", "environment setup steps",
+               "a decision and its reason", "a known bug workaround", "test data locations", "release schedule", "on-call rules", "performance tuning notes",
+               "prompt writing guidelines", "database migration notes", "security review notes", "customer requirements summary"],
+}
+
+for _name, _cat in CATEGORIES.items():
+    _cat["name"] = _name
 
 PILOT2_PLAN = {"read_direct": 4, "read_loose": 4, "edit": 8, "grep": 4, "bash": 5, "memory": 6, "clarify": 5, "none": 4}
 
@@ -309,7 +326,7 @@ Setting (facts, do not contradict them):
 - Python 3.11 in /opt/venv. Users are developers on the team, mostly Korean.
 
 How to write:
-- Follow each style card exactly: language, length range in characters, register, anchor, and hedge flag.
+- Follow each style card exactly: language, length range in characters, register, anchor, hedge flag, and topic if given.
 - Write it the way people really type in chat: usually one sentence, often no final punctuation in Korean, English tech
   terms and identifiers mixed into Korean as developers do. A typo or missing space now and then is fine.
 - Anchor: "path" = mention one real file path from the material; "identifier" = mention a real function/class/variable name
@@ -345,6 +362,10 @@ def _style_cards(rng: random.Random, cat: dict, n: int) -> list[dict]:
                 "hedge": rng.random() < HEDGE_RATE,
             }
         )
+    topics = TOPICS.get(cat.get("name", ""))
+    if topics:
+        for c, t in zip(cards, rng.sample(topics, min(len(topics), len(cards))) * 2):
+            c["topic"] = t
     return cards
 
 
