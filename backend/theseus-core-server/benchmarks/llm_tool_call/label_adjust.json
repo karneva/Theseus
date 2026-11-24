@@ -1,0 +1,20 @@
+{
+ "version": 2,
+ "note": "동결된 tool_rag/eval_set.jsonl·holdout_set.jsonl은 그대로 두고 LLM 도구 호출 평가에서만 쓰는 라벨 보정입니다. 결과 JSON의 summary는 원래 라벨, adjusted.summary는 이 보정을 적용한 값입니다. run1 오류 분석(2026-11-25)에서 찾은 라벨 불일치와 풀 수 없는 문항만 넣었습니다.",
+ "hidden_tools": ["search_knowledge_base", "ingest_document"],
+ "hidden_reason": "서버 기본값(THESEUS_ENABLE_ENGINE_RAG_TOOLS=false)이 엔진 RAG 도구를 숨깁니다. 단일 질의는 정답이 모두 이 도구일 때(풀 수 없음), 복합 질의는 하나라도 있을 때(요청 일부를 할 수 없음) 모든 분할에서 뺍니다. 정답 대안이 따로 있는 단일 질의(q074, q078)는 남깁니다. dev에서는 q101, q126, q134, q182, q220.",
+ "cases": {
+  "q198": {
+   "accept_also": ["bash"],
+   "reason": "'Check the logs'. 같은 뜻의 한국어 문항 q081('로그 보여줘')은 bash를 정답에 넣었는데 이 문항은 빠져 있어 맞춥니다."
+  },
+  "q028": {
+   "accept_also_k": ["read_file"],
+   "reason": "'QueryEngine 클래스가 정의된 위치로 이동해줘'(정답 lsp). grep으로 찾은 뒤 정의 파일을 읽는 경로도 같은 결과를 주므로, 다른 작업 도구로 끝나지 않았다면 k턴 성공으로 인정합니다(첫 턴 성공은 lsp만)."
+  },
+  "q175": {
+   "accept_also_k": ["read_file"],
+   "reason": "'Jump to where TheseusStateMachine is declared'(정답 lsp). q028과 같은 이유."
+  }
+ }
+}

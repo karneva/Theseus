@@ -33,7 +33,7 @@ def _parse() -> argparse.Namespace:
     p.add_argument("--split", choices=SPLITS, default="dev", help="final = test + holdout")
     p.add_argument("--model", required=False, help="Ollama 모델 이름(THESEUS_MODEL의 ollama/ 뒤)")
     p.add_argument("--base-url", default="http://127.0.0.1:11435/v1", help="OpenAI 호환 엔드포인트(OLLAMA_BASE_URL)")
-    p.add_argument("--samples", type=int, default=3, help="질의당 반복 횟수(seed = seed_base + i)")
+    p.add_argument("--samples", type=int, default=5, help="질의당 반복 횟수(seed = seed_base + i). 3회는 질의별 해상도가 0.33이라 run1부터 5회")
     p.add_argument("--seed-base", type=int, default=1)
     p.add_argument("--temperature", type=float, default=None, help="주면 요청에 넣음. 기본은 운영처럼 보내지 않음")
     p.add_argument("--limit", type=int, default=None, help="앞에서 n개만(빠른 점검용)")
@@ -56,8 +56,8 @@ def rescore(src: Path, out: Path) -> None:
     per_sample: dict[int, list[dict]] = defaultdict(list)
     for r in items:
         per_sample[r["sample"]].append(r)
-    result = aggregate([per_sample[k] for k in sorted(per_sample)])
-    result["meta"] = {**old["meta"], "rescored_from": src.name, "scoring": "clarify_text_accepted"}
+    result = build_result([per_sample[k] for k in sorted(per_sample)])
+    result["meta"] = {**old["meta"], "rescored_from": old["meta"].get("rescored_from") or src.name, "scoring": "clarify_text_accepted"}
     result["per_item"] = items
     out.write_text(json.dumps(result, ensure_ascii=False, indent=1), encoding="utf-8")
     print(json.dumps(result["summary"], ensure_ascii=False, indent=1))
@@ -104,6 +104,8 @@ def _pctl(xs, q):
 
 def summarize(items: list[dict]) -> dict:
     """한 샘플(질의당 1회) 결과의 지표."""
+    from benchmarks.llm_tool_call import harness
+
     answerable = [r for r in items if r["type"] != "none"]
     nones = [r for r in items if r["type"] == "none"]
     retrievable = [r for r in answerable if r["retrievable"]]
@@ -127,6 +129,8 @@ def summarize(items: list[dict]) -> dict:
         "not_offered_call_rate": _mean([r["not_offered_call"] for r in items]),
         "text_tool_call_leak_rate": _mean([r["text_tool_call_leak"] for r in items]),
         "multi_relevant_called_frac": _mean([r["relevant_called_frac"] for r in multi]),
+        "harmful_action_rate": _mean([harness.harmful_action(r) for r in items]),
+        "ask_user_rate": _mean([harness.called_ask_user(r) for r in items]),
         "error_rate": _mean([r["error"] is not None for r in items]),
         "latency_first_p50_s": _pctl([r["latency_first_s"] for r in items], 0.5),
         "latency_first_p95_s": _pctl([r["latency_first_s"] for r in items], 0.95),
@@ -142,7 +146,7 @@ def aggregate(per_sample: list[list[dict]]) -> dict:
     for k in keys:
         vals = [s[k] for s in sample_summaries if s[k] is not None]
         summary[k] = round(statistics.fmean(vals), 4) if vals else None
-        if k in ("success_at_1", "success_at_k", "none_at_1", "none_at_k", "call_args_valid") and len(vals) > 1:
+        if k in ("success_at_1", "success_at_k", "none_at_1", "none_at_k", "call_args_valid", "harmful_action_rate") and len(vals) > 1:
             summary[f"{k}_sd"] = round(statistics.stdev(vals), 4)
 
     by_case: dict[str, list[dict]] = defaultdict(list)
@@ -174,6 +178,31 @@ def aggregate(per_sample: list[list[dict]]) -> dict:
         "case_success_at_1": case_acc1,
         "unstable_cases": unstable,
     }
+
+
+def build_result(per_sample: list[list[dict]]) -> dict:
+    """원래 라벨 기준 집계 + label_adjust.json을 적용한 보정 집계(adjusted)."""
+    import hashlib
+
+    from benchmarks.llm_tool_call import harness
+
+    result = aggregate(per_sample)
+    adj = harness.load_label_adjust()
+    if adj:
+        adjusted = [[a for a in (harness.adjust_item(r, adj) for r in items) if a is not None] for items in per_sample]
+        agg = aggregate(adjusted)
+        raw = harness.LABEL_ADJUST_PATH.read_bytes().replace(b"\r\n", b"\n")
+        kept = {r["id"] for r in adjusted[0]}
+        result["adjusted"] = {
+            "label_adjust_sha256": hashlib.sha256(raw).hexdigest()[:16],
+            "excluded": sorted({r["id"] for r in per_sample[0]} - kept),
+            "accepted_also": sorted(cid for cid, rule in (adj.get("cases") or {}).items() if not rule.get("exclude") and cid in kept),
+            "summary": agg["summary"],
+            "breakdown": agg["breakdown"],
+            "case_success_at_1": agg["case_success_at_1"],
+            "case_success_at_k": agg["case_success_at_k"],
+        }
+    return result
 
 
 async def _main(args: argparse.Namespace) -> dict:
@@ -218,7 +247,7 @@ async def _evaluate(args: argparse.Namespace, cases: list[dict], stubs: list[str
         per_sample.append(items)
         print(json.dumps({"sample": i, **summarize(items)}, ensure_ascii=False), file=sys.stderr, flush=True)
 
-    result = aggregate(per_sample)
+    result = build_result(per_sample)
     import importlib.metadata as md
 
     result["meta"] = {
