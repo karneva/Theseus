@@ -1089,7 +1089,59 @@ def validate_episode(ep: dict, registry: Any, app: Path) -> tuple[bool, list[str
                 err = _check_edit(c["arguments"], app)
                 if err:
                     problems.append(f"final:{err}")
+                if _deletion_only(c["arguments"]) and not _REMOVE_VERB.search(row["query"]):
+                    problems.append("final:deletion_only_edit")  # 요청은 변경인데 줄만 지움(의미상 틀린 편집이 많음)
+    problems.extend(_habit_problems(category, normalized, final_text, row))
     return not problems, problems, normalized
+
+
+# ── 학생이 따라 배우면 안 되는 습관(1차 생성 감사에서 찾은 것) ──
+_BLIND_GLOB = {"*", "**", "**/*", "./*", "./**", "./**/*"}
+_REMOVE_VERB = re.compile(r"삭제|제거|지워|빼|정리|중복|remove|delete|drop|get rid|clean ?up|dedup", re.IGNORECASE)
+_FIRST_SENTENCE = re.compile(r"(?<=[.?!。])\s+|\n")
+
+
+def _deletion_only(args: dict) -> bool:
+    old, new = args.get("old_str"), args.get("new_str")
+    if not isinstance(old, str) or not isinstance(new, str):
+        return False
+    old_lines = {line.strip() for line in old.splitlines() if line.strip()}
+    new_lines = [line.strip() for line in new.splitlines() if line.strip()]
+    return len(new_lines) < len(old_lines) and all(line in old_lines for line in new_lines)
+
+
+def _habit_problems(category: str, normalized: list[list[dict]], final_text: str, row: dict) -> list[str]:
+    from benchmarks.llm_tool_call.harness import is_clarifying_text
+
+    out: list[str] = []
+    probes = normalized[:-1]
+    for i, calls in enumerate(normalized):
+        for c in calls:
+            a = c["arguments"]
+            if c["name"] == "glob" and str(a.get("pattern", "")).strip() in _BLIND_GLOB and str(a.get("root", ".")).strip() in (".", "", "./"):
+                out.append(f"t{i}:blind_glob")  # 루트 전체 glob: 디렉터리 2개만 나오는 헛걸음
+            if c["name"] == "grep" and str(a.get("query", "")).count("|") >= 3:
+                out.append(f"t{i}:shotgun_grep")
+    if category == "edit":
+        seen_read = False
+        for i, calls in enumerate(probes):
+            if seen_read and any(c["name"] == "glob" for c in calls):
+                out.append(f"t{i}:edit_glob_after_read")
+            seen_read = seen_read or any(c["name"] == "read_file" for c in calls)
+    if category == "clarify":
+        if any(c["name"] == "glob" for calls in probes for c in calls) or len(probes) > 1:
+            out.append("final:clarify_over_probe")  # 첨부·결정 같은 빠진 정보는 탐색으로 못 찾음: 바로 또는 한 번 읽고 묻기
+    if category == "none" and final_text:
+        first = next((s for s in _FIRST_SENTENCE.split(final_text.strip()) if s.strip()), "")
+        if "?" in first or is_clarifying_text(first):
+            out.append("final:none_asks_first")  # 할 수 없다는 말보다 질문이 먼저 나옴
+    if category == "read_loose" and sum(1 for c in (normalized[-1] if normalized else []) if c["name"] == "read_file") > 2:
+        out.append("final:over_read")
+    if category == "bash":
+        for c in normalized[-1] if normalized else []:
+            if c["name"] == "bash" and len(str(c["arguments"].get("command", ""))) > 300:
+                out.append("final:bash_too_long")
+    return out
 
 
 _DATE_RE = re.compile(r"- Date: \d{4}-\d{2}-\d{2} \(UTC\)")
