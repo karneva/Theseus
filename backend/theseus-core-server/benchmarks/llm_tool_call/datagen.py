@@ -146,7 +146,7 @@ CATEGORIES: dict[str, dict[str, Any]] = {  # 각 항목에 name이 아래에서 
         "gloss": "tell the agent to remember a preference, rule, or fact for later (the request itself contains the exact thing to remember)",
         "anchors": {"content": 1.0},
         "snippets": False,
-        "grounded_arg": ("content", 0.35),
+        "grounded_arg": ("content", 0.3),
     },
     "skill_save": {
         "target": "skill_save",
@@ -155,13 +155,13 @@ CATEGORIES: dict[str, dict[str, Any]] = {  # 각 항목에 name이 아래에서 
         "gloss": "tell the agent to save a short procedure or checklist as a reusable skill (the request itself contains the steps, 2-5 short steps inline)",
         "anchors": {"content": 1.0},
         "snippets": False,
-        "grounded_arg": ("content", 0.35),
+        "grounded_arg": ("content", 0.4),
         "length_override": {"ko": (50, 220), "en": (90, 360)},
     },
     "task": {
         "target": "task_create",
-        "via": (),
         "gloss": "start a long-running or continuous command that should keep running in the background: a dev server, a file watcher, a long build or test run, a log follower. The command should fit the /app Python project",
+        "via": ("read_file", "grep", "glob"),  # 실행할 명령을 정하려고 진입점을 찾아 읽는 것은 자연스러움(습관 필터는 그대로)
         "anchors": {"none": 0.6, "path": 0.4},
         "snippets": False,
         "max_turns": 4,
@@ -1167,9 +1167,13 @@ _BLOCKING = re.compile(r"\btail\s+(-\S*\s+)*-[a-zA-Z]*f|\bwatch\s|--reload\b|(?:
 
 
 def _overlap(value: str, query: str, n: int = 3) -> float:
-    """value의 문자 n-gram 중 질의에도 있는 비율(공백·대소문자 무시). 저장·요약 인자가 질의에 근거하는지 봅니다."""
+    """질의의 문자 n-gram 중 value에도 있는 비율(재현율, 공백·대소문자 무시). 저장 인자가 사용자가 말한 내용을 담는지 봅니다.
+
+    교사는 내용을 바꿔 쓰거나 설명을 덧붙이므로 정밀도는 낮게 나옵니다(정상 0.07~0.8). 재현율은 정상 저장이 0.3~0.8,
+    run1 튜닝본처럼 질의와 무관한 내용을 쓴 경우 0.1 아래입니다.
+    """
     v, q = _grams(value, n), _grams(query, n)
-    return len(v & q) / len(v) if v else 0.0
+    return len(v & q) / len(q) if v and q else 0.0
 
 
 def _check_write(call_args: dict, app: Path) -> str | None:
