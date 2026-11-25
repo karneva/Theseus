@@ -234,7 +234,22 @@ remote server")가 test q205와 difflib 유사도 0.765(dev q206과는 0.929)이
   `THESEUS_TOOL_RAG_NONE_MODE=soft`로 켤 때 쓰는 보정은 dev core 107 + calibration_set core 184로 다시 적합했습니다
   (`top1 + 0.0634·cov < 0.8282`, 합친 CV F1 0.677, false-none 5.1%). 하네스 none P/R/F1은 기본 구성에서 0입니다.
 
-현재 구성 dev 결과(커밋 06117c1, `engine_src_dirty=false`):
+### 4차 변경: 메모리 도구 few-shot (#62, dev만으로 결정, 커밋 6d523f82)
+
+- `memory_write`·`memory_read`·`memory_list`에는 few-shot이 없어서, "…기억해줘" 질의가 서버에서 숨겨지는 `ingest_document`
+  ("이 정보 기억해줘")와 `skill_save`로 끌려갔습니다. 3단계 학습 데이터 생성용 메모 저장 질의(평가셋과 무관) 46개에서
+  server-default가 `memory_write`를 보낸 비율은 6.5%였습니다.
+- 세 도구에 블라인드 예시(한국어·영어 18개)를 넣고, "이 정보 기억해줘"를 `ingest_document`에서 `memory_write`로 옮겼습니다.
+  평가셋·홀드아웃과의 difflib 유사도는 모두 0.75 미만(최대 0.621)입니다. 스킬과 겹치는 "저장해 둔" 표현은 뺐습니다(1차 시도에서
+  q042·q043의 skill 도구를 밀어냄).
+- 같은 학습용 질의에서 server-default 전달률: 메모 저장(`memory_write`) 0.065 → 0.957, 메모 회상(`memory_read`/`memory_list`) 0.474 → 0.821,
+  메모가 없을 때의 회상 0.870 → 1.000. skill·skill_save·task는 그대로, web은 61개 중 1개가 빠짐(0.885 → 0.869).
+- dev paired bootstrap(06117c1 → 6d523f82): core R@3 −0.025 [−0.071, +0.006](1승 3패: q042·q043은 메모리 도구가 스킬 도구를 밀어냄, q074는 memory_read가 한 자리 차지, q080 상승), set_recall −0.013 [−0.041, +0.007](core에서 q042·q126의 skill_save가 빠짐),
+  server-default R@3 −0.021 [−0.060, +0.005], set_recall +0.003 [+0.000, +0.010]. R@5·MRR은 올랐습니다. 회귀 테스트 하한(R@3 ≥ 0.88,
+  set_recall ≥ 0.95, 토큰 ≤ 1800) 안입니다. test·홀드아웃은 다시 재지 않았습니다(홀드아웃은 한 번만).
+- `RECIPE_VERSION`은 그대로입니다(올리면 soft 모드 보정 파일을 거부함). none 판정 기본 끔이라 앵커가 바뀐 영향은 기본 구성에 없습니다.
+
+현재 구성 dev 결과(커밋 6d523f82, `engine_src_dirty=false`):
 
 ```bash
 python -m benchmarks.tool_rag.run --variant v2 --split dev --json benchmarks/tool_rag/results/v2_dev.json
@@ -245,12 +260,14 @@ python -m benchmarks.tool_rag.compare benchmarks/tool_rag/results/baseline_dev.j
 
 | registry | n (순위) | R@3 | R@3 KO / EN | MRR | Hit@1 | set_recall_delivered | 스키마 토큰 평균 / p95 | none |
 |---|---|---|---|---|---|---|---|---|
-| core | 59 | 0.918 | 0.904 / 0.947 | 0.894 | 0.814 | 0.970 | 1783 / 1983 | off |
-| server | 70 | 0.895 | 0.897 / 0.891 | 0.844 | 0.729 | 0.953 | 1788 / 1998 | off |
-| server-default | 70 | 0.895 | 0.897 / 0.891 | 0.844 | 0.729 | 0.935 | 1804 / 1998 | off |
+| core | 59 | 0.893 | 0.867 / 0.947 | 0.895 | 0.814 | 0.957 | 1776 / 1987 | off |
+| server | 70 | 0.874 | 0.865 / 0.891 | 0.836 | 0.714 | 0.947 | 1783 / 1993 | off |
+| server-default | 70 | 0.874 | 0.865 / 0.891 | 0.836 | 0.714 | 0.938 | 1794 / 1998 | off |
+
+3차 변경(06117c1) dev: core 0.918 / 0.970 / 1783, server 0.895 / 0.953 / 1788, server-default 0.895 / 0.935 / 1804.
 
 변경 전 dev(0771e25): core 0.918 / 0.970 / 1762, server R@3 0.826 / set_recall 0.918 / 1767, server-default 0.826 / 0.898 / 1766.
-dev 베이스라인 대비(core): R@3 +0.350 [+0.240, +0.463], set_recall +0.141 [+0.080, +0.207], 토큰 −115 [−183, −47].
+dev 베이스라인 대비(core, 6d523f82): R@3 +0.325 [+0.203, +0.444], set_recall +0.128 [+0.061, +0.199], 토큰 −121 [−189, −52].
 `results/v2_dev_linux_2cpu.json`은 18c26bb 구성 그대로입니다.
 
 모델 준비(로컬): `pip install -r requirements-tool-rag-model.txt` 후

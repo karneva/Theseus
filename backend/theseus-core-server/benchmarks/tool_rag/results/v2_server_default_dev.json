@@ -4,24 +4,24 @@
     "split": "dev",
     "registry": "server-default",
     "n_ranking": 70,
-    "r3": 0.8952380952380952,
-    "r5": 0.9523809523809524,
-    "r8": 0.9714285714285714,
-    "ndcg5": 0.8360904528403971,
-    "mrr": 0.8439285714285715,
-    "hit1": 0.7285714285714285,
-    "r3_ko": 0.8971631205673758,
+    "r3": 0.8738095238095238,
+    "r5": 0.9619047619047618,
+    "r8": 0.9761904761904762,
+    "ndcg5": 0.8329283884213886,
+    "mrr": 0.8361904761904762,
+    "hit1": 0.7142857142857143,
+    "r3_ko": 0.8652482269503545,
     "r3_en": 0.8913043478260869,
     "none_precision": 0.0,
     "none_recall": 0.0,
     "none_f1": 0.0,
-    "set_recall_delivered": 0.935,
-    "avg_selected_schema_tokens": 1803.7457627118645,
-    "p95_selected_schema_tokens": 1997.5,
-    "warm_p50_ms": 5.382499977713451,
-    "warm_p95_ms": 7.5882350152824065,
-    "cold_load_s": 0.7027530999621376,
-    "rss_delta_mb": 185.69921875
+    "set_recall_delivered": 0.9383333333333332,
+    "avg_selected_schema_tokens": 1793.7288135593221,
+    "p95_selected_schema_tokens": 1998.2499999999998,
+    "warm_p50_ms": 9.313899965491146,
+    "warm_p95_ms": 13.342864986043423,
+    "cold_load_s": 1.0519589000032283,
+    "rss_delta_mb": 187.078125
   },
   "meta": {
     "variant": "v2",
@@ -82,26 +82,26 @@
       "onnxruntime": "1.32.0"
     },
     "feedback_log": "disabled (THESEUS_DATA_DIR -> 빈 임시 디렉터리)",
-    "hf_offline": "1",
-    "commit": "06117c128c8f4ed7d086f1c192630191176a60ff",
+    "hf_offline": null,
+    "commit": "6d523f82e29a738cff9dc2fc390fc706d8d21659",
     "engine_src_dirty": false,
     "command": "python -m benchmarks.tool_rag.run --variant v2 --registry server-default --split dev --json benchmarks/tool_rag/results/v2_server_default_dev.json"
   },
   "ranking_sim_slots_excl_essentials": {
     "all": {
       "n": 70,
-      "recall@3": 0.8952380952380952,
-      "ndcg@3": 0.8120936603509465,
-      "all_gold@3": 0.8142857142857143,
-      "recall@5": 0.9523809523809524,
-      "ndcg@5": 0.8360904528403971,
-      "all_gold@5": 0.9142857142857143,
-      "recall@8": 0.9714285714285714,
-      "ndcg@8": 0.8415512707115734,
+      "recall@3": 0.8738095238095238,
+      "ndcg@3": 0.794162072323403,
+      "all_gold@3": 0.7857142857142857,
+      "recall@5": 0.9619047619047618,
+      "ndcg@5": 0.8329283884213886,
+      "all_gold@5": 0.9285714285714286,
+      "recall@8": 0.9761904761904762,
+      "ndcg@8": 0.836672532045929,
       "all_gold@8": 0.9571428571428572,
-      "mrr": 0.8439285714285715,
-      "hit@1": 0.7285714285714285,
-      "primary@1": 0.6142857142857143
+      "mrr": 0.8361904761904762,
+      "hit@1": 0.7142857142857143,
+      "primary@1": 0.6
     },
     "lang=en": {
       "n": 23,
@@ -120,98 +120,98 @@
     },
     "lang=ko": {
       "n": 47,
-      "recall@3": 0.8971631205673758,
-      "ndcg@3": 0.841765654764728,
-      "all_gold@3": 0.8085106382978723,
-      "recall@5": 0.9397163120567376,
-      "ndcg@5": 0.8623087976719249,
-      "all_gold@5": 0.8936170212765957,
-      "recall@8": 0.9680851063829787,
-      "ndcg@8": 0.8704419306715493,
+      "recall@3": 0.8652482269503545,
+      "ndcg@3": 0.8150590342981737,
+      "all_gold@3": 0.7659574468085106,
+      "recall@5": 0.9539007092198583,
+      "ndcg@5": 0.8575993400265932,
+      "all_gold@5": 0.9148936170212766,
+      "recall@8": 0.975177304964539,
+      "ndcg@8": 0.863175724148249,
       "all_gold@8": 0.9574468085106383,
-      "mrr": 0.8838652482269503,
-      "hit@1": 0.8085106382978723,
-      "primary@1": 0.7021276595744681
+      "mrr": 0.8723404255319149,
+      "hit@1": 0.7872340425531915,
+      "primary@1": 0.6808510638297872
     },
     "type=multi": {
       "n": 24,
       "recall@3": 0.9027777777777778,
-      "ndcg@3": 0.8176862747122193,
+      "ndcg@3": 0.7910078872060607,
       "all_gold@3": 0.7916666666666666,
-      "recall@5": 0.9652777777777778,
-      "ndcg@5": 0.851789915377713,
-      "all_gold@5": 0.9166666666666666,
+      "recall@5": 0.9791666666666666,
+      "ndcg@5": 0.8305492594411019,
+      "all_gold@5": 0.9583333333333334,
       "recall@8": 0.9791666666666666,
-      "ndcg@8": 0.8567968819304013,
+      "ndcg@8": 0.8305492594411019,
       "all_gold@8": 0.9583333333333334,
-      "mrr": 0.9166666666666666,
-      "hit@1": 0.8333333333333334,
-      "primary@1": 0.5416666666666666
+      "mrr": 0.8888888888888888,
+      "hit@1": 0.7916666666666666,
+      "primary@1": 0.4583333333333333
     },
     "type=single": {
       "n": 46,
-      "recall@3": 0.8913043478260869,
-      "ndcg@3": 0.809175774597239,
-      "all_gold@3": 0.8260869565217391,
-      "recall@5": 0.9456521739130435,
-      "ndcg@5": 0.8278994289078845,
+      "recall@3": 0.8586956521739131,
+      "ndcg@3": 0.7958077341237554,
+      "all_gold@3": 0.782608695652174,
+      "recall@5": 0.9528985507246377,
+      "ndcg@5": 0.8341696731067557,
       "all_gold@5": 0.9130434782608695,
-      "recall@8": 0.967391304347826,
-      "ndcg@8": 0.8335970387713154,
+      "recall@8": 0.9746376811594203,
+      "ndcg@8": 0.8398672829701866,
       "all_gold@8": 0.9565217391304348,
-      "mrr": 0.8059782608695653,
+      "mrr": 0.8086956521739131,
       "hit@1": 0.6739130434782609,
-      "primary@1": 0.6521739130434783
+      "primary@1": 0.6739130434782609
     },
     "split=dev": {
       "n": 70,
-      "recall@3": 0.8952380952380952,
-      "ndcg@3": 0.8120936603509465,
-      "all_gold@3": 0.8142857142857143,
-      "recall@5": 0.9523809523809524,
-      "ndcg@5": 0.8360904528403971,
-      "all_gold@5": 0.9142857142857143,
-      "recall@8": 0.9714285714285714,
-      "ndcg@8": 0.8415512707115734,
+      "recall@3": 0.8738095238095238,
+      "ndcg@3": 0.794162072323403,
+      "all_gold@3": 0.7857142857142857,
+      "recall@5": 0.9619047619047618,
+      "ndcg@5": 0.8329283884213886,
+      "all_gold@5": 0.9285714285714286,
+      "recall@8": 0.9761904761904762,
+      "ndcg@8": 0.836672532045929,
       "all_gold@8": 0.9571428571428572,
-      "mrr": 0.8439285714285715,
-      "hit@1": 0.7285714285714285,
-      "primary@1": 0.6142857142857143
+      "mrr": 0.8361904761904762,
+      "hit@1": 0.7142857142857143,
+      "primary@1": 0.6
     },
     "ambiguous=true": {
       "n": 4,
       "recall@3": 0.5,
-      "ndcg@3": 0.36188265758291066,
-      "all_gold@3": 0.5,
-      "recall@5": 0.75,
-      "ndcg@5": 0.45859585939154607,
+      "ndcg@3": 0.5231970754958155,
+      "all_gold@3": 0.25,
+      "recall@5": 0.8333333333333334,
+      "ndcg@5": 0.6562326739209988,
       "all_gold@5": 0.75,
-      "recall@8": 0.75,
-      "ndcg@8": 0.45859585939154607,
+      "recall@8": 0.8333333333333334,
+      "ndcg@8": 0.6562326739209988,
       "all_gold@8": 0.75,
-      "mrr": 0.4354166666666667,
-      "hit@1": 0.25,
-      "primary@1": 0.0
+      "mrr": 0.675,
+      "hit@1": 0.5,
+      "primary@1": 0.5
     },
     "n_answerable_skipped_all_gold_essential": 30
   },
   "delivered_set": {
     "definition": "가시성 필터(AGENT, user_level=5) 적용 후 + rag_failed면 tool_search 추가. 정답은 필수 도구 포함 전체 정답",
-    "set_recall": 0.935,
-    "set_recall_before_visibility": 0.935,
+    "set_recall": 0.9383333333333332,
+    "set_recall_before_visibility": 0.9383333333333332,
     "all_gold_covered": 0.89,
-    "nonessential_set_recall": 0.9119047619047619,
+    "nonessential_set_recall": 0.9166666666666667,
     "set_size": {
       "n": 118,
       "min": 10.0,
       "p5": 11.0,
       "p50": 13.0,
-      "mean": 13.474576271186441,
+      "mean": 13.40677966101695,
       "p95": 16.0,
       "max": 16.0
     },
     "set_recall_by_lang": {
-      "ko": 0.9396135265700483,
+      "ko": 0.9444444444444445,
       "en": 0.924731182795699
     }
   },
@@ -234,59 +234,59 @@
     "essentials_only": 1697,
     "delivered": {
       "n": 118,
-      "min": 1483.0,
-      "p5": 1597.4,
-      "p50": 1803.5,
-      "mean": 1803.7457627118645,
-      "p95": 1997.5,
+      "min": 1486.0,
+      "p5": 1612.1,
+      "p50": 1795.5,
+      "mean": 1793.7288135593221,
+      "p95": 1998.2499999999998,
       "max": 2092.0
     },
     "selected": {
       "n": 118,
-      "min": 1483.0,
-      "p5": 1597.4,
-      "p50": 1803.5,
-      "mean": 1803.7457627118645,
-      "p95": 1997.5,
+      "min": 1486.0,
+      "p5": 1612.1,
+      "p50": 1795.5,
+      "mean": 1793.7288135593221,
+      "p95": 1998.2499999999998,
       "max": 2092.0
     },
-    "delivered_mean_saving_vs_all": 0.7203928440998505
+    "delivered_mean_saving_vs_all": 0.7219456187320846
   },
   "latency": {
     "timed_call": "select",
     "passes": 3,
     "warm_query_ms": {
       "n": 354,
-      "min": 2.8101999778300524,
-      "p5": 3.7371399957919493,
-      "p50": 5.382499977713451,
-      "mean": 5.492973445893639,
-      "p95": 7.5882350152824065,
-      "max": 17.03270000871271
+      "min": 4.928300040774047,
+      "p5": 6.533594985376112,
+      "p50": 9.313899965491146,
+      "mean": 9.655667231635238,
+      "p95": 13.342864986043423,
+      "max": 25.564600015059114
     }
   },
   "resources": {
-    "cold_load_s": 0.7027530999621376,
-    "index_build_ms": 1264.855599962175,
-    "rss_before_load_mb": 126.40625,
-    "rss_after_load_mb": 312.10546875,
-    "rss_delta_mb": 185.69921875,
-    "rss_after_eval_mb": 341.50390625,
+    "cold_load_s": 1.0519589000032283,
+    "index_build_ms": 2866.161899990402,
+    "rss_before_load_mb": 126.015625,
+    "rss_after_load_mb": 313.09375,
+    "rss_delta_mb": 187.078125,
+    "rss_after_eval_mb": 343.73046875,
     "torch_threads": null
   },
   "hubness_top3_counts": {
-    "lsp": 21,
-    "remote_glob": 18,
+    "memory_write": 24,
+    "lsp": 20,
+    "memory_read": 18,
+    "memory_list": 17,
+    "remote_glob": 16,
     "web_search": 16,
-    "brief": 15,
     "remote_read_file": 14,
+    "brief": 14,
     "enter_worktree": 13,
-    "ingest_document": 13,
-    "task_create": 13,
-    "remote_run_command": 13,
-    "remote_tail_log": 13,
-    "memory_write": 12,
-    "skill_read": 12
+    "remote_edit_file": 12,
+    "task_create": 12,
+    "remote_run_command": 12
   },
   "per_item": [
     {
@@ -309,7 +309,11 @@
         ],
         [
           "tool_search",
-          0.9058
+          0.902
+        ],
+        [
+          "memory_list",
+          0.8836
         ],
         [
           "enter_worktree",
@@ -317,7 +321,7 @@
         ],
         [
           "search_knowledge_base",
-          0.8547
+          0.8501
         ],
         [
           "lsp",
@@ -325,11 +329,7 @@
         ],
         [
           "ingest_document",
-          0.8481
-        ],
-        [
-          "skill_save",
-          0.8345
+          0.8462
         ]
       ],
       "delivered": [
@@ -343,7 +343,6 @@
         "tool_search",
         "remote_glob",
         "remote_read_file",
-        "enter_worktree",
         "memory_list",
         "skill_list",
         "list_mcp_resources"
@@ -362,36 +361,36 @@
       "gold_ne": [],
       "pred_sim_top8": [
         [
+          "memory_list",
+          0.9245
+        ],
+        [
           "skill_list",
           0.9073
         ],
         [
           "tool_search",
-          0.8843
+          0.8862
         ],
         [
           "remote_check_cpu",
-          0.8468
+          0.8475
+        ],
+        [
+          "memory_read",
+          0.8451
         ],
         [
           "remote_tail_log",
-          0.8391
+          0.8398
         ],
         [
           "remote_check_disk",
-          0.8374
+          0.8382
         ],
         [
           "lsp",
           0.8347
-        ],
-        [
-          "search_knowledge_base",
-          0.834
-        ],
-        [
-          "remote_check_memory",
-          0.8323
         ]
       ],
       "delivered": [
@@ -403,12 +402,13 @@
         "bash",
         "ask_user",
         "tool_search",
+        "memory_list",
         "skill_list",
         "remote_check_cpu",
+        "memory_read",
         "remote_tail_log",
         "remote_check_disk",
-        "remote_check_memory",
-        "memory_list"
+        "remote_check_memory"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -425,7 +425,7 @@
       "pred_sim_top8": [
         [
           "memory_write",
-          0.9424
+          0.9307
         ],
         [
           "enter_worktree",
@@ -433,11 +433,11 @@
         ],
         [
           "todo_write",
-          0.8964
+          0.8962
         ],
         [
           "remote_glob",
-          0.8935
+          0.8934
         ],
         [
           "search_knowledge_base",
@@ -445,11 +445,11 @@
         ],
         [
           "exit_worktree",
-          0.8794
+          0.8791
         ],
         [
           "local_write_report",
-          0.8756
+          0.8757
         ],
         [
           "remote_run_command",
@@ -486,35 +486,35 @@
       "pred_sim_top8": [
         [
           "ingest_document",
-          0.9304
+          0.924
         ],
         [
           "todo_write",
-          0.8739
+          0.8743
         ],
         [
           "remote_glob",
-          0.8671
+          0.8676
         ],
         [
           "remote_read_file",
-          0.8664
+          0.8668
         ],
         [
           "tool_search",
-          0.8588
+          0.8592
         ],
         [
           "task_create",
-          0.857
+          0.8573
         ],
         [
           "list_mcp_resources",
-          0.8525
+          0.8529
         ],
         [
-          "remote_edit_file",
-          0.8495
+          "memory_write",
+          0.85
         ]
       ],
       "delivered": [
@@ -552,31 +552,31 @@
         ],
         [
           "local_write_report",
-          0.8752
+          0.8786
+        ],
+        [
+          "memory_read",
+          0.8612
         ],
         [
           "skill_read",
-          0.8607
+          0.8575
         ],
         [
           "remote_run_command",
-          0.8488
-        ],
-        [
-          "remote_edit_file",
-          0.8468
+          0.8511
         ],
         [
           "web_search",
-          0.8468
+          0.8491
         ],
         [
-          "enter_worktree",
-          0.8453
+          "remote_edit_file",
+          0.8483
         ],
         [
           "remote_glob",
-          0.8452
+          0.8471
         ]
       ],
       "delivered": [
@@ -589,6 +589,7 @@
         "ask_user",
         "tool_search",
         "lsp",
+        "memory_read",
         "skill_read",
         "remote_run_command",
         "web_search"
@@ -612,31 +613,31 @@
         ],
         [
           "remote_edit_file",
-          0.8816
+          0.8818
         ],
         [
           "remote_read_file",
-          0.8762
+          0.8769
         ],
         [
           "tool_search",
-          0.8665
+          0.8673
         ],
         [
           "remote_glob",
-          0.8441
+          0.8444
         ],
         [
           "local_write_report",
-          0.8432
+          0.8435
         ],
         [
           "lsp",
-          0.841
+          0.8405
         ],
         [
           "remote_write_file",
-          0.8387
+          0.8385
         ]
       ],
       "delivered": [
@@ -672,15 +673,15 @@
         ],
         [
           "enter_worktree",
-          0.9152
+          0.9155
         ],
         [
           "lsp",
-          0.9094
+          0.9099
         ],
         [
           "agent",
-          0.8807
+          0.8811
         ],
         [
           "task_create",
@@ -696,7 +697,7 @@
         ],
         [
           "local_write_report",
-          0.8521
+          0.8522
         ]
       ],
       "delivered": [
@@ -734,28 +735,28 @@
           0.8933
         ],
         [
-          "skill_read",
-          0.8725
+          "task_get",
+          0.8718
         ],
         [
-          "task_get",
-          0.8719
+          "skill_read",
+          0.8623
+        ],
+        [
+          "memory_read",
+          0.862
         ],
         [
           "lsp",
-          0.8698
+          0.8597
         ],
         [
           "brief",
-          0.8448
+          0.8449
         ],
         [
           "skill_list",
-          0.8428
-        ],
-        [
-          "tool_search",
-          0.8249
+          0.8426
         ]
       ],
       "delivered": [
@@ -769,8 +770,9 @@
         "tool_search",
         "enter_worktree",
         "exit_worktree",
-        "skill_read",
         "task_get",
+        "skill_read",
+        "memory_read",
         "skill_list"
       ],
       "rag_failed": false,
@@ -788,19 +790,19 @@
       "pred_sim_top8": [
         [
           "ingest_document",
-          0.8635
+          0.8582
         ],
         [
           "todo_write",
-          0.8379
+          0.8386
         ],
         [
           "remote_edit_file",
-          0.8299
+          0.8291
         ],
         [
           "tool_search",
-          0.8257
+          0.8263
         ],
         [
           "enter_worktree",
@@ -812,11 +814,11 @@
         ],
         [
           "lsp",
-          0.8177
+          0.8169
         ],
         [
-          "web_fetch",
-          0.8167
+          "memory_write",
+          0.816
         ]
       ],
       "delivered": [
@@ -831,7 +833,6 @@
         "todo_write",
         "remote_edit_file",
         "enter_worktree",
-        "web_fetch",
         "remote_check_disk"
       ],
       "rag_failed": false,
@@ -917,7 +918,7 @@
         ],
         [
           "remote_check_memory",
-          0.8499
+          0.8498
         ],
         [
           "remote_run_command",
@@ -925,11 +926,11 @@
         ],
         [
           "remote_check_disk",
-          0.8481
+          0.848
         ],
         [
           "remote_edit_file",
-          0.8464
+          0.8465
         ],
         [
           "remote_glob",
@@ -941,7 +942,7 @@
         ],
         [
           "remote_tail_log",
-          0.8376
+          0.8377
         ]
       ],
       "delivered": [
@@ -981,31 +982,31 @@
         ],
         [
           "task_create",
-          0.8844
+          0.8852
         ],
         [
           "task_output",
-          0.8787
+          0.8794
         ],
         [
           "remote_glob",
-          0.8768
+          0.8775
+        ],
+        [
+          "memory_list",
+          0.8729
         ],
         [
           "remote_read_file",
-          0.8676
+          0.8664
         ],
         [
           "skill_list",
-          0.8618
-        ],
-        [
-          "remote_check_memory",
-          0.8549
+          0.8597
         ],
         [
           "agent",
-          0.8548
+          0.8549
         ]
       ],
       "delivered": [
@@ -1021,9 +1022,9 @@
         "task_create",
         "task_output",
         "remote_glob",
+        "memory_list",
         "skill_list",
-        "remote_check_memory",
-        "task_stop"
+        "remote_check_memory"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -1046,31 +1047,31 @@
         ],
         [
           "task_create",
-          0.9207
+          0.9208
         ],
         [
           "task_stop",
-          0.8835
-        ],
-        [
-          "agent",
-          0.8771
+          0.8834
         ],
         [
           "task_list",
-          0.8768
+          0.8767
         ],
         [
-          "ingest_document",
-          0.8696
+          "agent",
+          0.8762
         ],
         [
           "task_output",
-          0.8693
+          0.8692
+        ],
+        [
+          "memory_write",
+          0.8687
         ],
         [
           "web_fetch",
-          0.8669
+          0.8627
         ]
       ],
       "delivered": [
@@ -1086,8 +1087,7 @@
         "task_create",
         "task_stop",
         "task_list",
-        "remote_check_disk",
-        "remote_check_cpu"
+        "remote_check_disk"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -1110,31 +1110,31 @@
         ],
         [
           "remote_glob",
-          0.8676
+          0.8678
         ],
         [
           "tool_search",
-          0.8584
+          0.8586
         ],
         [
           "remote_grep",
-          0.8559
+          0.8551
         ],
         [
           "web_search",
-          0.8503
+          0.8493
         ],
         [
           "deep_research",
-          0.8413
+          0.8414
         ],
         [
           "search_knowledge_base",
-          0.8397
+          0.8398
         ],
         [
-          "agent",
-          0.839
+          "memory_write",
+          0.8391
         ]
       ],
       "delivered": [
@@ -1174,15 +1174,23 @@
         ],
         [
           "task_create",
-          0.8584
+          0.8593
         ],
         [
-          "skill_read",
-          0.8385
+          "memory_read",
+          0.8427
         ],
         [
           "remote_glob",
           0.8378
+        ],
+        [
+          "skill_read",
+          0.8355
+        ],
+        [
+          "memory_list",
+          0.8278
         ],
         [
           "remote_tail_log",
@@ -1191,14 +1199,6 @@
         [
           "enter_worktree",
           0.8274
-        ],
-        [
-          "task_list",
-          0.8241
-        ],
-        [
-          "remote_run_command",
-          0.8219
         ]
       ],
       "delivered": [
@@ -1212,10 +1212,10 @@
         "tool_search",
         "lsp",
         "task_create",
-        "skill_read",
+        "memory_read",
         "remote_glob",
-        "remote_tail_log",
-        "task_list"
+        "skill_read",
+        "memory_list"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -1240,11 +1240,11 @@
         ],
         [
           "web_fetch",
-          0.8698
+          0.8699
         ],
         [
           "tool_search",
-          0.8401
+          0.8402
         ],
         [
           "remote_edit_file",
@@ -1256,15 +1256,15 @@
         ],
         [
           "deep_research",
-          0.8355
+          0.8356
+        ],
+        [
+          "memory_write",
+          0.8215
         ],
         [
           "enter_worktree",
           0.8181
-        ],
-        [
-          "agent",
-          0.8163
         ]
       ],
       "delivered": [
@@ -1299,7 +1299,7 @@
       "pred_sim_top8": [
         [
           "deep_research",
-          0.8939
+          0.8947
         ],
         [
           "skill_save",
@@ -1307,27 +1307,27 @@
         ],
         [
           "ingest_document",
-          0.8553
+          0.853
         ],
         [
           "brief",
-          0.8441
+          0.8424
         ],
         [
           "web_search",
-          0.8318
+          0.8307
         ],
         [
           "agent",
-          0.8259
+          0.8248
         ],
         [
           "web_fetch",
-          0.8205
+          0.819
         ],
         [
           "lsp",
-          0.814
+          0.8132
         ]
       ],
       "delivered": [
@@ -1364,11 +1364,11 @@
         ],
         [
           "agent",
-          0.8544
+          0.8545
         ],
         [
           "local_write_report",
-          0.8432
+          0.8433
         ],
         [
           "task_create",
@@ -1423,23 +1423,27 @@
       "pred_sim_top8": [
         [
           "ingest_document",
-          0.9286
+          0.9236
         ],
         [
           "skill_read",
-          0.9207
+          0.918
+        ],
+        [
+          "memory_write",
+          0.9014
         ],
         [
           "skill_save",
-          0.8871
+          0.8854
         ],
         [
           "remote_edit_file",
-          0.86
+          0.8592
         ],
         [
           "agent",
-          0.8592
+          0.8586
         ],
         [
           "task_create",
@@ -1448,10 +1452,6 @@
         [
           "task_output",
           0.8353
-        ],
-        [
-          "todo_write",
-          0.8344
         ]
       ],
       "delivered": [
@@ -1464,8 +1464,8 @@
         "ask_user",
         "tool_search",
         "skill_read",
-        "skill_save",
-        "task_create"
+        "memory_write",
+        "skill_save"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -1485,36 +1485,36 @@
       ],
       "pred_sim_top8": [
         [
-          "skill_read",
-          0.9064
+          "memory_read",
+          0.9185
         ],
         [
           "skill_save",
-          0.9044
+          0.8774
         ],
         [
           "ingest_document",
-          0.8973
+          0.8686
         ],
         [
-          "remote_grep",
-          0.8705
+          "skill_read",
+          0.8661
         ],
         [
           "memory_write",
-          0.8538
+          0.851
+        ],
+        [
+          "remote_grep",
+          0.8505
         ],
         [
           "memory_list",
-          0.841
-        ],
-        [
-          "memory_read",
-          0.8394
+          0.8355
         ],
         [
           "deep_research",
-          0.8355
+          0.8277
         ]
       ],
       "delivered": [
@@ -1526,14 +1526,12 @@
         "bash",
         "ask_user",
         "tool_search",
-        "skill_read",
+        "memory_read",
         "skill_save",
-        "remote_grep",
+        "skill_read",
         "memory_write",
         "memory_list",
-        "memory_read",
-        "skill_list",
-        "remote_check_disk"
+        "skill_list"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -1552,7 +1550,7 @@
       "pred_sim_top8": [
         [
           "skill_list",
-          0.9368
+          0.9347
         ],
         [
           "brief",
@@ -1560,15 +1558,19 @@
         ],
         [
           "skill_read",
-          0.902
+          0.9004
         ],
         [
-          "tool_search",
-          0.8539
+          "memory_list",
+          0.9003
         ],
         [
           "skill_save",
-          0.8532
+          0.8534
+        ],
+        [
+          "tool_search",
+          0.8508
         ],
         [
           "task_create",
@@ -1576,11 +1578,7 @@
         ],
         [
           "remote_tail_log",
-          0.828
-        ],
-        [
-          "remote_check_memory",
-          0.8193
+          0.8266
         ]
       ],
       "delivered": [
@@ -1595,7 +1593,7 @@
         "skill_list",
         "brief",
         "skill_read",
-        "task_create",
+        "memory_list",
         "remote_check_memory"
       ],
       "rag_failed": false,
@@ -1615,7 +1613,7 @@
       "pred_sim_top8": [
         [
           "enter_worktree",
-          0.9537
+          0.9539
         ],
         [
           "exit_worktree",
@@ -1627,7 +1625,7 @@
         ],
         [
           "agent",
-          0.8392
+          0.8393
         ],
         [
           "local_write_report",
@@ -1638,12 +1636,12 @@
           0.8276
         ],
         [
-          "task_get",
-          0.8258
+          "memory_write",
+          0.8274
         ],
         [
-          "lsp",
-          0.8255
+          "task_get",
+          0.8257
         ]
       ],
       "delivered": [
@@ -1682,7 +1680,7 @@
         ],
         [
           "enter_worktree",
-          0.9277
+          0.928
         ],
         [
           "skill_save",
@@ -1697,16 +1695,16 @@
           0.8173
         ],
         [
+          "memory_write",
+          0.8162
+        ],
+        [
           "skill_read",
           0.8153
         ],
         [
           "task_output",
           0.8139
-        ],
-        [
-          "remote_tail_log",
-          0.8101
         ]
       ],
       "delivered": [
@@ -1740,36 +1738,36 @@
       ],
       "pred_sim_top8": [
         [
-          "memory_read",
-          0.9509
+          "memory_write",
+          0.9671
         ],
         [
-          "memory_write",
-          0.9469
+          "memory_read",
+          0.953
         ],
         [
           "memory_list",
-          0.9421
+          0.9099
         ],
         [
           "brief",
-          0.9108
+          0.8917
         ],
         [
           "remote_check_memory",
-          0.9096
+          0.8759
         ],
         [
           "skill_save",
-          0.9003
+          0.8732
         ],
         [
           "ingest_document",
-          0.885
+          0.8616
         ],
         [
           "skill_read",
-          0.8672
+          0.8528
         ]
       ],
       "delivered": [
@@ -1781,13 +1779,14 @@
         "bash",
         "ask_user",
         "tool_search",
-        "memory_read",
         "memory_write",
+        "memory_read",
         "memory_list",
         "brief",
         "remote_check_memory",
         "skill_read",
-        "skill_list"
+        "skill_list",
+        "task_stop"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -1806,19 +1805,19 @@
       "pred_sim_top8": [
         [
           "memory_read",
-          0.9799
-        ],
-        [
-          "memory_write",
-          0.9688
-        ],
-        [
-          "brief",
-          0.9635
+          0.9777
         ],
         [
           "memory_list",
-          0.961
+          0.9721
+        ],
+        [
+          "memory_write",
+          0.9672
+        ],
+        [
+          "brief",
+          0.9634
         ],
         [
           "custom_tool_read_source",
@@ -1826,15 +1825,15 @@
         ],
         [
           "web_fetch",
-          0.9017
+          0.9016
         ],
         [
           "remote_check_memory",
-          0.896
+          0.8957
         ],
         [
           "ingest_document",
-          0.8884
+          0.8857
         ]
       ],
       "delivered": [
@@ -1847,9 +1846,9 @@
         "ask_user",
         "tool_search",
         "memory_read",
+        "memory_list",
         "memory_write",
         "brief",
-        "memory_list",
         "remote_check_memory"
       ],
       "rag_failed": false,
@@ -1873,31 +1872,31 @@
         ],
         [
           "read_mcp_resource",
-          0.9672
+          0.9673
+        ],
+        [
+          "memory_list",
+          0.8678
         ],
         [
           "remote_run_command",
-          0.8543
-        ],
-        [
-          "tool_search",
-          0.8439
+          0.8545
         ],
         [
           "remote_glob",
-          0.8412
+          0.8415
+        ],
+        [
+          "tool_search",
+          0.841
         ],
         [
           "ingest_document",
-          0.8352
+          0.8353
         ],
         [
           "remote_grep",
-          0.8329
-        ],
-        [
-          "local_write_report",
-          0.8194
+          0.8331
         ]
       ],
       "delivered": [
@@ -1911,10 +1910,10 @@
         "tool_search",
         "list_mcp_resources",
         "read_mcp_resource",
+        "memory_list",
         "remote_run_command",
         "remote_glob",
-        "remote_check_cpu",
-        "remote_check_memory"
+        "remote_check_cpu"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -1933,35 +1932,35 @@
       "pred_sim_top8": [
         [
           "custom_tool_read_source",
-          0.9548
+          0.9577
         ],
         [
           "custom_tool_update_source",
-          0.928
+          0.9307
+        ],
+        [
+          "memory_read",
+          0.8955
         ],
         [
           "tool_search",
-          0.8726
+          0.8735
         ],
         [
           "remote_check_cpu",
-          0.8697
+          0.8682
         ],
         [
           "lsp",
-          0.8666
-        ],
-        [
-          "remote_tail_log",
-          0.8628
-        ],
-        [
-          "remote_grep",
-          0.861
+          0.8674
         ],
         [
           "memory_list",
-          0.86
+          0.8665
+        ],
+        [
+          "memory_write",
+          0.8617
         ]
       ],
       "delivered": [
@@ -1975,8 +1974,8 @@
         "tool_search",
         "custom_tool_read_source",
         "custom_tool_update_source",
+        "memory_read",
         "remote_check_cpu",
-        "remote_tail_log",
         "memory_list",
         "remote_check_disk"
       ],
@@ -1994,36 +1993,36 @@
       "gold_ne": [],
       "pred_sim_top8": [
         [
+          "memory_write",
+          0.9207
+        ],
+        [
           "remote_check_memory",
           0.9189
         ],
         [
           "memory_list",
-          0.9049
+          0.9096
         ],
         [
           "custom_tool_read_source",
-          0.8948
-        ],
-        [
-          "memory_write",
-          0.8935
-        ],
-        [
-          "memory_read",
-          0.8878
+          0.895
         ],
         [
           "remote_check_cpu",
-          0.8874
+          0.8875
+        ],
+        [
+          "memory_read",
+          0.8847
         ],
         [
           "custom_tool_update_source",
-          0.8802
+          0.8805
         ],
         [
           "brief",
-          0.8704
+          0.8705
         ]
       ],
       "delivered": [
@@ -2035,12 +2034,11 @@
         "bash",
         "ask_user",
         "tool_search",
+        "memory_write",
         "remote_check_memory",
         "memory_list",
-        "custom_tool_read_source",
-        "memory_write",
-        "memory_read",
-        "remote_check_cpu"
+        "remote_check_cpu",
+        "memory_read"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -2062,32 +2060,32 @@
           0.9563
         ],
         [
+          "memory_write",
+          0.8625
+        ],
+        [
           "web_search",
-          0.8451
+          0.8471
+        ],
+        [
+          "memory_list",
+          0.8459
         ],
         [
           "web_fetch",
-          0.8422
+          0.8434
         ],
         [
           "agent",
-          0.8397
-        ],
-        [
-          "ingest_document",
-          0.8378
-        ],
-        [
-          "search_knowledge_base",
-          0.837
+          0.8403
         ],
         [
           "brief",
-          0.8362
+          0.8374
         ],
         [
-          "custom_tool_read_source",
-          0.8349
+          "ingest_document",
+          0.8365
         ]
       ],
       "delivered": [
@@ -2099,9 +2097,10 @@
         "bash",
         "ask_user",
         "tool_search",
+        "memory_write",
         "web_search",
-        "web_fetch",
-        "brief"
+        "memory_list",
+        "web_fetch"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -2126,7 +2125,7 @@
         ],
         [
           "enter_worktree",
-          0.8551
+          0.8552
         ],
         [
           "task_output",
@@ -2134,15 +2133,15 @@
         ],
         [
           "remote_glob",
-          0.8385
+          0.8386
         ],
         [
           "tool_search",
-          0.8219
+          0.8221
         ],
         [
           "agent",
-          0.8209
+          0.8211
         ],
         [
           "task_get",
@@ -2184,7 +2183,7 @@
         ],
         [
           "lsp",
-          0.8639
+          0.8638
         ],
         [
           "web_search",
@@ -2200,11 +2199,11 @@
         ],
         [
           "memory_write",
-          0.8334
+          0.8362
         ],
         [
           "memory_read",
-          0.831
+          0.8291
         ],
         [
           "custom_tool_read_source",
@@ -2247,11 +2246,11 @@
         ],
         [
           "lsp",
-          0.8891
+          0.8894
         ],
         [
           "search_knowledge_base",
-          0.8515
+          0.8516
         ],
         [
           "tool_search",
@@ -2266,12 +2265,12 @@
           0.8338
         ],
         [
-          "custom_tool_read_source",
-          0.8225
+          "memory_write",
+          0.8278
         ],
         [
-          "remote_grep",
-          0.8218
+          "custom_tool_read_source",
+          0.8225
         ]
       ],
       "delivered": [
@@ -2312,31 +2311,31 @@
         ],
         [
           "brief",
-          0.8863
+          0.8848
         ],
         [
           "exit_worktree",
-          0.8853
+          0.884
         ],
         [
           "local_write_report",
-          0.8755
-        ],
-        [
-          "ingest_document",
-          0.8591
+          0.8757
         ],
         [
           "search_knowledge_base",
-          0.8545
+          0.8544
+        ],
+        [
+          "ingest_document",
+          0.8541
         ],
         [
           "web_search",
-          0.8523
+          0.8513
         ],
         [
           "lsp",
-          0.8513
+          0.8507
         ]
       ],
       "delivered": [
@@ -2374,16 +2373,16 @@
           0.9571
         ],
         [
-          "memory_list",
-          0.9058
+          "memory_write",
+          0.918
         ],
         [
-          "memory_write",
-          0.9006
+          "memory_list",
+          0.8953
         ],
         [
           "memory_read",
-          0.8941
+          0.8821
         ],
         [
           "lsp",
@@ -2391,11 +2390,11 @@
         ],
         [
           "exit_worktree",
-          0.8318
+          0.8317
         ],
         [
           "enter_worktree",
-          0.8286
+          0.8238
         ],
         [
           "remote_edit_file",
@@ -2412,8 +2411,8 @@
         "ask_user",
         "tool_search",
         "agent",
-        "memory_list",
         "memory_write",
+        "memory_list",
         "memory_read",
         "exit_worktree"
       ],
@@ -2437,32 +2436,32 @@
           0.932
         ],
         [
+          "memory_list",
+          0.8878
+        ],
+        [
           "remote_tail_log",
-          0.8714
+          0.8702
         ],
         [
           "skill_list",
-          0.8703
+          0.8685
         ],
         [
           "remote_check_memory",
-          0.8695
-        ],
-        [
-          "ingest_document",
-          0.8677
+          0.8681
         ],
         [
           "remote_run_command",
-          0.8655
+          0.8674
         ],
         [
           "tool_search",
-          0.8644
+          0.8636
         ],
         [
           "remote_read_file",
-          0.8639
+          0.8627
         ]
       ],
       "delivered": [
@@ -2475,11 +2474,10 @@
         "ask_user",
         "tool_search",
         "lsp",
+        "memory_list",
         "remote_tail_log",
         "skill_list",
-        "remote_check_memory",
-        "remote_run_command",
-        "skill_read"
+        "remote_check_memory"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -2502,15 +2500,15 @@
         ],
         [
           "custom_tool_update_source",
-          0.8731
+          0.8734
         ],
         [
           "task_list",
-          0.8674
+          0.8673
         ],
         [
           "tool_search",
-          0.8661
+          0.8663
         ],
         [
           "remote_tail_log",
@@ -2518,15 +2516,15 @@
         ],
         [
           "task_get",
-          0.864
+          0.8639
+        ],
+        [
+          "memory_list",
+          0.8606
         ],
         [
           "task_output",
-          0.8536
-        ],
-        [
-          "skill_list",
-          0.8532
+          0.8535
         ]
       ],
       "delivered": [
@@ -2543,8 +2541,8 @@
         "task_list",
         "remote_tail_log",
         "task_get",
-        "skill_list",
-        "exit_worktree"
+        "memory_list",
+        "skill_list"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -2561,6 +2559,10 @@
       "gold_ne": [],
       "pred_sim_top8": [
         [
+          "memory_write",
+          0.8954
+        ],
+        [
           "lsp",
           0.8055
         ],
@@ -2569,20 +2571,16 @@
           0.8042
         ],
         [
+          "memory_read",
+          0.8014
+        ],
+        [
           "local_write_report",
           0.7997
         ],
         [
           "skill_read",
           0.7951
-        ],
-        [
-          "memory_read",
-          0.795
-        ],
-        [
-          "memory_write",
-          0.795
         ],
         [
           "web_fetch",
@@ -2602,10 +2600,11 @@
         "bash",
         "ask_user",
         "tool_search",
+        "memory_write",
         "lsp",
         "brief",
-        "skill_read",
         "memory_read",
+        "skill_read",
         "skill_list"
       ],
       "rag_failed": false,
@@ -2628,28 +2627,28 @@
       ],
       "pred_sim_top8": [
         [
-          "ingest_document",
-          0.9147
+          "memory_write",
+          0.9317
+        ],
+        [
+          "memory_read",
+          0.8803
         ],
         [
           "skill_save",
-          0.8733
+          0.8531
         ],
         [
-          "memory_write",
-          0.8065
+          "ingest_document",
+          0.8405
+        ],
+        [
+          "memory_list",
+          0.8377
         ],
         [
           "local_write_report",
           0.8063
-        ],
-        [
-          "search_knowledge_base",
-          0.8062
-        ],
-        [
-          "memory_read",
-          0.8059
         ],
         [
           "remote_run_command",
@@ -2669,12 +2668,12 @@
         "bash",
         "ask_user",
         "tool_search",
-        "skill_save",
         "memory_write",
         "memory_read",
+        "skill_save",
+        "memory_list",
         "remote_run_command",
-        "task_stop",
-        "memory_list"
+        "task_stop"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -2696,12 +2695,20 @@
       ],
       "pred_sim_top8": [
         [
+          "memory_read",
+          0.9004
+        ],
+        [
           "search_knowledge_base",
-          0.8639
+          0.8558
         ],
         [
           "brief",
           0.8152
+        ],
+        [
+          "memory_write",
+          0.8067
         ],
         [
           "agent",
@@ -2718,14 +2725,6 @@
         [
           "task_create",
           0.8009
-        ],
-        [
-          "todo_write",
-          0.7978
-        ],
-        [
-          "tool_search",
-          0.7976
         ]
       ],
       "delivered": [
@@ -2737,10 +2736,11 @@
         "bash",
         "ask_user",
         "tool_search",
+        "memory_read",
         "brief",
+        "memory_write",
         "remote_run_command",
         "task_stop",
-        "task_create",
         "remote_check_memory"
       ],
       "rag_failed": false,
@@ -2766,31 +2766,31 @@
         ],
         [
           "task_output",
-          0.8757
+          0.8771
+        ],
+        [
+          "memory_list",
+          0.8749
         ],
         [
           "skill_list",
-          0.8736
+          0.8712
         ],
         [
           "remote_glob",
-          0.8636
+          0.8649
         ],
         [
           "skill_read",
-          0.852
+          0.8501
         ],
         [
           "remote_check_memory",
-          0.8496
+          0.8477
         ],
         [
           "remote_read_file",
-          0.849
-        ],
-        [
-          "tool_search",
-          0.844
+          0.8474
         ]
       ],
       "delivered": [
@@ -2804,6 +2804,7 @@
         "tool_search",
         "remote_tail_log",
         "task_output",
+        "memory_list",
         "skill_list",
         "remote_glob",
         "skill_read",
@@ -2830,31 +2831,31 @@
         ],
         [
           "remote_edit_file",
-          0.8809
+          0.8812
         ],
         [
           "remote_check_memory",
-          0.8717
+          0.8711
         ],
         [
           "remote_read_file",
-          0.8652
+          0.8648
         ],
         [
           "remote_glob",
-          0.8615
+          0.8616
         ],
         [
           "remote_check_disk",
-          0.8547
+          0.8548
         ],
         [
           "remote_run_command",
-          0.8537
+          0.8538
         ],
         [
           "remote_check_cpu",
-          0.8456
+          0.8457
         ]
       ],
       "delivered": [
@@ -2890,12 +2891,12 @@
       ],
       "pred_sim_top8": [
         [
-          "remote_check_cpu",
-          0.9613
-        ],
-        [
           "remote_glob",
           0.9592
+        ],
+        [
+          "remote_check_cpu",
+          0.9585
         ],
         [
           "remote_read_file",
@@ -2903,23 +2904,23 @@
         ],
         [
           "remote_check_disk",
-          0.8974
+          0.8947
         ],
         [
           "remote_tail_log",
-          0.8836
+          0.8814
         ],
         [
           "remote_check_memory",
-          0.8652
+          0.8651
         ],
         [
           "remote_run_command",
-          0.8615
+          0.8608
         ],
         [
           "web_fetch",
-          0.8585
+          0.8562
         ]
       ],
       "delivered": [
@@ -2931,8 +2932,8 @@
         "bash",
         "ask_user",
         "tool_search",
-        "remote_check_cpu",
         "remote_glob",
+        "remote_check_cpu",
         "remote_read_file",
         "remote_check_disk",
         "remote_tail_log",
@@ -2955,11 +2956,11 @@
       "pred_sim_top8": [
         [
           "remote_glob",
-          0.946
+          0.9459
         ],
         [
           "remote_run_command",
-          0.9198
+          0.9197
         ],
         [
           "search_knowledge_base",
@@ -2967,15 +2968,15 @@
         ],
         [
           "remote_grep",
-          0.9066
+          0.9065
         ],
         [
           "remote_check_cpu",
-          0.888
+          0.8879
         ],
         [
           "remote_read_file",
-          0.8858
+          0.8857
         ],
         [
           "remote_edit_file",
@@ -3025,31 +3026,31 @@
         ],
         [
           "remote_edit_file",
-          0.9085
+          0.9089
         ],
         [
           "remote_run_command",
-          0.8836
+          0.8838
         ],
         [
           "remote_read_file",
-          0.8827
+          0.8828
         ],
         [
           "remote_glob",
-          0.8785
+          0.8786
         ],
         [
           "agent",
-          0.8767
+          0.8768
         ],
         [
           "remote_write_file",
-          0.8765
+          0.8768
         ],
         [
           "remote_grep",
-          0.8665
+          0.8666
         ]
       ],
       "delivered": [
@@ -3091,11 +3092,11 @@
         ],
         [
           "remote_read_file",
-          0.9297
+          0.9298
         ],
         [
           "remote_run_command",
-          0.912
+          0.9119
         ],
         [
           "remote_grep",
@@ -3103,15 +3104,15 @@
         ],
         [
           "task_list",
-          0.8498
+          0.8496
         ],
         [
           "remote_tail_log",
-          0.8486
+          0.8485
         ],
         [
           "remote_check_cpu",
-          0.8451
+          0.845
         ],
         [
           "remote_edit_file",
@@ -3152,35 +3153,35 @@
       "pred_sim_top8": [
         [
           "lsp",
-          0.939
-        ],
-        [
-          "remote_check_cpu",
-          0.9145
+          0.9416
         ],
         [
           "remote_grep",
-          0.9116
+          0.9127
+        ],
+        [
+          "remote_check_cpu",
+          0.9123
         ],
         [
           "web_fetch",
-          0.9059
-        ],
-        [
-          "remote_tail_log",
-          0.8946
+          0.9038
         ],
         [
           "web_search",
-          0.8924
+          0.8932
+        ],
+        [
+          "remote_tail_log",
+          0.8922
         ],
         [
           "remote_glob",
-          0.8858
+          0.8871
         ],
         [
-          "remote_check_disk",
-          0.8812
+          "enter_worktree",
+          0.8796
         ]
       ],
       "delivered": [
@@ -3193,10 +3194,10 @@
         "ask_user",
         "tool_search",
         "lsp",
-        "remote_check_cpu",
         "remote_grep",
+        "remote_check_cpu",
         "web_fetch",
-        "remote_tail_log",
+        "web_search",
         "remote_check_disk"
       ],
       "rag_failed": false,
@@ -3222,31 +3223,31 @@
         ],
         [
           "enter_worktree",
-          0.913
+          0.914
         ],
         [
           "custom_tool_read_source",
-          0.897
+          0.8976
         ],
         [
           "custom_tool_update_source",
-          0.8891
+          0.8897
         ],
         [
           "remote_grep",
-          0.8844
+          0.884
         ],
         [
           "agent",
-          0.873
+          0.8727
         ],
         [
           "skill_save",
-          0.8689
+          0.8681
         ],
         [
           "remote_glob",
-          0.861
+          0.8612
         ]
       ],
       "delivered": [
@@ -3260,8 +3261,7 @@
         "tool_search",
         "web_search",
         "enter_worktree",
-        "custom_tool_read_source",
-        "remote_check_cpu"
+        "custom_tool_read_source"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -3279,7 +3279,7 @@
       "pred_sim_top8": [
         [
           "lsp",
-          0.9213
+          0.9203
         ],
         [
           "search_knowledge_base",
@@ -3287,27 +3287,27 @@
         ],
         [
           "remote_edit_file",
-          0.9013
-        ],
-        [
-          "remote_glob",
           0.9001
         ],
         [
+          "remote_glob",
+          0.9
+        ],
+        [
           "web_search",
-          0.8872
+          0.8852
         ],
         [
           "remote_grep",
-          0.8805
+          0.8788
         ],
         [
           "remote_tail_log",
-          0.8534
+          0.8516
         ],
         [
-          "ingest_document",
-          0.8482
+          "tool_search",
+          0.8473
         ]
       ],
       "delivered": [
@@ -3350,31 +3350,31 @@
         ],
         [
           "enter_worktree",
-          0.9217
+          0.9222
         ],
         [
           "skill_save",
-          0.8363
+          0.8361
         ],
         [
           "agent",
-          0.8334
+          0.8331
         ],
         [
           "brief",
-          0.8319
+          0.8317
         ],
         [
           "remote_glob",
-          0.8282
+          0.8283
         ],
         [
           "deep_research",
-          0.8273
+          0.8274
         ],
         [
           "lsp",
-          0.8225
+          0.8223
         ]
       ],
       "delivered": [
@@ -3411,35 +3411,35 @@
       "pred_sim_top8": [
         [
           "ingest_document",
-          0.9345
+          0.9284
         ],
         [
           "search_knowledge_base",
-          0.8999
+          0.8976
         ],
         [
           "skill_read",
-          0.8924
+          0.8918
         ],
         [
           "skill_save",
-          0.8922
+          0.8911
         ],
         [
           "skill_list",
-          0.8835
+          0.883
+        ],
+        [
+          "memory_write",
+          0.8431
+        ],
+        [
+          "memory_list",
+          0.8369
         ],
         [
           "remote_read_file",
-          0.8368
-        ],
-        [
-          "brief",
-          0.8358
-        ],
-        [
-          "exit_worktree",
-          0.8328
+          0.8367
         ]
       ],
       "delivered": [
@@ -3454,8 +3454,8 @@
         "skill_read",
         "skill_save",
         "skill_list",
-        "remote_read_file",
-        "brief",
+        "memory_write",
+        "memory_list",
         "exit_worktree"
       ],
       "rag_failed": false,
@@ -3475,36 +3475,36 @@
       ],
       "pred_sim_top8": [
         [
-          "memory_read",
-          0.9665
+          "memory_list",
+          0.9672
         ],
         [
-          "memory_list",
-          0.9568
+          "memory_read",
+          0.9627
         ],
         [
           "memory_write",
-          0.9509
+          0.9538
         ],
         [
           "brief",
-          0.9198
+          0.9204
         ],
         [
           "remote_write_file",
-          0.9082
+          0.9089
         ],
         [
           "enter_worktree",
-          0.9058
+          0.9063
         ],
         [
           "custom_tool_read_source",
-          0.905
+          0.9053
         ],
         [
           "remote_check_memory",
-          0.8902
+          0.8904
         ]
       ],
       "delivered": [
@@ -3516,8 +3516,8 @@
         "bash",
         "ask_user",
         "tool_search",
-        "memory_read",
         "memory_list",
+        "memory_read",
         "memory_write",
         "brief",
         "remote_check_memory"
@@ -3538,35 +3538,35 @@
       "pred_sim_top8": [
         [
           "remote_edit_file",
-          0.9153
+          0.8951
         ],
         [
-          "skill_read",
-          0.8643
+          "memory_read",
+          0.8929
         ],
         [
           "custom_tool_update_source",
-          0.8582
+          0.8489
+        ],
+        [
+          "skill_read",
+          0.843
         ],
         [
           "enter_worktree",
-          0.8409
-        ],
-        [
-          "search_knowledge_base",
-          0.8225
-        ],
-        [
-          "ingest_document",
-          0.8213
-        ],
-        [
-          "local_write_report",
-          0.8202
+          0.8342
         ],
         [
           "exit_worktree",
-          0.8192
+          0.8149
+        ],
+        [
+          "skill_save",
+          0.8139
+        ],
+        [
+          "local_write_report",
+          0.8138
         ]
       ],
       "delivered": [
@@ -3579,6 +3579,7 @@
         "ask_user",
         "tool_search",
         "remote_edit_file",
+        "memory_read",
         "skill_read",
         "exit_worktree"
       ],
@@ -3611,27 +3612,27 @@
         ],
         [
           "lsp",
-          0.9241
+          0.9133
         ],
         [
           "local_write_report",
-          0.9126
+          0.9128
+        ],
+        [
+          "memory_list",
+          0.9106
+        ],
+        [
+          "memory_read",
+          0.9025
         ],
         [
           "skill_read",
-          0.9123
+          0.9014
         ],
         [
           "tool_search",
-          0.9078
-        ],
-        [
-          "search_knowledge_base",
-          0.8946
-        ],
-        [
-          "task_create",
-          0.8356
+          0.9004
         ]
       ],
       "delivered": [
@@ -3645,9 +3646,9 @@
         "tool_search",
         "web_search",
         "deep_research",
-        "skill_read",
-        "task_create",
-        "remote_check_memory"
+        "memory_list",
+        "memory_read",
+        "skill_read"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -3671,11 +3672,11 @@
         ],
         [
           "memory_write",
-          0.914
+          0.9034
         ],
         [
           "ingest_document",
-          0.905
+          0.9012
         ],
         [
           "custom_tool_read_source",
@@ -3683,19 +3684,19 @@
         ],
         [
           "memory_list",
-          0.8803
+          0.8765
         ],
         [
           "brief",
           0.8746
         ],
         [
-          "memory_read",
-          0.8664
+          "custom_tool_update_source",
+          0.8608
         ],
         [
-          "custom_tool_update_source",
-          0.8607
+          "remote_glob",
+          0.8585
         ]
       ],
       "delivered": [
@@ -3711,7 +3712,7 @@
         "custom_tool_read_source",
         "memory_list",
         "brief",
-        "memory_read"
+        "remote_glob"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -3729,7 +3730,7 @@
       "pred_sim_top8": [
         [
           "remote_write_file",
-          0.951
+          0.9513
         ],
         [
           "enter_worktree",
@@ -3737,7 +3738,7 @@
         ],
         [
           "remote_grep",
-          0.933
+          0.9332
         ],
         [
           "web_fetch",
@@ -3749,11 +3750,11 @@
         ],
         [
           "lsp",
-          0.8737
+          0.8739
         ],
         [
           "tool_search",
-          0.861
+          0.8611
         ],
         [
           "remote_read_file",
@@ -3798,31 +3799,31 @@
         ],
         [
           "lsp",
-          0.9027
+          0.9029
         ],
         [
           "local_write_report",
-          0.879
+          0.8795
         ],
         [
           "remote_read_file",
-          0.8762
+          0.8766
         ],
         [
           "read_mcp_resource",
-          0.8713
+          0.8717
         ],
         [
           "remote_grep",
-          0.8691
+          0.8686
         ],
         [
           "tool_search",
-          0.8673
+          0.8678
         ],
         [
-          "ingest_document",
-          0.8647
+          "custom_tool_update_source",
+          0.8611
         ]
       ],
       "delivered": [
@@ -3857,35 +3858,35 @@
       "pred_sim_top8": [
         [
           "remote_run_command",
-          0.8675
+          0.8671
+        ],
+        [
+          "memory_list",
+          0.8543
         ],
         [
           "task_create",
-          0.8541
+          0.8542
         ],
         [
           "remote_check_cpu",
-          0.8487
+          0.8481
         ],
         [
           "agent",
-          0.8471
+          0.8467
         ],
         [
           "todo_write",
-          0.8464
+          0.8466
         ],
         [
           "remote_check_disk",
-          0.844
+          0.8434
         ],
         [
           "brief",
-          0.8426
-        ],
-        [
-          "remote_check_memory",
-          0.8409
+          0.8419
         ]
       ],
       "delivered": [
@@ -3898,9 +3899,9 @@
         "ask_user",
         "tool_search",
         "remote_run_command",
+        "memory_list",
         "task_create",
         "remote_check_cpu",
-        "todo_write",
         "remote_check_disk",
         "remote_check_memory"
       ],
@@ -3925,6 +3926,10 @@
           0.955
         ],
         [
+          "memory_list",
+          0.8543
+        ],
+        [
           "remote_read_file",
           0.8538
         ],
@@ -3934,23 +3939,19 @@
         ],
         [
           "agent",
-          0.8461
+          0.8462
         ],
         [
           "remote_edit_file",
-          0.8448
+          0.8449
         ],
         [
           "skill_read",
           0.8445
         ],
         [
-          "ingest_document",
-          0.8423
-        ],
-        [
-          "memory_list",
-          0.8387
+          "memory_write",
+          0.8406
         ]
       ],
       "delivered": [
@@ -3963,10 +3964,10 @@
         "ask_user",
         "tool_search",
         "todo_write",
+        "memory_list",
         "remote_read_file",
         "remote_glob",
         "skill_read",
-        "memory_list",
         "list_mcp_resources",
         "remote_check_cpu"
       ],
@@ -3988,36 +3989,36 @@
       ],
       "pred_sim_top8": [
         [
-          "memory_list",
-          0.9702
-        ],
-        [
           "memory_read",
-          0.9335
+          0.9697
         ],
         [
-          "remote_check_memory",
-          0.9249
-        ],
-        [
-          "brief",
-          0.9215
+          "memory_list",
+          0.9547
         ],
         [
           "memory_write",
-          0.9169
+          0.9111
+        ],
+        [
+          "remote_check_memory",
+          0.897
+        ],
+        [
+          "brief",
+          0.8903
         ],
         [
           "remote_tail_log",
-          0.9003
+          0.8759
         ],
         [
           "web_fetch",
-          0.8943
+          0.8649
         ],
         [
           "remote_check_disk",
-          0.8795
+          0.855
         ]
       ],
       "delivered": [
@@ -4029,13 +4030,13 @@
         "bash",
         "ask_user",
         "tool_search",
-        "memory_list",
         "memory_read",
+        "memory_list",
+        "memory_write",
         "remote_check_memory",
         "brief",
         "remote_check_disk",
         "list_mcp_resources",
-        "remote_check_cpu",
         "skill_list"
       ],
       "rag_failed": false,
@@ -4055,7 +4056,7 @@
       "pred_sim_top8": [
         [
           "remote_glob",
-          0.9281
+          0.9294
         ],
         [
           "brief",
@@ -4063,27 +4064,27 @@
         ],
         [
           "remote_write_file",
-          0.8998
+          0.8999
         ],
         [
           "remote_grep",
-          0.8839
-        ],
-        [
-          "remote_run_command",
-          0.8736
+          0.8835
         ],
         [
           "enter_worktree",
-          0.873
+          0.8735
+        ],
+        [
+          "remote_run_command",
+          0.8731
         ],
         [
           "exit_worktree",
-          0.8679
+          0.8673
         ],
         [
           "lsp",
-          0.865
+          0.8648
         ]
       ],
       "delivered": [
@@ -4098,7 +4099,6 @@
         "remote_glob",
         "brief",
         "remote_grep",
-        "remote_run_command",
         "exit_worktree"
       ],
       "rag_failed": false,
@@ -4124,27 +4124,27 @@
         ],
         [
           "memory_write",
-          0.889
+          0.8958
         ],
         [
           "memory_list",
-          0.8832
+          0.894
         ],
         [
           "memory_read",
-          0.8796
+          0.8872
         ],
         [
           "remote_check_memory",
-          0.8766
+          0.8765
         ],
         [
           "custom_tool_read_source",
-          0.8668
+          0.8669
         ],
         [
           "ingest_document",
-          0.8653
+          0.8614
         ],
         [
           "agent",
@@ -4183,35 +4183,35 @@
       "pred_sim_top8": [
         [
           "remote_edit_file",
-          0.9165
-        ],
-        [
-          "remote_glob",
-          0.8824
+          0.9182
         ],
         [
           "memory_list",
-          0.8796
-        ],
-        [
-          "remote_grep",
-          0.8794
+          0.914
         ],
         [
           "memory_read",
-          0.8793
+          0.9023
+        ],
+        [
+          "remote_glob",
+          0.8837
+        ],
+        [
+          "remote_grep",
+          0.8801
         ],
         [
           "remote_run_command",
-          0.8777
+          0.8783
         ],
         [
           "memory_write",
-          0.8736
+          0.8775
         ],
         [
           "lsp",
-          0.87
+          0.8712
         ]
       ],
       "delivered": [
@@ -4224,10 +4224,9 @@
         "ask_user",
         "tool_search",
         "remote_edit_file",
-        "remote_glob",
         "memory_list",
-        "remote_grep",
         "memory_read",
+        "remote_glob",
         "remote_check_cpu"
       ],
       "rag_failed": false,
@@ -4249,34 +4248,34 @@
       "pred_sim_top8": [
         [
           "search_knowledge_base",
-          0.9358
+          0.9335
         ],
         [
           "ingest_document",
-          0.9321
+          0.9258
         ],
         [
           "skill_save",
-          0.8943
+          0.8932
         ],
         [
           "skill_read",
-          0.894
+          0.8928
         ],
         [
           "skill_list",
-          0.862
-        ],
-        [
-          "memory_read",
-          0.8465
-        ],
-        [
-          "remote_glob",
-          0.8461
+          0.8613
         ],
         [
           "memory_list",
+          0.8474
+        ],
+        [
+          "memory_write",
+          0.8468
+        ],
+        [
+          "remote_glob",
           0.8454
         ]
       ],
@@ -4292,9 +4291,8 @@
         "skill_save",
         "skill_read",
         "skill_list",
-        "memory_read",
-        "remote_glob",
-        "memory_list"
+        "memory_list",
+        "remote_glob"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -4318,35 +4316,35 @@
       "pred_sim_top8": [
         [
           "lsp",
-          0.8728
+          0.8731
+        ],
+        [
+          "memory_write",
+          0.8665
         ],
         [
           "web_search",
-          0.8596
+          0.8599
         ],
         [
           "web_fetch",
-          0.8572
+          0.8564
         ],
         [
-          "search_knowledge_base",
-          0.8527
+          "memory_list",
+          0.8539
         ],
         [
           "agent",
-          0.8512
+          0.8509
         ],
         [
           "remote_glob",
-          0.8493
+          0.85
         ],
         [
-          "remote_grep",
-          0.8422
-        ],
-        [
-          "enter_worktree",
-          0.8417
+          "search_knowledge_base",
+          0.8497
         ]
       ],
       "delivered": [
@@ -4359,9 +4357,10 @@
         "ask_user",
         "tool_search",
         "lsp",
+        "memory_write",
         "web_search",
         "web_fetch",
-        "remote_glob",
+        "memory_list",
         "remote_check_cpu"
       ],
       "rag_failed": false,
@@ -4387,31 +4386,31 @@
         ],
         [
           "web_search",
-          0.9253
+          0.9249
         ],
         [
           "remote_glob",
-          0.8778
+          0.8775
         ],
         [
           "tool_search",
           0.8598
         ],
         [
+          "memory_write",
+          0.8488
+        ],
+        [
           "remote_grep",
-          0.8481
+          0.8479
         ],
         [
           "remote_run_command",
-          0.8418
+          0.8416
         ],
         [
           "web_fetch",
           0.8397
-        ],
-        [
-          "enter_worktree",
-          0.8377
         ]
       ],
       "delivered": [
@@ -4426,8 +4425,7 @@
         "lsp",
         "web_search",
         "remote_glob",
-        "remote_grep",
-        "remote_run_command"
+        "memory_write"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -4452,11 +4450,11 @@
         ],
         [
           "task_create",
-          0.9156
+          0.9158
         ],
         [
           "task_output",
-          0.9145
+          0.9146
         ],
         [
           "task_list",
@@ -4468,7 +4466,7 @@
         ],
         [
           "agent",
-          0.8804
+          0.8807
         ],
         [
           "remote_run_command",
@@ -4516,35 +4514,35 @@
       "pred_sim_top8": [
         [
           "ingest_document",
-          0.9569
+          0.9513
         ],
         [
           "search_knowledge_base",
-          0.9403
+          0.9424
         ],
         [
           "brief",
-          0.9253
-        ],
-        [
-          "memory_read",
-          0.9052
+          0.9273
         ],
         [
           "memory_list",
-          0.9024
+          0.925
         ],
         [
           "memory_write",
-          0.9003
+          0.9208
+        ],
+        [
+          "memory_read",
+          0.9045
         ],
         [
           "custom_tool_read_source",
-          0.8762
+          0.8769
         ],
         [
           "remote_check_memory",
-          0.8639
+          0.8648
         ]
       ],
       "delivered": [
@@ -4557,9 +4555,9 @@
         "ask_user",
         "tool_search",
         "brief",
-        "memory_read",
         "memory_list",
         "memory_write",
+        "memory_read",
         "remote_check_memory",
         "skill_read"
       ],
@@ -4588,11 +4586,11 @@
         ],
         [
           "remote_edit_file",
-          0.9521
+          0.9523
         ],
         [
           "remote_read_file",
-          0.9299
+          0.93
         ],
         [
           "remote_grep",
@@ -4604,7 +4602,7 @@
         ],
         [
           "remote_tail_log",
-          0.8507
+          0.8502
         ],
         [
           "remote_write_file",
@@ -4612,7 +4610,7 @@
         ],
         [
           "remote_check_cpu",
-          0.8362
+          0.8356
         ]
       ],
       "delivered": [
@@ -4656,23 +4654,23 @@
         ],
         [
           "remote_tail_log",
-          0.9152
+          0.914
         ],
         [
           "remote_glob",
-          0.9037
+          0.9039
         ],
         [
           "remote_check_cpu",
-          0.8892
+          0.8877
         ],
         [
           "remote_grep",
-          0.8865
+          0.8862
         ],
         [
           "remote_check_disk",
-          0.8824
+          0.8808
         ],
         [
           "remote_check_memory",
@@ -4680,7 +4678,7 @@
         ],
         [
           "remote_edit_file",
-          0.8667
+          0.8665
         ]
       ],
       "delivered": [
@@ -4721,7 +4719,11 @@
         ],
         [
           "agent",
-          0.8924
+          0.8927
+        ],
+        [
+          "memory_write",
+          0.852
         ],
         [
           "web_fetch",
@@ -4733,19 +4735,15 @@
         ],
         [
           "lsp",
-          0.8387
+          0.8388
         ],
         [
           "tool_search",
-          0.8369
+          0.837
         ],
         [
           "remote_tail_log",
           0.8261
-        ],
-        [
-          "ingest_document",
-          0.8216
         ]
       ],
       "delivered": [
@@ -4758,6 +4756,7 @@
         "ask_user",
         "tool_search",
         "web_search",
+        "memory_write",
         "web_fetch"
       ],
       "rag_failed": false,
@@ -4781,32 +4780,32 @@
           0.9216
         ],
         [
-          "task_list",
-          0.8987
+          "memory_list",
+          0.9185
         ],
         [
-          "memory_list",
-          0.8985
+          "task_list",
+          0.8989
         ],
         [
           "list_mcp_resources",
-          0.8906
+          0.8907
         ],
         [
           "lsp",
-          0.865
-        ],
-        [
-          "ingest_document",
-          0.8478
+          0.8635
         ],
         [
           "tool_search",
-          0.8476
+          0.8481
+        ],
+        [
+          "agent",
+          0.8445
         ],
         [
           "brief",
-          0.8474
+          0.843
         ]
       ],
       "delivered": [
@@ -4819,8 +4818,8 @@
         "ask_user",
         "tool_search",
         "skill_list",
-        "task_list",
         "memory_list",
+        "task_list",
         "list_mcp_resources"
       ],
       "rag_failed": false,
@@ -4841,35 +4840,35 @@
       "pred_sim_top8": [
         [
           "remote_write_file",
-          0.8486
+          0.8489
         ],
         [
           "enter_worktree",
-          0.8431
+          0.8437
         ],
         [
           "task_create",
-          0.8374
+          0.8379
+        ],
+        [
+          "memory_write",
+          0.8122
         ],
         [
           "agent",
-          0.8111
+          0.81
         ],
         [
           "remote_tail_log",
-          0.8062
+          0.8051
         ],
         [
           "remote_edit_file",
-          0.8046
+          0.8037
         ],
         [
           "web_fetch",
-          0.803
-        ],
-        [
-          "remote_grep",
-          0.8025
+          0.8016
         ]
       ],
       "delivered": [
@@ -4884,7 +4883,7 @@
         "remote_write_file",
         "enter_worktree",
         "task_create",
-        "remote_tail_log"
+        "memory_write"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -4908,31 +4907,31 @@
         ],
         [
           "remote_glob",
-          0.8795
+          0.8796
         ],
         [
           "remote_grep",
           0.8557
         ],
         [
+          "memory_write",
+          0.8531
+        ],
+        [
           "search_knowledge_base",
-          0.8522
+          0.8523
         ],
         [
           "lsp",
-          0.8485
+          0.8488
         ],
         [
           "web_fetch",
-          0.8462
+          0.8463
         ],
         [
           "tool_search",
-          0.8459
-        ],
-        [
-          "task_create",
-          0.8435
+          0.8461
         ]
       ],
       "delivered": [
@@ -4947,7 +4946,7 @@
         "web_search",
         "remote_glob",
         "remote_grep",
-        "web_fetch",
+        "memory_write",
         "task_stop"
       ],
       "rag_failed": false,
@@ -4971,32 +4970,32 @@
           0.902
         ],
         [
-          "lsp",
-          0.8356
-        ],
-        [
           "agent",
           0.8311
         ],
         [
-          "skill_read",
-          0.8296
+          "lsp",
+          0.8303
+        ],
+        [
+          "memory_read",
+          0.8286
         ],
         [
           "task_create",
           0.8247
         ],
         [
+          "skill_read",
+          0.8243
+        ],
+        [
           "task_list",
           0.8208
         ],
         [
-          "task_get",
-          0.8186
-        ],
-        [
-          "remote_glob",
-          0.8178
+          "memory_write",
+          0.8203
         ]
       ],
       "delivered": [
@@ -5009,11 +5008,10 @@
         "ask_user",
         "tool_search",
         "remote_run_command",
-        "lsp",
-        "skill_read",
+        "memory_read",
         "task_create",
-        "task_list",
-        "task_get"
+        "skill_read",
+        "task_list"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -5041,27 +5039,27 @@
         ],
         [
           "web_fetch",
-          0.851
+          0.8508
         ],
         [
           "lsp",
-          0.8493
+          0.8495
         ],
         [
           "remote_run_command",
-          0.8431
+          0.8429
         ],
         [
           "remote_grep",
-          0.8355
+          0.8353
         ],
         [
           "remote_edit_file",
-          0.8274
+          0.8275
         ],
         [
           "web_search",
-          0.8262
+          0.8261
         ]
       ],
       "delivered": [
@@ -5105,23 +5103,23 @@
         ],
         [
           "web_search",
-          0.8755
+          0.8752
         ],
         [
           "remote_glob",
-          0.8571
+          0.857
         ],
         [
           "tool_search",
-          0.8562
+          0.8563
         ],
         [
           "search_knowledge_base",
-          0.8529
+          0.8527
         ],
         [
           "lsp",
-          0.8423
+          0.8425
         ],
         [
           "agent",
@@ -5176,7 +5174,7 @@
         ],
         [
           "memory_write",
-          0.8073
+          0.8078
         ],
         [
           "todo_write",
@@ -5220,36 +5218,36 @@
       ],
       "pred_sim_top8": [
         [
-          "lsp",
-          0.9064
+          "memory_write",
+          0.9138
         ],
         [
           "web_fetch",
-          0.902
+          0.9027
+        ],
+        [
+          "lsp",
+          0.8984
         ],
         [
           "skill_read",
-          0.9006
+          0.8923
         ],
         [
-          "ingest_document",
-          0.8551
+          "memory_read",
+          0.8749
         ],
         [
           "web_search",
-          0.8329
+          0.8331
         ],
         [
           "agent",
-          0.831
+          0.8312
         ],
         [
           "skill_save",
-          0.8284
-        ],
-        [
-          "brief",
-          0.8275
+          0.8286
         ]
       ],
       "delivered": [
@@ -5261,10 +5259,10 @@
         "bash",
         "ask_user",
         "tool_search",
-        "lsp",
+        "memory_write",
         "web_fetch",
         "skill_read",
-        "web_search"
+        "memory_read"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -5287,32 +5285,32 @@
           0.8984
         ],
         [
-          "ingest_document",
-          0.8385
+          "memory_write",
+          0.8397
         ],
         [
           "lsp",
-          0.8209
-        ],
-        [
-          "skill_save",
-          0.8184
+          0.8204
         ],
         [
           "task_create",
           0.8181
         ],
         [
-          "agent",
-          0.8121
+          "skill_save",
+          0.8174
         ],
         [
-          "web_search",
+          "ingest_document",
+          0.8139
+        ],
+        [
+          "agent",
           0.8114
         ],
         [
-          "task_list",
-          0.8091
+          "web_search",
+          0.8108
         ]
       ],
       "delivered": [
@@ -5325,10 +5323,8 @@
         "ask_user",
         "tool_search",
         "web_fetch",
-        "lsp",
-        "skill_save",
-        "task_create",
-        "task_list"
+        "memory_write",
+        "task_create"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -5348,35 +5344,35 @@
       "pred_sim_top8": [
         [
           "task_create",
-          0.8989
+          0.9024
         ],
         [
           "ingest_document",
-          0.8885
+          0.8831
         ],
         [
           "search_knowledge_base",
-          0.8626
+          0.8663
         ],
         [
           "remote_edit_file",
-          0.8615
+          0.8619
         ],
         [
           "skill_save",
-          0.8589
+          0.8586
         ],
         [
           "todo_write",
-          0.854
+          0.8561
         ],
         [
           "remote_write_file",
-          0.8462
+          0.8466
         ],
         [
           "remote_tail_log",
-          0.8313
+          0.8296
         ]
       ],
       "delivered": [
@@ -5391,8 +5387,7 @@
         "task_create",
         "remote_edit_file",
         "skill_save",
-        "todo_write",
-        "remote_check_disk"
+        "todo_write"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -5411,24 +5406,28 @@
       ],
       "pred_sim_top8": [
         [
-          "lsp",
-          0.8418
+          "memory_write",
+          0.8729
+        ],
+        [
+          "memory_read",
+          0.8514
         ],
         [
           "remote_check_disk",
-          0.8406
+          0.8405
         ],
         [
           "local_write_report",
-          0.8403
+          0.8404
+        ],
+        [
+          "lsp",
+          0.8374
         ],
         [
           "agent",
           0.8371
-        ],
-        [
-          "memory_write",
-          0.8367
         ],
         [
           "enter_worktree",
@@ -5437,10 +5436,6 @@
         [
           "task_create",
           0.8297
-        ],
-        [
-          "remote_edit_file",
-          0.8257
         ]
       ],
       "delivered": [
@@ -5452,9 +5447,9 @@
         "bash",
         "ask_user",
         "tool_search",
-        "lsp",
-        "remote_check_disk",
         "memory_write",
+        "memory_read",
+        "remote_check_disk",
         "task_stop"
       ],
       "rag_failed": false,
@@ -5473,6 +5468,14 @@
         "tool_search"
       ],
       "pred_sim_top8": [
+        [
+          "memory_write",
+          0.9011
+        ],
+        [
+          "memory_read",
+          0.8402
+        ],
         [
           "task_list",
           0.8068
@@ -5496,14 +5499,6 @@
         [
           "task_get",
           0.7965
-        ],
-        [
-          "enter_worktree",
-          0.7963
-        ],
-        [
-          "brief",
-          0.7952
         ]
       ],
       "delivered": [
@@ -5515,10 +5510,10 @@
         "bash",
         "ask_user",
         "tool_search",
+        "memory_write",
+        "memory_read",
         "task_list",
         "task_create",
-        "todo_write",
-        "remote_run_command",
         "task_get"
       ],
       "rag_failed": false,
@@ -5540,11 +5535,11 @@
         ],
         [
           "remote_glob",
-          0.8993
+          0.8992
         ],
         [
           "remote_run_command",
-          0.8755
+          0.8754
         ],
         [
           "remote_tail_log",
@@ -5560,7 +5555,7 @@
         ],
         [
           "ingest_document",
-          0.8183
+          0.8164
         ],
         [
           "custom_tool_read_source",
@@ -5604,31 +5599,31 @@
         ],
         [
           "remote_read_file",
-          0.8969
+          0.8967
         ],
         [
           "remote_glob",
-          0.8816
+          0.8814
         ],
         [
           "memory_write",
-          0.8663
-        ],
-        [
-          "memory_read",
-          0.8585
+          0.8589
         ],
         [
           "remote_edit_file",
-          0.8584
+          0.8585
         ],
         [
           "memory_list",
-          0.8559
+          0.8538
+        ],
+        [
+          "memory_read",
+          0.8479
         ],
         [
           "local_write_report",
-          0.842
+          0.8421
         ]
       ],
       "delivered": [
@@ -5644,7 +5639,6 @@
         "remote_read_file",
         "remote_glob",
         "memory_write",
-        "memory_read",
         "memory_list",
         "remote_check_memory"
       ],
@@ -5667,15 +5661,15 @@
         ],
         [
           "todo_write",
-          0.8587
+          0.8584
         ],
         [
           "skill_save",
-          0.8438
+          0.8436
         ],
         [
           "remote_glob",
-          0.8224
+          0.8222
         ],
         [
           "search_knowledge_base",
@@ -5683,15 +5677,15 @@
         ],
         [
           "list_mcp_resources",
-          0.8125
+          0.8123
         ],
         [
           "deep_research",
-          0.8022
+          0.8021
         ],
         [
           "memory_list",
-          0.7968
+          0.7985
         ]
       ],
       "delivered": [
@@ -5728,11 +5722,11 @@
         ],
         [
           "remote_write_file",
-          0.8609
+          0.8613
         ],
         [
           "tool_search",
-          0.8183
+          0.8188
         ],
         [
           "read_mcp_resource",
@@ -5751,8 +5745,8 @@
           0.7955
         ],
         [
-          "ingest_document",
-          0.7941
+          "local_write_report",
+          0.7917
         ]
       ],
       "delivered": [
@@ -5798,7 +5792,7 @@
         ],
         [
           "task_get",
-          0.8466
+          0.8467
         ],
         [
           "task_create",
@@ -5806,19 +5800,19 @@
         ],
         [
           "task_output",
-          0.8279
+          0.828
         ],
         [
           "agent",
-          0.7967
+          0.7971
+        ],
+        [
+          "memory_write",
+          0.7551
         ],
         [
           "remote_check_memory",
           0.7546
-        ],
-        [
-          "ingest_document",
-          0.7492
         ]
       ],
       "delivered": [
@@ -5862,15 +5856,15 @@
         ],
         [
           "task_stop",
-          0.8547
+          0.8546
         ],
         [
           "task_get",
-          0.8422
+          0.842
         ],
         [
           "task_list",
-          0.8375
+          0.8374
         ],
         [
           "agent",
@@ -5878,11 +5872,11 @@
         ],
         [
           "task_output",
-          0.8342
+          0.8341
         ],
         [
           "remote_check_cpu",
-          0.8264
+          0.8265
         ],
         [
           "remote_check_memory",
@@ -5927,11 +5921,11 @@
         ],
         [
           "local_write_report",
-          0.8797
+          0.8798
         ],
         [
           "lsp",
-          0.8432
+          0.8436
         ],
         [
           "tool_search",
@@ -5987,11 +5981,11 @@
       "pred_sim_top8": [
         [
           "web_search",
-          0.9026
+          0.9023
         ],
         [
           "custom_tool_update_source",
-          0.8716
+          0.8714
         ],
         [
           "lsp",
@@ -5999,23 +5993,23 @@
         ],
         [
           "remote_edit_file",
-          0.846
+          0.8458
         ],
         [
           "enter_worktree",
-          0.8427
+          0.8426
         ],
         [
           "exit_worktree",
-          0.8376
+          0.8374
         ],
         [
           "ingest_document",
-          0.8355
+          0.8336
         ],
         [
           "todo_write",
-          0.8185
+          0.8184
         ]
       ],
       "delivered": [
@@ -6058,19 +6052,19 @@
         ],
         [
           "brief",
-          0.8536
+          0.8541
         ],
         [
           "enter_worktree",
-          0.8511
+          0.8517
         ],
         [
           "agent",
-          0.8409
+          0.8414
         ],
         [
           "todo_write",
-          0.8274
+          0.8277
         ],
         [
           "search_knowledge_base",
@@ -6112,11 +6106,11 @@
         ],
         [
           "search_knowledge_base",
-          0.8414
+          0.8415
         ],
         [
           "exit_worktree",
-          0.8111
+          0.811
         ],
         [
           "remote_read_file",
@@ -6173,11 +6167,11 @@
       "pred_sim_top8": [
         [
           "skill_read",
-          0.9154
+          0.9155
         ],
         [
           "skill_save",
-          0.9116
+          0.9117
         ],
         [
           "skill_list",
@@ -6185,11 +6179,11 @@
         ],
         [
           "deep_research",
-          0.8585
+          0.859
         ],
         [
           "agent",
-          0.8414
+          0.842
         ],
         [
           "tool_search",
@@ -6237,7 +6231,7 @@
       "pred_sim_top8": [
         [
           "skill_read",
-          0.922
+          0.9221
         ],
         [
           "skill_list",
@@ -6249,23 +6243,23 @@
         ],
         [
           "exit_worktree",
-          0.8288
-        ],
-        [
-          "remote_run_command",
-          0.8239
-        ],
-        [
-          "web_search",
-          0.8228
+          0.829
         ],
         [
           "memory_list",
-          0.8225
+          0.827
+        ],
+        [
+          "remote_run_command",
+          0.8242
+        ],
+        [
+          "web_search",
+          0.8231
         ],
         [
           "memory_read",
-          0.8181
+          0.8208
         ]
       ],
       "delivered": [
@@ -6281,7 +6275,6 @@
         "skill_list",
         "skill_save",
         "exit_worktree",
-        "remote_run_command",
         "memory_list"
       ],
       "rag_failed": false,
@@ -6305,11 +6298,11 @@
         ],
         [
           "skill_read",
-          0.9061
+          0.9062
         ],
         [
           "skill_save",
-          0.8863
+          0.8864
         ],
         [
           "task_create",
@@ -6329,7 +6322,7 @@
         ],
         [
           "ingest_document",
-          0.7752
+          0.7707
         ]
       ],
       "delivered": [
@@ -6369,7 +6362,7 @@
         ],
         [
           "enter_worktree",
-          0.905
+          0.9051
         ],
         [
           "remote_read_file",
@@ -6384,16 +6377,16 @@
           0.8037
         ],
         [
+          "memory_write",
+          0.8028
+        ],
+        [
           "local_write_report",
           0.8027
         ],
         [
           "task_stop",
           0.8025
-        ],
-        [
-          "remote_glob",
-          0.8022
         ]
       ],
       "delivered": [
@@ -6409,8 +6402,7 @@
         "enter_worktree",
         "remote_read_file",
         "todo_write",
-        "task_stop",
-        "skill_read"
+        "task_stop"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -6433,31 +6425,31 @@
         ],
         [
           "brief",
-          0.8656
+          0.8661
         ],
         [
           "remote_read_file",
-          0.8516
+          0.8519
         ],
         [
           "task_output",
-          0.8433
+          0.8436
         ],
         [
           "lsp",
-          0.8391
+          0.8395
         ],
         [
           "task_create",
-          0.8126
+          0.8129
         ],
         [
           "agent",
-          0.81
+          0.8104
         ],
         [
           "skill_save",
-          0.7994
+          0.7997
         ]
       ],
       "delivered": [
@@ -6491,35 +6483,35 @@
       "pred_sim_top8": [
         [
           "brief",
-          0.9317
+          0.9164
         ],
         [
           "memory_write",
-          0.8967
+          0.9157
         ],
         [
           "memory_read",
-          0.8934
+          0.913
         ],
         [
           "memory_list",
-          0.8898
+          0.8826
         ],
         [
           "remote_check_memory",
-          0.8502
+          0.842
         ],
         [
           "remote_read_file",
-          0.8461
+          0.8388
         ],
         [
           "lsp",
-          0.8319
+          0.8247
         ],
         [
           "custom_tool_read_source",
-          0.8291
+          0.8232
         ]
       ],
       "delivered": [
@@ -6556,19 +6548,19 @@
       "pred_sim_top8": [
         [
           "memory_list",
-          0.9489
+          0.9543
         ],
         [
           "memory_read",
-          0.9364
+          0.9402
         ],
         [
           "memory_write",
-          0.9196
+          0.9114
         ],
         [
           "remote_check_memory",
-          0.8567
+          0.8566
         ],
         [
           "skill_list",
@@ -6632,19 +6624,19 @@
         ],
         [
           "remote_check_memory",
-          0.9025
+          0.9026
         ],
         [
           "remote_check_disk",
-          0.8979
+          0.898
         ],
         [
           "task_output",
-          0.8692
+          0.8695
         ],
         [
           "todo_write",
-          0.836
+          0.8362
         ],
         [
           "remote_glob",
@@ -6691,32 +6683,32 @@
           0.9412
         ],
         [
+          "memory_list",
+          0.8359
+        ],
+        [
           "memory_write",
-          0.8291
+          0.829
         ],
         [
           "remote_check_disk",
-          0.8289
+          0.8288
         ],
         [
           "memory_read",
-          0.8266
-        ],
-        [
-          "memory_list",
-          0.8261
+          0.8241
         ],
         [
           "remote_check_cpu",
-          0.8183
+          0.8182
         ],
         [
           "remote_run_command",
-          0.8117
+          0.8116
         ],
         [
           "remote_read_file",
-          0.8114
+          0.8113
         ]
       ],
       "delivered": [
@@ -6729,10 +6721,10 @@
         "ask_user",
         "tool_search",
         "remote_check_memory",
+        "memory_list",
         "memory_write",
         "remote_check_disk",
         "memory_read",
-        "memory_list",
         "remote_check_cpu"
       ],
       "rag_failed": false,
@@ -6764,23 +6756,23 @@
         ],
         [
           "remote_read_file",
-          0.8533
+          0.8532
         ],
         [
           "remote_run_command",
-          0.8509
+          0.8508
         ],
         [
           "remote_glob",
-          0.8501
+          0.85
         ],
         [
           "remote_tail_log",
-          0.8445
+          0.8444
         ],
         [
           "remote_check_memory",
-          0.8365
+          0.8364
         ]
       ],
       "delivered": [
@@ -6826,7 +6818,7 @@
         ],
         [
           "remote_tail_log",
-          0.8911
+          0.891
         ],
         [
           "remote_grep",
@@ -6834,11 +6826,11 @@
         ],
         [
           "remote_check_cpu",
-          0.8866
+          0.8865
         ],
         [
           "remote_check_disk",
-          0.8854
+          0.8853
         ],
         [
           "remote_read_file",
@@ -6846,7 +6838,7 @@
         ],
         [
           "remote_check_memory",
-          0.8799
+          0.8798
         ]
       ],
       "delivered": [
@@ -6889,31 +6881,31 @@
         ],
         [
           "web_search",
-          0.8996
+          0.8993
         ],
         [
           "deep_research",
-          0.8847
+          0.8845
         ],
         [
           "web_fetch",
-          0.8499
+          0.8497
         ],
         [
           "remote_grep",
-          0.8392
+          0.8391
         ],
         [
           "task_list",
-          0.8358
+          0.8357
         ],
         [
           "search_knowledge_base",
-          0.8259
+          0.8257
         ],
         [
-          "ingest_document",
-          0.8202
+          "skill_save",
+          0.8194
         ]
       ],
       "delivered": [
@@ -6954,7 +6946,7 @@
       "pred_sim_top8": [
         [
           "remote_tail_log",
-          0.9209
+          0.9206
         ],
         [
           "task_create",
@@ -6962,7 +6954,7 @@
         ],
         [
           "remote_read_file",
-          0.8898
+          0.89
         ],
         [
           "task_output",
@@ -6970,7 +6962,7 @@
         ],
         [
           "read_mcp_resource",
-          0.8517
+          0.8514
         ],
         [
           "remote_check_cpu",
@@ -6978,7 +6970,7 @@
         ],
         [
           "task_list",
-          0.8389
+          0.8388
         ],
         [
           "remote_run_command",
@@ -7028,23 +7020,23 @@
         ],
         [
           "enter_worktree",
-          0.9386
+          0.9387
         ],
         [
           "task_create",
-          0.8627
+          0.8629
         ],
         [
           "remote_run_command",
-          0.8267
+          0.8268
         ],
         [
           "task_list",
-          0.8202
+          0.8203
         ],
         [
           "remote_edit_file",
-          0.8201
+          0.8202
         ],
         [
           "task_output",
@@ -7052,7 +7044,7 @@
         ],
         [
           "agent",
-          0.8107
+          0.8108
         ]
       ],
       "delivered": [
@@ -7087,11 +7079,11 @@
       "pred_sim_top8": [
         [
           "remote_edit_file",
-          0.9025
+          0.9026
         ],
         [
           "web_search",
-          0.8705
+          0.8709
         ],
         [
           "search_knowledge_base",
@@ -7106,16 +7098,16 @@
           0.8105
         ],
         [
-          "ingest_document",
-          0.8056
-        ],
-        [
           "remote_grep",
           0.8056
         ],
         [
           "skill_read",
           0.8041
+        ],
+        [
+          "ingest_document",
+          0.8036
         ]
       ],
       "delivered": [
@@ -7149,11 +7141,15 @@
       "pred_sim_top8": [
         [
           "local_write_report",
-          0.8497
+          0.8501
         ],
         [
           "agent",
-          0.8373
+          0.8442
+        ],
+        [
+          "memory_read",
+          0.825
         ],
         [
           "todo_write",
@@ -7174,10 +7170,6 @@
         [
           "remote_check_cpu",
           0.794
-        ],
-        [
-          "enter_worktree",
-          0.7926
         ]
       ],
       "delivered": [
@@ -7190,9 +7182,9 @@
         "ask_user",
         "tool_search",
         "agent",
+        "memory_read",
         "todo_write",
-        "remote_check_cpu",
-        "remote_check_memory"
+        "remote_check_cpu"
       ],
       "rag_failed": false,
       "none_pred": false
@@ -7218,31 +7210,31 @@
         ],
         [
           "remote_write_file",
-          0.9001
+          0.9002
         ],
         [
           "local_write_report",
-          0.8978
+          0.8979
         ],
         [
           "todo_write",
-          0.8824
+          0.8825
         ],
         [
           "remote_read_file",
-          0.8807
-        ],
-        [
-          "memory_write",
-          0.8729
+          0.881
         ],
         [
           "remote_grep",
-          0.8708
+          0.8712
+        ],
+        [
+          "memory_write",
+          0.8648
         ],
         [
           "remote_edit_file",
-          0.8278
+          0.8279
         ]
       ],
       "delivered": [
@@ -7282,31 +7274,31 @@
         ],
         [
           "memory_write",
-          0.8805
+          0.8783
         ],
         [
           "memory_read",
-          0.8505
+          0.8551
         ],
         [
           "memory_list",
-          0.8415
+          0.8497
         ],
         [
           "ingest_document",
-          0.8381
+          0.8359
         ],
         [
           "remote_check_memory",
-          0.833
+          0.8328
         ],
         [
           "custom_tool_read_source",
-          0.8308
+          0.8307
         ],
         [
           "custom_tool_update_source",
-          0.8297
+          0.8296
         ]
       ],
       "delivered": [
@@ -7342,31 +7334,31 @@
       "pred_sim_top8": [
         [
           "remote_glob",
-          0.9058
+          0.9052
         ],
         [
           "list_mcp_resources",
-          0.8995
+          0.8987
         ],
         [
           "lsp",
-          0.8909
+          0.8907
         ],
         [
           "tool_search",
-          0.8846
+          0.8844
         ],
         [
           "memory_list",
-          0.8843
+          0.8809
         ],
         [
           "task_list",
-          0.8547
+          0.8543
         ],
         [
           "skill_list",
-          0.8491
+          0.8486
         ],
         [
           "remote_edit_file",
@@ -7406,35 +7398,35 @@
       "pred_sim_top8": [
         [
           "search_knowledge_base",
-          0.9271
+          0.9261
         ],
         [
           "ingest_document",
-          0.9049
+          0.903
         ],
         [
           "web_search",
-          0.8695
+          0.8692
         ],
         [
           "custom_tool_read_source",
-          0.8433
+          0.8431
         ],
         [
           "custom_tool_update_source",
-          0.843
+          0.8428
         ],
         [
           "remote_tail_log",
-          0.8399
+          0.8398
         ],
         [
           "enter_worktree",
-          0.8316
+          0.8313
         ],
         [
           "remote_edit_file",
-          0.8213
+          0.8211
         ]
       ],
       "delivered": [
@@ -7487,11 +7479,11 @@
         ],
         [
           "remote_write_file",
-          0.8848
+          0.8849
         ],
         [
           "remote_run_command",
-          0.8591
+          0.8592
         ],
         [
           "remote_read_file",
@@ -7538,11 +7530,11 @@
         ],
         [
           "read_mcp_resource",
-          0.886
+          0.8856
         ],
         [
           "list_mcp_resources",
-          0.8628
+          0.8626
         ],
         [
           "task_create",
@@ -7554,11 +7546,11 @@
         ],
         [
           "remote_read_file",
-          0.8523
+          0.8524
         ],
         [
           "remote_check_disk",
-          0.8494
+          0.8493
         ],
         [
           "remote_check_memory",
@@ -7615,20 +7607,20 @@
           0.7868
         ],
         [
+          "memory_write",
+          0.7858
+        ],
+        [
           "task_get",
           0.7849
         ],
         [
-          "memory_write",
-          0.7846
+          "remote_check_memory",
+          0.7792
         ],
         [
           "ingest_document",
-          0.7807
-        ],
-        [
-          "remote_check_memory",
-          0.7792
+          0.779
         ]
       ],
       "delivered": [
@@ -7669,23 +7661,23 @@
         ],
         [
           "tool_search",
-          0.858
+          0.8582
         ],
         [
           "read_mcp_resource",
-          0.8544
+          0.8543
         ],
         [
           "remote_write_file",
           0.7828
         ],
         [
-          "ingest_document",
-          0.7821
-        ],
-        [
           "remote_read_file",
           0.7806
+        ],
+        [
+          "ingest_document",
+          0.7802
         ],
         [
           "remote_glob",
@@ -7728,8 +7720,12 @@
       ],
       "pred_sim_top8": [
         [
+          "memory_write",
+          0.8491
+        ],
+        [
           "tool_search",
-          0.8531
+          0.8461
         ],
         [
           "todo_write",
@@ -7754,10 +7750,6 @@
         [
           "remote_check_cpu",
           0.7574
-        ],
-        [
-          "web_search",
-          0.756
         ]
       ],
       "delivered": [
@@ -7769,10 +7761,10 @@
         "bash",
         "ask_user",
         "tool_search",
+        "memory_write",
         "todo_write",
         "remote_tail_log",
         "task_get",
-        "remote_read_file",
         "task_stop",
         "remote_check_cpu"
       ],
@@ -7798,7 +7790,7 @@
         ],
         [
           "remote_read_file",
-          0.8482
+          0.8479
         ],
         [
           "remote_tail_log",
@@ -7806,7 +7798,7 @@
         ],
         [
           "search_knowledge_base",
-          0.8149
+          0.815
         ],
         [
           "deep_research",
@@ -7818,11 +7810,11 @@
         ],
         [
           "lsp",
-          0.7927
+          0.7929
         ],
         [
           "tool_search",
-          0.7837
+          0.7838
         ]
       ],
       "delivered": [
