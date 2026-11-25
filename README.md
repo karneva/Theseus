@@ -62,7 +62,6 @@ AI로 업무를 처리해도, 그 과정이 개인의 대화창에만 남으면 
 | AI의 내부 시스템 접근과 실행을 관리하기 어려움 | 계획 승인, 도구 권한, 원격 실행 설정, 사용 이력으로 실행 범위 관리 |
 
 > **AI 활용을 개인의 역량에서 조직의 자산으로.**
-> 프롬프트는 사람마다 달라질 수 있지만, 검증된 Tool은 일관된 업무 결과를 만듭니다.
 
 ### 서비스 목표
 
@@ -137,11 +136,7 @@ flowchart LR
 
 ### 1. AI 대화와 ToolPlan 생성
 
-프로젝트별 대화에서 필요한 업무를 설명하고, 도구로 만들 작업의 목적과 실행 계획을 구체화합니다.
-
-- **프로젝트별 대화 이력**: 요청과 피드백을 채팅 세션에 보관합니다.
-- **ASK / PLAN / AGENT**: 질문, 계획 수립, 작업 실행 목적에 맞게 모드를 선택합니다.
-- **진행 상태 표시**: AI 응답과 도구 생성 과정의 상태를 스트리밍으로 확인합니다.
+프로젝트별 대화에서 필요한 업무를 설명하고, 도구로 만들 작업의 목적과 실행 계획을 구체화합니다. 요청과 피드백은 채팅 세션에 남고, 질문·계획 수립·작업 실행 목적에 맞게 ASK / PLAN / AGENT 모드를 고르며, AI 응답과 도구 생성 상태를 스트리밍으로 확인합니다.
 
 <p align="center">
   <img src="./docs/assets/readme/chat-session.png" width="900" alt="프로젝트별 AI 채팅과 실행 모드 선택 화면" />
@@ -149,11 +144,7 @@ flowchart LR
 
 ### 2. 계획 승인과 Python 도구 생성
 
-AI가 제안한 ToolPlan을 검토하고, 승인한 계획을 바탕으로 재사용 가능한 Python 도구를 생성합니다.
-
-- **승인 대기열**: 요청자, 요청일, 검토 상태를 확인합니다.
-- **계획 검토**: 작업 내용을 검토한 뒤 승인하거나 반려합니다.
-- **생성 결과 확인**: 도구 상세 화면에서 코드, 상태, 접근 레벨을 확인합니다.
+AI가 제안한 ToolPlan을 관리자가 승인 대기열(요청자, 요청일, 검토 상태)에서 검토해 승인하거나 반려합니다. 승인한 계획으로 Python 도구를 생성하고, 도구 상세 화면에서 코드, 상태, 접근 레벨을 확인합니다.
 
 <p align="center">
   <img src="./docs/assets/readme/toolplan-approval.png" width="900" alt="관리자의 ToolPlan 승인 대기열" />
@@ -170,11 +161,7 @@ AI가 제안한 ToolPlan을 검토하고, 승인한 계획을 바탕으로 재�
 
 ### 3. 팀의 도구 공유와 재사용
 
-생성한 도구를 프로젝트에 등록하고, 구성원이 접근 권한에 맞게 다시 사용합니다.
-
-- **도구 목록**: 도구 이름과 설명을 보고 필요한 기능을 찾습니다.
-- **프로젝트 단위 관리**: 팀의 업무 목적에 맞춰 도구와 대화를 관리합니다.
-- **반복 작업 재사용**: 리소스 조회, 서버 상태 확인처럼 반복되는 작업을 등록한 도구로 수행합니다.
+생성한 도구를 프로젝트에 등록하고, 구성원이 접근 권한에 맞게 다시 사용합니다. 리소스 조회, 서버 상태 확인처럼 반복되는 작업을 등록한 도구로 수행합니다.
 
 <p align="center">
   <img src="./docs/assets/readme/tool-list.png" width="900" alt="프로젝트에 등록된 서버 모니터링 및 리소스 조회 도구 목록" />
@@ -182,11 +169,7 @@ AI가 제안한 ToolPlan을 검토하고, 승인한 계획을 바탕으로 재�
 
 ### 4. 프로젝트 권한과 실행 이력 관리
 
-구성원별 도구 권한을 설정하고, 도구를 사용한 결과를 추적합니다.
-
-- **역할과 접근 레벨**: 프로젝트 멤버의 역할과 도구 접근 범위를 설정합니다.
-- **작업별 권한**: 도구 사용·생성·수정·삭제 권한을 관리합니다.
-- **사용 결과 확인**: 도구별 사용자, 사용일, 성공·실패 결과를 조회합니다. (실행 이력 기록 연동은 아직 미구현입니다. [알려진 제한](#known-limitations) 참고)
+프로젝트 멤버의 역할과 접근 레벨, 도구 사용·생성·수정·삭제 권한을 설정하고, 도구별 사용자·사용일·성공·실패 결과를 조회합니다. (실행 이력 기록 연동은 아직 미구현입니다. [알려진 제한](#known-limitations) 참고)
 
 <p align="center">
   <img src="./docs/assets/readme/member-management.png" width="900" alt="프로젝트 멤버의 역할과 도구 권한 관리 화면" />
@@ -203,11 +186,7 @@ AI가 제안한 ToolPlan을 검토하고, 승인한 계획을 바탕으로 재�
 
 ### 5. Remote Workspace
 
-외부 서버를 SSH로 연결해 파일, 로그, 시스템 리소스를 확인하고 허용한 범위에서 작업을 실행합니다.
-
-- **실행 환경 등록**: 연결할 서버와 작업 기준 디렉터리를 프로젝트에 등록합니다.
-- **연결 테스트**: 저장한 설정으로 원격 서버에 접속할 수 있는지 확인합니다.
-- **실행 범위 설정**: 읽기 작업과 파일 수정·명령 실행의 허용 범위를 구분합니다.
+외부 서버를 SSH로 연결해 파일, 로그, 시스템 리소스를 확인하고 허용한 범위에서 작업을 실행합니다. 연결할 서버와 기준 디렉터리를 프로젝트에 등록하고 연결을 테스트하며, 읽기 작업과 파일 수정·명령 실행의 허용 범위를 구분합니다.
 
 <p align="center">
   <img src="./docs/assets/readme/remote-workspace.png" width="900" alt="Remote Workspace 연결 정보와 쓰기 및 명령 실행 허용 설정" />
@@ -215,26 +194,7 @@ AI가 제안한 ToolPlan을 검토하고, 승인한 계획을 바탕으로 재�
 
 ### 6. VS Code Extension
 
-VS Code의 Theseus 사이드바에서 프로젝트 코드를 살펴보고, AI와 대화하며 계획 수립과 코드 편집을 진행할 수 있습니다. 공통 에이전트 엔진을 로컬 데몬으로 실행하며, 소스 Python 또는 패키징된 Runner를 연결합니다.
-
-- **에디터 연동**: 선택 코드 설명, 문제 설명·수정, Inline Edit를 제공합니다.
-- **작업 공간 선택**: 분석할 프로젝트와 Worktree를 선택합니다.
-- **로컬 실행**: Standalone 모드에서는 웹 서비스용 API·DB·Kafka를 함께 구동할 필요가 없습니다.
-- **배포 방식**: VSIX와 엔진 소스를 함께 전달하거나, VSIX와 Runner 실행 파일을 테스트 패키지로 전달합니다.
-
-설치와 배포 절차는 [VS Code 익스텐션 안내](./docs/vscode-extension.md)를 참고하세요.
-
-### 주요 화면
-
-| 화면 | 설명 |
-| --- | --- |
-| 랜딩 페이지 | 서비스 소개, 주요 가치, 시작 진입점 |
-| AI 채팅 및 ToolPlan 생성 | 자연어 요청을 바탕으로 ToolPlan 생성 과정을 스트리밍 |
-| ToolPlan 승인 관리 | 관리자가 AI가 만든 계획을 검토하고 승인 또는 반려 |
-| 도구 목록·상세 | 등록된 도구의 설명, 코드, 상태, 접근 레벨 |
-| 멤버·권한 관리 | 프로젝트 멤버의 역할, 접근 레벨, 작업별 권한 |
-| 도구 사용 목록 | 도구 호출 이력, 사용자, 성공·실패 상태 |
-| Remote Workspace 관리 | 외부 서버 연결 정보와 실행 허용 범위 |
+VS Code의 Theseus 사이드바에서 프로젝트 코드를 살펴보고, AI와 대화하며 계획 수립과 코드 편집(선택 코드 설명, 문제 수정, Inline Edit)을 진행합니다. 공통 에이전트 엔진을 로컬 데몬으로 실행하며, 기본 Standalone 모드에서는 웹 서비스용 API·DB·Kafka 없이 동작합니다. 설치와 배포는 [VS Code 익스텐션 안내](./docs/vscode-extension.md)를 참고하세요.
 
 ---
 
@@ -271,8 +231,6 @@ Theseus는 사용자 화면, 서비스 API, AI 실행 서버를 분리합니다.
 | AI Core Zone | Kafka, Core Server, Docker Sandbox, Access/Secret Control | ToolPlan 생성, Tool 실행, 비동기 이벤트 처리, 실행 격리 |
 | SSAFY SuperApp Infra | RDS MySQL, RDS PostgreSQL, ElastiCache Redis | 서비스 데이터, AI Core 데이터, 상태 캐싱 |
 | External Project Zone | Remote Workspace(시연용 외부 프로젝트 서버) | 외부 운영 서버의 로그·설정·배포 상태 점검 |
-| CI/CD | GitLab Webhook → Jenkins → Docker Compose 재배포 → Health Check | 관련 파일은 [`docs/archive/ssafy/`](./docs/archive/ssafy/)에 보관 |
-| LLM | SSAFY 제공 LLM API, GPU 서버의 로컬 LLM(vLLM) | 팀 공용 GPU 서버에서 서빙 |
 
 <a id="self-hosted-setup"></a>
 
@@ -348,8 +306,6 @@ flowchart TB
 | **개발 당시 Infra** | Jenkins, GitLab Webhook, AWS EC2, RDS(MySQL·PostgreSQL), ElastiCache, S3 |
 | **협업** | GitLab, Jira, Notion, Mattermost |
 
-의존성 버전은 [Frontend 패키지](./frontend/package.json), [API Server 빌드 설정](./backend/theseus-api-server/build.gradle), [Core Server 의존성](./backend/theseus-core-server/requirements.txt)을 기준으로 확인할 수 있습니다.
-
 ---
 
 <a id="technical-details"></a>
@@ -366,13 +322,11 @@ flowchart TB
 4. **빌드**: Core Server가 코드와 실행 메타데이터를 생성하고 검증합니다.
 5. **공개 범위 설정**: 프로젝트 관리자가 생성 결과를 확인하고 구성원에게 허용할 접근 범위를 설정합니다.
 
-`tool_plans`는 계획 버전, `tool_plan_runs`는 생성·재생성·빌드 작업, `tools`는 빌드 완료된 도구를 관리합니다. 생성 진행 상태와 최종 산출물을 분리해 승인 이력과 실패한 작업을 추적합니다.
-
-관련 문서: [Tool API](./docs/api/tool-api.md), [데이터 모델](./docs/planning/erd.md)
+`tool_plans`는 계획 버전, `tool_plan_runs`는 생성·재생성·빌드 작업, `tools`는 빌드 완료된 도구를 관리합니다. 생성 진행 상태와 최종 산출물을 분리해 승인 이력과 실패한 작업을 추적합니다. 관련 문서: [Tool API](./docs/api/tool-api.md), [데이터 모델](./docs/planning/erd.md)
 
 ### 2. Theseus Agent Engine과 실행 모드
 
-`theseus_engine`은 LLM 응답 스트리밍, 도구 호출, 권한 검사, 실행 이벤트 처리를 담당하는 공통 런타임입니다.
+`theseus_engine`은 LLM 응답 스트리밍, 도구 호출, 권한 검사, 실행 이벤트 처리를 담당하는 공통 런타임입니다. 서버와 로컬 에디터 런타임이 같은 엔진과 프롬프트 구성 로직을 공유합니다.
 
 | 모드 | 용도 | 원격 작업의 기본 범위 |
 | --- | --- | --- |
@@ -380,42 +334,19 @@ flowchart TB
 | **PLAN** | 조사 결과를 바탕으로 작업 계획 수립 | 읽기 도구를 활용한 조사 |
 | **AGENT** | 도구를 사용해 작업 수행 | 기본은 읽기, 설정에 따라 쓰기·명령 실행 허용 |
 
-모드와 프로젝트 권한에 따라 사용할 수 있는 도구를 결정하고, 도구 실행 전 권한을 검사합니다. 서버와 로컬 에디터 런타임이 같은 엔진과 프롬프트 구성 로직을 공유합니다.
-
-VS Code Extension 및 로컬 실행 방식은 [Core Server 문서](./backend/theseus-core-server/README.md)에서 별도로 안내합니다.
+모드와 프로젝트 권한에 따라 사용할 수 있는 도구를 결정하고, 도구 실행 전 권한을 검사합니다.
 
 ### 3. Kafka 비동기 처리와 SSE 상태 전달
 
-도구 계획 작성과 코드 생성은 요청 시간이 길어질 수 있으므로, API Server와 Core Server가 Kafka 이벤트로 작업을 주고받습니다.
-
-- **요청 접수**: API Server가 작업을 등록하고 요청 이벤트를 발행합니다.
-- **작업 처리**: Core Server가 계획 생성 또는 빌드를 수행하고 진행·완료·실패 이벤트를 발행합니다.
-- **실시간 표시**: API Server가 작업 상태를 반영하고 SSE로 화면에 전달합니다.
-- **재접속 처리**: Redis에 저장한 최신 상태를 조회해 진행 상황을 다시 보여줍니다.
-
-중간 진행 상태는 Redis와 SSE로 전달하고, 사용자에게 제공할 최종 상태는 서비스 데이터베이스에 저장합니다.
+도구 계획 작성과 코드 생성은 오래 걸릴 수 있으므로, API Server가 작업을 등록하고 요청 이벤트를 발행하면 Core Server가 계획 생성 또는 빌드를 수행하고 진행·완료·실패 이벤트를 발행합니다. API Server는 상태를 반영해 SSE로 화면에 전달하고, 재접속하면 Redis에 저장한 최신 상태를 다시 보여줍니다. 중간 진행 상태는 Redis와 SSE로 전달하고, 사용자에게 제공할 최종 상태는 서비스 데이터베이스에 저장합니다.
 
 ### 4. 권한 제어와 실행 환경 격리
 
-프로젝트 역할, 접근 레벨, 작업별 도구 권한을 조합해 실행 범위를 관리합니다.
-
-- **API Server**는 사용자와 프로젝트 정책을 확인합니다.
-- **Core Engine**은 도구 호출 전에 권한과 노출 정책을 검사합니다.
-- **Docker Sandbox**는 BUILD 단계에서 생성 코드를 네트워크 차단·비root·읽기 전용 컨테이너로 검증합니다. 승인된 도구는 Core 서버 안에서 실행됩니다.
-- **사용 이력**은 실행 결과를 확인하고 작업을 추적하는 데 활용합니다(기록 연동은 [알려진 제한](#known-limitations) 참고).
-
-Core는 Docker 소켓을 직접 마운트하지 않고, containers/images API만 여는 socket proxy를 거쳐 sandbox 컨테이너를 만듭니다. 구체적인 설정 항목은 [Core Server 문서](./backend/theseus-core-server/README.md), [로컬 인프라 안내](./infra/README.md), [셀프호스팅 가이드의 보안 메모](./docs/operations/self-hosting.md#14-보안-메모와-알려진-제한)를 참고하세요.
+프로젝트 역할, 접근 레벨, 작업별 도구 권한을 조합해 실행 범위를 관리합니다. API Server는 사용자와 프로젝트 정책을, Core Engine은 도구 호출 전에 권한과 노출 정책을 검사합니다. Docker Sandbox는 BUILD 단계에서 생성 코드를 네트워크 차단·비root·읽기 전용 컨테이너로 검증하고, 승인된 도구는 Core 서버 안에서 실행됩니다. Core는 Docker 소켓을 직접 마운트하지 않고 containers/images API만 여는 socket proxy를 거칩니다. 설정은 [Core Server 문서](./backend/theseus-core-server/README.md)와 [셀프호스팅 가이드의 보안 메모](./docs/operations/self-hosting.md#14-보안-메모와-알려진-제한)를 참고하세요.
 
 ### 5. Remote Workspace 연결과 실행 정책
 
-Core Server가 API Server에서 연결 설정을 조회한 뒤 Paramiko 기반 SSH로 원격 서버에 접속합니다.
-
-- **연결 정보 전달**: 클라이언트와 작업 이벤트에는 `remoteWorkspaceId`를 전달합니다.
-- **설정 조회**: Core Server가 내부 API로 필요한 접속 정보를 조회합니다.
-- **읽기 작업**: 파일 검색, 로그 조회, CPU·메모리·디스크 확인 도구를 제공합니다.
-- **쓰기 및 명령 실행**: 일반 설정에서는 `allowWriteExecution` 허용 여부를 확인합니다.
-
-운영자용 파일 쓰기 override와 명령 실행의 조건은 다르므로, 상세 정책은 [Core Server의 Remote Workspace 설명](./backend/theseus-core-server/README.md)을 기준으로 설정합니다.
+클라이언트와 작업 이벤트에는 `remoteWorkspaceId`만 전달하고, Core Server가 내부 API로 접속 정보를 조회해 Paramiko 기반 SSH로 접속합니다. 파일 검색, 로그 조회, CPU·메모리·디스크 확인 같은 읽기 도구를 제공하고, 쓰기와 명령 실행은 `allowWriteExecution` 허용 여부를 확인합니다. 운영자용 override 등 상세 정책은 [Core Server의 Remote Workspace 설명](./backend/theseus-core-server/README.md)을 기준으로 합니다.
 
 ---
 
@@ -433,122 +364,71 @@ Core Server가 API Server에서 연결 설정을 조회한 뒤 Paramiko 기반 S
 
 ### 로컬 개발
 
-셸 명령은 Bash 기준이며, 각 서버는 별도 터미널에서 실행합니다.
+Java 21, Python 3.11, Node.js 24(`frontend/.nvmrc`), Docker Compose, 그리고 노트북 Ollama 또는 외부 LLM Provider 키가 필요합니다. 셸 명령은 Bash 기준이고, 각 서버는 별도 터미널에서 실행합니다.
 
-#### 1. 준비 환경과 저장소 받기
-
-| 항목 | 기준 |
-| --- | --- |
-| Java | 21 |
-| Python | 3.11 |
-| Node.js | 24(`frontend/.nvmrc`), `engines`는 `>=20.19` |
-| Docker | Linux 컨테이너를 실행할 수 있는 Docker Engine / Docker Desktop과 Compose |
-| LLM | 노트북 Ollama(`ollama/<모델>`) 또는 외부 Provider API 키 |
+**1. 로컬 인프라** (MySQL, PostgreSQL + pgvector, Redis, Kafka, Kafka UI를 `127.0.0.1`에만 엶)
 
 ```bash
-git clone https://github.com/karneva/Theseus.git
-cd Theseus
-```
-
-#### 2. 로컬 인프라
-
-```bash
+git clone https://github.com/karneva/Theseus.git && cd Theseus
 cp infra/docker/local/.env.local.example infra/docker/local/.env.local
 ```
 
-`.env.local`의 빈 값(`MYSQL_ROOT_PASSWORD`, `MYSQL_PASSWORD`, `SPRING_DATASOURCE_PASSWORD`, `POSTGRES_PASSWORD`, `SPRING_DATA_REDIS_PASSWORD`, `JWT_SECRET`, `INTERNAL_API_KEY`, `INITIAL_ADMIN_*`)을 로컬 전용 값으로 채웁니다.
-`SPRING_DATASOURCE_PASSWORD`는 `MYSQL_PASSWORD`와 같아야 하고, `JWT_SECRET`은 32바이트 이상(예: `openssl rand -base64 48`)이어야 합니다. 이 파일은 git에 올라가지 않습니다.
+`.env.local`의 빈 비밀값과 최초 관리자 `INITIAL_ADMIN_*`(사번·이름·비밀번호)를 로컬 전용 값으로 채운 뒤 인프라를 띄웁니다. 값 규칙(`SPRING_DATASOURCE_PASSWORD` = `MYSQL_PASSWORD`, `JWT_SECRET` 32바이트 이상 등), 포트, API·Core까지 컨테이너로 띄우는 방법은 [로컬 인프라 안내](./infra/README.md)에 있습니다.
 
 ```bash
 docker compose -f infra/docker/local/docker-compose.infra.yml up -d
-docker compose -f infra/docker/local/docker-compose.infra.yml ps
 ```
 
-MySQL(13306), PostgreSQL + pgvector(15432), Redis(16379), Kafka(19092), Kafka UI(18080)가 모두 `127.0.0.1`에만 열리고, kafka-init이 업무 토픽 4개와 DLT 2개를 만듭니다.
-
-#### 3. API Server
+**2. API Server**: 첫 기동 때 Flyway가 스키마를 만들고, SUPER_ADMIN이 없으면 `INITIAL_ADMIN_*` 값으로 최초 관리자를 생성합니다.
 
 ```bash
-cd backend/theseus-api-server
-./gradlew bootRun
+cd backend/theseus-api-server && ./gradlew bootRun   # PowerShell: .\gradlew.bat bootRun
 ```
 
-기본 프로필 `local`이 `infra/docker/local/.env.local`을 읽습니다. 첫 기동 때 Flyway가 스키마를 만들고, SUPER_ADMIN이 없으면 `INITIAL_ADMIN_*` 값으로 최초 관리자를 생성합니다. Windows PowerShell에서는 `.\gradlew.bat bootRun`을 사용합니다.
-
-#### 4. Core Server
-
-저장소 루트에서 sandbox 이미지를 준비합니다.
+**3. Core Server**
 
 ```bash
-docker build -t theseus-sandbox:py311-tools \
-  -f backend/theseus-core-server/Dockerfile.sandbox \
-  backend/theseus-core-server
-```
+# 저장소 루트에서 sandbox 이미지 준비
+docker build -t theseus-sandbox:py311-tools -f backend/theseus-core-server/Dockerfile.sandbox backend/theseus-core-server
 
-```bash
 cd backend/theseus-core-server
-python -m venv .venv
-source .venv/bin/activate          # PowerShell: .\.venv\Scripts\Activate.ps1
+python -m venv .venv && source .venv/bin/activate   # PowerShell: .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 cp .env.example .env
 ```
 
-`.env`에서 다음 값을 로컬 인프라에 맞춥니다. 나머지는 템플릿 기본값을 그대로 써도 됩니다.
+`.env`에서 다음 값만 로컬 인프라에 맞추면 됩니다.
 
 | 설정 | 로컬 값 |
 | --- | --- |
-| `THESEUS_MODEL` | `ollama/<모델>` 또는 `openai/...`, `anthropic/...` 등 provider 접두사 모델 |
-| Provider API 키 | 외부 Provider를 쓸 때 해당 키만 입력 |
+| `THESEUS_MODEL` | `ollama/<모델>` 또는 `openai/...`, `anthropic/...` 등 provider 접두사 모델(외부 Provider면 해당 API 키도 입력) |
 | `CORE_POSTGRES_USER` / `CORE_POSTGRES_PASSWORD` | `.env.local`의 `POSTGRES_USER`(`theseus`) / `POSTGRES_PASSWORD` |
 | `INTERNAL_API_KEY` | `.env.local`의 `INTERNAL_API_KEY`와 같은 값 |
-| `SPRING_BOOT_INTERNAL_URL` | `http://localhost:8080`(기본값) |
-| `CORE_KAFKA_BOOTSTRAP_SERVERS` | `localhost:19092`(기본값) |
 
 ```bash
 python -m uvicorn src.main:app --host 127.0.0.1 --port 8086 --workers 1 --env-file .env
 ```
 
-`--env-file`은 `.env`를 프로세스 환경 변수로도 올립니다. 엔진 설정(`OLLAMA_BASE_URL`, `THESEUS_LLM_TIMEOUT_SECONDS` 등)은 환경 변수에서 직접 읽으므로 이 옵션을 붙여 실행합니다.
+`--env-file`은 엔진이 직접 읽는 설정(`OLLAMA_BASE_URL` 등)을 환경 변수로도 올립니다.
 
-#### 5. Frontend
+**4. Frontend**: Vite가 `/api`를 API Server(`localhost:8080`)로 프록시합니다.
 
 ```bash
-cd frontend
-npm ci
-npm run dev
+cd frontend && npm ci && npm run dev
 ```
 
-Vite 개발 서버가 `/api` 요청을 API Server(`http://localhost:8080`)로 프록시하므로, 브라우저 기준으로는 운영과 같은 same-origin 요청입니다. API 주소를 바꿀 때만 `frontend/.env.local`에 `VITE_DEV_API_PROXY_TARGET`을 지정합니다. `VITE_API_BASE_URL`은 API를 다른 origin에 둘 때만 씁니다.
+[localhost:5173](http://localhost:5173)에서 `INITIAL_ADMIN_*` 계정(사번 또는 이메일)으로 로그인합니다. local 프로필에서는 [Swagger UI](http://localhost:8080/swagger-ui.html)도 열립니다.
 
-| 서비스 | 기본 로컬 주소 |
-| --- | --- |
-| Frontend | [localhost:5173](http://localhost:5173), 실제 주소는 Vite 실행 로그에서 확인 |
-| API Server | [localhost:8080](http://localhost:8080) |
-| API 문서(local 프로필) | [Swagger UI](http://localhost:8080/swagger-ui.html) |
-| Core Server | [localhost:8086](http://localhost:8086) |
-| Kafka UI | [localhost:18080](http://localhost:18080) |
-
-`INITIAL_ADMIN_*`으로 만든 관리자 계정(사번 또는 이메일)으로 로그인합니다. 다른 사용자는 Super Admin이 발급합니다. 계정 정책은 [인증 API 문서](./docs/api/auth-api.md)를 참고하세요.
-
-API·Core까지 컨테이너로 띄워 통합 확인하려면 `docker-compose.infra.yml`, `docker-compose.api.yml`, `docker-compose.core.yml`을 함께 `up`합니다. 자세한 내용은 [로컬 인프라 안내](./infra/README.md)를 참고하세요.
-
-#### 6. 테스트
-
-| 영역 | 명령 | 현재 결과 |
-| --- | --- | --- |
-| API Server | `cd backend/theseus-api-server && ./gradlew test`(Testcontainers, Docker 필요) | 197개 통과 |
-| Core Server | `cd backend/theseus-core-server && python -m pytest -q`(DB·Kafka·Docker 불필요) | 193개 중 192개 통과·1개 건너뜀(테스트 전용 `THESEUS_TEST_TOKENIZER_JSON`이 없을 때). Tool RAG ONNX 모델이 없으면 8개를 더 건너뜀 |
-| Frontend | `cd frontend && npm run lint && npm test -- --run && npm run build` | 38개 통과 |
+**테스트**(각 서비스 디렉터리에서): API(`backend/theseus-api-server`) `./gradlew test`(Testcontainers, Docker 필요), Core(`backend/theseus-core-server`) `python -m pytest -q`(DB·Kafka·Docker 불필요, Tool RAG ONNX 모델·테스트용 토크나이저가 없으면 일부 건너뜀: [Core Server 문서](./backend/theseus-core-server/README.md)), Frontend(`frontend`) `npm run lint && npm test -- --run && npm run build`. 자세한 검증 명령은 [CONTRIBUTING.md](./CONTRIBUTING.md)에 있습니다.
 
 <a id="deploy"></a>
 
 ### 배포(셀프호스팅)
 
-운영 배포는 **서버 한 대(Ubuntu 24.04, 2 vCPU, 3.8GB RAM + 스왑 4GB)에 docker compose로 전체 스택**을 올리는 구성입니다. 서버는 이미지를 빌드하지 않고, LLM은 노트북의 Ollama를 reverse SSH tunnel로 연결합니다.
+서버 한 대(Ubuntu 24.04, 2 vCPU, 3.8GB RAM + 스왑 4GB)에 docker compose로 전체 스택을 올립니다. 서버는 이미지를 빌드하지 않고, LLM은 노트북의 Ollama를 reverse SSH tunnel로 연결합니다.
 
-**자동 배포(CD)**: `dev`에 push하고 CI가 통과하면 [Deploy 워크플로](./.github/workflows/deploy.yml)가 이미지를 빌드해 GHCR에 올리고, 배포 전용 SSH 키로 서버의 [`ci-deploy.sh`](./scripts/ci-deploy.sh)에 커밋 SHA만 넘깁니다. 서버는 그 커밋이 `dev`에 있는지 확인하고 설정과 이미지를 직접 받아 `deploy.sh`로 갱신하며, healthy가 되지 않으면 직전 버전으로 롤백합니다. 이전 커밋을 수동 실행하면 롤백으로 쓸 수 있습니다. 1회 설정은 [셀프호스팅 가이드 10.1](./docs/operations/self-hosting.md#101-자동-배포github-actions)에 있습니다.
-
-**수동 배포**는 노트북에서 빌드해 SSH로 옮깁니다.
+- **자동 배포(CD)**: `dev`에 push해 [CI](./.github/workflows/ci.yml)(API·Core·Frontend 테스트, compose 검증, gitleaks)가 통과하면 [Deploy 워크플로](./.github/workflows/deploy.yml)가 이미지를 GHCR에 올리고 서버의 [`ci-deploy.sh`](./scripts/ci-deploy.sh)에 커밋 SHA만 넘깁니다. 서버는 그 커밋이 `dev`에 있는지 확인한 뒤 갱신하고, healthy가 되지 않으면 직전 버전으로 롤백합니다. 의존성은 [Dependabot](./.github/dependabot.yml)이 매주 PR로 올립니다.
+- **수동 배포**: 노트북에서 빌드해 SSH로 옮깁니다.
 
 ```bash
 # 노트북
@@ -562,43 +442,7 @@ bash scripts/llm-tunnel.sh --local-port 11435 <서버별칭>
 /opt/theseus/app/scripts/issue-cert.sh
 ```
 
-서버 준비, 비밀값, TLS, LLM 터널(Ollama 컨텍스트 16k 필요), 검증 체크리스트, 백업·복구, 메모리 예산, 문제 해결은 [셀프호스팅 가이드](./docs/operations/self-hosting.md)에 있습니다.
-
-### 환경 변수
-
-| 실행 환경 | 템플릿 |
-| --- | --- |
-| 로컬 개발 | [`infra/docker/local/.env.local.example`](./infra/docker/local/.env.local.example) → `infra/docker/local/.env.local` |
-| Core 단독 실행 | [`backend/theseus-core-server/.env.example`](./backend/theseus-core-server/.env.example) → `.env` |
-| Frontend | [`frontend/.env.example`](./frontend/.env.example) |
-| 셀프호스팅 | [`infra/docker/selfhost/.env.example`](./infra/docker/selfhost/.env.example) → 서버 `/opt/theseus/theseus.env`(권한 600) |
-
-| 주요 변수 | 용도 |
-| --- | --- |
-| `JWT_SECRET` | API JWT 서명 키(32바이트 이상) |
-| `INTERNAL_API_KEY` | API ↔ Core 서버 간 공유 키(두 서비스가 같은 값) |
-| `THESEUS_MODEL` | Core 모델(provider 접두사, 예: `ollama/<모델>`). 운영에서는 필수 |
-| `OLLAMA_BASE_URL` | Ollama endpoint(셀프호스팅 기본 `http://host.docker.internal:11434/v1`) |
-| `LLM_MAX_OUTPUT_TOKENS` | 출력 토큰 상한. 작은 로컬 모델이면 낮춥니다 |
-| `INITIAL_ADMIN_*` | 최초 SUPER_ADMIN 생성 |
-| `ALLOWED_ORIGINS` | API CORS. same-origin(nginx, Vite 프록시)이면 비웁니다 |
-
-전체 목록(필수 여부, 기본값)은 [환경 변수 문서](./docs/operations/environment-variables.md)를 참고하세요. 실제 값이 든 env 파일은 커밋하지 않습니다.
-
-### CI
-
-[GitHub Actions](./.github/workflows/ci.yml)가 PR과 `dev`/`main` push마다 다음을 검사합니다. `dev` push에서 모두 통과하면 [자동 배포](#deploy)로 이어집니다.
-
-| Job | 내용 |
-| --- | --- |
-| API | JDK 21, `./gradlew test`(Testcontainers) |
-| Core | Python 3.11(torch 없음), `import src.main` 스모크, `pytest` |
-| Frontend | Node(`.nvmrc`), `npm ci`, lint, `npm test -- --run`, build |
-| Infra | selfhost compose, local compose(3개 파일 함께) `config` 검증 |
-| Secret scan | gitleaks |
-| Deploy | `dev` push 한정. 이미지 빌드·GHCR push → 서버 배포 → 외부 `/healthz` 확인 |
-
-의존성 갱신은 [Dependabot](./.github/dependabot.yml)이 매주 PR로 올립니다.
+서버 준비, 비밀값, TLS, LLM 터널(Ollama 컨텍스트 16k 필요), [자동 배포 1회 설정](./docs/operations/self-hosting.md#101-자동-배포github-actions), 검증, 백업·복구, 문제 해결은 [셀프호스팅 가이드](./docs/operations/self-hosting.md)에 있습니다. env 템플릿은 실행 환경별로 `infra/docker/local/.env.local.example`, `backend/theseus-core-server/.env.example`, `frontend/.env.example`, `infra/docker/selfhost/.env.example`(서버 `/opt/theseus/theseus.env`, 권한 600)이고, 변수 전체 목록은 [환경 변수 문서](./docs/operations/environment-variables.md)를 참고하세요. 실제 값이 든 env 파일은 커밋하지 않습니다.
 
 <a id="vscode-porting"></a>
 
@@ -614,7 +458,7 @@ Pop-Location
 .\scripts\vscode-extension\Install-Theseus-Extension.cmd -Ide vscode
 ```
 
-설치 후 `backend/theseus-core-server/.env`에 모델과 Provider 키를 설정하고, VS Code에서 작업 폴더를 열어 `Theseus: Start Agent`를 실행합니다. 설정, 다른 PC 배포(소스 패키지, Runner 테스트 패키지), 문제 해결, 제거 절차는 [VS Code 익스텐션 안내](./docs/vscode-extension.md)를 참고하세요.
+`backend/theseus-core-server/.env`에 모델과 Provider 키를 설정하고, 작업 폴더를 열어 `Theseus: Start Agent`를 실행합니다. 다른 PC 배포, 문제 해결, 제거는 [VS Code 익스텐션 안내](./docs/vscode-extension.md)를 참고하세요.
 
 ---
 
@@ -645,12 +489,9 @@ Pop-Location
 | [VS Code 익스텐션 안내](./docs/vscode-extension.md) | VSIX 빌드, 로컬 설치, LLM 설정, 소스·Runner 배포 및 오류 해결 |
 | [시스템 아키텍처](./docs/architecture/system-architecture.md) | 서비스 구성, 네트워크, 데이터 저장 책임, 요청 흐름 |
 | [Tool RAG](./docs/architecture/tool-rag.md) | 도구 검색 v1 문제 측정, v2 설계, 평가 프로토콜, 결과, 한계 |
-| [API 개요](./docs/api/api-overview.md) | API 구성과 주요 기능 흐름 |
-| [인증 API](./docs/api/auth-api.md) | 계정, 로그인, 토큰 정책 |
-| [Tool API](./docs/api/tool-api.md) | ToolPlan 생성, 피드백, 승인, 도구 생성 |
+| [API 개요](./docs/api/api-overview.md) · [인증 API](./docs/api/auth-api.md) · [Tool API](./docs/api/tool-api.md) | API 구성, 계정·토큰 정책, ToolPlan 생성·승인·도구 생성 |
 | [Core Server 문서](./backend/theseus-core-server/README.md) | 엔진, 실행 모드, Remote Workspace, VS Code Extension |
-| [배포 문서](./docs/operations/deployment.md) | 배포 흐름 요약과 CI |
-| [트러블슈팅](./docs/operations/troubleshooting.md) | 실행 및 연동 문제 확인 |
+| [배포 문서](./docs/operations/deployment.md) · [트러블슈팅](./docs/operations/troubleshooting.md) | 배포 흐름 요약과 CI, 실행 및 연동 문제 확인 |
 | [웹 포팅 매뉴얼](./exec/PORTING_MANUAL.md) | SSAFY 제출용 포팅 매뉴얼(기록) |
 
 ---
@@ -689,12 +530,12 @@ SSAFY 프로젝트 종료 후 저장소를 정리해 **서버 한 대에서 직�
 
 | 영역 | 주요 변경 |
 | --- | --- |
-| 보안 강화 | `web_fetch`·`deep_research`의 SSRF 차단(사설망·메타데이터 대역, 리다이렉트 재검사), 내부 API를 `INTERNAL_API_KEY` 고정 시간 비교로 통일, nginx에서 `/api/internal`·Swagger·Actuator 차단, 로그인 rate limit, prod CORS off·`*` 거부, refresh 쿠키 Secure, 비활성 사용자 토큰 차단, JSON 401/403 응답, sandbox 컨테이너 하드닝(네트워크 차단, uid 65534, cap_drop, read-only)과 docker socket proxy, 토큰을 브라우저 저장소에 두지 않음 |
-| 설정 외부화 | API는 `application.yaml` + `local`/`prod` 프로필과 Flyway 마이그레이션, Core는 base URL 하나(`SPRING_BOOT_INTERNAL_URL`)와 provider 접두사 모델 라우팅, Kafka 토픽 이름을 `KAFKA_TOPIC_*`로 공유, 실행 환경별 env 템플릿 정리 |
+| 보안 강화 | `web_fetch`·`deep_research` SSRF 차단(사설망·메타데이터 대역, 리다이렉트 재검사), 내부 API 키 고정 시간 비교, nginx에서 내부 API·Swagger·Actuator 차단과 로그인 rate limit, prod CORS 기본 off·`*` 거부, refresh 쿠키 Secure·비활성 사용자 토큰 차단, 토큰을 브라우저 저장소에 두지 않음, sandbox 하드닝(네트워크 차단, 비root, cap_drop, read-only)과 docker socket proxy |
+| 설정 외부화 | API는 `local`/`prod` 프로필과 Flyway 마이그레이션, Core는 base URL 하나(`SPRING_BOOT_INTERNAL_URL`)와 provider 접두사 모델 라우팅, Kafka 토픽 이름 공유(`KAFKA_TOPIC_*`), 실행 환경별 env 템플릿 |
 | 안정성 | Kafka 결과 consumer 재시도와 DLT, Run 타임아웃 실패 처리, ToolRetriever 임베딩 모델 로드를 이벤트 루프 밖으로 이동 |
-| 테스트와 CI | API 197개(Testcontainers), Core 131개, Frontend 38개(Vitest) 모두 통과(정리 전: API 159개 중 32개 실패, Core import 실패, Frontend `npm ci` 실패). GitHub Actions(테스트, compose 검증, gitleaks, `dev` 자동 배포)와 Dependabot 추가 |
-| 경량 셀프호스팅 | 2 vCPU / 3.8GB 서버용 compose, 노트북 빌드·SSH 전송 배포 스크립트, Let's Encrypt 자동 갱신, 백업 스크립트, 노트북 Ollama reverse tunnel. 경량화 내용은 [개인 서버 구성](#self-hosted-setup) 참고 |
-| 정리 | 미사용 모듈·의존성·데모 도구 삭제, VS Code 확장 wrapper를 `scripts/vscode-extension/`으로 이동, 커밋된 빌드 산출물 제거, 문서 갱신 |
+| 테스트와 CI | 정리 전 API 159개 중 32개 실패, Core import 실패, Frontend `npm ci` 실패 → 모두 통과. GitHub Actions(테스트, compose 검증, gitleaks, `dev` 자동 배포)와 Dependabot 추가 |
+| 경량 셀프호스팅 | 2 vCPU / 3.8GB 서버용 compose, 배포 스크립트, Let's Encrypt 자동 갱신, 백업, 노트북 Ollama reverse tunnel([개인 서버 구성](#self-hosted-setup) 참고) |
+| 정리 | 미사용 모듈·의존성·데모 도구와 커밋된 빌드 산출물 삭제, VS Code 확장 wrapper를 `scripts/vscode-extension/`으로 이동, 문서 갱신 |
 
 <a id="known-limitations"></a>
 
@@ -719,9 +560,9 @@ SSAFY 프로젝트 종료 후 저장소를 정리해 **서버 한 대에서 직�
 
 에이전트가 매 턴 모든 도구 스키마를 보내면 그것만으로 5천 토큰이 넘고, 운영 대상인 4B 로컬 모델(16k 컨텍스트)은 도구가 많을수록 고르는 정확도도 떨어집니다. Tool RAG(김선교 설계)를 평가셋으로 다시 재고 v2로 고도화했습니다.
 
-- **평가**: 동결 평가셋 236개 질의(한국어 69%, "맞는 도구 없음" 35개 포함)를 dev/test 50:50으로 고정하고, 기법 선택과 튜닝은 dev에서만 했습니다. 최종 수치는 따로 만든 **홀드아웃** 140개 질의로 냅니다. 평가셋·용어집·few-shot을 본 적 없는 작성자가 도구 카탈로그만 보고 썼고, 다른 주석자가 독립으로 라벨링했으며(135개 일치), 개발 전에 해시를 고정한 뒤 최종 구성과 비교 대상을 한 번만 평가했습니다.
-- **v1에서 측정한 문제**: 한국어 R@3 0.533(영어 0.754), 유사도 임계값이 한 번도 걸리지 않아 "도구 없음" 판정 불가, 키워드 리랭크 효과 미미(MRR +0.024), 서버는 검색 없이 보이는 도구 전부 전송, 사후 훅이 가시성·RBAC를 무시하고 bash 등을 주입(보안 버그), torch 때문에 이미지 2.46 GB·모델 로드 +950 MB
-- **v2**: dense(e5-small) + BM25(한글 bigram) 융합 점수, 영어 도구 설명에 붙인 한국어 용어집, 스키마 크기를 반영한 비용 인지 슬롯 선택, "도구 없음" 판정(상위 3개 + tool_search로 soft fallback, 다른 작성자의 질의로 전이되지 않아 기본은 꺼짐), ONNX int8 임베딩(torch 제거). 서버 조립·tool_search·사후 훅 주입을 모두 보이는 도구 안으로 제한했습니다.
+- **v1에서 측정한 문제**: 한국어 R@3 0.533(영어 0.754), "도구 없음" 판정 불가, 서버는 검색 없이 보이는 도구 전부 전송, 사후 훅이 가시성·RBAC를 무시하고 도구를 주입(보안 버그), torch 때문에 이미지 2.46 GB
+- **v2**: dense(e5-small) + BM25(한글 bigram) 융합, 영어 도구 설명에 붙인 한국어 용어집, 스키마 크기를 반영한 비용 인지 슬롯 선택, ONNX int8 임베딩(torch 제거). 서버 조립·tool_search·사후 훅 주입을 모두 보이는 도구 안으로 제한했습니다.
+- **평가**: 동결 평가셋 236개 질의(dev/test 50:50, 튜닝은 dev만)와 별도로 만든 **홀드아웃** 140개 질의. 홀드아웃은 평가셋·용어집·few-shot을 본 적 없는 작성자가 도구 카탈로그만 보고 썼고 다른 주석자가 독립으로 라벨링했으며(140개 중 135개 일치), 개발 전에 해시를 고정한 뒤 최종 구성과 비교 대상만 한 번 평가했습니다.
 
 | 홀드아웃 (core, 순위 n=67) | v1 | v2 |
 | --- | ---: | ---: |
@@ -730,18 +571,14 @@ SSAFY 프로젝트 종료 후 저장소를 정리해 **서버 한 대에서 직�
 | 실제 전달 집합의 정답 재현율 | 0.708 | **0.899** |
 | 턴당 도구 스키마 토큰 평균 / p95 | 1968 / 2417 | **1771 / 1999** |
 
-- 홀드아웃 paired bootstrap 95% CI: R@3 **+0.313** [+0.201, +0.433](24승 1패), 정답 재현율 +0.190 [+0.118, +0.268], 토큰 −197 [−256, −139]. 토큰에는 일부만 보내는 모든 턴에 고정으로 넣는 tool_search 스키마(176 토큰)가 들어 있습니다. 평가셋 test(n=70)에서는 R@3 0.636 → 0.895(+0.260 [+0.152, +0.364])였지만, test는 두 번 평가했고 튜닝 입력에 섞였을 수 있어 보조 지표로만 봅니다.
-- **서버 토큰**: 실제 서버 기본 구성(Remote Workspace 도구 포함, 엔진 RAG 도구 2개 숨김)에서 검색 없이 보이는 도구 42개를 보내던 서버(5367 토큰/턴) 대비 v2는 1769 토큰/턴(**약 −67%**, 홀드아웃)입니다. 정답 재현율은 0.935 → 0.842로 내려가는 트레이드오프이고, 빠진 도구는 매 턴 들어 있는 tool_search로 찾습니다. 같은 조건의 홀드아웃 R@3는 v1 검색기 0.399, 개선 전 v2 0.684, v2 **0.818**입니다(개선 전 대비 +0.134 [+0.075, +0.203]).
-- **자원**: Core 이미지 2.46 GB → **1.07 GB**, 컨테이너(2 vCPU·1.5 GB)에서 검색 1회 뒤 프로세스 RSS 약 1.08 GB → **약 0.42 GB**, 첫 검색(모델 로드 포함) 약 19 s → **약 1.9 s**, 웜 검색 p50 18.9 ms → **5.9 ms**(홀드아웃)
-- **한계**: 홀드아웃도 LLM이 쓴 질의라 실제 사용자 질의보다 깨끗할 수 있고, 라벨 일치도 같은 편향일 수 있습니다. 순위 지표 n=67이라 신뢰구간이 넓고, 영어 R@3(0.750)가 한국어(0.841)보다 낮습니다. 홀드아웃 R@3(0.806)는 평가셋 test(0.895)보다 낮은데, v1도 같이 내려가(0.636 → 0.493) 홀드아웃이 더 어려운 것으로 보입니다. "도구 없음" 판정은 다른 작성자가 쓴 보정용 질의 세트와의 전이에서 미리 정한 기준(양방향 F1 ≥ 0.5, 오판 ≤ 5%)을 넘지 못해 기본으로 꺼 두었습니다(`THESEUS_TOOL_RAG_NONE_MODE=soft`로 켬). 홀드아웃에서는 옛 판정 규칙이 F1 0.606으로 괜찮았지만, 결정 뒤에 본 사후 관찰이고 none 질의가 19개뿐이라 기본값은 바꾸지 않았습니다.
+- R@3 paired bootstrap 95% CI **+0.313** [+0.201, +0.433](24승 1패).
+- **서버 토큰**(홀드아웃, 실제 서버 기본 구성: Remote Workspace 도구 포함·엔진 RAG 도구 2개 숨김): 검색 없이 도구 42개를 보내던 서버(5367 토큰/턴) 대비 **약 −67%**(1769 토큰/턴). 정답 재현율이 0.935 → 0.842로 내려가는 대신, 빠진 도구는 매 턴 들어 있는 tool_search로 찾습니다.
+- **자원**: Core 이미지 2.46 GB → **1.07 GB**, 검색 후 프로세스 RSS 약 1.08 GB → **약 0.42 GB**, 첫 검색 약 19 s → **약 1.9 s**, 웜 검색 p50 18.9 ms → **5.9 ms**
+- **한계**: 홀드아웃도 LLM이 쓴 질의라 실제 사용자 질의보다 깨끗할 수 있고 라벨 일치도 같은 편향일 수 있으며, 순위 지표 n=67이라 신뢰구간이 넓습니다. "도구 없음" 판정은 미리 정한 전이 기준을 넘지 못해 기본으로 꺼 두었습니다(`THESEUS_TOOL_RAG_NONE_MODE=soft`로 켬).
 
-위 홀드아웃 수치는 63e1e19 구성입니다. 그 뒤 #62에서 메모리 도구 few-shot을 더했고(메모 저장 요청에 `memory_write`를 보내는 비율 6.5% → 95.7%), 이 변경은 dev로만 다시 쟀습니다(홀드아웃은 한 번만 평가).
-
-측정 조건, 설계 근거, 버린 기법, 재현 명령, 3단계 임베딩 파인튜닝을 붙이는 방법은 [Tool RAG 문서](./docs/architecture/tool-rag.md)에 있습니다.
+위 홀드아웃 수치는 63e1e19 구성입니다. 그 뒤 #62에서 메모리 도구 few-shot을 더했고(메모 저장 요청에 `memory_write`를 보내는 비율 6.5% → 95.7%), 이 변경은 dev로만 다시 쟀습니다(홀드아웃은 한 번만 평가). 측정 조건, 설계 근거, 버린 기법, 재현 명령은 [Tool RAG 문서](./docs/architecture/tool-rag.md)에 있습니다.
 
 ### 로컬 LLM 파인튜닝·양자화
-
-<!-- TODO: 기반 모델, 학습 데이터, 파인튜닝·양자화 방식, Ollama 배포 형식, 품질·속도·메모리 비교 -->
 
 _작성 예정_
 
@@ -801,14 +638,7 @@ _작성 예정_
 
 ## 🤝 기여
 
-기능 개선, 버그 수정, 문서 보완에 참여할 수 있습니다. 브랜치·커밋·PR 규칙과 로컬 검증 명령은 [CONTRIBUTING.md](./CONTRIBUTING.md)를 따릅니다.
-
-- 기본 브랜치는 `dev`이고, 작업 브랜치는 `<type>/<kebab-요약>`(예: `docs/self-hosting-guide`)으로 만듭니다.
-- 커밋은 Conventional Commits 형식에 한국어 요약을 씁니다(예: `fix(api): ...`).
-- PR은 [GitHub 저장소](https://github.com/karneva/Theseus)의 `dev`로 보내고, CI가 모두 통과해야 병합합니다.
-- 환경변수 파일, API 키, 비밀번호, SSH 개인키와 실행 중 생성한 로그는 커밋하지 않습니다.
-
-보안 취약점은 공개 이슈로 올리지 말고 [SECURITY.md](./SECURITY.md)의 비공개 제보 절차를 따라 주세요.
+기능 개선, 버그 수정, 문서 보완에 참여할 수 있습니다. 브랜치·커밋·PR 규칙과 로컬 검증 명령은 [CONTRIBUTING.md](./CONTRIBUTING.md)를 따르고, PR은 `dev`로 보냅니다. 보안 취약점은 공개 이슈로 올리지 말고 [SECURITY.md](./SECURITY.md)의 비공개 제보 절차를 따라 주세요.
 
 ---
 
