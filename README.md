@@ -234,7 +234,10 @@ Theseus는 사용자 화면, 서비스 API, AI 실행 서버를 분리합니다.
 
 <a id="self-hosted-setup"></a>
 
-### 개인 서버 구성 (셀프호스팅, 2026.11~)
+### 개인 서버 구성 (셀프호스팅, 2026.11.15~11.30)
+
+> [!NOTE]
+> 개인 서버는 2026.11.15부터 2026.11.30까지 운영했고, 서버와 LLM을 돌리던 노트북을 반납하면서 운영을 마쳤습니다. 아래 구성과 [셀프호스팅 가이드](./docs/operations/self-hosting.md)는 같은 환경을 다시 올릴 수 있도록 그대로 남겨 둡니다.
 
 프로젝트 종료 후 같은 서비스를 **개인 서버 한 대(2 vCPU / 3.8GB RAM)의 docker compose**로 옮겼습니다. 관리형 DB·캐시와 GPU 서버 없이 모든 구성 요소를 한 대에 올리고, 외부에는 Nginx의 80/443만 엽니다. LLM은 서버에 두지 않고 개발 노트북의 Ollama를 reverse SSH tunnel로 연결합니다.
 
@@ -427,7 +430,7 @@ cd frontend && npm ci && npm run dev
 
 서버 한 대(Ubuntu 24.04, 2 vCPU, 3.8GB RAM + 스왑 4GB)에 docker compose로 전체 스택을 올립니다. 서버는 이미지를 빌드하지 않고, LLM은 노트북의 Ollama를 reverse SSH tunnel로 연결합니다.
 
-- **자동 배포(CD)**: `dev`에 push해 [CI](./.github/workflows/ci.yml)(API·Core·Frontend 테스트, compose 검증, gitleaks)가 통과하면 [Deploy 워크플로](./.github/workflows/deploy.yml)가 이미지를 GHCR에 올리고 서버의 [`ci-deploy.sh`](./scripts/ci-deploy.sh)에 커밋 SHA만 넘깁니다. 서버는 그 커밋이 `dev`에 있는지 확인한 뒤 갱신하고, healthy가 되지 않으면 직전 버전으로 롤백합니다. 의존성은 [Dependabot](./.github/dependabot.yml)이 매주 PR로 올립니다.
+- **자동 배포(CD)**: `dev`에 push해 [CI](./.github/workflows/ci.yml)(API·Core·Frontend 테스트, compose 검증, gitleaks)가 통과하면 [Deploy 워크플로](./.github/workflows/deploy.yml)가 이미지를 GHCR에 올리고 서버의 [`ci-deploy.sh`](./scripts/ci-deploy.sh)에 커밋 SHA만 넘깁니다. 서버는 그 커밋이 `dev`에 있는지 확인한 뒤 갱신하고, healthy가 되지 않으면 직전 버전으로 롤백합니다. 운영을 마친 뒤에는 저장소 변수 `DEPLOY_ENABLED`를 꺼서 dev push에서 배포를 건너뜁니다. 의존성은 [Dependabot](./.github/dependabot.yml)이 매주 PR로 올립니다.
 - **수동 배포**: 노트북에서 빌드해 SSH로 옮깁니다.
 
 ```bash
