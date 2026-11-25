@@ -1,6 +1,6 @@
 # Theseus 엣지 nginx 이미지입니다. 개발 노트북에서 빌드해 서버로 옮깁니다(scripts/build-images.sh).
 # 도메인은 이미지에 넣지 않고 기동 시 DOMAIN env로 템플릿을 렌더링하므로, 한 이미지를 어느 도메인에도 씁니다.
-FROM nginx:1.31.8-alpine
+FROM nginx:1.31.9-alpine
 
 # envsubst는 DOMAIN, HSTS_MAX_AGE만 치환합니다. 나머지 $host 같은 nginx 변수는 그대로 둡니다.
 ENV NGINX_ENVSUBST_FILTER='^(DOMAIN|HSTS_MAX_AGE)$' \

@@ -127,7 +127,6 @@ TOOL_EXAMPLE_QUERIES: dict[str, list[str]] = {
         "knowledge search",
     ],
     "ingest_document": [
-        "이 정보 기억해줘",
         "지식베이스에 추가해줘",
         "문서 저장해줘",
         "나중에 쓸 수 있게 저장",
@@ -148,6 +147,32 @@ TOOL_EXAMPLE_QUERIES: dict[str, list[str]] = {
         "스킬 목록",
         "배운 것들 보여줘",
         "어떤 스킬이 있어?",
+    ],
+    # 메모리 도구(#62): 예시가 없어 "…기억해줘" 질의가 서버에서 숨겨지는 ingest_document와 skill_save로 끌려갔습니다.
+    # 평가셋을 보지 않고 도구 설명만 보고 썼고, 평가셋·홀드아웃과의 difflib 유사도는 모두 0.75 미만(최대 0.621)입니다.
+    "memory_write": [
+        "이 정보 기억해줘",
+        "이거 기억해 둬",
+        "메모해 둬",
+        "앞으로 이 규칙 기억해",
+        "다음 세션에도 참고하게 메모해 둬",
+        "내 선호 기억해 둬",
+        "remember this",
+        "keep in mind for next time",
+        "note this preference for later",
+    ],
+    "memory_read": [
+        "전에 기억해 둔 거 알려줘",
+        "예전에 메모한 규칙 확인해줘",
+        "내 선호 뭐라고 했었지?",
+        "what did I ask you to remember",
+        "read my saved note",
+    ],
+    "memory_list": [
+        "메모 목록 보여줘",
+        "기억하고 있는 것들 보여줘",
+        "메모 뭐 있어?",
+        "list saved memories",
     ],
     "create_tool": [
         "새 도구 만들어줘",

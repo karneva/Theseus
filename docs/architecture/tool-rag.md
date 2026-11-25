@@ -505,10 +505,14 @@ python -m benchmarks.tool_rag.run --variant v2 --registry server-default --split
 | server | **06117c1** | **0.895** | 0.844 | **0.953** | 1788 / 1998 | off |
 | server-default | 0771e25 | 0.826 | 0.812 | 0.898 | 1766 / 1985 | soft |
 | server-default | **06117c1** | **0.895** | 0.844 | **0.935** | 1804 / 1998 | off |
+| core | 6d523f82 (#62) | 0.893 | 0.895 | 0.957 | 1776 / 1987 | off |
+| server-default | 6d523f82 (#62) | 0.874 | 0.836 | 0.938 | 1794 / 1998 | off |
 
 - core는 순위·set_recall이 같고 none을 끈 만큼 토큰이 약 21 늘었습니다. 서버 레지스트리는 remote few-shot으로 R@3 +0.069,
   set_recall +0.035~0.037이고, 같은 조건의 전부 전송(server-default 0.953, server 0.985) 대비 격차가 0.055 → 0.018, 0.067 → 0.032로 줄었습니다.
 - `results/v2_dev_linux_2cpu.json`은 18c26bb 구성 그대로입니다(Linux 컨테이너는 다시 재지 않았습니다).
+- 6d523f82(#62)는 메모리 도구 few-shot을 더했습니다. dev R@3는 core −0.025, server-default −0.021(둘 다 95% CI가 0을 포함)이고,
+  메모 저장 질의에서 `memory_write` 전달률은 0.065 → 0.957입니다. 측정과 근거는 `benchmarks/tool_rag/README.md` "4차 변경"에 있습니다.
 
 ## 6. 한계와 주의 사항
 
