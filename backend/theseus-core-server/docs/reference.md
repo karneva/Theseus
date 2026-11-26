@@ -310,6 +310,7 @@ Copy-Item .env.example .env
 | `THESEUS_TOOL_RAG_ENABLED`, `THESEUS_SERVER_TOOL_RAG` | 질의별 도구 선택(Tool RAG) 활성화. 구 이름 `THESEUS_DYNAMIC_TOOL_RETRIEVAL`도 읽음 |
 | `THESEUS_EMBED_MODEL_DIR` | Tool RAG ONNX 모델 디렉터리(이미지 `/opt/models/e5-small-int8`). 나머지 `THESEUS_EMBED_*`, `THESEUS_TOOL_RAG_*`는 [환경 변수 문서](../../../docs/operations/environment-variables.md#tool-rag) |
 | `THESEUS_ENABLE_ENGINE_RAG_TOOLS` | 서버 registry에서 standalone engine RAG tool을 명시적으로 활성화 |
+| `THESEUS_SERVER_EXPOSE_ASK_USER` | 서버 세션에 `ask_user`를 다시 보냄(기본 false, #59 이전 벤치 결과 재현용. 호출하면 오류 결과) |
 | `THESEUS_ENABLE_AGENT_HOOK` | 파일 작업 AuditLLM/hook 활성화 |
 | `THESEUS_SERVER_SENSITIVE_TOOL_POLICY` | 서버 `/stream`에서 `bash` 등 민감 도구를 승인 없이 자동 허용할지 제어. 기본값은 `reject`, 내부/데모 환경에서만 `allow` 사용 |
 | `THESEUS_DEBUG_DUMP`, `THESEUS_DEBUG_DUMP_DIR` | LLM request/response/debug payload dump 활성화 및 저장 경로 |

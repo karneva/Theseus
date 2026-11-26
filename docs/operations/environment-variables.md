@@ -137,6 +137,7 @@ compose가 값을 고정해 넘기는 항목(env 파일에서 바꾸지 않음):
 | `THESEUS_LLM_MAX_RETRIES` | | `3` | LLM 재시도 횟수 |
 | `LLM_MAX_OUTPUT_TOKENS` | | `32768` | PLAN/BUILD/repair/stream 출력 토큰 상한 |
 | `CORE_STREAM_MAX_AGENT_TURNS` / `CORE_TOOL_PLAN_MAX_AGENT_TURNS` | | `30` / `30` | 채팅 스트림·PLAN의 최대 agent turn |
+| `THESEUS_SERVER_EXPOSE_ASK_USER` | | `false` | 켜면 서버 세션에도 `ask_user`를 보냄. 웹 채팅에는 답을 받는 경로가 없어 호출하면 오류 결과가 돌아가므로(#59) 이전 LLM 벤치 결과를 재현할 때만 씀 |
 | `DOCKER_HOST` | | docker SDK 기본 | sandbox용 Docker daemon |
 | `SANDBOX_IMAGE` | | `theseus-sandbox:py311-tools` | sandbox 이미지 |
 | `SANDBOX_HOST_TEMP_ROOT` / `SANDBOX_CONTAINER_TEMP_ROOT` | | (OS 임시 디렉터리) | Core 컨테이너와 호스트가 공유하는 작업 경로. 둘 다 설정하거나 둘 다 비움 |

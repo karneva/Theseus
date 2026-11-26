@@ -6,6 +6,7 @@ v2는 서버 조립·tool_search·훅 모두 "보이는 도구" 안에서만 고
 """
 
 import asyncio
+import os
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -62,8 +63,13 @@ class _Base(unittest.TestCase):
         set_tool_retriever(self.retriever)
         self._client = patch("src.builder.engine.TheseusLLMClient", lambda name: _DummyClient())
         self._client.start()
+        # 셸에 켜 둔 재현용 플래그가 서버 기본 가시성(ask_user 숨김, #59) 검사를 바꾸지 않게 합니다.
+        self._env = patch.dict(os.environ)
+        self._env.start()
+        os.environ.pop("THESEUS_SERVER_EXPOSE_ASK_USER", None)
 
     def tearDown(self) -> None:
+        self._env.stop()
         self._client.stop()
         set_tool_retriever(None)
 
@@ -109,7 +115,9 @@ class ServerAssemblyTest(_Base):
         cap = len(ESSENTIAL_TOOL_NAMES) + get_tool_rag_settings().max_candidates + 1
         self.assertLessEqual(len(sent), cap)
         self.assertLess(len(sent), len(assembly.allowed_tools))
-        self.assertTrue(ESSENTIAL_TOOL_NAMES <= sent)
+        # 서버는 ask_user를 보이지 않게 하므로(#59) 필수 도구 중 나머지가 들어갑니다.
+        self.assertTrue(ESSENTIAL_TOOL_NAMES - {"ask_user"} <= sent)
+        self.assertNotIn("ask_user", assembly.allowed_tools)
         # tool_search·훅은 보이는 도구 전체 안에서만 넓힐 수 있습니다.
         self.assertEqual(
             set(assembly.engine._tool_metadata["search_injectable_tool_names"]), set(assembly.allowed_tools)

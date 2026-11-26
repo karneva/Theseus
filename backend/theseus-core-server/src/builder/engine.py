@@ -50,6 +50,10 @@ from theseus_engine.wrappers.llm_clients.theseus_client import TheseusLLMClient
 
 logger = logging.getLogger(__name__)
 _SERVER_ENGINE_RAG_TOOL_NAMES = frozenset({"search_knowledge_base", "ingest_document"})
+# 웹 채팅에는 모델의 질문을 사용자에게 보내고 답을 받아 오는 경로가 없어서 ask_user를 보내지 않습니다(#59).
+# 모델은 본문으로 되묻고 턴을 끝내며, 사용자의 다음 메시지가 답이 됩니다.
+_SERVER_UNSUPPORTED_TOOL_NAMES = frozenset({"ask_user"})
+_TRUTHY_ENV_VALUES = frozenset({"1", "true", "yes", "on"})
 
 ApprovalPolicy = Literal["reject", "allow_safe_only", "allow_sensitive"]
 
@@ -339,13 +343,11 @@ def get_query_engine(
         actor_role="ADMIN",
     )
     disabled_tools: set[str] = set()
-    if os.getenv("THESEUS_ENABLE_ENGINE_RAG_TOOLS", "false").strip().lower() not in {
-        "1",
-        "true",
-        "yes",
-        "on",
-    }:
+    if os.getenv("THESEUS_ENABLE_ENGINE_RAG_TOOLS", "false").strip().lower() not in _TRUTHY_ENV_VALUES:
         disabled_tools.update(_SERVER_ENGINE_RAG_TOOL_NAMES)
+    # 켜면 #59 이전처럼 ask_user를 보냅니다(이전 벤치 결과 재현용). 호출하면 오류 결과가 돌아갑니다.
+    if os.getenv("THESEUS_SERVER_EXPOSE_ASK_USER", "false").strip().lower() not in _TRUTHY_ENV_VALUES:
+        disabled_tools.update(_SERVER_UNSUPPORTED_TOOL_NAMES)
     if build_context.project_id:
         disabled_tools.update(deleted_project_tool_names(build_context.project_id))
 
@@ -441,7 +443,6 @@ def get_query_engine(
             "llm_client": api_client,
             "model_name": model_name,
             "tool_repair_policy": ToolRepairPolicy.from_env(),
-            "permission_prompt": _deny_permission_prompt,
             "session_id": build_context.session_id,
             "project_id": build_context.project_id,
             "user_id": build_context.actor_user_id,

@@ -41,7 +41,7 @@ v2(`theseus_engine/core/tool_rag`, 현재 저장소 구현)를 같은 정의로 
 
 ## 측정 항목
 
-정의는 동결 베이스라인 벤치(`bench.py`)와 같습니다. 헤드라인 레지스트리는 `core`(ALL_CORE_TOOLS, CLI/TUI/runner와 Remote Workspace 없는 서버)이고, 이때는 `registry == "core"`인 질의 213개만 씁니다. `--registry server`는 Remote Workspace 도구(remote_*)까지 넣은 서버 레지스트리로 236개 전체를 씁니다(가시성은 CLI AGENT 정책이라 엔진 RAG 도구가 보임). `--registry server-default`는 같은 레지스트리에 실제 서버 기본 가시성(엔진 RAG 도구 2개 숨김)을 적용합니다.
+정의는 동결 베이스라인 벤치(`bench.py`)와 같습니다. 헤드라인 레지스트리는 `core`(ALL_CORE_TOOLS, CLI/TUI/runner와 Remote Workspace 없는 서버)이고, 이때는 `registry == "core"`인 질의 213개만 씁니다. `--registry server`는 Remote Workspace 도구(remote_*)까지 넣은 서버 레지스트리로 236개 전체를 씁니다(가시성은 CLI AGENT 정책이라 엔진 RAG 도구가 보임). `--registry server-default`는 같은 레지스트리에 실제 서버 기본 가시성(엔진 RAG 도구 2개 숨김)을 적용합니다. 이 가시성은 #59 수정 전 기준입니다. 지금 서버는 `ask_user`도 숨기므로, 정답에 `ask_user`가 있는 질의(평가셋 7개, 홀드아웃 2개)는 서버에서 그 도구를 전달할 수 없습니다. 저장된 결과를 재현하도록 하네스는 바꾸지 않았습니다.
 
 | 지표 | 정의 |
 |---|---|

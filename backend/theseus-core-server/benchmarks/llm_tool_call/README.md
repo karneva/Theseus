@@ -23,6 +23,11 @@
 | Tool RAG | 미리 워밍업 | 워밍업 전 요청은 보이는 도구 전부를 받음 |
 | 작업 디렉터리 | fixture: 이 서버 코드의 git HEAD 스냅샷(`benchmarks/` 제외) + 질의에 나온 파일의 자리표시 | `/app` |
 
+> **#59 수정 뒤(2026-11):** 서버는 이제 `ask_user`를 모델에 보내지 않습니다. 이 문서의 결과와 학습 데이터는 모두 수정 전, `ask_user`를 보낸 상태에서 만들었습니다.
+> 같은 조건으로 다시 재려면 `docker run`에 `-e THESEUS_SERVER_EXPOSE_ASK_USER=true`를 더하세요. 되묻기 채점 규칙(본문으로 되묻기도 성공)은 그대로이고,
+> 끈 채로 재면 `ask_user` 호출은 `not_offered_call`로 표시되지만, `success_at_1`/`success_at_k`는 도구 이름만 보므로 정답에 `ask_user`가 있는
+> 질의에서는 여전히 성공으로 셉니다. 숨긴 `ask_user`를 부른 경우를 실패로 보려면 `success_at_1_no_ask`와 `not_offered_call_rate`를 보세요.
+
 ## 에피소드와 채점
 
 한 질의는 최대 `--max-turns`(기본 3) LLM 턴까지 진행합니다. 모델이 탐색용 읽기 전용 도구(`SAFE_TOOLS`: read_file, glob,
