@@ -27,7 +27,8 @@ v2 설계, 평가 프로토콜, 결과, 한계, 그리고 3단계(임베딩 파�
 | 전달 도구 수 평균 | 13.75 | 12.95 | −0.79 [−1.21, −0.37] |
 | "맞는 도구 없음" 판정 F1 | 0 (한 번도 발동 안 함) | 0 (기본 끔, 4.4절) | |
 
-**홀드아웃 실제 서버 기본값** (`server-default`: core + Remote Workspace 도구, 엔진 RAG 도구 2개 숨김. 순위 n=96, 질의 140개)
+**홀드아웃 실제 서버 기본값** (`server-default`: core + Remote Workspace 도구, 엔진 RAG 도구 2개 숨김. 순위 n=96, 질의 140개.
+#59 수정 전 가시성으로 쟀습니다. 지금 서버는 `ask_user`도 숨기므로 정답에 `ask_user`가 있는 홀드아웃 2개(h036, h123)는 서버에서 그 도구를 받을 수 없습니다)
 
 | 지표 | v1 서버 동작(검색 없이 보이는 도구 전부) | v1 검색기 | v2 개선 전(87df973) | v2 |
 |---|---|---|---|---|
@@ -216,7 +217,7 @@ flowchart LR
 ### 4.3 선택 (`selector.py`)
 
 - 필수 도구 7개(read_file, write_file, edit_file, glob, grep, bash, ask_user) ∩ 보이는 도구. create_tool은 필수에서 뺐고,
-  PLAN Executing 단계에서 보일 때 고정 포함합니다.
+  PLAN Executing 단계에서 보일 때 고정 포함합니다. 서버는 `ask_user`를 보이지 않게 하므로(#59) 서버 세션의 필수 도구는 6개입니다.
 - **tool_search 고정**: tool_search가 보이면 필수처럼 비용 예산 밖에서 항상 넣고, system prompt에 "목록에 없는 기능은
   tool_search로 찾으라"는 안내(46 토큰)를 붙입니다. 처음 구현은 none 판정이나 순위 슬롯으로만 넣어서, 커밋했던 server test 결과에서
   정답 도구를 다 받지 못한 질의 18개 중 13개가 tool_search도 받지 못했습니다(복구 경로 없음). 고정 후 test·dev 모든 턴에

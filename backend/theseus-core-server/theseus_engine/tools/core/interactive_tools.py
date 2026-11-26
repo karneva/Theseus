@@ -22,19 +22,20 @@ class AskUserTool(BaseTool):
     permission_level = 1
 
     async def execute(self, arguments: AskUserInput, context: ToolExecutionContext) -> ToolResult:
-        # Get the prompt function from metadata (injected by TUI/CLI)
-        prompt_func = context.metadata.get("permission_prompt") or context.metadata.get(
-            "ask_user_prompt"
-        )
+        # 질문 함수는 런타임이 metadata["ask_user_prompt"]로 넣습니다(질문 문자열 하나를 받아 답을 돌려줌).
+        # 승인용 permission_prompt(tool_name, reason)는 시그니처와 용도가 달라 쓰지 않습니다(#59).
+        prompt_func = context.metadata.get("ask_user_prompt")
 
-        if not prompt_func or not callable(prompt_func):
+        if not callable(prompt_func):
             return ToolResult(
-                output="Interactive prompt is not available in the current environment.",
+                output=(
+                    "Interactive prompt is not available in the current environment. "
+                    "Ask the user your question directly in your reply instead, then end your turn."
+                ),
                 is_error=True,
             )
 
         try:
-            # We use the same permission_prompt mechanism but for a general question
             response = await prompt_func(f"\n[AI Question]: {arguments.question}\nYour Answer: ")
             answer = str(response).strip()
 

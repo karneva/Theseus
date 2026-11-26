@@ -60,6 +60,7 @@ DEFAULT_SELECT_K = 8  # select()가 없는 검색기의 전달 집합 = 필수 �
 SPLITS = ("dev", "test", "all", "holdout")
 REGISTRY_KINDS = ("core", "server", "server-default")
 # 실제 서버 기본값(THESEUS_ENABLE_ENGINE_RAG_TOOLS=false)이 가시성에서 빼는 엔진 RAG 도구(src/builder/engine.py)
+# #59 수정 뒤 서버는 ask_user도 숨기지만, 저장된 결과를 재현하도록 여기에는 넣지 않습니다(수정 전 가시성).
 SERVER_DEFAULT_DISABLED: frozenset[str] = frozenset({"search_knowledge_base", "ingest_document"})
 
 _ENC = None
@@ -121,6 +122,7 @@ def build_registry(kind: str = "core", *, legacy_demo_tools: bool = False):
     server : 서버 get_query_engine + Remote Workspace(allowWriteExecution=true)
              = ALL_CORE_TOOLS + remote_* 읽기/쓰기 도구. 가시성은 CLI AGENT 정책이라 엔진 RAG 도구 2개가 보입니다.
     server-default : server와 같은 레지스트리에 실제 서버 기본 가시성(엔진 RAG 도구 2개 숨김)을 적용합니다.
+             #59 수정 전 기준이라 ask_user는 보입니다(지금 서버는 ask_user도 숨김).
              정답에 그 도구가 있는 질의는 어떤 변형도 전달할 수 없으므로 set_recall 상한이 1보다 낮습니다.
     legacy_demo_tools=True: 동결 베이스라인(2026-11-15 측정) 당시처럼 데모 도구 dummy_echo,
              system_reboot를 맨 앞에 다시 넣습니다. 4a2d1f0에서 ALL_CORE_TOOLS에서 빠졌으며
