@@ -34,8 +34,7 @@
 - [시작하기](#getting-started): [로컬 개발](#local-dev) · [배포](#deploy) · [VS Code 익스텐션](#vscode-porting)
 - [ERD 및 산출물](#documents)
 - [저장소 구조](#repository-structure)
-- [변경 이력 / 리팩토링](#changelog)
-- [고도화 결과](#roadmap-results)
+- [알려진 제한](#known-limitations)
 - [팀](#team)
 - [프로젝트 성과](#achievements)
 - [추가 정보](#additional-info)
@@ -525,24 +524,9 @@ Theseus/
 
 ---
 
-<a id="changelog"></a>
-
-## 🔧 변경 이력 / 리팩토링
-
-SSAFY 프로젝트 종료 후 저장소를 정리해 **서버 한 대에서 직접 운영할 수 있는 상태**로 만들었습니다(Phase 1, 2026.11). SSAFY 개발 당시의 Jenkins·GitLab·Jira 관련 파일은 [`docs/archive/ssafy/`](./docs/archive/ssafy/)에 보관했습니다.
-
-| 영역 | 주요 변경 |
-| --- | --- |
-| 보안 강화 | `web_fetch`·`deep_research` SSRF 차단(사설망·메타데이터 대역, 리다이렉트 재검사), 내부 API 키 고정 시간 비교, nginx에서 내부 API·Swagger·Actuator 차단과 로그인 rate limit, prod CORS 기본 off·`*` 거부, refresh 쿠키 Secure·비활성 사용자 토큰 차단, 토큰을 브라우저 저장소에 두지 않음, sandbox 하드닝(네트워크 차단, 비root, cap_drop, read-only)과 docker socket proxy |
-| 설정 외부화 | API는 `local`/`prod` 프로필과 Flyway 마이그레이션, Core는 base URL 하나(`SPRING_BOOT_INTERNAL_URL`)와 provider 접두사 모델 라우팅, Kafka 토픽 이름 공유(`KAFKA_TOPIC_*`), 실행 환경별 env 템플릿 |
-| 안정성 | Kafka 결과 consumer 재시도와 DLT, Run 타임아웃 실패 처리, ToolRetriever 임베딩 모델 로드를 이벤트 루프 밖으로 이동 |
-| 테스트와 CI | 정리 전 API 159개 중 32개 실패, Core import 실패, Frontend `npm ci` 실패 → 모두 통과. GitHub Actions(테스트, compose 검증, gitleaks, `dev` 자동 배포)와 Dependabot 추가 |
-| 경량 셀프호스팅 | 2 vCPU / 3.8GB 서버용 compose, 배포 스크립트, Let's Encrypt 자동 갱신, 백업, 노트북 Ollama reverse tunnel([개인 서버 구성](#self-hosted-setup) 참고) |
-| 정리 | 미사용 모듈·의존성·데모 도구와 커밋된 빌드 산출물 삭제, VS Code 확장 wrapper를 `scripts/vscode-extension/`으로 이동, 문서 갱신 |
-
 <a id="known-limitations"></a>
 
-### 알려진 제한
+## ⚠️ 알려진 제한
 
 - **도구 사용 이력 미기록**: API에 `ToolUsageLog`를 저장하는 경로가 아직 없어, 사용 이력 화면은 도구 실행 후에도 비어 있습니다.
 - **sandbox 범위**: sandbox는 BUILD 검증에만 쓰이고, 승인된 도구는 Core 프로세스 안에서 실행됩니다. 신뢰할 수 없는 사용자에게 도구 생성을 열기 전에는 실행 격리가 필요합니다.
@@ -550,80 +534,7 @@ SSAFY 프로젝트 종료 후 저장소를 정리해 **서버 한 대에서 직�
 
 자세한 내용은 [셀프호스팅 가이드의 보안 메모와 알려진 제한](./docs/operations/self-hosting.md#14-보안-메모와-알려진-제한)을 참고하세요.
 
----
-
-<a id="roadmap-results"></a>
-
-## 🧪 고도화 결과
-
-> [!NOTE]
-> 프로젝트 종료 후 진행한 고도화의 측정 결과입니다. Tool RAG v2는 운영에 반영했습니다. 로컬 LLM 파인튜닝은 미리 정한 기준을 holdout에서 넘지 못해 운영 모델을 바꾸지 않았습니다.
-
-### Tool RAG 고도화
-
-에이전트가 매 턴 모든 도구 스키마를 보내면 그것만으로 5천 토큰이 넘고, 운영 대상인 4B 로컬 모델(16k 컨텍스트)은 도구가 많을수록 고르는 정확도도 떨어집니다. Tool RAG(김선교 설계)를 평가셋으로 다시 재고 v2로 고도화했습니다.
-
-- **v1에서 측정한 문제**: 한국어 R@3 0.533(영어 0.754), "도구 없음" 판정 불가, 서버는 검색 없이 보이는 도구 전부 전송, 사후 훅이 가시성·RBAC를 무시하고 도구를 주입(보안 버그), torch 때문에 이미지 2.46 GB
-- **v2**: dense(e5-small) + BM25(한글 bigram) 융합, 영어 도구 설명에 붙인 한국어 용어집, 스키마 크기를 반영한 비용 인지 슬롯 선택, ONNX int8 임베딩(torch 제거). 서버 조립·tool_search·사후 훅 주입을 모두 보이는 도구 안으로 제한했습니다.
-- **평가**: 동결 평가셋 236개 질의(dev/test 50:50, 튜닝은 dev만)와 별도로 만든 **홀드아웃** 140개 질의. 홀드아웃은 평가셋·용어집·few-shot을 본 적 없는 작성자가 도구 카탈로그만 보고 썼고 다른 주석자가 독립으로 라벨링했으며(140개 중 135개 일치), 개발 전에 해시를 고정한 뒤 최종 구성과 비교 대상만 한 번 평가했습니다.
-
-| 홀드아웃 (core, 순위 n=67) | v1 | v2 |
-| --- | ---: | ---: |
-| R@3 (한국어 / 영어) | 0.493 (0.549 / 0.404) | **0.806** (0.841 / 0.750) |
-| MRR | 0.497 | **0.752** |
-| 실제 전달 집합의 정답 재현율 | 0.708 | **0.899** |
-| 턴당 도구 스키마 토큰 평균 / p95 | 1968 / 2417 | **1771 / 1999** |
-
-- R@3 paired bootstrap 95% CI **+0.313** [+0.201, +0.433](24승 1패).
-- **서버 토큰**(홀드아웃, 실제 서버 기본 구성: Remote Workspace 도구 포함·엔진 RAG 도구 2개 숨김): 검색 없이 도구 42개를 보내던 서버(5367 토큰/턴) 대비 **약 −67%**(1769 토큰/턴). 정답 재현율이 0.935 → 0.842로 내려가는 대신, 빠진 도구는 매 턴 들어 있는 tool_search로 찾습니다.
-- **자원**: Core 이미지 2.46 GB → **1.07 GB**, 검색 후 프로세스 RSS 약 1.08 GB → **약 0.42 GB**, 첫 검색 약 19 s → **약 1.9 s**, 웜 검색 p50 18.9 ms → **5.9 ms**
-- **한계**: 홀드아웃도 LLM이 쓴 질의라 실제 사용자 질의보다 깨끗할 수 있고 라벨 일치도 같은 편향일 수 있으며, 순위 지표 n=67이라 신뢰구간이 넓습니다. "도구 없음" 판정은 미리 정한 전이 기준을 넘지 못해 기본으로 꺼 두었습니다(`THESEUS_TOOL_RAG_NONE_MODE=soft`로 켬).
-
-위 홀드아웃 수치는 63e1e19 구성입니다. 그 뒤 #62에서 메모리 도구 few-shot을 더했고(메모 저장 요청에 `memory_write`를 보내는 비율 6.5% → 95.7%), 이 변경은 dev로만 다시 쟀습니다(홀드아웃은 한 번만 평가). 측정 조건, 설계 근거, 버린 기법, 재현 명령은 [Tool RAG 문서](./docs/architecture/tool-rag.md)에 있습니다.
-
-### 로컬 LLM 파인튜닝·양자화
-
-운영 LLM은 노트북 GPU의 Qwen3-4B-Instruct-2507(Ollama Q4_K_M)입니다. 이 4B 모델이 Theseus 도구를 더 정확히 고르도록 QLoRA로 미세조정하고, 병합한 뒤 Q4_K_M으로 양자화했습니다.
-
-- **학습 데이터**: 교사 모델이 만든 최대 3턴 궤적입니다.
-  - 운영 엔진과 같은 프롬프트·도구 스키마·Ollama 렌더링을 썼습니다.
-  - 규칙 검증, 습관 필터, 수동 감사를 거친 예시 582개이고, 평가셋 질의와의 근접 중복은 뺐습니다.
-  - run2는 run1의 오류(`ask_user` 남용, 요청과 다른 작업 도구로 끝남)를 분석해 규칙과 범주를 고친 버전입니다.
-- **학습·변환**: Unsloth QLoRA(r=16, 2 epoch)로 노트북 GPU 1장에서 학습했습니다(PyTorch 할당 메모리 최대 4.65 GiB). 병합 후 llama.cpp `llama-quantize`로 Q4_K_M(2.33 GiB)을 만들었습니다.
-- **평가**: 위 Tool RAG의 dev·test·holdout 질의를 씁니다.
-  - 운영과 같은 Ollama 설정(16k 컨텍스트, KV q8_0)에서 질의당 5회 샘플, 최대 3턴입니다.
-  - 운영 모델 교체 기준 6개는 test·holdout 결과를 보기 전에 정해 커밋했습니다.
-    - 향상해야 하는 것: 첫 턴 정답률, `ask_user`를 실패로 친 첫 턴 정답률
-    - 정한 허용치를 넘게 나빠지면 안 되는 것: k턴 정답률, 다른 작업 도구로 끝난 비율, 라벨 밖 상태 변경 호출, 오류율
-
-| 첫 턴 정답률 (보정 라벨, 정답이 있는 질의) | 운영 모델 | run2 | Δ [95% CI] |
-| --- | ---: | ---: | --- |
-| dev (95개) | 0.621 | **0.760** | +0.139 [+0.063, +0.219] |
-| test (95개) | 0.648 | **0.775** | +0.126 [+0.036, +0.219] |
-| holdout (116개) | 0.602 | **0.712** | +0.110 [+0.034, +0.190] |
-
-- **결과**: 정답률은 올랐지만 운영 모델은 바꾸지 않았습니다.
-  - test에서는 6개 기준을 모두 통과했습니다.
-  - holdout에서는 두 기준이 허용치를 넘었습니다.
-
-    | 기준 | 결과 | 허용 |
-    | --- | --- | --- |
-    | 라벨 밖 상태 변경 호출 | 0.021 → 0.043 (Δ +0.022, CI 상한 +0.055) | Δ +0.02, CI 상한 +0.05 |
-    | 요청과 다른 작업 도구로 끝남 | CI 상한 +0.066 | +0.05 |
-
-  - 두 지표 모두 CI가 0을 포함합니다. 나빠진 것이 입증된 것이 아니라, 허용 범위 안이라는 것을 보이지 못한 것입니다.
-  - 검토한 사례는 되돌리기 어려운 호출은 아니었지만, 요청과 다른 동작이었습니다. 예를 들어 dev 서버를 계속 켜 두라는 요청에 포그라운드 `bash`를 쓰거나, 워크트리를 정리하라는 요청에 `main`으로 워크트리 진입을 시도했습니다.
-  - 학습 전 원본을 같은 방식으로 직접 양자화한 모델과 비교하면, holdout의 자동 기준 6개를 모두 통과합니다(사람 검토 대상은 같은 사례로 남음). 운영 모델과의 차이 일부는 양자화 방식 차이일 수 있습니다.
-  - 기준 밖 지표에서도 회귀가 드러났습니다. holdout의 "도구 없음" 질의 19개에서 맞게 대응한 비율이 0.979 → 0.674로 떨어졌고, 대부분 개념 질문에 `web_search`·`web_fetch`·`deep_research`를 부른 경우였습니다(개념 질문 5개의 25회 모두).
-    - dev·test의 도구 없음 질의는 모두 범위 밖 서비스 요청이라 개념 질문이 없었습니다.
-    - 교체 기준에도 도구 없음 지표가 없어서 판정에 반영되지 않았습니다.
-- **배운 점**:
-  - dev와 test에서 좋아 보인 미세조정도, 질의 성격이 다른 holdout에서는 약점이 드러났습니다.
-  - 학습 데이터의 범주 구성과 연결한 가설은 있지만, 검증하지는 않았습니다.
-  - 기준을 미리 고정해 두어서, "정답률이 올랐으니 교체하자" 같은 사후 판단을 하지 않을 수 있었습니다.
-  - 반대로 그 기준에 도구 없음 지표가 빠져 있었던 것도 다음에 고칠 점입니다.
-
-어댑터와 GGUF는 비공개 Hugging Face 저장소에 보관했습니다. 학습·평가 방법, 프로토콜 이탈(test 일부 측정이 GPU를 나눠 씀), 재현 명령은 [LLM 도구 호출 평가 문서](./backend/theseus-core-server/benchmarks/llm_tool_call/README.md)에 있습니다.
+프로젝트 종료 후(2026.07~11) 혼자 진행한 저장소 정리·보안 강화·셀프호스팅·CI/CD 내역은 [Core Server README의 1인 고도화](./backend/theseus-core-server/README.md#solo-period)에 정리했습니다. SSAFY 개발 당시의 Jenkins·GitLab·Jira 관련 파일은 [`docs/archive/ssafy/`](./docs/archive/ssafy/)에 보관했습니다.
 
 ---
 
@@ -639,20 +550,7 @@ SSAFY 프로젝트 종료 후 저장소를 정리해 **서버 한 대에서 직�
 | 권대일 | AI | Theseus Agent Engine(QueryEngine, Context Compressor, 자체 TUI), LLM 기반 ToolPlan 생성과 structured output, Tool 실행 오케스트레이션, Top-K 동적 도구 검색·ToolSearchTool 구현, Custom Tool Registry, ToolBuild 샌드박스 안정화, VS Code Extension |
 | 김선교 | AI / BE | AI Core Server(FastAPI) 구축, Docker Sandbox 구현, Core 측 Kafka 비동기 처리, Tool RAG 설계 + v2 고도화, RAG·Vector DB 인프라, 과금 Outbox. 프로젝트 종료 후 오픈소스화 리팩토링·셀프호스팅·고도화 |
 
-<details>
-<summary>김선교 담당 작업 상세</summary>
-
-| 영역 | 작업 | 근거 커밋 |
-| --- | --- | --- |
-| AI Core Server 구축 | FastAPI 프로젝트 초기화와 계층형 구조, 설정·인증·세션/히스토리 연동, Core Direct SSE 스트리밍, 엔진 서버 스트리밍 연동, Plan·create_tool 서버 이관 | `ecdf3b1`, `cf675cf`, `dfc67c7`, `281ae57`, `1ad89f6`, `171c2e3`, `c2e8324` |
-| Docker Sandbox | 샌드박스 인프라 설정, Docker 기반 실행기 통합, 샌드박스 강제·영속화, 실행 경로 안정성과 진단, 생성 Tool 문법 검증 | `289b887`, `542cb15`, `45dddff`, `ebf2d1f`, `6f636aa` |
-| Kafka 비동기 처리(Core) | Kafka 응답 설정, ToolPlan consumer, ToolBuild consumer·publisher·processor, Tool 빌드 고정·취약점 강화 | `fa137b3`, `80ba357`, `09f845a`, `869722d` |
-| Tool RAG | 동적 도구 검색 구조 설계. 이후 평가셋 기반 v2 고도화(하이브리드 검색, 비용 인지 선택, ONNX 경량화, 주입 경로 보안 수정)를 단독 진행 | [고도화 결과](#roadmap-results), [Tool RAG 문서](./docs/architecture/tool-rag.md) |
-| 로컬 LLM 도구 호출 (2026.11~) | 운영 렌더링을 재현한 도구 호출 평가 하네스, 교사 궤적 생성·검증, QLoRA 학습·GGUF 양자화, 사전 등록 기준으로 최종 평가(holdout 불통과로 미교체) | [고도화 결과](#roadmap-results), [평가 문서](./backend/theseus-core-server/benchmarks/llm_tool_call/README.md) |
-| 데이터·과금 | RAG·Vector DB(pgvector) 인프라 세팅, 과금 데이터 유실 방지 Outbox 패턴 | `42db844`, `51812ba` |
-| 오픈소스화·셀프호스팅 (2026.07~) | 민감정보·하드코딩 제거, 보안 강화, 설정 외부화, 테스트 정상화, 단일 서버 배포 구성 | [변경 이력](#changelog) |
-
-</details>
+김선교의 담당 작업 상세(근거 커밋)는 [Core Server README의 내가 한 일](./backend/theseus-core-server/README.md#my-work)에, 프로젝트 종료 후 진행한 Tool RAG v2 고도화와 로컬 LLM 파인튜닝·평가는 [Core Server README의 AI 엔지니어링 상세](./backend/theseus-core-server/README.md#ai-engineering)에 정리했습니다.
 
 ---
 
